@@ -72,8 +72,11 @@ export enum CrmDealSortEnum {
   NAME = "NAME",
   CLOSING_AT = "CLOSING_AT",
   AMOUNT = "AMOUNT",
-  STAGE_TYPE = "STAGE_TYPE",
-  STAGE_ORDER = "STAGE_ORDER"
+  STAGE = "STAGE",
+  COMPANY = "COMPANY",
+  CONTACT = "CONTACT",
+  PRIORITY = "PRIORITY",
+  OWNER = "OWNER"
 }
 
 export enum CrmDealStageColorsEnum {
@@ -107,5 +110,6 @@ export enum DefaultStageNameEnum {
 }
 
 export enum CrmErrorMessageKeyEnum {
-  DEAL_EXISTS = "CRM_ERROR_DEAL_EXISTS"
+  DEAL_EXISTS = "CRM_ERROR_DEAL_EXISTS",
+  DEAL_VIEW_DENIED = "CRM_ERROR_DEAL_VIEW_DENIED"
 }

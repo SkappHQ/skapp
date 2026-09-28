@@ -8,8 +8,10 @@ import {
 } from "@mui/material";
 import { FC, useEffect, useState } from "react";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
+import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { AdminTypes } from "~community/common/types/AuthTypes";
@@ -19,8 +21,6 @@ import { EmployeeDataType } from "~community/people/types/EmployeeTypes";
 import { TeamMemberTypes } from "~community/people/types/TeamTypes";
 
 import styles from "./styles";
-import { useAuth } from "~community/auth/providers/AuthProvider";
-import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 
 interface Props {
   id: string;

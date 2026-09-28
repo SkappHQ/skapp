@@ -1,4 +1,4 @@
-import "@testing-library/jest-dom/extend-expect";
+import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 
@@ -60,6 +60,6 @@ describe("Pagination", () => {
       />
     );
     const navigation = screen.getByRole("navigation");
-    expect(navigation).toHaveStyle("background-color: red");
+    expect(navigation).toHaveStyle("background-color: rgb(255, 0, 0)");
   });
 });

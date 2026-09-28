@@ -10,9 +10,7 @@ import {
 } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 
-import authFetch, {
-  authFetchV2
-} from "~community/common/utils/axiosInterceptor";
+import authFetch from "~community/common/utils/axiosInterceptor";
 import { crmCompanyEndpoints } from "~community/crm/v2/api/utils/ApiEndpoints";
 import { crmCompanyQueryKeys } from "~community/crm/v2/api/utils/QueryKeys";
 import {
@@ -20,6 +18,8 @@ import {
   CrmCompanyMetrics
 } from "~community/crm/v2/types/CrmCommonTypes";
 import {
+  CrmCompanyDomainSearchFilterRequest,
+  CrmCompanyDomainSearchResponse,
   CrmCompanyFilterRequest,
   CrmCompanyListResponse,
   CrmExistsResponse
@@ -29,7 +29,7 @@ import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 const fetchCompanies = async (
   params: CrmCompanyFilterRequest
 ): Promise<CrmCompanyListResponse> => {
-  const response = await authFetchV2.get(crmCompanyEndpoints.GET_COMPANIES, {
+  const response = await authFetch.get(crmCompanyEndpoints.GET_COMPANIES, {
     params
   });
   return response?.data?.results?.[0];
@@ -43,8 +43,14 @@ export const useGetCompaniesInfinite = (
     queryFn: ({ pageParam }) => fetchCompanies({ ...params, page: pageParam }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
-      const nextPage = lastPage.currentPage + 1;
-      return nextPage < lastPage.totalPages ? nextPage : undefined;
+      if (
+        lastPage?.currentPage !== undefined &&
+        lastPage?.totalPages !== undefined &&
+        lastPage.currentPage < lastPage.totalPages - 1
+      ) {
+        return lastPage.currentPage + 1;
+      }
+      return undefined;
     },
     refetchOnWindowFocus: false
   });
@@ -187,6 +193,48 @@ export const useGetCompaniesByIds = (
   useQuery({
     queryKey: crmCompanyQueryKeys.COMPANIES_BY_IDS(ids),
     queryFn: () => fetchCompaniesByIds(ids),
+    enabled,
+    refetchOnWindowFocus: false
+  });
+
+const fetchCompanyLookup = async (
+  params: CrmCompanyFilterRequest
+): Promise<CrmCompanyListResponse> => {
+  const response = await authFetch.get(crmCompanyEndpoints.COMPANY_LOOKUP, {
+    params
+  });
+  return response?.data?.results?.[0];
+};
+
+export const useGetCompanyLookup = (
+  params: CrmCompanyFilterRequest,
+  enabled?: boolean
+): UseQueryResult<CrmCompanyListResponse> =>
+  useQuery({
+    queryKey: crmCompanyQueryKeys.LOOKUP(params),
+    queryFn: () => fetchCompanyLookup(params),
+    enabled,
+    refetchOnWindowFocus: false
+  });
+
+const searchCompaniesByDomain = async ({
+  domain,
+  limit
+}: CrmCompanyDomainSearchFilterRequest): Promise<CrmCompanyDomainSearchResponse> => {
+  const response = await authFetch.get(
+    crmCompanyEndpoints.SEARCH_COMPANIES_BY_DOMAIN,
+    { params: { domain, limit } }
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useSearchCompaniesByDomain = (
+  params: CrmCompanyDomainSearchFilterRequest,
+  enabled?: boolean
+): UseQueryResult<CrmCompanyDomainSearchResponse> =>
+  useQuery({
+    queryKey: crmCompanyQueryKeys.DOMAIN_SEARCH(params),
+    queryFn: () => searchCompaniesByDomain(params),
     enabled,
     refetchOnWindowFocus: false
   });

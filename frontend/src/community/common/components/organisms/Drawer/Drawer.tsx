@@ -15,6 +15,7 @@ import {
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import { CSSProperties, JSX, useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useGetUploadedImage } from "~community/common/api/FileHandleApi";
@@ -39,7 +40,6 @@ import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
 import { IconName } from "~community/common/types/IconTypes";
 import { NotificationSummaryType } from "~community/common/types/notificationTypes";
 import { CommonStoreTypes } from "~community/common/types/zustand/StoreTypes";
-import { getTenantId } from "~enterprise/common/utils/tenantUtil";
 import getDrawerRoutes from "~community/common/utils/getDrawerRoutes";
 import { shouldActivateLink } from "~community/common/utils/keyboardUtils";
 import useCanViewLeavePolicies from "~community/leave/hooks/useCanViewLeavePolicies";
@@ -52,6 +52,7 @@ import { SubmitRequestModalEnums } from "~enterprise/common/enums/Common";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import useS3Download from "~enterprise/common/hooks/useS3Download";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
+import { getTenantId } from "~enterprise/common/utils/tenantUtil";
 
 import FullScreenLoader from "../../molecules/FullScreenLoader/FullScreenLoader";
 import { StyledDrawer } from "./StyledDrawer";
@@ -95,24 +96,30 @@ const Drawer = (): JSX.Element => {
     setExpandedDrawerListItem,
     setOrgData,
     setIsDrawerExpanded
-  } = useCommonStore((state: CommonStoreTypes | any) => ({
-    isDrawerExpanded: state.isDrawerExpanded,
-    expandedDrawerListItem: state.expandedDrawerListItem,
-    setExpandedDrawerListItem: state.setExpandedDrawerListItem,
-    setOrgData: state.setOrgData,
-    setIsDrawerExpanded: state.setIsDrawerExpanded
-  }));
+  } = useCommonStore(
+    useShallow((state: CommonStoreTypes | any) => ({
+      isDrawerExpanded: state.isDrawerExpanded,
+      expandedDrawerListItem: state.expandedDrawerListItem,
+      setExpandedDrawerListItem: state.setExpandedDrawerListItem,
+      setOrgData: state.setOrgData,
+      setIsDrawerExpanded: state.setIsDrawerExpanded
+    }))
+  );
 
-  const { globalLoginMethod } = useCommonEnterpriseStore((state) => ({
-    globalLoginMethod: state.globalLoginMethod
-  }));
+  const { globalLoginMethod } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      globalLoginMethod: state.globalLoginMethod
+    }))
+  );
 
   const { data: organizationCalendarStatusData } =
     useGetOrganizationCalendarStatus();
 
-  const { setMyLeaveRequestModalType } = useLeaveStore((state) => ({
-    setMyLeaveRequestModalType: state.setMyLeaveRequestModalType
-  }));
+  const { setMyLeaveRequestModalType } = useLeaveStore(
+    useShallow((state) => ({
+      setMyLeaveRequestModalType: state.setMyLeaveRequestModalType
+    }))
+  );
 
   const notificationLeaveCount = useGetNotificationSummaryCount(
     NotificationSummaryType.LEAVE_REQUEST

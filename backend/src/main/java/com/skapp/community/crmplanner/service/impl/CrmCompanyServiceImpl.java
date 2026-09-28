@@ -52,8 +52,8 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto getCompanies(CrmCompanyFilterDto filterDto) {
-		log.info("getCompanies: execution started");
+	public ResponseEntityDto getCompaniesLookup(CrmCompanyFilterDto filterDto) {
+		log.info("getCompaniesLookup: execution started");
 
 		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
 		Page<CrmCompany> companyPage = crmCompanyDao.findCompanies(filterDto, pageable);
@@ -69,7 +69,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		pageDto.setTotalItems(companyPage.getTotalElements());
 		pageDto.setTotalPages(companyPage.getTotalPages());
 
-		log.info("getCompanies: execution ended");
+		log.info("getCompaniesLookup: execution ended");
 		return new ResponseEntityDto(false, pageDto);
 	}
 
@@ -109,6 +109,29 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 		log.info("createCompany: execution ended successfully");
 		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	@Transactional
+	public CrmCompany findOrCreateCompanyByName(String name) {
+		log.info("findOrCreateCompanyByName: execution started");
+
+		CrmValidations.validateCompanyName(name);
+
+		Optional<CrmCompany> existingCompany = crmCompanyDao.findByNameIgnoreCaseAndIsDeletedFalse(name);
+		if (existingCompany.isPresent()) {
+			log.info("findOrCreateCompanyByName: matched an existing company");
+			return existingCompany.get();
+		}
+
+		validateCompanyCreationLimit();
+
+		CrmCompany newCompany = new CrmCompany();
+		newCompany.setName(name);
+		CrmCompany savedCompany = crmCompanyDao.save(newCompany);
+
+		log.info("findOrCreateCompanyByName: execution ended");
+		return savedCompany;
 	}
 
 	protected void validateCompanyCreationLimit() {
@@ -153,16 +176,16 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 	}
 
 	@Override
-	public ResponseEntityDto getCompanyMetrics(String searchKeyword, Pageable pageable) {
-		log.info("getCompanyMetrics: execution started");
-		Page<CrmCompanyMetricsResponseDto> page = crmCompanyDao.getCompanyMetrics(pageable, searchKeyword);
+	public ResponseEntityDto getCompanies(String searchKeyword, Pageable pageable) {
+		log.info("getCompanies: execution started");
+		Page<CrmCompanyMetricsResponseDto> page = crmCompanyDao.getCompanies(pageable, searchKeyword);
 
 		PageDto response = new PageDto();
 		response.setItems(page.getContent());
 		response.setCurrentPage(page.getNumber());
 		response.setTotalItems(page.getTotalElements());
 		response.setTotalPages(page.getTotalPages());
-		log.info("getCompanyMetrics: execution ended");
+		log.info("getCompanies: execution ended");
 
 		return new ResponseEntityDto(false, response);
 	}

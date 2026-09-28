@@ -1,4 +1,4 @@
-import "@testing-library/jest-dom/extend-expect";
+import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 
@@ -66,7 +66,7 @@ describe("IconButton", () => {
       </MockTheme>
     );
     const button = screen.getByRole("button");
-    expect(button).toHaveStyle("background-color: red");
+    expect(button).toHaveStyle("background-color: rgb(255, 0, 0)");
   });
 
   test("applies aria-label when provided", () => {

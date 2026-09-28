@@ -8,13 +8,18 @@ import { IconName } from "~community/common/types/IconTypes";
 import { useTransferTeamMembers } from "~community/people/api/TeamApi";
 import ReassignMemberRow from "~community/people/components/molecules/ReassignMemberRow/ReassignMemberRow";
 import { usePeopleStore } from "~community/people/store/store";
-import { TeamModelTypes, TeamNamesType } from "~community/people/types/TeamTypes";
+import {
+  TeamModelTypes,
+  TeamNamesType
+} from "~community/people/types/TeamTypes";
 
 interface ReassignMembersModalProps {
   transferableMembersMap: Map<number, TeamNamesType[]>;
 }
 
-const ReassignMembersModal: FC<ReassignMembersModalProps> = ({ transferableMembersMap }) => {
+const ReassignMembersModal: FC<ReassignMembersModalProps> = ({
+  transferableMembersMap
+}) => {
   const translateText = useTranslator("peopleModule", "teams");
   const {
     currentDeletingTeam,

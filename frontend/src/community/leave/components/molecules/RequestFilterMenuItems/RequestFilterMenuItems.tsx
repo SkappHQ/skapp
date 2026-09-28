@@ -3,6 +3,7 @@ import {
   SelectableItemList
 } from "@rootcodelabs/skapp-ui";
 import { JSX, useEffect, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { FilterButtonTypes } from "~community/common/types/CommonTypes";
@@ -41,15 +42,17 @@ const RequestFilterMenuItems = ({
     setLeaveRequestFilterOrder,
     setLeaveRequestParams,
     setLeaveRequestsFilter
-  } = useLeaveStore((state) => ({
-    resetLeaveRequestParams: state.resetLeaveRequestParams,
-    leaveRequestsFilter: state.leaveRequestsFilter,
-    leaveRequestFilterOrder: state.leaveRequestFilterOrder,
-    setLeaveRequestFilterOrder: state.setLeaveRequestFilterOrder,
-    setLeaveRequestParams: state.setLeaveRequestParams,
-    setLeaveRequestsFilter: state.setLeaveRequestsFilter,
-    leaveRequestParams: state.leaveRequestParams
-  }));
+  } = useLeaveStore(
+    useShallow((state) => ({
+      resetLeaveRequestParams: state.resetLeaveRequestParams,
+      leaveRequestsFilter: state.leaveRequestsFilter,
+      leaveRequestFilterOrder: state.leaveRequestFilterOrder,
+      setLeaveRequestFilterOrder: state.setLeaveRequestFilterOrder,
+      setLeaveRequestParams: state.setLeaveRequestParams,
+      setLeaveRequestsFilter: state.setLeaveRequestsFilter,
+      leaveRequestParams: state.leaveRequestParams
+    }))
+  );
 
   const [menuItemsData, _] = useState<MenuitemsDataTypes[]>([
     {

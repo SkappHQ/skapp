@@ -13,6 +13,7 @@ import com.skapp.community.common.security.AuthorityService;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
+import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
@@ -52,6 +53,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
@@ -157,6 +159,13 @@ class CrmCompanyControllerIntegrationTest {
 	private ResultActions performSearchByDomainRequest(String domain, int limit) throws Exception {
 		return performRequest(get(SEARCH_BY_DOMAIN_PATH).param("domain", domain)
 			.param("limit", String.valueOf(limit))
+			.accept(MediaType.APPLICATION_JSON));
+	}
+
+	private ResultActions performGetCompaniesRequest(String searchKeyword) throws Exception {
+		return performRequest(get(BASE_PATH).param("page", "0")
+			.param("size", "10")
+			.param("searchKeyword", searchKeyword)
 			.accept(MediaType.APPLICATION_JSON));
 	}
 
@@ -464,12 +473,14 @@ class CrmCompanyControllerIntegrationTest {
 		Long taskId = crmTaskDao.save(task).getId();
 
 		assertThat(crmDealDao.findDeals(new CrmDealFilterDto(), null, PageRequest.of(0, 100)).getContent())
-			.extracting(CrmDeal::getId)
+			.extracting(CrmDealResponseDto::getId)
 			.contains(dealId);
-		assertThat(crmContactDao.findContacts(new CrmContactMetricRequestDto(), PageRequest.of(0, 100)).getContent())
-			.extracting(CrmContact::getId)
+		assertThat(crmContactDao.getContacts(new CrmContactMetricRequestDto(), PageRequest.of(0, 100)).getContent())
+			.extracting(CrmContactListItemDto::getId)
 			.contains(contactId);
-		assertThat(crmTaskDao.findTasks(1L, new CrmTaskFilterDto())).extracting(CrmTask::getId).contains(taskId);
+		assertThat(crmTaskDao.findTasks(1L, new CrmTaskFilterDto(), Pageable.unpaged()).getContent())
+			.extracting(CrmTaskResponseDto::getId)
+			.contains(taskId);
 
 		performDeleteRequest(companyId).andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
@@ -483,7 +494,7 @@ class CrmCompanyControllerIntegrationTest {
 		CrmTask remainingTask = crmTaskDao.findById(taskId).orElseThrow();
 		assertThat(remainingTask.getIsDeleted()).isFalse();
 
-		PageDto contactsPage = (PageDto) contactService.getContactMetrics(new CrmContactMetricRequestDto())
+		PageDto contactsPage = (PageDto) contactService.getContacts(new CrmContactMetricRequestDto())
 			.getResults()
 			.get(0);
 		@SuppressWarnings("unchecked")
@@ -492,7 +503,9 @@ class CrmCompanyControllerIntegrationTest {
 		assertThat(contactItems).filteredOn(c -> c.getId().equals(contactId))
 			.as("contact remains visible after its company is deleted")
 			.singleElement()
-			.satisfies(c -> assertThat(c.getCompany()).as("deleted company is presented as blank").isNull());
+			.satisfies(c -> assertThat(c.getCompanyId())
+				.as("the list row still carries the company id after the company is soft deleted")
+				.isEqualTo(companyId));
 
 		// dealService.getDeals resolves the current user, but the MockMvc delete request
 		// above clears the security context, so re-establish it for this direct call
@@ -507,11 +520,11 @@ class CrmCompanyControllerIntegrationTest {
 		assertThat(dealItems).filteredOn(d -> d.getId().equals(dealId))
 			.as("deal remains visible after its company is deleted")
 			.singleElement()
-			.satisfies(d -> assertThat(d.getCompanyName()).as("deleted company is presented as blank").isNull());
+			.satisfies(d -> assertThat(d.getCompanyId()).as("deleted company is presented as blank").isNull());
 
-		assertThat(crmTaskDao.findTasks(1L, new CrmTaskFilterDto()))
+		assertThat(crmTaskDao.findTasks(1L, new CrmTaskFilterDto(), Pageable.unpaged()).getContent())
 			.as("task remains visible after its company is deleted")
-			.extracting(CrmTask::getId)
+			.extracting(CrmTaskResponseDto::getId)
 			.contains(taskId);
 
 		assertThat(crmTaskDao.findTaskMetricsByContactId(contactId).getOpenTasksCount())
@@ -521,9 +534,15 @@ class CrmCompanyControllerIntegrationTest {
 			.as("open task summary still counts tasks of a deleted company")
 			.extracting(s -> s.getContactId())
 			.contains(contactId);
-		assertThat(crmTaskDao.countTasksByDealIds(java.util.List.of(dealId)))
+		assertThat(crmTaskDao.countTasksByDealIds(java.util.List.of(dealId), null))
 			.as("deal task count still counts tasks of a deleted company")
 			.containsEntry(dealId, 1L);
+		assertThat(crmTaskDao.countTasksByDealIds(java.util.List.of(dealId), 1L))
+			.as("deal task count scoped to the task owner still counts tasks of a deleted company")
+			.containsEntry(dealId, 1L);
+		assertThat(crmTaskDao.countTasksByDealIds(java.util.List.of(dealId), 2L))
+			.as("deal task count scoped to another owner excludes the task")
+			.doesNotContainKey(dealId);
 	}
 
 	@Test
@@ -667,11 +686,11 @@ class CrmCompanyControllerIntegrationTest {
 		performSearchByDomainRequest("acme.com", 10).andDo(print()).andExpect(status().isForbidden());
 	}
 
-	// --- Company metrics tests ---
+	// --- getCompanies repository projection tests ---
 
 	@Test
 	@DisplayName("Company metrics classify WON and LOST as closed - open metrics exclude both")
-	void getCompanyMetrics_ClassifiesWonAndLostAsClosed() {
+	void getCompanies_ClassifiesWonAndLostAsClosed() {
 		CrmCompany company = createMetricsCompany("metrics classification co");
 		CrmContact contact = createMetricsContact(company, "metrics.classification@example.com");
 
@@ -689,19 +708,20 @@ class CrmCompanyControllerIntegrationTest {
 
 		CrmCompanyMetricsResponseDto metrics = fetchMetrics(company.getId(), "metrics classification co");
 
-		assertThat(new BigDecimal(metrics.getOpenValue()))
+		assertThat(new BigDecimal(metrics.getMetrics().getOpenValue()))
 			.as("open value sums INITIAL + OPEN deals only; WON and LOST are excluded")
 			.isEqualByComparingTo("300");
-		assertThat(new BigDecimal(metrics.getAccountValue())).as("account value sums WON deals only")
+		assertThat(new BigDecimal(metrics.getMetrics().getAccountValue())).as("account value sums WON deals only")
 			.isEqualByComparingTo("400");
-		assertThat(metrics.getClosedDeals()).as("closed deals counts WON deals only").isEqualTo(1L);
-		assertThat(metrics.getOpenDeals()).as("open deals counts INITIAL + OPEN deals only; WON and LOST are excluded")
+		assertThat(metrics.getMetrics().getClosedDealsCount()).as("closed deals counts WON deals only").isEqualTo(1L);
+		assertThat(metrics.getMetrics().getOpenDealsCount())
+			.as("open deals counts INITIAL + OPEN deals only; WON and LOST are excluded")
 			.isEqualTo(2L);
 	}
 
 	@Test
 	@DisplayName("Company metrics for a LOST-only company - reports zero open and zero closed")
-	void getCompanyMetrics_LostOnlyCompany_ReportsZeroOpenAndZeroClosed() {
+	void getCompanies_LostOnlyCompany_ReportsZeroOpenAndZeroClosed() {
 		CrmCompany company = createMetricsCompany("metrics lost only co");
 		CrmContact contact = createMetricsContact(company, "metrics.lostonly@example.com");
 
@@ -711,22 +731,27 @@ class CrmCompanyControllerIntegrationTest {
 
 		CrmCompanyMetricsResponseDto metrics = fetchMetrics(company.getId(), "metrics lost only co");
 
-		assertThat(new BigDecimal(metrics.getOpenValue())).as("LOST deals are not open, so open value is zero")
+		assertThat(new BigDecimal(metrics.getMetrics().getOpenValue()))
+			.as("LOST deals are not open, so open value is zero")
 			.isEqualByComparingTo("0");
-		assertThat(new BigDecimal(metrics.getAccountValue())).as("LOST deals are not WON, so account value is zero")
+		assertThat(new BigDecimal(metrics.getMetrics().getAccountValue()))
+			.as("LOST deals are not WON, so account value is zero")
 			.isEqualByComparingTo("0");
-		assertThat(metrics.getClosedDeals()).as("LOST deals are not WON, so closed deal count is zero").isEqualTo(0L);
-		assertThat(metrics.getOpenDeals()).as("LOST deals are not open, so open deal count is zero").isEqualTo(0L);
+		assertThat(metrics.getMetrics().getClosedDealsCount())
+			.as("LOST deals are not WON, so closed deal count is zero")
+			.isEqualTo(0L);
+		assertThat(metrics.getMetrics().getOpenDealsCount()).as("LOST deals are not open, so open deal count is zero")
+			.isEqualTo(0L);
 	}
 
 	@Test
 	@DisplayName("Company metrics search ranks exact match, then prefix match, then contains match")
-	void getCompanyMetrics_RanksByRelevance() {
+	void getCompanies_RanksByRelevance() {
 		createMetricsCompany("Global Rankacme Partners");
 		createMetricsCompany("Rankacme Corp");
 		createMetricsCompany("Rankacme");
 
-		List<CrmCompanyMetricsResponseDto> metrics = crmCompanyDao.getCompanyMetrics(PageRequest.of(0, 100), "rankacme")
+		List<CrmCompanyMetricsResponseDto> metrics = crmCompanyDao.getCompanies(PageRequest.of(0, 100), "rankacme")
 			.getContent();
 
 		assertThat(metrics).extracting(CrmCompanyMetricsResponseDto::getName)
@@ -734,9 +759,94 @@ class CrmCompanyControllerIntegrationTest {
 			.containsExactly("Rankacme", "Rankacme Corp", "Global Rankacme Partners");
 	}
 
+	// --- getCompanies endpoint tests ---
+
+	@Test
+	@DisplayName("Get companies - Returns flat company fields and nested metrics with seeded values")
+	void getCompanies_HappyPath_ReturnsFlatCompanyFieldsAndMetrics() throws Exception {
+		CrmCompany company = createMetricsCompany("MetricsCoUnique");
+		company.setWebsite("https://metrics-co.com");
+		company.setAddress("123 Metrics St");
+		company.setContactNumber("94771234567");
+		crmCompanyDao.save(company);
+		CrmContact contact = createMetricsContact(company, "metrics.unique@example.com");
+
+		CrmDealStage openStage = createStage("Metrics Open Stage", CrmDealStageType.OPEN, 1);
+		CrmDealStage wonStage = createStage("Metrics Won Stage", CrmDealStageType.WON, 2);
+
+		createDeal("Metrics Open Deal", company, contact, openStage, "200", false);
+		createDeal("Metrics Won Deal", company, contact, wonStage, "400", false);
+
+		ResultActions result = performGetCompaniesRequest("MetricsCoUnique").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['id']").value(company.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("MetricsCoUnique"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['industry']")
+				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['website']").value("https://metrics-co.com"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['address']").value("123 Metrics St"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['contactNumber']").value("94771234567"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['metrics']['openDealsCount']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['metrics']['closedDealsCount']").value(1));
+
+		String content = result.andReturn().getResponse().getContentAsString();
+		String openValue = JsonPath.read(content, "$.results[0].items[0].metrics.openValue");
+		String accountValue = JsonPath.read(content, "$.results[0].items[0].metrics.accountValue");
+		assertThat(new BigDecimal(openValue)).as("open value sums INITIAL + OPEN deals only")
+			.isEqualByComparingTo("200");
+		assertThat(new BigDecimal(accountValue)).as("account value sums WON deals only").isEqualByComparingTo("400");
+	}
+
+	@Test
+	@DisplayName("Get companies - Counts open and overdue tasks")
+	void getCompanies_WithTasks_ReturnsOpenAndOverdueCounts() throws Exception {
+		CrmCompany company = createMetricsCompany("TaskMetricsCoUnique");
+
+		createCompanyTask(company.getId(), LocalDateTime.now().plusDays(5));
+		createCompanyTask(company.getId(), LocalDateTime.now().minusDays(1));
+
+		performGetCompaniesRequest("TaskMetricsCoUnique").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['metrics']['openTasksCount']").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['metrics']['overdueTasksCount']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get companies - No paging params falls back to defaults and returns OK")
+	void getCompanies_NoPagingParams_ReturnsOk() throws Exception {
+		performRequest(get(BASE_PATH).accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+	}
+
+	@Test
+	@DisplayName("Get companies - Search matching nothing returns empty page")
+	void getCompanies_NoMatch_ReturnsEmptyPage() throws Exception {
+		createMetricsCompany("MetricsCoUnique");
+
+		performGetCompaniesRequest("NoSuchCompanyXyz").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items']").isEmpty());
+	}
+
+	@Test
+	@DisplayName("Get companies without CRM role - Returns Forbidden")
+	void getCompanies_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performRequest(get(BASE_PATH).param("page", "0").param("size", "10").accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isForbidden());
+	}
+
 	private CrmCompanyMetricsResponseDto fetchMetrics(Long companyId, String searchKeyword) {
-		List<CrmCompanyMetricsResponseDto> metrics = crmCompanyDao
-			.getCompanyMetrics(PageRequest.of(0, 100), searchKeyword)
+		List<CrmCompanyMetricsResponseDto> metrics = crmCompanyDao.getCompanies(PageRequest.of(0, 100), searchKeyword)
 			.getContent();
 
 		return metrics.stream()

@@ -13,12 +13,15 @@ import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealIdsRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealListReorderRequestDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
+import com.skapp.community.crmplanner.repository.CrmDealOrderIndexDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
+import com.skapp.community.crmplanner.service.CrmDealOrderIndexService;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.crmplanner.type.CrmTaskPriority;
@@ -76,6 +79,8 @@ class CrmDealControllerIntegrationTest {
 
 	private static final String BY_IDS_PATH = BASE_PATH + "/ids";
 
+	private static final String REORDER_PATH = BASE_PATH + "/reorder";
+
 	private final MockMvc mvc;
 
 	private final JwtService jwtService;
@@ -101,6 +106,10 @@ class CrmDealControllerIntegrationTest {
 	private final EmployeeDao employeeDao;
 
 	private final EmployeeRoleDao employeeRoleDao;
+
+	private final CrmDealOrderIndexDao crmDealOrderIndexDao;
+
+	private final CrmDealOrderIndexService crmDealOrderIndexService;
 
 	private String authToken;
 
@@ -129,6 +138,20 @@ class CrmDealControllerIntegrationTest {
 
 	private ResultActions performDeleteRequest(Long id) throws Exception {
 		return performRequest(delete(BASE_PATH + "/{id}", id).accept(MediaType.APPLICATION_JSON));
+	}
+
+	private ResultActions performReorderRequest(CrmDealListReorderRequestDto dto) throws Exception {
+		return performRequest(patch(REORDER_PATH).contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(dto))
+			.accept(MediaType.APPLICATION_JSON));
+	}
+
+	private CrmDealListReorderRequestDto reorderPayload(Long dealId, Long previousDealId, Long nextDealId) {
+		CrmDealListReorderRequestDto dto = new CrmDealListReorderRequestDto();
+		dto.setDealId(dealId);
+		dto.setPreviousDealId(previousDealId);
+		dto.setNextDealId(nextDealId);
+		return dto;
 	}
 
 	private ResultActions performGetExistsRequest(String name) throws Exception {
@@ -224,7 +247,34 @@ class CrmDealControllerIntegrationTest {
 		return crmDealDao.save(deal);
 	}
 
+	private CrmDeal savedDealWithPriority(String name, CrmDealStage stage, CrmCompany company,
+			CrmDealPriority priority) {
+		CrmDeal deal = savedDeal(name, stage, company);
+		deal.setPriority(priority);
+		return crmDealDao.save(deal);
+	}
+
 	// --- Get deals tests ---
+
+	@Test
+	@DisplayName("Get deals sorted by priority - Returns severity order, not alphabetical order")
+	void getDeals_SortByPriority_ReturnsSeverityOrder() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Priority Sort Corp");
+		savedDealWithPriority("Priority High Deal", stage, company, CrmDealPriority.HIGH);
+		savedDealWithPriority("Priority Low Deal", stage, company, CrmDealPriority.LOW);
+		savedDealWithPriority("Priority Medium Deal", stage, company, CrmDealPriority.MEDIUM);
+
+		performRequest(get(BASE_PATH).param("companyId", company.getId().toString())
+			.param("sortKey", "PRIORITY")
+			.accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(3))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['priority']").value("LOW"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][1]['priority']").value("MEDIUM"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][2]['priority']").value("HIGH"));
+	}
 
 	@Test
 	@DisplayName("Get deals filtered by companyId - Returns only deals linked to that company")
@@ -241,6 +291,24 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Deal for company"));
+	}
+
+	@Test
+	@DisplayName("Get deals whose company was soft deleted - Omits the company id")
+	void getDeals_SoftDeletedCompany_MasksCompany() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("List Deleted Co");
+		savedDeal("List Deleted Co Deal", stage, company);
+
+		company.setIsDeleted(true);
+		crmCompanyDao.save(company);
+
+		performGetDealsRequest(company.getId()).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("List Deleted Co Deal"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['companyId']").doesNotExist());
 	}
 
 	@Test
@@ -470,7 +538,7 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Test Deal"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['companyName']").value("Active Corp"));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(company.getId().intValue()));
 	}
 
 	@Test
@@ -488,7 +556,7 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Test Deal"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['companyName']").value(nullValue()));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(nullValue()));
 	}
 
 	@Test
@@ -501,7 +569,22 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Test Deal"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['companyName']").value(nullValue()));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(nullValue()));
+	}
+
+	@Test
+	@DisplayName("Create deal without CRM role - Returns Forbidden")
+	void createDeal_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Forbidden Deal Corp");
+		CrmContact contact = savedContact(company);
+		String nonCrmToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user3@gmail.com"),
+				1L);
+
+		mvc.perform(post(BASE_PATH).contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(validPayload(stage.getId(), contact.getId())))
+			.accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(nonCrmToken))).andDo(print()).andExpect(status().isForbidden());
 	}
 
 	@Test
@@ -530,8 +613,8 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath("$.results[0].name").value("Updated Deal Name"))
 			.andExpect(jsonPath("$.results[0].amount").value("5000.50"))
-			.andExpect(jsonPath("$.results[0].contactName").value("New Contact"))
-			.andExpect(jsonPath("$.results[0].companyName").value("New Company"));
+			.andExpect(jsonPath("$.results[0].contactId").value(newContact.getId().intValue()))
+			.andExpect(jsonPath("$.results[0].companyId").value(newCompany.getId().intValue()));
 	}
 
 	@Test
@@ -555,8 +638,8 @@ class CrmDealControllerIntegrationTest {
 		performPatchRequest(deal.getId(), dto).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].contactName").value("New Contact"))
-			.andExpect(jsonPath("$.results[0].companyName").value("New Corp"));
+			.andExpect(jsonPath("$.results[0].contactId").value(newContact.getId().intValue()))
+			.andExpect(jsonPath("$.results[0].companyId").value(newCompany.getId().intValue()));
 	}
 
 	@Test
@@ -579,8 +662,8 @@ class CrmDealControllerIntegrationTest {
 		performPatchRequest(deal.getId(), dto).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].contactName").value("No Company Contact"))
-			.andExpect(jsonPath("$.results[0].companyName").value(nullValue()));
+			.andExpect(jsonPath("$.results[0].contactId").value(newContact.getId().intValue()))
+			.andExpect(jsonPath("$.results[0].companyId").value(nullValue()));
 	}
 
 	@Test
@@ -608,8 +691,8 @@ class CrmDealControllerIntegrationTest {
 		performPatchRequest(deal.getId(), dto).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].contactName").value("Deleted Company Contact"))
-			.andExpect(jsonPath("$.results[0].companyName").value(nullValue()));
+			.andExpect(jsonPath("$.results[0].contactId").value(newContact.getId().intValue()))
+			.andExpect(jsonPath("$.results[0].companyId").value(nullValue()));
 	}
 
 	@Test
@@ -641,10 +724,9 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['description']").value("Test deal description"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['priority']").value("HIGH"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['contactId']").value(deal.getContact().getId().intValue()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contactName']").value("Deal Test Contact"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['companyName']").value("Deal Company"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['stage']['id']").value(deal.getStage().getId().intValue()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['owner']").exists())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(deal.getCompany().getId().intValue()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['stageId']").value(deal.getStage().getId().intValue()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['ownerId']").exists())
 			.andExpect(jsonPath(RESULTS_0_PATH + "['closingAt']").doesNotExist());
 	}
 
@@ -669,8 +751,25 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(savedDeal.getId().intValue()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("No Company Deal"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['stage']['id']").value(savedDeal.getStage().getId().intValue()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['companyName']").value(nullValue()));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['stageId']").value(savedDeal.getStage().getId().intValue()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(nullValue()));
+	}
+
+	@Test
+	@DisplayName("Get deal by ID whose company was soft deleted - Omits the company id")
+	void getDealById_SoftDeletedCompany_MasksCompany() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Deleted Co");
+		CrmDeal deal = savedDeal("Deleted Co Deal", stage, company);
+
+		company.setIsDeleted(true);
+		crmCompanyDao.save(company);
+
+		performRequest(get(BASE_PATH + "/" + deal.getId()).accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(deal.getId().intValue()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").doesNotExist());
 	}
 
 	@Test
@@ -750,7 +849,7 @@ class CrmDealControllerIntegrationTest {
 		performPatchRequest(deal.getId(), dto).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].stage.name").value(newStage.getName()));
+			.andExpect(jsonPath("$.results[0].stageId").value(newStage.getId().intValue()));
 	}
 
 	@Test
@@ -818,6 +917,25 @@ class CrmDealControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Edit a deal owned by someone else as a sales rep - Returns Bad Request")
+	void editDeal_SalesRepEditingOthersDeal_ReturnsBadRequest() throws Exception {
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+
+		// Deal owned by admin (employee 1)
+		CrmDeal deal = savedDeal();
+
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
+		dto.setName("Hijacked Deal");
+
+		performPatchRequest(deal.getId(), dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+	}
+
+	@Test
 	@DisplayName("Create deal - invalid owner ID - returns bad request")
 	void createDeal_InvalidOwner_ReturnsBadRequest() throws Exception {
 		CrmDealStage stage = savedStage();
@@ -866,7 +984,7 @@ class CrmDealControllerIntegrationTest {
 		performPatchRequest(deal.getId(), dto).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].owner.employeeId").value(2L));
+			.andExpect(jsonPath("$.results[0].ownerId").value(2L));
 	}
 
 	@Test
@@ -1004,7 +1122,7 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'].length()").value(7))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['field']").value("DEAL_NAME"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['field']").value("NAME"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['width']").value(400))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['sort']").value(nullValue()));
 	}
@@ -1012,28 +1130,28 @@ class CrmDealControllerIntegrationTest {
 	@Test
 	@DisplayName("Update then get list-view config - Round-trips the saved config")
 	void updateThenGetListViewConfig_RoundTripsSavedConfig() throws Exception {
-		String config = "{\"fields\":[{\"field\":\"VALUE\",\"width\":200}],\"sort\":{\"field\":\"VALUE\",\"direction\":\"ASC\"}}";
+		String config = "{\"fields\":[{\"field\":\"AMOUNT\",\"width\":200}],\"sort\":{\"field\":\"AMOUNT\",\"direction\":\"ASC\"}}";
 
 		performPutListViewConfigRequest(config).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['field']").value("VALUE"));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['field']").value("AMOUNT"));
 
 		performGetListViewConfigRequest().andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['field']").value("VALUE"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['field']").value("AMOUNT"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['width']").value(200))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['sort']['field']").value("VALUE"));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['sort']['field']").value("AMOUNT"));
 	}
 
 	@Test
 	@DisplayName("Update list-view config for one user - Does not affect another user's config")
 	void updateListViewConfig_DoesNotAffectAnotherUser() throws Exception {
 		// user1 (admin) saves a custom config
-		String config = "{\"fields\":[{\"field\":\"VALUE\",\"width\":200}],\"sort\":null}";
+		String config = "{\"fields\":[{\"field\":\"AMOUNT\",\"width\":200}],\"sort\":null}";
 		performPutListViewConfigRequest(config).andDo(print()).andExpect(status().isOk());
 
 		// user2 is a CRM sales representative who has never saved a config
@@ -1046,7 +1164,7 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'].length()").value(7))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['field']").value("DEAL_NAME"));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['field']").value("NAME"));
 	}
 
 	@Test
@@ -1255,6 +1373,51 @@ class CrmDealControllerIntegrationTest {
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
 
 		performBatchRequest(List.of(1L)).andDo(print()).andExpect(status().isForbidden());
+	}
+
+	@Test
+	@DisplayName("Reorder deal in list view - repositions the deal's list key between its neighbours")
+	void reorderDealInList_ListView_RepositionsDeal() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Reorder Co");
+		CrmContact contact = savedBatchContact(company, "deal.reorder@example.com");
+		CrmDeal dealA = savedBatchDeal("Reorder Deal A", stage, company, contact, 1L);
+		CrmDeal dealB = savedBatchDeal("Reorder Deal B", stage, company, contact, 1L);
+		CrmDeal dealC = savedBatchDeal("Reorder Deal C", stage, company, contact, 1L);
+		crmDealOrderIndexService.createForNewDeal(dealA);
+		crmDealOrderIndexService.createForNewDeal(dealB);
+		crmDealOrderIndexService.createForNewDeal(dealC);
+
+		performReorderRequest(reorderPayload(dealC.getId(), dealA.getId(), dealB.getId())).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(dealC.getId()));
+
+		String keyA = crmDealOrderIndexDao.findById(dealA.getId()).orElseThrow().getList();
+		String keyB = crmDealOrderIndexDao.findById(dealB.getId()).orElseThrow().getList();
+		String keyC = crmDealOrderIndexDao.findById(dealC.getId()).orElseThrow().getList();
+		assertThat(keyC).isGreaterThan(keyA).isLessThan(keyB);
+	}
+
+	@Test
+	@DisplayName("Reorder deal in list view as Sales Representative on another owner's deal - returns edit-denied error")
+	void reorderDealInList_SalesRepOtherOwner_ReturnsEditDenied() throws Exception {
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Reorder Denial Co");
+		CrmContact contact = savedBatchContact(company, "deal.reorder.denial@example.com");
+		CrmDeal target = savedBatchDeal("Admin Owned Reorder Deal", stage, company, contact, 1L);
+		CrmDeal neighbour = savedBatchDeal("Admin Owned Neighbour Deal", stage, company, contact, 1L);
+
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performReorderRequest(reorderPayload(target.getId(), neighbour.getId(), null)).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['message']")
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_EDIT_DENIED)));
 	}
 
 }

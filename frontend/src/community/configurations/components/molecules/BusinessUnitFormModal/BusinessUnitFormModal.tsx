@@ -6,7 +6,7 @@ import {
   TextArea
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import { FC } from "react";
+import { ChangeEvent, FC } from "react";
 
 import {
   useCreateBusinessUnit,
@@ -113,6 +113,15 @@ const BusinessUnitFormModal: FC<Props> = ({
     onSubmit: handleSubmit
   });
 
+  const handleFieldChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    if (formik.errors[e.target.name as keyof BusinessUnitFormValues]) {
+      formik.setFieldError(e.target.name, undefined);
+    }
+    formik.handleChange(e);
+  };
+
   const handleClose = () => {
     if (isPending) return;
     formik.resetForm();
@@ -129,13 +138,14 @@ const BusinessUnitFormModal: FC<Props> = ({
         "form",
         isEdit ? "editModalTitle" : "addModalTitle"
       ])}
+      closeButtonAriaLabel={translateText(["form", "closeButtonAriaLabel"])}
       content={
         <div className="flex flex-col gap-4">
           <InputField
             label={translateText(["form", "nameLabel"])}
             name="name"
             value={formik.values.name}
-            onChange={formik.handleChange}
+            onChange={handleFieldChange}
             onBlur={formik.handleBlur}
             placeholder={translateText(["form", "namePlaceholder"])}
             errorMessage={formik.errors.name}
@@ -147,7 +157,7 @@ const BusinessUnitFormModal: FC<Props> = ({
             label={translateText(["form", "descriptionLabel"])}
             name="description"
             value={formik.values.description}
-            onChange={formik.handleChange}
+            onChange={handleFieldChange}
             onBlur={formik.handleBlur}
             placeholder={translateText(["form", "descriptionPlaceholder"])}
             errorMessage={formik.errors.description}

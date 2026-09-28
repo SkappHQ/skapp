@@ -7,18 +7,15 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useCreateCompany } from "~community/crm/v2/api/CompanyApi";
 import CompanyModalForm from "~community/crm/v2/components/molecules/CompanyModalForm/CompanyModalForm";
+import { CrmIndustryEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmCompanyEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import {
-  getCompanyFormInitialValues,
-  getTrimmedCompanyValues
-} from "~community/crm/v2/utils/companyUtil";
 import { getCompanyValidationSchema } from "~community/crm/v2/utils/companyValidations";
 
 const AddCompanyModalContent: FC = () => {
   const { setToastMessage } = useToast();
 
-  const translateText = useTranslator("crmModule", "companies", "companyModal");
+  const translateText = useTranslator("crmModuleV2");
 
   const {
     companies,
@@ -37,7 +34,13 @@ const AddCompanyModalContent: FC = () => {
   );
 
   const formik = useFormik<CrmCompanyEntity>({
-    initialValues: getCompanyFormInitialValues(),
+    initialValues: {
+      name: "",
+      industry: CrmIndustryEnum.NONE,
+      website: "",
+      address: "",
+      contactNumber: ""
+    },
     onSubmit: (values) => createCompany(values),
     validationSchema: getCompanyValidationSchema(translateText),
     validateOnChange: false,
@@ -63,8 +66,18 @@ const AddCompanyModalContent: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["toastMessages", "add", "successTitle"]),
-      description: translateText(["toastMessages", "add", "successDescription"])
+      title: translateText([
+        "companies",
+        "modal",
+        "toastMessages",
+        "addSuccessTitle"
+      ]),
+      description: translateText([
+        "companies",
+        "modal",
+        "toastMessages",
+        "addSuccessDescription"
+      ])
     });
   };
 
@@ -73,8 +86,18 @@ const AddCompanyModalContent: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["toastMessages", "errorTitle"]),
-      description: translateText(["toastMessages", "add", "errorDescription"])
+      title: translateText([
+        "companies",
+        "modal",
+        "toastMessages",
+        "errorTitle"
+      ]),
+      description: translateText([
+        "companies",
+        "modal",
+        "toastMessages",
+        "addErrorDescription"
+      ])
     });
   };
 
@@ -84,14 +107,19 @@ const AddCompanyModalContent: FC = () => {
   );
 
   const createCompany = (values: CrmCompanyEntity) => {
-    createNewCompany(getTrimmedCompanyValues(values));
+    createNewCompany({
+      name: values.name?.trim(),
+      industry: values.industry,
+      website: values.website?.trim(),
+      address: values.address?.trim(),
+      contactNumber: values.contactNumber?.trim()
+    });
   };
 
   return (
     <CompanyModalForm
       formik={formik}
       isPending={isPending}
-      translateText={translateText}
       onCancel={handleCloseModal}
     />
   );

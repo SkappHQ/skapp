@@ -1,5 +1,6 @@
 import { NextPage } from "next";
 import { useEffect, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
@@ -20,10 +21,10 @@ const JobFamily: NextPage = () => {
   const { isPeopleAdmin } = useSessionData();
 
   const { setAllJobFamilies, setJobFamilyModalType } = usePeopleStore(
-    (state) => ({
+    useShallow((state) => ({
       setAllJobFamilies: state.setAllJobFamilies,
       setJobFamilyModalType: state.setJobFamilyModalType
-    })
+    }))
   );
 
   const [jobFamilySearchTerm, setJobFamilySearchTerm] = useState<string>("");

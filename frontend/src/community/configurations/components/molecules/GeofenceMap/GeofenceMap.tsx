@@ -5,9 +5,9 @@ import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import GeofenceMapView from "~community/configurations/components/molecules/GeofenceSelectorModal/GeofenceMapView";
+import GeofenceSelectorModal from "~community/configurations/components/molecules/GeofenceSelectorModal/GeofenceSelectorModal";
 import { useWorkLocationStore } from "~community/configurations/stores/workLocationStore";
 import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
-import GeofenceSelectorModal from "~community/configurations/components/molecules/GeofenceSelectorModal/GeofenceSelectorModal";
 
 interface Props {
   formik: FormikProps<WorkLocationFormValues>;
@@ -19,8 +19,7 @@ const GeofenceMap = ({ formik }: Props) => {
   const { setIsGeofenceModalOpen, setTempGeofence } = useWorkLocationStore();
 
   const geofence = formik.values.geofence;
-  const hasGeofence =
-    geofence?.latitude != null && geofence?.longitude != null;
+  const hasGeofence = geofence?.latitude != null && geofence?.longitude != null;
 
   const handleOpenModal = () => {
     if (geofence) {
@@ -36,9 +35,7 @@ const GeofenceMap = ({ formik }: Props) => {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <p className="subtitle1">
-          {translateText(["form.geofenceTitle"])}
-        </p>
+        <p className="subtitle1">{translateText(["form.geofenceTitle"])}</p>
         {hasGeofence && (
           <div className="flex items-center gap-2">
             <IconButton

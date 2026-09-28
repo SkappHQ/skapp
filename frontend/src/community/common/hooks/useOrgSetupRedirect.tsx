@@ -16,9 +16,13 @@ const useOrgSetupRedirect = () => {
       if (orgSetupStatus.isSignUpCompleted) {
         let targetPath: string;
         if (orgSetupStatus.isOrganizationSetupCompleted) {
-          targetPath = isAuthenticated ? ROUTES.DASHBOARD.BASE : ROUTES.AUTH.SIGNIN;
+          targetPath = isAuthenticated
+            ? ROUTES.DASHBOARD.BASE
+            : ROUTES.AUTH.SIGNIN;
         } else {
-          targetPath = isAuthenticated ? ROUTES.ORGANIZATION.SETUP : ROUTES.AUTH.SIGNUP;
+          targetPath = isAuthenticated
+            ? ROUTES.ORGANIZATION.SETUP
+            : ROUTES.AUTH.SIGNUP;
         }
 
         if (router.pathname !== targetPath) {

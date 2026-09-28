@@ -21,8 +21,8 @@ public class CrmContactResponseDto {
 
 	private LocalDateTime lastModifiedDate;
 
-	private CrmCompanyLookupResponseDto company;
+	private Long companyId;
 
-	private CrmContactOwnerResponseDto owner;
+	private Long ownerId;
 
 }

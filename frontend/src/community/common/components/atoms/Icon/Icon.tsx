@@ -1,4 +1,4 @@
-import { HandshakeIcon } from "@rootcodelabs/skapp-ui";
+import { HandshakeIcon, ReportIcon } from "@rootcodelabs/skapp-ui";
 import { JSX } from "react";
 
 import AddIcon from "~community/common/assets/Icons/AddIcon";
@@ -325,6 +325,7 @@ export const IconMapping: Partial<
   [IconName.GEM_ICON]: GemIcon,
   [IconName.DOWNLOAD_DOCUMENT_ICON]: DownloadDocumentIcon,
   [IconName.PROJECTS_ICON]: ProjectsIcon,
+  [IconName.REPORT_ICON]: ReportIcon,
   [IconName.INTEGRATIONS_ICON]: IntegrationsIcon,
   [IconName.INSTAGRAM_ICON]: InstagramIcon,
   [IconName.INVOICE_ICON]: InvoiceIcon,

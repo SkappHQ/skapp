@@ -1,5 +1,6 @@
 import { AxiosError } from "axios";
 import { useRouter } from "next/router";
+import { useShallow } from "zustand/react/shallow";
 
 import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -45,19 +46,23 @@ const usePolicyLeaveTypeFormSubmit = ({
 
   const { sendEvent } = useGoogleAnalyticsEvent();
 
-  const { setLeaveTypeFormDirty } = useLeaveStore((state) => ({
-    setLeaveTypeFormDirty: state.setLeaveTypeFormDirty
-  }));
+  const { setLeaveTypeFormDirty } = useLeaveStore(
+    useShallow((state) => ({
+      setLeaveTypeFormDirty: state.setLeaveTypeFormDirty
+    }))
+  );
 
   const {
     ongoingQuickSetup,
     setQuickSetupModalType,
     stopAllOngoingQuickSetup
-  } = useCommonEnterpriseStore((state) => ({
-    ongoingQuickSetup: state.ongoingQuickSetup,
-    setQuickSetupModalType: state.setQuickSetupModalType,
-    stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
-  }));
+  } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      ongoingQuickSetup: state.ongoingQuickSetup,
+      setQuickSetupModalType: state.setQuickSetupModalType,
+      stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
+    }))
+  );
 
   const onMutationSuccess = async (isEdit: boolean) => {
     setToastMessage({

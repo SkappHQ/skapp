@@ -269,12 +269,7 @@ public class EmployeeTeamRepositoryImpl implements EmployeeTeamRepository {
 		predicates.add(PeopleUtil.notGuestEmployeePredicate(criteriaBuilder, roleJoin));
 
 		if (teams == null || teams.isEmpty() || teams.contains(-1L)) {
-			if (isAdmin) {
-				Join<Employee, User> userJoin = employeeRoot.join(Employee_.user);
-				Predicate isActivePredicate = criteriaBuilder.isTrue(userJoin.get(User_.isActive));
-				predicates.add(isActivePredicate);
-			}
-			else {
+			if (!isAdmin) {
 				Subquery<Long> managedEmployeesSubquery = criteriaQuery.subquery(Long.class);
 				Root<EmployeeManager> managerRoot = managedEmployeesSubquery.from(EmployeeManager.class);
 				managedEmployeesSubquery.select(managerRoot.get(EmployeeManager_.employee).get(Employee_.employeeId))

@@ -13,12 +13,12 @@ import { useShallow } from "zustand/react/shallow";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { useGetDealsGroupedByStages } from "~community/crm/v2/api/BoardApi";
+import DealStageLaneV2 from "~community/crm/v2/components/molecules/DealStageLaneV2/DealStageLaneV2";
 import {
   DEFAULT_BOARD_PAGE_SIZE,
   DRAG_ACTIVATION_DISTANCE
-} from "~community/crm/constants/boardConstants";
-import { useGetDealsGroupedByStages } from "~community/crm/v2/api/BoardApi";
-import DealStageLaneV2 from "~community/crm/v2/components/molecules/DealStageLaneV2/DealStageLaneV2";
+} from "~community/crm/v2/constants/boardConstants";
 import { useKanbanDragV2 } from "~community/crm/v2/hooks/useKanbanDragV2";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
@@ -43,27 +43,53 @@ const DealsKanbanBoardV2: FC<DealsKanbanBoardV2Props> = ({
     useSensor(KeyboardSensor)
   );
 
-  const translateText = useTranslator("crmModule", "deals", "kanban");
+  const translateText = useTranslator("crmModuleV2");
   const { setToastMessage } = useToast();
 
   const handleMoveError = (): void => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["toastMessages", "moveErrorTitle"]),
-      description: translateText(["toastMessages", "moveErrorDescription"])
+      title: translateText([
+        "deals",
+        "board",
+        "toastMessages",
+        "moveErrorTitle"
+      ]),
+      description: translateText([
+        "deals",
+        "board",
+        "toastMessages",
+        "moveErrorDescription"
+      ])
     });
   };
 
-  const { stages, setPreselectedStageId, setSelectedDealId, openCrmSidePanel } =
-    useCrmStoreV2(
-      useShallow((store) => ({
-        stages: store.stages,
-        setPreselectedStageId: store.setPreselectedStageId,
-        setSelectedDealId: store.setSelectedDealId,
-        openCrmSidePanel: store.openCrmSidePanel
-      }))
-    );
+  const {
+    stages,
+    deals,
+    board,
+    dealIds,
+    setDeals,
+    setBoardColumn,
+    setDealIds,
+    setPreselectedStageId,
+    setSelectedDealId,
+    openCrmSidePanel
+  } = useCrmStoreV2(
+    useShallow((store) => ({
+      stages: store.stages,
+      deals: store.deals,
+      board: store.board,
+      dealIds: store.dealIds,
+      setDeals: store.setDeals,
+      setBoardColumn: store.setBoardColumn,
+      setDealIds: store.setDealIds,
+      setPreselectedStageId: store.setPreselectedStageId,
+      setSelectedDealId: store.setSelectedDealId,
+      openCrmSidePanel: store.openCrmSidePanel
+    }))
+  );
 
   const stageIds = useMemo(() => getBoardStageIds(stages), [stages]);
 
@@ -74,11 +100,12 @@ const DealsKanbanBoardV2: FC<DealsKanbanBoardV2Props> = ({
 
   useEffect(() => {
     if (boardData) {
-      const store = useCrmStoreV2.getState();
-      const next = ingestBoardStageDeals(store, boardData, { append: false });
-      store.setDeals(next.deals);
-      store.setBoardColumn(next.board);
-      store.setDealIds(next.dealIds);
+      const next = ingestBoardStageDeals({ deals, board, dealIds }, boardData, {
+        append: false
+      });
+      setDeals(next.deals);
+      setBoardColumn(next.board);
+      setDealIds(next.dealIds);
     }
   }, [boardData]);
 

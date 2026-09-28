@@ -65,10 +65,6 @@ const PolicyLeaveRequests: FC = () => {
       label: translateText(["myLeaveRequests", "type"]).toLocaleUpperCase()
     },
     {
-      id: "policy",
-      label: translateText(["myLeaveRequests", "policy"]).toLocaleUpperCase()
-    },
-    {
       id: "status",
       label: translateText(["myLeaveRequests", "status"]).toLocaleUpperCase()
     }
@@ -93,7 +89,6 @@ const PolicyLeaveRequests: FC = () => {
             {leaveRequest.leaveType.name}
           </div>
         ),
-        policy: leaveRequest.policyName,
         status: (
           <div className={`${CHIP_CLASSES} capitalize`}>
             <span role="img" aria-hidden="true">

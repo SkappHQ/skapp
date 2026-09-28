@@ -30,7 +30,7 @@ const BrandingDetails = ({
   formik,
   companyLogo,
   fileName,
-  handleFileAttachments,
+  handleFileAttachments
 }: BrandingDetailsProps): JSX.Element => {
   const translateText = useTranslator("settings");
 

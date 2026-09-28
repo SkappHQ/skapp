@@ -1,5 +1,5 @@
 import { useTheme } from "@mui/material/styles";
-import "@testing-library/jest-dom/extend-expect";
+import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 
 import ShowSelectedFilters from "./ShowSelectedFilters";

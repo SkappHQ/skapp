@@ -10,8 +10,9 @@ export const calculateWorkedDuration = (
 
   if (
     (slotType === AttendanceSlotType.START ||
-    slotType === AttendanceSlotType.RESUME ||
-    slotType === AttendanceSlotType.END) && slotStartTime
+      slotType === AttendanceSlotType.RESUME ||
+      slotType === AttendanceSlotType.END) &&
+    slotStartTime
   ) {
     const startTime = new Date(slotStartTime);
     const currentTime = new Date();

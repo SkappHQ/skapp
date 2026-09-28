@@ -1,21 +1,22 @@
-import { MapMouseEvent } from "@vis.gl/react-google-maps";
 import { LargeModal } from "@rootcodelabs/skapp-ui";
+import { MapMouseEvent } from "@vis.gl/react-google-maps";
 import { FormikProps } from "formik";
 import { useCallback } from "react";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { ToastType } from "~community/common/enums/ComponentEnums";
-import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
-import { useWorkLocationStore } from "~community/configurations/stores/workLocationStore";
 import {
-  MIN_RADIUS,
-  MAX_RADIUS
+  MAX_RADIUS,
+  MIN_RADIUS
 } from "~community/configurations/constants/workLocationConstants";
+import { useWorkLocationStore } from "~community/configurations/stores/workLocationStore";
+import { WorkLocationFormValues } from "~community/configurations/types/WorkLocationTypes";
 import {
   formatRadius,
   reverseGeocode
 } from "~community/configurations/utils/geofenceUtils";
+
 import AddressSearch from "./AddressSearch";
 import GeofenceMapView from "./GeofenceMapView";
 
@@ -78,7 +79,13 @@ const GeofenceSelectorModal = ({ formik }: Props) => {
         });
       }
     },
-    [tempGeofence, setTempGeofence, updateTempGeofence, setToastMessage, translateText]
+    [
+      tempGeofence,
+      setTempGeofence,
+      updateTempGeofence,
+      setToastMessage,
+      translateText
+    ]
   );
 
   const handleSearchResult = useCallback(
@@ -170,7 +177,9 @@ const GeofenceSelectorModal = ({ formik }: Props) => {
             <AddressSearch
               onResult={handleSearchResult}
               onError={handleSearchError}
-              searchPlaceholder={translateText(["form.addressSearchPlaceholder"])}
+              searchPlaceholder={translateText([
+                "form.addressSearchPlaceholder"
+              ])}
             />
             {tempGeofence?.address && (
               <span className="body3 block mt-2 text-secondary-text">

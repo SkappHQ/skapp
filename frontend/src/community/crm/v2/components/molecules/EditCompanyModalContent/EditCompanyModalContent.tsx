@@ -7,13 +7,12 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useEditCompany } from "~community/crm/v2/api/CompanyApi";
 import CompanyModalForm from "~community/crm/v2/components/molecules/CompanyModalForm/CompanyModalForm";
+import { CrmIndustryEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmCompanyEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
   getChangedCompanyFields,
-  getCompanyFormInitialValues,
   getSelectedCompany,
-  getTrimmedCompanyValues,
   updateCompany
 } from "~community/crm/v2/utils/companyUtil";
 import { getCompanyValidationSchema } from "~community/crm/v2/utils/companyValidations";
@@ -21,7 +20,7 @@ import { getCompanyValidationSchema } from "~community/crm/v2/utils/companyValid
 const EditCompanyModalContent: FC = () => {
   const { setToastMessage } = useToast();
 
-  const translateText = useTranslator("crmModule", "companies", "companyModal");
+  const translateText = useTranslator("crmModuleV2");
 
   const { companies, selectedCompanyId, setCompanies, setIsCompanyModalOpen } =
     useCrmStoreV2(
@@ -36,7 +35,13 @@ const EditCompanyModalContent: FC = () => {
   const selectedCompany = getSelectedCompany(companies, selectedCompanyId);
 
   const initialValues = useMemo(
-    () => getCompanyFormInitialValues(selectedCompany),
+    () => ({
+      name: selectedCompany?.name ?? "",
+      industry: selectedCompany?.industry ?? CrmIndustryEnum.NONE,
+      website: selectedCompany?.website ?? "",
+      address: selectedCompany?.address ?? "",
+      contactNumber: selectedCompany?.contactNumber ?? ""
+    }),
     [selectedCompany]
   );
 
@@ -66,11 +71,17 @@ const EditCompanyModalContent: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["toastMessages", "edit", "successTitle"]),
-      description: translateText([
+      title: translateText([
+        "companies",
+        "modal",
         "toastMessages",
-        "edit",
-        "successDescription"
+        "editSuccessTitle"
+      ]),
+      description: translateText([
+        "companies",
+        "modal",
+        "toastMessages",
+        "editSuccessDescription"
       ])
     });
   };
@@ -80,8 +91,18 @@ const EditCompanyModalContent: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["toastMessages", "errorTitle"]),
-      description: translateText(["toastMessages", "edit", "errorDescription"])
+      title: translateText([
+        "companies",
+        "modal",
+        "toastMessages",
+        "errorTitle"
+      ]),
+      description: translateText([
+        "companies",
+        "modal",
+        "toastMessages",
+        "editErrorDescription"
+      ])
     });
   };
 
@@ -93,10 +114,13 @@ const EditCompanyModalContent: FC = () => {
   const submitEditCompany = (values: CrmCompanyEntity) => {
     if (selectedCompanyId === null) return;
 
-    const changedFields = getChangedCompanyFields(
-      initialValues,
-      getTrimmedCompanyValues(values)
-    );
+    const changedFields = getChangedCompanyFields(initialValues, {
+      name: values.name?.trim(),
+      industry: values.industry,
+      website: values.website?.trim(),
+      address: values.address?.trim(),
+      contactNumber: values.contactNumber?.trim()
+    });
 
     if (Object.keys(changedFields).length === 0) {
       handleCloseModal();
@@ -110,7 +134,6 @@ const EditCompanyModalContent: FC = () => {
     <CompanyModalForm
       formik={formik}
       isPending={isPending}
-      translateText={translateText}
       originalName={selectedCompany?.name}
       onCancel={handleCloseModal}
     />

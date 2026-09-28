@@ -1,4 +1,4 @@
-import { Box, IconButton, Typography } from "@mui/material";
+import { Box, CircularProgress, IconButton, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { Badge, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/navigation";
@@ -35,10 +35,7 @@ import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
-import {
-  concatStrings,
-  pascalCaseFormatter
-} from "~community/common/utils/commonUtil";
+import { pascalCaseFormatter } from "~community/common/utils/commonUtil";
 import { formatDateWithOrdinalIndicator } from "~community/common/utils/dateTimeUtils";
 
 import TimesheetRequestFilterBody from "../TimesheetRequestFilterBody/TimesheetRequestFilterBody";
@@ -49,9 +46,11 @@ interface Props {
   isRequestLoading?: boolean;
   totalHours?: number;
   hasFullList?: boolean;
-  approveTimesheetRequest: (timeRequestId: number, name: string) => void;
-  declineTimesheetRequest: (timeRequestId: number, name: string) => void;
+  approveTimesheetRequest: (timeRequestId: number) => void;
+  declineTimesheetRequest: (timeRequestId: number) => void;
   isApproveDenyLoading?: boolean;
+  pendingTimeRequestId?: number | null;
+  pendingRequestAction?: string;
   tableName: TableNames;
 }
 
@@ -63,6 +62,8 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
   approveTimesheetRequest,
   declineTimesheetRequest,
   isApproveDenyLoading,
+  pendingTimeRequestId,
+  pendingRequestAction,
   tableName
 }) => {
   const theme: Theme = useTheme();
@@ -83,6 +84,14 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
   } = useAttendanceStore((state) => state);
 
   const { filterCount } = useTimesheetRequestFilterState(true, hasFullList);
+
+  const isRequestActionPending = (
+    timeRequestId: number,
+    action: TimeSheetRequestStates
+  ): boolean =>
+    Boolean(isApproveDenyLoading) &&
+    pendingTimeRequestId === timeRequestId &&
+    pendingRequestAction === action;
 
   const onSuccess = () => {
     setToastMessage({
@@ -269,6 +278,11 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
                 backgroundColor: theme.palette.grey[100],
                 margin: "0rem 0.75rem 0rem auto"
               }}
+              disabled={isApproveDenyLoading}
+              aria-busy={isRequestActionPending(
+                timesheetRequest?.timeRequestId,
+                TimeSheetRequestStates.DENIED
+              )}
               aria-label={translateText(["declineButton.label"], {
                 recordName: `${timesheetRequest?.employee?.firstName} ${timesheetRequest?.employee?.lastName}`
               })}
@@ -276,16 +290,17 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
                 recordName: `${timesheetRequest?.employee?.firstName} ${timesheetRequest?.employee?.lastName}`
               })}
               onClick={() => {
-                declineTimesheetRequest(
-                  timesheetRequest?.timeRequestId,
-                  concatStrings([
-                    timesheetRequest?.employee?.firstName as string,
-                    timesheetRequest?.employee?.lastName as string
-                  ])
-                );
+                declineTimesheetRequest(timesheetRequest?.timeRequestId);
               }}
             >
-              <CloseIcon fill={"black"} />
+              {isRequestActionPending(
+                timesheetRequest?.timeRequestId,
+                TimeSheetRequestStates.DENIED
+              ) ? (
+                <CircularProgress size={20} />
+              ) : (
+                <CloseIcon fill="black" />
+              )}
             </IconButton>
             <IconButton
               sx={{
@@ -293,6 +308,11 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
                 border: `0.0625rem solid ${theme.palette.secondary.dark}`,
                 margin: "0rem auto 0rem 0rem"
               }}
+              disabled={isApproveDenyLoading}
+              aria-busy={isRequestActionPending(
+                timesheetRequest?.timeRequestId,
+                TimeSheetRequestStates.APPROVED
+              )}
               aria-label={translateText(["approveButton.label"], {
                 recordName: `${timesheetRequest?.employee?.firstName} ${timesheetRequest?.employee?.lastName}`
               })}
@@ -300,16 +320,17 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
                 recordName: `${timesheetRequest?.employee?.firstName} ${timesheetRequest?.employee?.lastName}`
               })}
               onClick={() => {
-                approveTimesheetRequest(
-                  timesheetRequest?.timeRequestId,
-                  concatStrings([
-                    timesheetRequest?.employee?.firstName as string,
-                    timesheetRequest?.employee?.lastName as string
-                  ])
-                );
+                approveTimesheetRequest(timesheetRequest?.timeRequestId);
               }}
             >
-              <CheckIcon fill={theme.palette.primary.dark} />
+              {isRequestActionPending(
+                timesheetRequest?.timeRequestId,
+                TimeSheetRequestStates.APPROVED
+              ) ? (
+                <CircularProgress size={20} />
+              ) : (
+                <CheckIcon fill={theme.palette.primary.dark} />
+              )}
             </IconButton>
           </>
         ) : (

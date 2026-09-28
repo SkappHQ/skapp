@@ -1,4 +1,4 @@
-import "@testing-library/jest-dom/extend-expect";
+import "@testing-library/jest-dom";
 import { renderHook, waitFor } from "@testing-library/react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -149,8 +149,8 @@ describe("useInitializeCrmData", () => {
     expect(mockSetToastMessage).toHaveBeenCalledWith({
       open: true,
       toastType: ToastType.ERROR,
-      title: "errorTitle",
-      description: "errorDescription"
+      title: "common.initData.errorTitle",
+      description: "common.initData.errorDescription"
     });
 
     const state = useCrmStoreV2.getState();

@@ -74,8 +74,7 @@ public class CrmContactController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get CRM contact by ID",
-			description = "Returns full contact details including metrics, deals, and tasks.")
+	@Operation(summary = "Get CRM contact by ID", description = "Returns the base details of a single contact.")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	@GetMapping("/{id}")
 	public ResponseEntity<ResponseEntityDto> getContactById(@PathVariable Long id) {
@@ -92,12 +91,12 @@ public class CrmContactController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get contact metrics",
-			description = "Returns a paginated list of contacts with closed-deal and open-task metrics.")
+	@Operation(summary = "Get contacts",
+			description = "Returns a paginated list of contacts, each with its base details and metrics.")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
-	@GetMapping("/metrics")
-	public ResponseEntity<ResponseEntityDto> getContactMetrics(CrmContactMetricRequestDto filterDto) {
-		ResponseEntityDto response = contactService.getContactMetrics(filterDto);
+	@GetMapping
+	public ResponseEntity<ResponseEntityDto> getContacts(CrmContactMetricRequestDto filterDto) {
+		ResponseEntityDto response = contactService.getContacts(filterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

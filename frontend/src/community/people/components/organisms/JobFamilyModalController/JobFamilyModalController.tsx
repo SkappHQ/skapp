@@ -1,5 +1,6 @@
 import { SmallModal } from "@rootcodelabs/skapp-ui";
 import { Dispatch, FC, ReactNode, SetStateAction, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -41,18 +42,22 @@ const JobFamilyModalController: FC<Props> = ({ setLatestRoleLabel, from }) => {
     currentEditingJobFamily,
     allJobFamilies,
     setJobFamilyModalType
-  } = usePeopleStore((state) => ({
-    currentTransferMembersData: state.currentTransferMembersData,
-    isJobFamilyModalOpen: state.isJobFamilyModalOpen,
-    jobFamilyModalType: state.jobFamilyModalType,
-    currentEditingJobFamily: state.currentEditingJobFamily,
-    allJobFamilies: state.allJobFamilies,
-    setJobFamilyModalType: state.setJobFamilyModalType
-  }));
+  } = usePeopleStore(
+    useShallow((state) => ({
+      currentTransferMembersData: state.currentTransferMembersData,
+      isJobFamilyModalOpen: state.isJobFamilyModalOpen,
+      jobFamilyModalType: state.jobFamilyModalType,
+      currentEditingJobFamily: state.currentEditingJobFamily,
+      allJobFamilies: state.allJobFamilies,
+      setJobFamilyModalType: state.setJobFamilyModalType
+    }))
+  );
 
-  const { stopAllOngoingQuickSetup } = useCommonEnterpriseStore((state) => ({
-    stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
-  }));
+  const { stopAllOngoingQuickSetup } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
+    }))
+  );
 
   const hasDataChanged: boolean = useMemo(() => {
     return checkDataChanges(

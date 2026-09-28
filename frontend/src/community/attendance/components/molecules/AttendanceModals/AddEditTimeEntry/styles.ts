@@ -28,6 +28,10 @@ const styles = (theme: Theme) => ({
   inputField: {
     pt: "1rem"
   },
+  disabledInputFieldLabel: {
+    color: theme.palette.text.disabled,
+    fontWeight: theme.typography.label.fontWeight
+  },
   button: {
     mt: "1rem"
   }

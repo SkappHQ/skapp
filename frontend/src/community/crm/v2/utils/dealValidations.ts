@@ -4,43 +4,55 @@ import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import {
   DEAL_DESCRIPTION_MAX_LENGTH,
   DEAL_NAME_MAX_LENGTH
-} from "~community/crm/constants/dealConstants";
-import { isDealNameValid } from "~community/crm/regex/crmRegexPatterns";
+} from "~community/crm/v2/constants/dealConstants";
 import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
+import { isDealNameValid } from "~community/crm/v2/regex/crmRegexPatterns";
 
 export const dealNameValidation = (translator: TranslatorFunctionType) =>
   Yup.string()
     .trim()
-    .max(DEAL_NAME_MAX_LENGTH, translator(["validations", "dealNameMaxLength"]))
-    .matches(
-      isDealNameValid(),
-      translator(["validations", "dealNameInvalidChars"])
+    .max(
+      DEAL_NAME_MAX_LENGTH,
+      translator(["deals", "common", "validations", "dealNameMaxLength"])
     )
-    .required(translator(["validations", "dealNameRequired"]));
+    .required(
+      translator(["deals", "common", "validations", "dealNameRequired"])
+    )
+    .matches(isDealNameValid(), {
+      message: translator([
+        "deals",
+        "common",
+        "validations",
+        "dealNameInvalidChars"
+      ]),
+      excludeEmptyString: true
+    });
 
 export const addDealValidations = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
     name: dealNameValidation(translator),
     stageId: Yup.number().required(
-      translator(["validations", "stageRequired"])
+      translator(["deals", "addPanel", "validations", "stageRequired"])
     ),
     contactId: Yup.number().required(
-      translator(["validations", "contactRequired"])
+      translator(["deals", "common", "validations", "contactRequired"])
     ),
     ownerId: Yup.number().required(
-      translator(["validations", "ownerRequired"])
+      translator(["deals", "addPanel", "validations", "ownerRequired"])
     ),
     priority: Yup.mixed<CrmPriorityEnum>()
-      .required(translator(["validations", "priorityRequired"]))
+      .required(
+        translator(["deals", "addPanel", "validations", "priorityRequired"])
+      )
       .oneOf(Object.values(CrmPriorityEnum)),
     amount: Yup.string().test(
       "is-valid-amount",
-      translator(["validations", "amountInvalid"]),
+      translator(["deals", "common", "validations", "amountInvalid"]),
       (value) => !value || Number(value) > 0
     ),
     description: Yup.string().max(
       DEAL_DESCRIPTION_MAX_LENGTH,
-      translator(["validations", "descriptionMaxLength"])
+      translator(["deals", "common", "validations", "descriptionMaxLength"])
     )
   });
 
@@ -76,3 +88,26 @@ export const validateDealDescription = (
   description: string,
   translator: TranslatorFunctionType
 ): string => validateField("description", description, translator);
+
+export const inlineAddDealValidations = (translator: TranslatorFunctionType) =>
+  Yup.object().shape({
+    name: Yup.string()
+      .trim()
+      .max(DEAL_NAME_MAX_LENGTH)
+      .required(
+        translator(["deals", "common", "validations", "dealNameRequired"])
+      )
+      .matches(isDealNameValid(), {
+        message: translator([
+          "deals",
+          "linkedSection",
+          "inlineAdd",
+          "validations",
+          "dealNameInvalidChars"
+        ]),
+        excludeEmptyString: true
+      }),
+    contactId: Yup.string().required(
+      translator(["deals", "common", "validations", "contactRequired"])
+    )
+  });

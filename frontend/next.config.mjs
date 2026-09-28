@@ -3,6 +3,7 @@ const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
+  agentRules: false,
   reactStrictMode: false,
   assetPrefix: isEnterpriseMode ? "/auth" : undefined,
   async rewrites() {
@@ -439,6 +440,22 @@ const nextConfig = {
         destination: "/enterprise/app-link"
       },
       {
+        source: "/report",
+        destination: "/enterprise/report"
+      },
+      {
+        source: "/report/headcount-summary",
+        destination: "/enterprise/report/headcount-summary"
+      },
+      {
+        source: "/report/workforce-demographics",
+        destination: "/enterprise/report/workforce-demographics"
+      },
+      {
+        source: "/report/attendance-overview",
+        destination: "/enterprise/report/attendance-overview"
+      },
+      {
         source: "/crm",
         destination: "/community/crm/contacts"
       },
@@ -455,13 +472,14 @@ const nextConfig = {
         destination: "/community/crm/deals"
       },
       {
+        source: "/crm/deals/:id",
+        destination: "/community/crm/deals/:id"
+      },
+      {
         source: "/crm/tasks",
         destination: "/community/crm/tasks"
       }
     ];
-  },
-  eslint: {
-    ignoreDuringBuilds: true
   },
   typescript: {
     ignoreBuildErrors: true

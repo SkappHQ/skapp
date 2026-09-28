@@ -117,7 +117,10 @@ const AddTeamSelectMembers: FC<Props> = ({
                     isResponsiveLayout={false}
                     chipStyles={{ color: "common.black", p: 0, ml: ".875rem" }}
                   />
-                  <p className="ml-3 text-xs font-normal" style={{ color: "var(--palette-primary-dark)" }}>
+                  <p
+                    className="ml-3 text-xs font-normal"
+                    style={{ color: "var(--palette-primary-dark)" }}
+                  >
                     {`${user?.jobLevel ?? ""} ${user?.jobRole ?? ""}`}
                   </p>
                 </div>
@@ -141,7 +144,16 @@ const AddTeamSelectMembers: FC<Props> = ({
           variant={"error"}
           disabled={!(usersChecked?.length > 0)}
           onClick={handleRemove}
-          icon={<Icon name={IconName.DELETE_BUTTON_ICON} fill={(usersChecked?.length > 0) ? "var(--color-semantic-red-text)" : undefined} />}
+          icon={
+            <Icon
+              name={IconName.DELETE_BUTTON_ICON}
+              fill={
+                usersChecked?.length > 0
+                  ? "var(--color-semantic-red-text)"
+                  : undefined
+              }
+            />
+          }
           iconPosition="end"
         >
           {translateText(["removeFromTeam"])}

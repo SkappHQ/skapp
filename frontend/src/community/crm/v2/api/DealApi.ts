@@ -8,23 +8,28 @@ import {
 } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 
-import authFetch, {
-  authFetchV2
-} from "~community/common/utils/axiosInterceptor";
+import { ErrorResponse } from "~community/common/types/CommonTypes";
+import authFetch from "~community/common/utils/axiosInterceptor";
 import {
   CrmDealEntity,
   CrmStageEntity
 } from "~community/crm/v2/types/CrmCommonTypes";
+import { CrmDealListViewConfig } from "~community/crm/v2/types/CrmListViewConfigTypes";
 import {
   CrmDealFilterRequest,
   CrmDealListResponse,
+  CrmDealReorderRequest,
   CrmDealStageReorderItem,
   CrmExistsResponse
 } from "~community/crm/v2/types/CrmTypes";
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
-import { crmDealEndpoints, crmDealEndpointsV2 } from "./utils/ApiEndpoints";
-import { crmDealQueryKeys } from "./utils/QueryKeys";
+import { crmDealEndpoints } from "./utils/ApiEndpoints";
+import {
+  crmCompanyQueryKeys,
+  crmContactQueryKeys,
+  crmDealQueryKeys
+} from "./utils/QueryKeys";
 
 const fetchDealsByIds = async (ids: number[]): Promise<CrmDealEntity[]> => {
   const response = await authFetch.post(crmDealEndpoints.GET_DEALS_BY_IDS, {
@@ -47,22 +52,11 @@ export const useGetDealsByIds = (
 const fetchDeals = async (
   filters: CrmDealFilterRequest
 ): Promise<CrmDealListResponse> => {
-  const response = await authFetchV2.get(crmDealEndpointsV2.GET_DEALS, {
+  const response = await authFetch.get(crmDealEndpoints.GET_DEALS, {
     params: filters
   });
   return response?.data?.results?.[0];
 };
-
-export const useGetDealLookupV2 = (
-  filters: CrmDealFilterRequest,
-  enabled: boolean
-): UseQueryResult<CrmDealListResponse> =>
-  useQuery({
-    queryKey: crmDealQueryKeys.GET_DEALS(filters),
-    queryFn: () => fetchDeals(filters),
-    enabled,
-    refetchOnWindowFocus: false
-  });
 
 export const useGetDealsInfinite = (
   filters: CrmDealFilterRequest,
@@ -86,15 +80,47 @@ export const useGetDealsInfinite = (
     refetchOnWindowFocus: false
   });
 
+export const useGetDealLookupV2 = (
+  filters: CrmDealFilterRequest,
+  enabled?: boolean
+): UseQueryResult<CrmDealListResponse> =>
+  useQuery({
+    queryKey: crmDealQueryKeys.LOOKUP(filters),
+    queryFn: () => fetchDeals(filters),
+    enabled,
+    refetchOnWindowFocus: false
+  });
+
+const reorderDealInList = async (
+  payload: CrmDealReorderRequest
+): Promise<void> => {
+  await authFetch.patch(crmDealEndpoints.REORDER_DEAL, payload);
+};
+
+export const useReorderDealInList = (
+  onError: (error: AxiosError) => void
+): UseMutationResult<void, AxiosError, CrmDealReorderRequest> => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: reorderDealInList,
+    onError: (error) => {
+      queryClient.invalidateQueries({
+        queryKey: crmDealQueryKeys.GET_DEALS_ROOT
+      });
+      onError(error);
+    }
+  });
+};
+
 const fetchDealById = async (id: number): Promise<CrmDealEntity> => {
-  const response = await authFetchV2.get(crmDealEndpointsV2.GET_DEAL_BY_ID(id));
+  const response = await authFetch.get(crmDealEndpoints.GET_DEAL_BY_ID(id));
   return response?.data?.results?.[0];
 };
 
 export const useGetDealById = (
   id: number,
   enabled?: boolean
-): UseQueryResult<CrmDealEntity> =>
+): UseQueryResult<CrmDealEntity, ErrorResponse> =>
   useQuery({
     queryKey: crmDealQueryKeys.DEAL_BY_ID(id),
     queryFn: () => fetchDealById(id),
@@ -103,8 +129,8 @@ export const useGetDealById = (
   });
 
 const createDeal = async (payload: CrmDealEntity): Promise<CrmDealEntity> => {
-  const response = await authFetchV2.post(
-    crmDealEndpointsV2.CREATE_DEAL,
+  const response = await authFetch.post(
+    crmDealEndpoints.CREATE_DEAL,
     payload
   );
   return response?.data?.results?.[0];
@@ -121,6 +147,12 @@ export const useCreateDeal = (
       queryClient.invalidateQueries({
         queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
       });
+      queryClient.invalidateQueries({
+        queryKey: crmCompanyQueryKeys.METRICS_ROOT
+      });
+      queryClient.invalidateQueries({
+        queryKey: crmContactQueryKeys.METRICS_ROOT
+      });
       onSuccess(createdDeal);
     },
     onError
@@ -129,8 +161,8 @@ export const useCreateDeal = (
 
 const editDeal = async (deal: CrmDealEntity): Promise<CrmDealEntity> => {
   const { id, ...payload } = deal;
-  const response = await authFetchV2.patch(
-    crmDealEndpointsV2.EDIT_DEAL(id!),
+  const response = await authFetch.patch(
+    crmDealEndpoints.EDIT_DEAL(id!),
     payload
   );
   return response?.data?.results?.[0];
@@ -165,6 +197,50 @@ export const useCheckDealNameExists = (
     queryFn: () => checkDealNameExists(name),
     enabled
   });
+
+const fetchDealListViewConfig = async (): Promise<CrmDealListViewConfig> => {
+  const response = await authFetch.get(crmDealEndpoints.LIST_VIEW_CONFIG);
+  return response?.data?.results?.[0];
+};
+
+export const useGetDealListViewConfig = (
+  enabled?: boolean
+): UseQueryResult<CrmDealListViewConfig> =>
+  useQuery({
+    queryKey: crmDealQueryKeys.LIST_VIEW_CONFIG,
+    queryFn: fetchDealListViewConfig,
+    enabled,
+    refetchOnWindowFocus: false
+  });
+
+const updateDealListViewConfig = async (
+  config: CrmDealListViewConfig
+): Promise<CrmDealListViewConfig> => {
+  const response = await authFetch.put(
+    crmDealEndpoints.LIST_VIEW_CONFIG,
+    config
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useUpdateDealListViewConfig = (
+  onError: (error: AxiosError) => void
+): UseMutationResult<
+  CrmDealListViewConfig,
+  AxiosError,
+  CrmDealListViewConfig
+> => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateDealListViewConfig,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: crmDealQueryKeys.LIST_VIEW_CONFIG
+      });
+    },
+    onError
+  });
+};
 
 const deleteDeal = async (id: number): Promise<void> => {
   await authFetch.delete(crmDealEndpoints.DELETE_DEAL(id));

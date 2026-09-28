@@ -58,8 +58,6 @@ public interface EmployeeRepository {
 
 	List<Long> findEmployeeIdsByManagerId(Long employeeId);
 
-	Long findAllActiveEmployeesCount();
-
 	List<Employee> findManagersByEmployeeIdAndLoggedInManagerId(Long employeeId, Long managerId);
 
 	boolean existsManagerForEmployee(Long employeeId, Long managerId);
@@ -98,8 +96,6 @@ public interface EmployeeRepository {
 			Long currentEmployeeId);
 
 	PrimarySecondaryOrTeamSupervisorResponseDto isPrimaryOrSecondarySupervisor(Long employeeId);
-
-	Long findAllActiveAndPendingEmployeesCount();
 
 	Page<Employee> findEmployeesV2(EmployeeFilterDtoV2 employeeFilterDto, Pageable pageable);
 

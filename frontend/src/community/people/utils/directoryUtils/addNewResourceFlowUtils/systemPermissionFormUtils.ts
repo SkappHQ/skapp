@@ -198,9 +198,7 @@ export const handleCustomChangeEnterprise = ({
       open: true,
       toastType: ToastType.ERROR,
       title: roleLimitationText(["crmSalesManagerLimitationTitle"]),
-      description: roleLimitationText([
-        "crmSalesManagerLimitationDescription"
-      ]),
+      description: roleLimitationText(["crmSalesManagerLimitationDescription"]),
       isIcon: true
     });
     return;

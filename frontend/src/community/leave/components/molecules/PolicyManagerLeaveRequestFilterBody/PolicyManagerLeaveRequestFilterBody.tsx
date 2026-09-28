@@ -5,6 +5,7 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FC, useState } from "react";
 import type { DateRange } from "react-day-picker";
+import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -42,11 +43,13 @@ const PolicyManagerLeaveRequestFilterBody: FC<Props> = ({
     reviewRequestParams,
     setReviewRequestFilters,
     resetReviewRequestFilters
-  } = usePolicyLeaveStore((state) => ({
-    reviewRequestParams: state.reviewRequestParams,
-    setReviewRequestFilters: state.setReviewRequestFilters,
-    resetReviewRequestFilters: state.resetReviewRequestFilters
-  }));
+  } = usePolicyLeaveStore(
+    useShallow((state) => ({
+      reviewRequestParams: state.reviewRequestParams,
+      setReviewRequestFilters: state.setReviewRequestFilters,
+      resetReviewRequestFilters: state.resetReviewRequestFilters
+    }))
+  );
 
   const { data: leaveTypes } = useGetPolicyLeaveTypes({
     isActive: true,

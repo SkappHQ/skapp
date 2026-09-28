@@ -11,17 +11,17 @@ export const getCompanyValidationSchema = (
   Yup.object().shape({
     name: Yup.string()
       .trim()
-      .required(translator(["validations", "name"]))
+      .required(translator(["companies", "modal", "validations", "name"]))
       .max(
         characterLengths.COMPANY_NAME_LENGTH,
-        translator(["validations", "companyNameLength"])
+        translator(["companies", "modal", "validations", "companyNameLength"])
       ),
     contactNumber: Yup.string()
       .nullable()
       .optional()
       .test(
         "valid-contact-number",
-        translator(["validations", "contactNumber"]),
+        translator(["companies", "modal", "validations", "contactNumber"]),
         function (inputContactNumber) {
           if (!inputContactNumber || inputContactNumber === "") {
             return true;
@@ -36,17 +36,17 @@ export const getCompanyValidationSchema = (
       .transform((v) => (v === "" ? null : v))
       .matches(
         isValidCompanyWebsiteUrl(),
-        translator(["validations", "website"])
+        translator(["companies", "modal", "validations", "website"])
       )
       .max(
         characterLengths.CHARACTER_LENGTH,
-        translator(["validations", "characterLength"])
+        translator(["companies", "modal", "validations", "characterLength"])
       ),
     address: Yup.string()
       .nullable()
       .optional()
       .max(
         characterLengths.ADDRESS_LENGTH,
-        translator(["validations", "addressLength"])
+        translator(["companies", "modal", "validations", "addressLength"])
       )
   });

@@ -1,5 +1,6 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX, useEffect } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -22,10 +23,13 @@ const LeaveCarryForwardSyncConfirmation = ({
   const translateTexts = useTranslator("leaveModule", "leaveCarryForward");
 
   const { leaveCarryForwardId, setLeaveCarryForwardSyncBtnStatus } =
-    useLeaveStore((state) => ({
-      leaveCarryForwardId: state.leaveCarryForwardId,
-      setLeaveCarryForwardSyncBtnStatus: state.setLeaveCarryForwardSyncBtnStatus
-    }));
+    useLeaveStore(
+      useShallow((state) => ({
+        leaveCarryForwardId: state.leaveCarryForwardId,
+        setLeaveCarryForwardSyncBtnStatus:
+          state.setLeaveCarryForwardSyncBtnStatus
+      }))
+    );
 
   const { sendEvent } = useGoogleAnalyticsEvent();
 

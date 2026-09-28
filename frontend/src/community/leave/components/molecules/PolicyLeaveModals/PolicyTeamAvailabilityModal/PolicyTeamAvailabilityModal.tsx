@@ -1,4 +1,5 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { useShallow } from "zustand/react/shallow";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -16,10 +17,10 @@ const PolicyTeamAvailabilityModal = () => {
   );
 
   const { teamAvailabilityData, setModalType } = usePolicyLeaveStore(
-    (state) => ({
+    useShallow((state) => ({
       teamAvailabilityData: state.teamAvailabilityData,
       setModalType: state.setModalType
-    })
+    }))
   );
 
   return (

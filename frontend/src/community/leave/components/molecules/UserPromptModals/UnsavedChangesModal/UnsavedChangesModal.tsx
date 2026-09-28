@@ -1,4 +1,5 @@
 import { useRouter } from "next/navigation";
+import { useShallow } from "zustand/react/shallow";
 
 import AreYouSureModal from "~community/common/components/molecules/AreYouSureModal/AreYouSureModal";
 import Modal from "~community/common/components/organisms/Modal/Modal";
@@ -22,16 +23,20 @@ const ExitModal = () => {
     pendingNavigation,
     setLeaveTypeModalType,
     resetEditingLeaveType
-  } = useLeaveStore((state) => ({
-    leaveTypeModalType: state.leaveTypeModalType,
-    pendingNavigation: state.pendingNavigation,
-    setLeaveTypeModalType: state.setLeaveTypeModalType,
-    resetEditingLeaveType: state.resetEditingLeaveType
-  }));
+  } = useLeaveStore(
+    useShallow((state) => ({
+      leaveTypeModalType: state.leaveTypeModalType,
+      pendingNavigation: state.pendingNavigation,
+      setLeaveTypeModalType: state.setLeaveTypeModalType,
+      resetEditingLeaveType: state.resetEditingLeaveType
+    }))
+  );
 
-  const { stopAllOngoingQuickSetup } = useCommonEnterpriseStore((state) => ({
-    stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
-  }));
+  const { stopAllOngoingQuickSetup } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
+    }))
+  );
 
   const handleOnSecondaryBtnClick = async () => {
     stopAllOngoingQuickSetup();

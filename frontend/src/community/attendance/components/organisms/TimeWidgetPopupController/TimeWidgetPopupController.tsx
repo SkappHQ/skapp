@@ -1,4 +1,4 @@
-import { SmallModal } from "@rootcodelabs/skapp-ui";
+import { DialogRole, SmallModal } from "@rootcodelabs/skapp-ui";
 import { JSX, useEffect, useState } from "react";
 
 import { useUpdateEmployeeStatus } from "~community/attendance/api/AttendanceApi";
@@ -120,6 +120,13 @@ const TimeWidgetPopupController = (): JSX.Element => {
     return "";
   };
 
+  const getModalRole = (): DialogRole => {
+    if (isPreMidnightClockOutAlertOpen || isAutoClockOutMidnightModalOpen) {
+      return "alertdialog";
+    }
+    return "dialog";
+  };
+
   const handleCloseModal = (): void => {
     if (isAttendanceModalOpen) {
       handleCloseAttendanceModal();
@@ -162,6 +169,7 @@ const TimeWidgetPopupController = (): JSX.Element => {
       }
       onClose={handleCloseModal}
       modalHeader={getModalTitle()}
+      role={getModalRole()}
       content={modalContent()}
     />
   );

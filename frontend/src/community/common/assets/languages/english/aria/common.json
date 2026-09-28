@@ -114,6 +114,9 @@
     "backButton": "Back Button",
     "pageHeader": "Page header"
   },
+  "contentWithAppBar": {
+    "contentAreaWithAppBar": "Main content area"
+  },
   "contentWithDrawer": {
     "contentAreaWithDrawer": "Main content area with drawer"
   },

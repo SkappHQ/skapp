@@ -196,7 +196,9 @@ const TimesheetDailyLogFilter = ({
     weekStartDate
   ]);
 
-  const CustomPickerDay = (props: PickersDayProps<DateTime>) => {
+  const CustomPickerDay = (
+    props: PickersDayProps<DateTime<true> | DateTime<false>>
+  ) => {
     const { day, outsideCurrentMonth, ...other } = props;
     const isSelected = selectedDates.some(
       (date) => DateTime.fromJSDate(date).toMillis() === day.toMillis()

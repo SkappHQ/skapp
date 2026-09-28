@@ -8,7 +8,7 @@ import { RelationshipTypes } from "~community/people/enums/PeopleEnums";
 import useGetDefaultCountryCode from "~community/people/hooks/useGetDefaultCountryCode";
 import { usePeopleStore } from "~community/people/store/store";
 import { L3EmergencyContactType } from "~community/people/types/PeopleTypes";
-import { employeePrimaryEmergencyContactDetailsValidation } from "~community/people/utils/peopleValidations";
+import { employeeEmergencyContactDetailsValidation } from "~community/people/utils/peopleValidations";
 
 const usePrimaryContactDetailsFormHandlers = () => {
   const translateText = useTranslator(
@@ -43,8 +43,7 @@ const usePrimaryContactDetailsFormHandlers = () => {
 
   const formik = useFormik({
     initialValues,
-    validationSchema:
-      employeePrimaryEmergencyContactDetailsValidation(translateText),
+    validationSchema: employeeEmergencyContactDetailsValidation(translateText),
     onSubmit: () => {},
     validateOnChange: false,
     validateOnBlur: true,

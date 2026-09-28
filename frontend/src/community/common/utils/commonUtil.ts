@@ -33,6 +33,10 @@ export const openInNewTab = (url: string) => {
   window.open(url, "_blank", "noopener,noreferrer");
 };
 
+export const copyToClipboard = async (text: string): Promise<void> => {
+  await navigator.clipboard.writeText(text);
+};
+
 export const getLabelByValue = (
   objectArray: DropdownListType[],
   value: number | string
@@ -181,13 +185,11 @@ export const isObjectEmpty = (obj: any): boolean => {
     if (typeof copyOfObject[key] === "object" && copyOfObject[key] !== null) {
       const result = isObjectEmpty(copyOfObject[key]);
       if (!result) return false;
-    } else if (
-      !(
-        (typeof copyOfObject[key] === "string" && copyOfObject[key] === "") ||
-        typeof copyOfObject[key] === "undefined" ||
-        (Array.isArray(copyOfObject[key]) && copyOfObject[key].length === 0)
-      )
-    ) {
+    } else if (!(
+      (typeof copyOfObject[key] === "string" && copyOfObject[key] === "") ||
+      typeof copyOfObject[key] === "undefined" ||
+      (Array.isArray(copyOfObject[key]) && copyOfObject[key].length === 0)
+    )) {
       return false;
     }
   }
@@ -239,8 +241,11 @@ export const scrollToFirstError = (theme: Theme) => {
   }
 };
 
-export const scrollToTop = (top: number = 0) => {
-  window.scrollTo({ top, behavior: "smooth" });
+export const scrollToTop = (
+  top: number = 0,
+  behavior: ScrollBehavior = "smooth"
+) => {
+  window.scrollTo({ top, behavior });
 };
 
 export const capitalizeFirstLetter = (string: string): string => {
@@ -611,10 +616,44 @@ export const isAndroidDevice = (): boolean => {
 };
 
 export const replaceTabQueryParam = (path: string, tabId: string): void => {
-  const [basePath, query] = path.split("?");
-  const params = new URLSearchParams(query);
+  const [basePath] = path.split("?");
+  const params = new URLSearchParams();
   params.set("tab", tabId);
-  globalThis.history.replaceState(null, "", `${basePath}?${params.toString()}`);
+  const newUrl = `${basePath}?${params.toString()}`;
+
+  globalThis.history.replaceState(
+    { ...globalThis.history.state, as: newUrl },
+    "",
+    newUrl
+  );
+};
+
+export const updateUrlQueryParam = (
+  key: string,
+  value: string | null
+): void => {
+  if (globalThis.window === undefined) {
+    return;
+  }
+
+  const params = new URLSearchParams(globalThis.location.search);
+
+  if (value === null) {
+    params.delete(key);
+  } else {
+    params.set(key, value);
+  }
+
+  const queryString = params.toString();
+  const newUrl = queryString
+    ? `${globalThis.location.pathname}?${queryString}`
+    : globalThis.location.pathname;
+
+  globalThis.history.replaceState(
+    { ...globalThis.history.state, as: newUrl },
+    "",
+    newUrl
+  );
 };
 
 export const getPhoneNumberMaxLength = (countryCodeValue: string): number => {

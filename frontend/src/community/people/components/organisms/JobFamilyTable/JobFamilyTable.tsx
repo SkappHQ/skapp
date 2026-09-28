@@ -1,6 +1,7 @@
 import { Box, Theme, useTheme } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import IconButton from "~community/common/components/atoms/IconButton/IconButton";
@@ -51,17 +52,21 @@ const JobFamilyTable: FC<Props> = ({
     setCurrentEditingJobFamily,
     setCurrentDeletingJobFamily,
     setJobFamilyModalType
-  } = usePeopleStore((state) => ({
-    setCurrentEditingJobFamily: state.setCurrentEditingJobFamily,
-    setCurrentDeletingJobFamily: state.setCurrentDeletingJobFamily,
-    setJobFamilyModalType: state.setJobFamilyModalType
-  }));
+  } = usePeopleStore(
+    useShallow((state) => ({
+      setCurrentEditingJobFamily: state.setCurrentEditingJobFamily,
+      setCurrentDeletingJobFamily: state.setCurrentDeletingJobFamily,
+      setJobFamilyModalType: state.setJobFamilyModalType
+    }))
+  );
 
   const { ongoingQuickSetup, quickSetupCurrentFlowSteps } =
-    useCommonEnterpriseStore((state) => ({
-      ongoingQuickSetup: state.ongoingQuickSetup,
-      quickSetupCurrentFlowSteps: state.quickSetupCurrentFlowSteps
-    }));
+    useCommonEnterpriseStore(
+      useShallow((state) => ({
+        ongoingQuickSetup: state.ongoingQuickSetup,
+        quickSetupCurrentFlowSteps: state.quickSetupCurrentFlowSteps
+      }))
+    );
 
   const transformToTableRows = () => {
     return (allJobFamilies as AllJobFamilyType[])

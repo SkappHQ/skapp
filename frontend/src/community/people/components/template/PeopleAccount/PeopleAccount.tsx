@@ -1,8 +1,8 @@
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 
 import AccountSectionWrapper from "../../organisms/AccountSectionWrapper/AccountSectionWrapper";
-import { useAuth } from "~community/auth/providers/AuthProvider";
 
 const PeopleAccount = () => {
   const { user } = useAuth();

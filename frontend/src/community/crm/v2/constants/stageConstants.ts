@@ -1,3 +1,5 @@
+import { ColorOption } from "@rootcodelabs/skapp-ui";
+
 import { CrmDealStageColorsEnum } from "~community/crm/v2/enums/common";
 
 export const STAGE_COLOR_MAP: Record<CrmDealStageColorsEnum, string> = {
@@ -14,3 +16,12 @@ export const STAGE_COLOR_MAP: Record<CrmDealStageColorsEnum, string> = {
   ROSEWOOD: "#b55253",
   INDIGO: "#9366fd"
 };
+
+export const DEAL_STAGE_COLORS: ColorOption[] = Object.entries(
+  STAGE_COLOR_MAP
+).map(([key, color]) => ({
+  id: key,
+  name: key,
+  value: key,
+  color
+}));

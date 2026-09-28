@@ -2,11 +2,7 @@ export interface HolidayDataByDateType {
   date: string;
   holidayColor: string | null;
   holidayDuration:
-    | "FULLDAY"
-    | "HALFDAY_MORNING"
-    | "HALFDAY_EVENING"
-    | "EXTENDED"
-    | null;
+    "FULLDAY" | "HALFDAY_MORNING" | "HALFDAY_EVENING" | "EXTENDED" | null;
   holidayType?: ResponseDataHolidayType;
   id: number | null;
   name: string;

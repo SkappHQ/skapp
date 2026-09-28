@@ -43,6 +43,7 @@ interface actionsTypes {
   setDirectManualTimeEntryEligibleEmployee: (
     value: DirectEntryEmployeeType | null
   ) => void;
+  setIsSelfDirectTimeEntry: (value: boolean) => void;
   setClockInType: (type: { [key: string]: (string | number)[] }) => void;
 }
 
@@ -98,6 +99,7 @@ export interface AttendanceStore extends actionsTypes {
   timeAvailabilityForPeriod: TimeAvailabilityType;
   currentAddTimeChanges: CurrentAddTimeChangesType;
   directManualTimeEntryEligibleEmployee: DirectEntryEmployeeType | null;
+  isSelfDirectTimeEntry: boolean;
   clockInType: {
     [key: string]: (string | number)[];
   };

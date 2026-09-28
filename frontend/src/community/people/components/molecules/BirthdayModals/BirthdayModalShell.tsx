@@ -65,6 +65,7 @@ const BirthdayModalShell: FC<Props> = ({
       <LargeModal
         id={id}
         isOpen
+        role="alertdialog"
         className="relative h-[603px] max-h-[85vh] w-[1107px] max-w-[92vw] overflow-hidden rounded-l-[42.69px] rounded-r-[24px] shadow-[0_20px_40px_rgba(0,0,0,0.15)]"
         imagePosition="left"
         backdropVariant="dark"

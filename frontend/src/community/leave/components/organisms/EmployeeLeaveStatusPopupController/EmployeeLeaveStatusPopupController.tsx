@@ -1,4 +1,5 @@
 import { JSX, useEffect, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import ModalController from "~community/common/components/organisms/ModalController/ModalController";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -23,13 +24,15 @@ const LeaveStatusPopupController = (): JSX.Element => {
     isEmployeeModalOpen,
     setIsEmployeeModal,
     removeNewLeaveId
-  } = useLeaveStore((state) => ({
-    removeEmployeeLeaveRequestData: state.removeEmployeeLeaveRequestData,
-    employeeLeaveRequestData: state.employeeLeaveRequestData,
-    isEmployeeModalOpen: state.isEmployeeModalOpen,
-    setIsEmployeeModal: state.setIsEmployeeModal,
-    removeNewLeaveId: state.removeNewLeaveId
-  }));
+  } = useLeaveStore(
+    useShallow((state) => ({
+      removeEmployeeLeaveRequestData: state.removeEmployeeLeaveRequestData,
+      employeeLeaveRequestData: state.employeeLeaveRequestData,
+      isEmployeeModalOpen: state.isEmployeeModalOpen,
+      setIsEmployeeModal: state.setIsEmployeeModal,
+      removeNewLeaveId: state.removeNewLeaveId
+    }))
+  );
 
   const translateText = useTranslator("leaveModule", "myRequests");
 

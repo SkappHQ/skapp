@@ -1,26 +1,34 @@
-import { FC, useEffect, useMemo, useRef, useState } from "react";
+import { SortConfig } from "@rootcodelabs/skapp-ui";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
-import { SortOrderTypes } from "~community/common/types/CommonTypes";
-import {
-  DEAL_PAGE_SIZE,
-  DEAL_SEARCH_DEBOUNCE_DELAY
-} from "~community/crm/constants/dealConstants";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import { useGetCompaniesByIds } from "~community/crm/v2/api/CompanyApi";
-import { useGetDealsInfinite } from "~community/crm/v2/api/DealApi";
+import {
+  useGetDealsInfinite,
+  useReorderDealInList
+} from "~community/crm/v2/api/DealApi";
 import DealsKanbanBoardV2 from "~community/crm/v2/components/organisms/DealsKanbanBoardV2/DealsKanbanBoardV2";
 import DealsTableV2 from "~community/crm/v2/components/organisms/DealsTableV2/DealsTableV2";
-import { CrmDealSortEnum, DealViewEnum } from "~community/crm/v2/enums/common";
+import { DEAL_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
+import { DEAL_SEARCH_DEBOUNCE_DELAY } from "~community/crm/v2/constants/dealConstants";
+import { DealViewEnum } from "~community/crm/v2/enums/common";
+import { useDealListViewConfig } from "~community/crm/v2/hooks/useDealListViewConfig";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
 import {
   getMissingCompanyIds,
-  mergeCompanies
+  updateCompanyRecord
 } from "~community/crm/v2/utils/companyUtil";
+import { resolveSortChange } from "~community/crm/v2/utils/dealListViewUtil";
 import {
   mergeDeals,
+  reorderDealIds,
   resolveDeals,
+  stripDealIdPrefix,
   toDealIds
 } from "~community/crm/v2/utils/dealUtil";
 
@@ -29,24 +37,66 @@ import DealsHeaderV2 from "./DealsHeaderV2";
 const DealsSectionV2: FC = () => {
   const [inputValue, setInputValue] = useState("");
   const [activeView, setActiveView] = useState(DealViewEnum.KANBAN);
-  const debouncedSearch = useDebounce(inputValue, DEAL_SEARCH_DEBOUNCE_DELAY);
+  const debouncedSearch = useDebounce(
+    stripDealIdPrefix(inputValue),
+    DEAL_SEARCH_DEBOUNCE_DELAY
+  );
   const containerRef = useRef<HTMLDivElement>(null);
+  const handleReorderError = (): void => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText([
+        "deals",
+        "table",
+        "inlineEdit",
+        "toastMessages",
+        "editErrorTitle"
+      ]),
+      description: translateText([
+        "deals",
+        "table",
+        "inlineEdit",
+        "toastMessages",
+        "editErrorDescription"
+      ])
+    });
+  };
+
+  const { mutate: reorderDeal } = useReorderDealInList(handleReorderError);
+  const translateText = useTranslator("crmModuleV2");
+  const { setToastMessage } = useToast();
 
   const {
     companies,
     dealIds,
     dealRecord,
+    setDeals,
+    setCompanies,
+    setDealIds,
     setSelectedDealId,
     openCrmSidePanel
   } = useCrmStoreV2(
-    useShallow((store) => ({
-      companies: store.companies,
-      dealIds: store.dealIds,
-      dealRecord: store.deals,
-      setSelectedDealId: store.setSelectedDealId,
-      openCrmSidePanel: store.openCrmSidePanel
+    useShallow((state) => ({
+      companies: state.companies,
+      dealIds: state.dealIds,
+      dealRecord: state.deals,
+      setDeals: state.setDeals,
+      setCompanies: state.setCompanies,
+      setDealIds: state.setDealIds,
+      setSelectedDealId: state.setSelectedDealId,
+      openCrmSidePanel: state.openCrmSidePanel
     }))
   );
+
+  const {
+    columnConfig,
+    isConfigLoading,
+    handleColumnReorder,
+    handleColumnVisibilityChange,
+    handleSortChange,
+    handleColumnResize
+  } = useDealListViewConfig(activeView === DealViewEnum.LIST);
 
   const {
     data,
@@ -57,11 +107,55 @@ const DealsSectionV2: FC = () => {
   } = useGetDealsInfinite(
     {
       size: DEAL_PAGE_SIZE,
-      sortKey: CrmDealSortEnum.STAGE_ORDER,
-      sortOrder: SortOrderTypes.ASC,
+      sortKey: columnConfig?.sort?.field,
+      sortOrder: columnConfig?.sort?.direction,
       searchKeyword: debouncedSearch
     },
-    activeView === DealViewEnum.LIST
+    activeView === DealViewEnum.LIST && !!columnConfig
+  );
+
+  const sortConfig = useMemo(
+    () =>
+      columnConfig?.sort
+        ? [
+            {
+              columnId: columnConfig.sort.field,
+              direction: columnConfig.sort.direction
+            }
+          ]
+        : [],
+    [columnConfig?.sort]
+  );
+
+  const handleSort = useCallback(
+    (nextSortConfig: SortConfig[]): void => {
+      handleSortChange(
+        resolveSortChange(nextSortConfig, columnConfig?.sort ?? null)
+      );
+    },
+    [handleSortChange, columnConfig?.sort]
+  );
+
+  const enableRowReorder =
+    activeView === DealViewEnum.LIST &&
+    !columnConfig?.sort &&
+    !debouncedSearch.trim();
+
+  const handleRowReorder = useCallback(
+    (movingId: string, previousId?: string, nextId?: string): void => {
+      const dealId = Number(movingId);
+      const previousDealId = previousId != null ? Number(previousId) : null;
+      const nextDealId = nextId != null ? Number(nextId) : null;
+
+      const previousDealIds = dealIds;
+      setDealIds(reorderDealIds(dealIds, dealId, previousDealId, nextDealId));
+
+      reorderDeal(
+        { dealId, previousDealId, nextDealId },
+        { onError: () => setDealIds(previousDealIds) }
+      );
+    },
+    [reorderDeal, translateText, dealIds]
   );
 
   const hasNextPage = Boolean(hasNextPageRaw);
@@ -71,12 +165,11 @@ const DealsSectionV2: FC = () => {
   );
 
   useEffect(() => {
-    if (!data) return;
-    const store = useCrmStoreV2.getState();
+    if (!data || activeView !== DealViewEnum.LIST) return;
     const items = data.pages.flatMap((page) => page.items);
-    store.setDeals(mergeDeals(store.deals, items));
-    store.setDealIds(toDealIds(items));
-  }, [data]);
+    setDeals(mergeDeals(dealRecord, items));
+    setDealIds(toDealIds(items));
+  }, [data, activeView]);
 
   const companyIds = useMemo(
     () =>
@@ -98,8 +191,7 @@ const DealsSectionV2: FC = () => {
 
   useEffect(() => {
     if (fetchedCompanies && fetchedCompanies.length > 0) {
-      const store = useCrmStoreV2.getState();
-      store.setCompanies(mergeCompanies(store.companies, fetchedCompanies));
+      setCompanies(updateCompanyRecord(companies, fetchedCompanies));
     }
   }, [fetchedCompanies]);
 
@@ -148,10 +240,19 @@ const DealsSectionV2: FC = () => {
           <DealsTableV2
             searchKeyword={debouncedSearch}
             isLoading={isLoading}
+            isConfigLoading={isConfigLoading}
             deals={deals}
             hasNextPage={hasNextPage}
             onLoadMore={loadMore}
             onDealClick={handleDealClick}
+            columnConfig={columnConfig}
+            sortConfig={sortConfig}
+            onColumnReorder={handleColumnReorder}
+            onColumnVisibilityChange={handleColumnVisibilityChange}
+            onColumnResize={handleColumnResize}
+            onSort={handleSort}
+            enableRowReorder={enableRowReorder}
+            onRowReorder={handleRowReorder}
           />
         ) : (
           <DealsKanbanBoardV2 searchKeyword={debouncedSearch} />

@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 
 export interface TabItem {
+  id: string;
   label: string;
   content: ReactNode;
 }
@@ -13,4 +14,6 @@ export interface TabPanelProps {
 
 export interface TabsComponentProps {
   tabs: TabItem[];
+  activeTabIndex: number;
+  onTabChange: (index: number) => void;
 }

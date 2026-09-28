@@ -13,7 +13,7 @@
     "^~styles/(.*)$",
     "^~i18n/(.*)$",
     "^[./]",
-    "^~middleware/(.*)$"
+    "^~proxy/(.*)$"
   ],
   "importOrderSeparation": true,
   "importOrderSortSpecifiers": true,

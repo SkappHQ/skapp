@@ -1,3 +1,4 @@
+import { useRouter } from "next/router";
 import { RefObject, useEffect, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
@@ -9,7 +10,12 @@ import {
   EmployeeTypes,
   ManagerTypes
 } from "~community/common/types/AuthTypes";
+import {
+  replaceTabQueryParam,
+  scrollToTop
+} from "~community/common/utils/commonUtil";
 import { useGetSupervisedByMe } from "~community/people/api/PeopleApi";
+import useFormChangeDetector from "~community/people/hooks/useFormChangeDetector";
 import { usePeopleStore } from "~community/people/store/store";
 import { EditPeopleFormTypes } from "~community/people/types/PeopleEditTypes";
 
@@ -32,9 +38,13 @@ const DirectorySteppers = ({
 
   const { user } = useAuth();
 
+  const router = useRouter();
+
   const { isSuperAdmin, isPeopleAdmin, userId } = useSessionData();
 
   const { setNextStep, currentStep } = usePeopleStore((state) => state);
+
+  const { hasChanged } = useFormChangeDetector();
 
   const [prevStep, setPrevStep] = useState<EditPeopleFormTypes | null>(null);
 
@@ -110,15 +120,25 @@ const DirectorySteppers = ({
   ];
 
   const handleStepClick = (step: EditPeopleFormTypes) => {
+    if (step === currentStep) {
+      return;
+    }
+
     setNextStep(step);
+
+    if (!hasChanged) {
+      replaceTabQueryParam(router.asPath, step.toLowerCase());
+    }
   };
 
   useEffect(() => {
     if (prevStep !== null && prevStep !== currentStep && formRef?.current) {
+      scrollToTop(0, "auto");
+
       const focusableElement = formRef.current.querySelector(
         'button, input, [tabindex]:not([tabindex="-1"])'
       ) as HTMLElement | null;
-      focusableElement?.focus();
+      focusableElement?.focus({ preventScroll: true });
     }
     setPrevStep(currentStep);
   }, [currentStep, formRef, prevStep]);

@@ -1,5 +1,6 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useEffect, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -21,9 +22,11 @@ const UserBulkCsvDownload = () => {
     setDirectoryModalType(DirectoryModalTypes.UPLOAD_CSV);
   };
 
-  const { ongoingQuickSetup } = useCommonEnterpriseStore((state) => ({
-    ongoingQuickSetup: state.ongoingQuickSetup
-  }));
+  const { ongoingQuickSetup } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      ongoingQuickSetup: state.ongoingQuickSetup
+    }))
+  );
 
   const [isDownloadBlinking, setIsDownloadBlinking] = useState(false);
   const [isNextBlinking, setIsNextBlinking] = useState(false);
