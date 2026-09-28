@@ -312,6 +312,21 @@ export const useGetSearchedEmployees = (
   });
 };
 
+export const useGetAllActiveEmployees = (
+  permission: SystemPermissionTypes = SystemPermissionTypes.EMPLOYEES
+) => {
+  return useQuery({
+    queryKey: ["all-active-employees", permission],
+    queryFn: async () => {
+      const response = await authFetch.get(peoplesEndpoints.SEARCH_EMPLOYEE, {
+        params: { keyword: "", permission }
+      });
+      return searchEmployeeDataPreProcessor(response?.data?.results);
+    },
+    refetchOnWindowFocus: false
+  });
+};
+
 export const useCheckEmailAndIdentificationNo = (
   workEmail: string,
   identificationNo: string
@@ -960,18 +975,31 @@ export const useEditEmployee = (employeeId: string) => {
   });
 };
 
+export const getSupervisedEmployeesAndTeams = (userId: number) =>
+  authFetch.get(peoplesEndpoints.GET_SUPERVISOR_ROLES(userId));
+
 export const useGetSupervisedEmployeesAndTeams = (
   userId: number,
   enabled: boolean = true
 ): UseQueryResult<SupervisorRolesData> => {
   return useQuery({
     queryKey: peopleQueryKeys.SUPERVISOR_ROLES(userId),
-    queryFn: async () =>
-      await authFetch.get(peoplesEndpoints.GET_SUPERVISOR_ROLES(userId)),
+    queryFn: () => getSupervisedEmployeesAndTeams(userId),
     select: (data) => data?.data?.results[0],
     enabled: !!userId && enabled
   });
 };
+
+export const reassignSupervisorsAndTerminateOrDeleteEmployee = (
+  userId: number,
+  payload: ReassignSupervisorsAndTerminateOrDeleteEmployeePayload
+) =>
+  authFetch.patch(
+    peoplesEndpoints.REASSIGN_SUPERVISORS_AND_TERMINATE_OR_DELETE_EMPLOYEE(
+      userId
+    ),
+    payload
+  );
 
 export const useReassignSupervisorsAndTerminateOrDeleteEmployee = (
   userId: number,
@@ -982,13 +1010,7 @@ export const useReassignSupervisorsAndTerminateOrDeleteEmployee = (
   return useMutation({
     mutationFn: (
       payload: ReassignSupervisorsAndTerminateOrDeleteEmployeePayload
-    ) =>
-      authFetch.patch(
-        peoplesEndpoints.REASSIGN_SUPERVISORS_AND_TERMINATE_OR_DELETE_EMPLOYEE(
-          userId
-        ),
-        payload
-      ),
+    ) => reassignSupervisorsAndTerminateOrDeleteEmployee(userId, payload),
     onSuccess: () => {
       [
         peopleQueryKeys.SUPERVISOR_ROLES(userId),
