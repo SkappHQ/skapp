@@ -3,6 +3,7 @@ package com.skapp.community.crmplanner.controller.v1;
 import com.jayway.jsonpath.JsonPath;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.model.CrmIndustry;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
@@ -36,7 +37,7 @@ import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyIdsRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
-import com.skapp.community.crmplanner.type.CrmIndustry;
+import com.skapp.community.crmplanner.type.CrmIndustryName;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyEditDto;
 import com.skapp.support.SecurityTestUtils;
 
@@ -211,7 +212,7 @@ class CrmCompanyControllerIntegrationTest {
 	@Test
 	@DisplayName("Create company with an existing industry id - Persists that industry id")
 	void createCompany_ExistingIndustryId_PersistsIndustryId() throws Exception {
-		Long expectedIndustryId = seedIndustries(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		Long expectedIndustryId = seedIndustries(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA);
 
 		CrmCompanyCreateDto createDto = createValidPayload();
 		createDto.setIndustryId(expectedIndustryId);
@@ -242,19 +243,17 @@ class CrmCompanyControllerIntegrationTest {
 		CrmCompany savedCompany = crmCompanyDao.findById(companyId).orElseThrow();
 		assertThat(savedCompany.getIndustryDetails()).isNotNull();
 
-		com.skapp.community.crmplanner.model.CrmIndustry createdIndustry = crmIndustryDao
-			.findById(savedCompany.getIndustryDetails().getId())
-			.orElseThrow();
+		CrmIndustry createdIndustry = crmIndustryDao.findById(savedCompany.getIndustryDetails().getId()).orElseThrow();
 		assertThat(createdIndustry.getName()).isEqualTo("Deep Sea Tourism");
 	}
 
 	@Test
 	@DisplayName("Create company with an existing industry name - Reuses the existing industry")
 	void createCompany_ExistingIndustryName_ReusesIndustry() throws Exception {
-		Long expectedIndustryId = seedIndustries(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		Long expectedIndustryId = seedIndustries(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA);
 
 		CrmCompanyCreateDto createDto = createValidPayload();
-		createDto.setIndustryName(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name().toLowerCase());
+		createDto.setIndustryName(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA.name().toLowerCase());
 
 		Long companyId = extractCompanyId(performPostRequest(createDto).andExpect(status().isCreated()));
 
@@ -265,7 +264,7 @@ class CrmCompanyControllerIntegrationTest {
 	@Test
 	@DisplayName("Edit company with an existing industry id - Persists that industry id")
 	void editCompany_ExistingIndustryId_PersistsIndustryId() throws Exception {
-		Long expectedIndustryId = seedIndustries(CrmIndustry.FINANCIAL_SERVICES);
+		Long expectedIndustryId = seedIndustries(CrmIndustryName.FINANCIAL_SERVICES);
 
 		Long companyId = extractCompanyId(performPostRequest(createValidPayload()).andExpect(status().isCreated()));
 
@@ -280,7 +279,7 @@ class CrmCompanyControllerIntegrationTest {
 	@Test
 	@DisplayName("Edit company with an explicit null industry id - Clears the industry")
 	void editCompany_NullIndustryId_ClearsIndustry() throws Exception {
-		Long seededIndustryId = seedIndustries(CrmIndustry.FINANCIAL_SERVICES);
+		Long seededIndustryId = seedIndustries(CrmIndustryName.FINANCIAL_SERVICES);
 
 		CrmCompanyCreateDto createDto = createValidPayload();
 		createDto.setIndustryId(seededIndustryId);
@@ -306,8 +305,7 @@ class CrmCompanyControllerIntegrationTest {
 		CrmCompany updatedCompany = crmCompanyDao.findById(companyId).orElseThrow();
 		assertThat(updatedCompany.getIndustryDetails()).isNotNull();
 
-		com.skapp.community.crmplanner.model.CrmIndustry createdIndustry = crmIndustryDao
-			.findById(updatedCompany.getIndustryDetails().getId())
+		CrmIndustry createdIndustry = crmIndustryDao.findById(updatedCompany.getIndustryDetails().getId())
 			.orElseThrow();
 		assertThat(createdIndustry.getName()).isEqualTo("Marine Logistics");
 	}
@@ -320,15 +318,15 @@ class CrmCompanyControllerIntegrationTest {
 			.asLong();
 	}
 
-	private Long seedIndustries(CrmIndustry industry) {
+	private Long seedIndustries(CrmIndustryName industry) {
 		crmIndustryDao.saveAll(DefaultCrmIndustryTemplate.getDefaultIndustries());
 		return crmIndustryDao.findByNameIgnoreCaseAndIsDeletedFalse(industry.name())
 			.orElseThrow(() -> new AssertionError("crm_industry has no row named " + industry.name()))
 			.getId();
 	}
 
-	private com.skapp.community.crmplanner.model.CrmIndustry savedIndustry(String name) {
-		com.skapp.community.crmplanner.model.CrmIndustry industry = new com.skapp.community.crmplanner.model.CrmIndustry();
+	private CrmIndustry savedIndustry(String name) {
+		CrmIndustry industry = new CrmIndustry();
 		industry.setName(name);
 		return crmIndustryDao.save(industry);
 	}
@@ -864,7 +862,7 @@ class CrmCompanyControllerIntegrationTest {
 	private CrmCompany createMetricsCompany(String name) {
 		CrmCompany company = new CrmCompany();
 		company.setName(name);
-		company.setIndustryDetails(savedIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()));
+		company.setIndustryDetails(savedIndustry(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA.name()));
 		return crmCompanyDao.save(company);
 	}
 
@@ -1003,7 +1001,7 @@ class CrmCompanyControllerIntegrationTest {
 	void getCompanyById_HappyPath_ReturnsCompany() throws Exception {
 		CrmCompany company = new CrmCompany();
 		company.setName("DetailCoUnique");
-		company.setIndustryDetails(savedIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()));
+		company.setIndustryDetails(savedIndustry(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA.name()));
 		company.setWebsite("https://detail.com");
 		company.setAddress("1 Detail St");
 		company.setContactNumber("94770000001");
@@ -1093,7 +1091,7 @@ class CrmCompanyControllerIntegrationTest {
 	private CrmCompany savedBatchCompany(String name) {
 		CrmCompany company = new CrmCompany();
 		company.setName(name);
-		company.setIndustryDetails(savedIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()));
+		company.setIndustryDetails(savedIndustry(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA.name()));
 		company.setWebsite("https://batch.com");
 		company.setAddress("1 Batch St");
 		company.setContactNumber("94770000010");

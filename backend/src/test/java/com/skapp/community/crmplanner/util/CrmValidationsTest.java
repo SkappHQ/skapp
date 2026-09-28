@@ -4,7 +4,6 @@ import com.skapp.TestSkappApplication;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
-import com.skapp.community.crmplanner.type.CrmIndustry;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -182,27 +181,6 @@ class CrmValidationsTest {
 		@DisplayName("Valid domain - does not throw")
 		void validateDomain_Valid_DoesNotThrow() {
 			assertDoesNotThrow(() -> CrmValidations.validateDomain("acme.com"));
-		}
-
-	}
-
-	// --- validateIndustry ---
-
-	@Nested
-	@DisplayName("validateIndustry")
-	class ValidateIndustry {
-
-		@Test
-		@DisplayName("Null industry - throws CRM_ERROR_INDUSTRY_INVALID")
-		void validateIndustry_Null_ThrowsInvalid() {
-			ModuleException ex = assertThrows(ModuleException.class, () -> CrmValidations.validateIndustry(null));
-			assertEquals(CrmMessageConstant.CRM_ERROR_INDUSTRY_INVALID, ex.getMessageKey());
-		}
-
-		@Test
-		@DisplayName("Valid industry - does not throw")
-		void validateIndustry_Valid_DoesNotThrow() {
-			assertDoesNotThrow(() -> CrmValidations.validateIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA));
 		}
 
 	}

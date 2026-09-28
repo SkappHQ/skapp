@@ -46,7 +46,6 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_CONTACT_NUMBER_INVALID("api.error.crm.validation.contact-number"),
 	CRM_ERROR_WEBSITE_INVALID("api.error.crm.validation.website"),
 	CRM_ERROR_ADDRESS_TOO_LONG("api.error.crm.validation.address-length"),
-	CRM_ERROR_INDUSTRY_INVALID("api.error.crm.validation.industry-invalid"),
 	CRM_ERROR_INDUSTRY_NAME_REQUIRED("api.error.crm.validation.industry-name-required"),
 	CRM_ERROR_INDUSTRY_NAME_TOO_LONG("api.error.crm.validation.industry-name-length"),
 	CRM_ERROR_INDUSTRY_NOT_FOUND("api.error.crm.industry-not-found"),

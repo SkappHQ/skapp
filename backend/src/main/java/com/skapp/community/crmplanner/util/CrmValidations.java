@@ -12,7 +12,6 @@ import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.type.CrmDealStageColors;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
-import com.skapp.community.crmplanner.type.CrmIndustry;
 import com.skapp.community.peopleplanner.util.Validations;
 import com.skapp.community.crmplanner.payload.request.CrmDealListViewConfigDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealListViewFieldDto;
@@ -257,12 +256,6 @@ public class CrmValidations {
 
 		if (notes.length() > CrmConstants.TASK_NOTES_MAX_LENGTH) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOTES_TOO_LONG);
-		}
-	}
-
-	public static void validateIndustry(CrmIndustry industry) {
-		if (industry == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_INDUSTRY_INVALID);
 		}
 	}
 
