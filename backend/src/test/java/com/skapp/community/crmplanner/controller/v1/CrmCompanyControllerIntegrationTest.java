@@ -327,6 +327,12 @@ class CrmCompanyControllerIntegrationTest {
 			.getId();
 	}
 
+	private com.skapp.community.crmplanner.model.CrmIndustry savedIndustry(String name) {
+		com.skapp.community.crmplanner.model.CrmIndustry industry = new com.skapp.community.crmplanner.model.CrmIndustry();
+		industry.setName(name);
+		return crmIndustryDao.save(industry);
+	}
+
 	@Test
 	@DisplayName("Create company with duplicate name - Returns Bad Request")
 	void createCompany_DuplicateName_ReturnsBadRequest() throws Exception {
@@ -783,8 +789,8 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['id']").value(company.getId()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("MetricsCoUnique"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['industry']")
-				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
+			.andExpect(
+					jsonPath(RESULTS_0_PATH + "['items'][0]['industryId']").value(company.getIndustryDetails().getId()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['website']").value("https://metrics-co.com"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['address']").value("123 Metrics St"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['contactNumber']").value("94771234567"))
@@ -858,7 +864,7 @@ class CrmCompanyControllerIntegrationTest {
 	private CrmCompany createMetricsCompany(String name) {
 		CrmCompany company = new CrmCompany();
 		company.setName(name);
-		company.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		company.setIndustryDetails(savedIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()));
 		return crmCompanyDao.save(company);
 	}
 
@@ -997,7 +1003,7 @@ class CrmCompanyControllerIntegrationTest {
 	void getCompanyById_HappyPath_ReturnsCompany() throws Exception {
 		CrmCompany company = new CrmCompany();
 		company.setName("DetailCoUnique");
-		company.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		company.setIndustryDetails(savedIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()));
 		company.setWebsite("https://detail.com");
 		company.setAddress("1 Detail St");
 		company.setContactNumber("94770000001");
@@ -1008,8 +1014,7 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(company.getId()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("DetailCoUnique"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['industry']")
-				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industryId']").value(company.getIndustryDetails().getId()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['website']").value("https://detail.com"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['address']").value("1 Detail St"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").value("94770000001"));
@@ -1088,7 +1093,7 @@ class CrmCompanyControllerIntegrationTest {
 	private CrmCompany savedBatchCompany(String name) {
 		CrmCompany company = new CrmCompany();
 		company.setName(name);
-		company.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		company.setIndustryDetails(savedIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()));
 		company.setWebsite("https://batch.com");
 		company.setAddress("1 Batch St");
 		company.setContactNumber("94770000010");
@@ -1106,8 +1111,7 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_PATH + ".length()").value(1))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(company.getId()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("BatchCoUnique"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['industry']")
-				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industryId']").value(company.getIndustryDetails().getId()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['website']").value("https://batch.com"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['address']").value("1 Batch St"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").value("94770000010"));
