@@ -12,6 +12,7 @@ import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.RoleLevel;
 import com.skapp.community.common.type.VersionType;
 import com.skapp.community.common.util.CommonModuleUtils;
+import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -40,6 +41,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -517,7 +519,7 @@ public class RolesServiceImpl implements RolesService {
 		superAdminRoles.setInvoiceRole(Role.INVOICE_ADMIN);
 		superAdminRoles.setCrmRole(Role.CRM_ADMIN);
 		superAdminRoles.setIsSuperAdmin(true);
-		superAdminRoles.setChangedDate(timeZoneService.currentOrganizationDate());
+		superAdminRoles.setChangedDate(DateTimeUtils.currentDateAt(ZoneOffset.UTC));
 		superAdminRoles.setRoleChangedBy(employee);
 
 		employeeRoleDao.save(superAdminRoles);

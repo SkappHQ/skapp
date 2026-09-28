@@ -1,11 +1,10 @@
 package com.skapp;
 
-import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.support.TestOrganizationSeeder;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
@@ -22,11 +21,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 		basePackages = { "com.skapp.community.common.repository", "com.skapp.community.peopleplanner.repository",
 				"com.skapp.community.leaveplanner.repository", "com.skapp.community.timeplanner.repository",
 				"com.skapp.community.okrplanner.repository", "com.skapp.community.crmplanner.repository" })
+@Import(TestOrganizationSeeder.class)
 public class TestSkappApplication implements AsyncConfigurer {
-
-	@Bean
-	TestOrganizationSeeder testOrganizationSeeder(OrganizationDao organizationDao) {
-		return new TestOrganizationSeeder(organizationDao);
-	}
 
 }

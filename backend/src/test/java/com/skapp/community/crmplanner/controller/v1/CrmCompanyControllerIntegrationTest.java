@@ -635,7 +635,8 @@ class CrmCompanyControllerIntegrationTest {
 		createMetricsCompany("Rankacme Corp");
 		createMetricsCompany("Rankacme");
 
-		List<CrmCompanyMetricsResponseDto> metrics = crmCompanyDao.getCompanies(PageRequest.of(0, 100), "rankacme")
+		List<CrmCompanyMetricsResponseDto> metrics = crmCompanyDao
+			.getCompanies(PageRequest.of(0, 100), "rankacme", Instant.now())
 			.getContent();
 
 		assertThat(metrics).extracting(CrmCompanyMetricsResponseDto::getName)
@@ -730,7 +731,8 @@ class CrmCompanyControllerIntegrationTest {
 	}
 
 	private CrmCompanyMetricsResponseDto fetchMetrics(Long companyId, String searchKeyword) {
-		List<CrmCompanyMetricsResponseDto> metrics = crmCompanyDao.getCompanies(PageRequest.of(0, 100), searchKeyword)
+		List<CrmCompanyMetricsResponseDto> metrics = crmCompanyDao
+			.getCompanies(PageRequest.of(0, 100), searchKeyword, Instant.now())
 			.getContent();
 
 		return metrics.stream()

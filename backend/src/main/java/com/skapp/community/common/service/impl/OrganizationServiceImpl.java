@@ -109,6 +109,8 @@ public class OrganizationServiceImpl implements OrganizationService {
 		if (organizationDto.getThemeColor() != null && !isValidThemeColor(organizationDto.getThemeColor()))
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ORGANIZATION_THEME_COLOR_FORMAT_INVALID);
 
+		DateTimeUtils.requireZoneId(organizationDto.getOrganizationTimeZone());
+
 		if (organizationDao.count() > 0)
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_EXCEED_MAX_ORGANIZATION_COUNT);
 

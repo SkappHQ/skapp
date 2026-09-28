@@ -131,7 +131,8 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 			.toList();
 
 		Map<String, Long> lateArrivalCount = filterDto.getTrendPeriod().equals(TrendPeriod.MONTHLY)
-				? calculateMonthlyLateArrivalCount(lateArrivals) : calculateWeeklyLateArrivalCount(lateArrivals);
+				? calculateMonthlyLateArrivalCount(lateArrivals, organizationZone)
+				: calculateWeeklyLateArrivalCount(lateArrivals, organizationZone);
 
 		log.info("lateArrivalTrend: execution ended");
 		return new ResponseEntityDto(false, lateArrivalCount);
@@ -489,16 +490,16 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		return dailyAverageHours;
 	}
 
-	private Map<String, Long> calculateWeeklyLateArrivalCount(List<TimeRecord> lateArrivals) {
+	private Map<String, Long> calculateWeeklyLateArrivalCount(List<TimeRecord> lateArrivals, ZoneId organizationZone) {
 		Map<String, Long> weeklyCount = new LinkedHashMap<>();
-		int currentYear = timeZoneService.currentOrganizationYear();
+		int currentYear = DateTimeUtils.currentDateAt(organizationZone).getYear();
 		LocalDate currentWeekStart = LocalDate.of(currentYear, Month.JANUARY, 1);
 
 		while (currentWeekStart.getYear() == currentYear) {
 			LocalDate currentWeekEnd = currentWeekStart.plusDays(6);
 			String weekLabel = formatWeekRange(currentWeekStart, currentWeekEnd);
 
-			long count = countRecordsInRange(lateArrivals, currentWeekStart, currentWeekEnd);
+			long count = countRecordsInRange(lateArrivals, currentWeekStart, currentWeekEnd, organizationZone);
 
 			weeklyCount.put(weekLabel, count);
 			currentWeekStart = currentWeekEnd.plusDays(1);
@@ -507,16 +508,16 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		return weeklyCount;
 	}
 
-	private Map<String, Long> calculateMonthlyLateArrivalCount(List<TimeRecord> lateArrivals) {
+	private Map<String, Long> calculateMonthlyLateArrivalCount(List<TimeRecord> lateArrivals, ZoneId organizationZone) {
 		Map<String, Long> monthlyCount = new LinkedHashMap<>();
-		int currentYear = timeZoneService.currentOrganizationYear();
+		int currentYear = DateTimeUtils.currentDateAt(organizationZone).getYear();
 		LocalDate startOfMonth = LocalDate.of(currentYear, Month.JANUARY, 1);
 
 		while (startOfMonth.getYear() == currentYear) {
 			LocalDate endOfMonth = startOfMonth.withDayOfMonth(startOfMonth.lengthOfMonth());
 			String monthLabel = startOfMonth.format(DateTimeFormatter.ofPattern("MMM"));
 
-			long count = countRecordsInRange(lateArrivals, startOfMonth, endOfMonth);
+			long count = countRecordsInRange(lateArrivals, startOfMonth, endOfMonth, organizationZone);
 
 			monthlyCount.put(monthLabel, count);
 			startOfMonth = startOfMonth.plusMonths(1);
@@ -525,10 +526,10 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		return monthlyCount;
 	}
 
-	private long countRecordsInRange(List<TimeRecord> records, LocalDate start, LocalDate end) {
+	private long countRecordsInRange(List<TimeRecord> records, LocalDate start, LocalDate end,
+			ZoneId organizationZone) {
 		return records.stream().filter(timeRecord -> {
-			LocalDate slotDate = DateTimeUtils.toDateAt(timeRecord.getClockInTime(),
-					timeZoneService.organizationTimezone());
+			LocalDate slotDate = DateTimeUtils.toDateAt(timeRecord.getClockInTime(), organizationZone);
 			return !slotDate.isBefore(start) && !slotDate.isAfter(end);
 		}).count();
 	}

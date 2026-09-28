@@ -914,6 +914,10 @@ public class TimeServiceImpl implements TimeService {
 				.or(() -> timeRecordDao.findByEmployeeAndDate(timeRequest.getEmployee(),
 						organizationDateOf(timeRequest)))
 				.orElse(null);
+			if (timeRecord != null && timeRequest.getTimeRecord() == null) {
+				timeRequest.setTimeRecord(timeRecord);
+				setRequestHours(timeRequest, timeRecord);
+			}
 			List<TimeSlot> overlappingSlots = new ArrayList<>();
 			if (timeRecord == null)
 				timeRecord = buildTimeRecord(timeRequest, timeRequest.getEmployee());
@@ -1261,12 +1265,12 @@ public class TimeServiceImpl implements TimeService {
 		boolean attendanceConfigForLeaveRequests = attendanceConfigService
 			.getAttendanceConfigByType(AttendanceConfigType.CLOCK_IN_ON_LEAVE_DAYS);
 		if (!attendanceConfigForLeaveRequests && !leaveRequestsList.isEmpty()) {
+			ZoneId organizationZone = timeZoneService.organizationTimezone();
 			for (LeaveRequest leaveRequest : leaveRequestsList) {
-				boolean isEveningLeave = leaveRequest.getLeaveState() == LeaveState.HALFDAY_EVENING
-						&& TimeUtil.isCurrentTimeInEvening(currentDayConfig, morningHours, eveningHours,
-								timeZoneService.organizationTimezone());
-				boolean isMorningLeave = leaveRequest.getLeaveState() == LeaveState.HALFDAY_MORNING && TimeUtil
-					.isCurrentTimeInMorning(currentDayConfig, morningHours, timeZoneService.organizationTimezone());
+				boolean isEveningLeave = leaveRequest.getLeaveState() == LeaveState.HALFDAY_EVENING && TimeUtil
+					.isCurrentTimeInEvening(currentDayConfig, morningHours, eveningHours, organizationZone);
+				boolean isMorningLeave = leaveRequest.getLeaveState() == LeaveState.HALFDAY_MORNING
+						&& TimeUtil.isCurrentTimeInMorning(currentDayConfig, morningHours, organizationZone);
 				boolean isFullDayLeave = leaveRequest.getLeaveState() == LeaveState.FULLDAY;
 
 				if (isEveningLeave || isMorningLeave || isFullDayLeave) {
@@ -1290,12 +1294,12 @@ public class TimeServiceImpl implements TimeService {
 		boolean attendanceConfigForHolidays = attendanceConfigService
 			.getAttendanceConfigByType(AttendanceConfigType.CLOCK_IN_ON_COMPANY_HOLIDAYS);
 		if (!attendanceConfigForHolidays && !holidayList.isEmpty()) {
+			ZoneId organizationZone = timeZoneService.organizationTimezone();
 			for (Holiday holiday : holidayList) {
-				boolean isEveningHoliday = holiday.getHolidayDuration() == HolidayDuration.HALF_DAY_EVENING
-						&& TimeUtil.isCurrentTimeInEvening(currentDayConfig, morningHours, eveningHours,
-								timeZoneService.organizationTimezone());
-				boolean isMorningHoliday = holiday.getHolidayDuration() == HolidayDuration.HALF_DAY_MORNING && TimeUtil
-					.isCurrentTimeInMorning(currentDayConfig, morningHours, timeZoneService.organizationTimezone());
+				boolean isEveningHoliday = holiday.getHolidayDuration() == HolidayDuration.HALF_DAY_EVENING && TimeUtil
+					.isCurrentTimeInEvening(currentDayConfig, morningHours, eveningHours, organizationZone);
+				boolean isMorningHoliday = holiday.getHolidayDuration() == HolidayDuration.HALF_DAY_MORNING
+						&& TimeUtil.isCurrentTimeInMorning(currentDayConfig, morningHours, organizationZone);
 				boolean isFullDayHoliday = holiday.getHolidayDuration() == HolidayDuration.FULL_DAY;
 
 				if (isEveningHoliday || isMorningHoliday || isFullDayHoliday) {
@@ -1504,9 +1508,9 @@ public class TimeServiceImpl implements TimeService {
 		manualTimeSlot.setEndTime(timeRequest.getRequestedEndTime());
 
 		timeRecord.setWorkedHours(timeRequest.getWorkHours());
-		if (timeRequest.getRequestedStartTime() < timeRecord.getClockInTime())
+		if (timeRecord.getClockInTime() == null || timeRequest.getRequestedStartTime() < timeRecord.getClockInTime())
 			timeRecord.setClockInTime(timeRequest.getRequestedStartTime());
-		if (timeRequest.getRequestedEndTime() > timeRecord.getClockOutTime())
+		if (timeRecord.getClockOutTime() != null && timeRequest.getRequestedEndTime() > timeRecord.getClockOutTime())
 			timeRecord.setClockOutTime(timeRequest.getRequestedEndTime());
 
 		timeRecordDao.save(timeRecord);
@@ -1776,13 +1780,17 @@ public class TimeServiceImpl implements TimeService {
 				timeRecord == null ? null : timeRecord.getClockOutTime(), timeRequestDto.getStartTime().toEpochMilli(),
 				timeRequestDto.getEndTime().toEpochMilli());
 
+		setRequestHours(timeRequest, timeRecord);
+
+		return timeRequest;
+	}
+
+	private void setRequestHours(TimeRequest timeRequest, TimeRecord timeRecord) {
 		EnumMap<SlotType, Float> totalHours = new EnumMap<>(SlotType.class);
 		modifySlotsStartEndTimeToCalculateWorkBreakHours(timeRecord, timeRequest, totalHours);
 
 		timeRequest.setWorkHours(totalHours.get(SlotType.WORK));
 		timeRequest.setBreakHours(totalHours.get(SlotType.BREAK));
-
-		return timeRequest;
 	}
 
 	/**

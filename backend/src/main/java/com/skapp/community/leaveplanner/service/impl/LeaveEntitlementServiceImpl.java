@@ -170,21 +170,29 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 	}
 
 	public LocalDate getEntitlementValidFromDate(LocalDate date) {
+		if (date != null) {
+			return date;
+		}
+
 		LeaveCycleDetailsDto leaveCycleDetailsDto = new LeaveCycleDetailsDto();
 		int cycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(leaveCycleDetailsDto.getStartMonth() - 1,
 				leaveCycleDetailsDto.getStartDate(), timeZoneService.organizationTimezone());
 		int leaveCycleStartYear = leaveCycleDetailsDto.getStartMonth() == 1 && leaveCycleDetailsDto.getStartDate() == 1
 				? cycleEndYear : cycleEndYear - 1;
-		return date == null ? DateTimeUtils.getUtcLocalDate(leaveCycleStartYear,
-				leaveCycleDetailsDto.getStartMonth() - 1, leaveCycleDetailsDto.getStartDate()) : date;
+		return DateTimeUtils.getUtcLocalDate(leaveCycleStartYear, leaveCycleDetailsDto.getStartMonth() - 1,
+				leaveCycleDetailsDto.getStartDate());
 	}
 
 	public LocalDate getEntitlementValidToDate(LocalDate date) {
+		if (date != null) {
+			return date;
+		}
+
 		LeaveCycleDetailsDto leaveCycleDetailsDto = new LeaveCycleDetailsDto();
 		int cycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(leaveCycleDetailsDto.getStartMonth() - 1,
 				leaveCycleDetailsDto.getStartDate(), timeZoneService.organizationTimezone());
-		return date == null ? DateTimeUtils.getUtcLocalDate(cycleEndYear, leaveCycleDetailsDto.getEndMonth() - 1,
-				leaveCycleDetailsDto.getEndDate()) : date;
+		return DateTimeUtils.getUtcLocalDate(cycleEndYear, leaveCycleDetailsDto.getEndMonth() - 1,
+				leaveCycleDetailsDto.getEndDate());
 	}
 
 	@Override
