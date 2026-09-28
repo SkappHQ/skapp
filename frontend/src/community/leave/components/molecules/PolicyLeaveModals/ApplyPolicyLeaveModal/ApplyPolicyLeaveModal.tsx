@@ -484,97 +484,99 @@ const ApplyPolicyLeaveModal = () => {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col md:flex-row gap-3 md:gap-7">
-        <div className="flex flex-col gap-3">
-          <fieldset
-            ref={dateFieldRef}
-            tabIndex={-1}
-            aria-label={translateAria(["calendar", "selectDateForLeave"])}
-            className="min-w-0"
-          >
-            <CalendarDateRangePicker
-              selectedDates={selectedDates}
-              setSelectedDates={setSelectedDates}
-              setSelectedMonth={setSelectedMonth}
-              allowedDuration={selectedPolicyBalance.leaveType.minDuration}
-              allHolidays={allHolidays}
-              minDate={minDate}
-              maxDate={maxDate}
-              workingDays={workingDays}
-              myLeaveRequests={blockingLeaveRequests}
+    <div className="flex h-full flex-col">
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="flex flex-col md:flex-row gap-3 md:gap-7">
+          <div className="flex flex-col gap-3">
+            <fieldset
+              ref={dateFieldRef}
+              tabIndex={-1}
+              aria-label={translateAria(["calendar", "selectDateForLeave"])}
+              className="min-w-0"
+            >
+              <CalendarDateRangePicker
+                selectedDates={selectedDates}
+                setSelectedDates={setSelectedDates}
+                setSelectedMonth={setSelectedMonth}
+                allowedDuration={selectedPolicyBalance.leaveType.minDuration}
+                allHolidays={allHolidays}
+                minDate={minDate}
+                maxDate={maxDate}
+                workingDays={workingDays}
+                myLeaveRequests={blockingLeaveRequests}
+              />
+            </fieldset>
+            <div className="flex flex-row items-center gap-2">
+              <p>
+                {translateText(["myPolicyBalance"], {
+                  policyName: selectedPolicyBalance.policyName
+                })}
+              </p>
+              <PolicyLeaveBalanceCard policyBalance={selectedPolicyBalance} />
+            </div>
+          </div>
+          <div className="flex flex-col gap-3 w-full">
+            {selectedDates.length && myTeams?.length ? (
+              <PolicyTeamAvailabilityCard
+                teams={myTeams}
+                resourceAvailability={resourceAvailability}
+              />
+            ) : (
+              <></>
+            )}
+            <DurationSelector
+              label={translateText(["selectDuration"])}
+              onChange={setSelectedDuration}
+              options={{
+                fullDay: LeaveStates.FULL_DAY,
+                halfDayMorning: LeaveStates.MORNING,
+                halfDayEvening: LeaveStates.EVENING
+              }}
+              disabledOptions={disabledDurationSelectorOptions}
+              value={selectedDuration}
             />
-          </fieldset>
-          <div className="flex flex-row items-center gap-2">
-            <p>
-              {translateText(["myPolicyBalance"], {
-                policyName: selectedPolicyBalance.policyName
-              })}
-            </p>
-            <PolicyLeaveBalanceCard policyBalance={selectedPolicyBalance} />
+            <TextArea
+              label={translateText(["comment"])}
+              ariaLabel={{ icon: translateAria(["comment.icon"]) }}
+              placeholder={translateText(["addComment"])}
+              isRequired={selectedPolicyBalance.leaveType.isCommentMust}
+              isAttachmentRequired={
+                selectedPolicyBalance.leaveType.isAttachmentMust
+              }
+              maxLength={MAX_POLICY_LEAVE_COMMENT_LENGTH}
+              name="comment"
+              value={comment}
+              onChange={handleCommentChange}
+              iconName={
+                selectedPolicyBalance.leaveType.isAttachment
+                  ? IconName.ATTACHMENT_ICON
+                  : undefined
+              }
+              onIconClick={handleAttachmentIconClick}
+              error={{
+                comment: formErrors?.comment,
+                attachment: formErrors?.attachment
+              }}
+            />
+            <AttachmentSummary
+              attachments={attachments}
+              onDeleteBtnClick={handleDeleteAttachment}
+            />
+            {!isSubmitDisabled && (
+              <LeaveSummary
+                leaveTypeName={selectedPolicyBalance.policyName}
+                leaveTypeEmoji={selectedPolicyBalance.leaveType.emojiCode}
+                leaveDuration={selectedDuration}
+                startDate={selectedDates[0]}
+                endDate={selectedDates[1]}
+                resourceAvailability={resourceAvailability}
+                workingDays={workingDays}
+              />
+            )}
           </div>
         </div>
-        <div className="flex flex-col gap-3 w-full">
-          {selectedDates.length && myTeams?.length ? (
-            <PolicyTeamAvailabilityCard
-              teams={myTeams}
-              resourceAvailability={resourceAvailability}
-            />
-          ) : (
-            <></>
-          )}
-          <DurationSelector
-            label={translateText(["selectDuration"])}
-            onChange={setSelectedDuration}
-            options={{
-              fullDay: LeaveStates.FULL_DAY,
-              halfDayMorning: LeaveStates.MORNING,
-              halfDayEvening: LeaveStates.EVENING
-            }}
-            disabledOptions={disabledDurationSelectorOptions}
-            value={selectedDuration}
-          />
-          <TextArea
-            label={translateText(["comment"])}
-            ariaLabel={{ icon: translateAria(["comment.icon"]) }}
-            placeholder={translateText(["addComment"])}
-            isRequired={selectedPolicyBalance.leaveType.isCommentMust}
-            isAttachmentRequired={
-              selectedPolicyBalance.leaveType.isAttachmentMust
-            }
-            maxLength={MAX_POLICY_LEAVE_COMMENT_LENGTH}
-            name="comment"
-            value={comment}
-            onChange={handleCommentChange}
-            iconName={
-              selectedPolicyBalance.leaveType.isAttachment
-                ? IconName.ATTACHMENT_ICON
-                : undefined
-            }
-            onIconClick={handleAttachmentIconClick}
-            error={{
-              comment: formErrors?.comment,
-              attachment: formErrors?.attachment
-            }}
-          />
-          <AttachmentSummary
-            attachments={attachments}
-            onDeleteBtnClick={handleDeleteAttachment}
-          />
-          {!isSubmitDisabled && (
-            <LeaveSummary
-              leaveTypeName={selectedPolicyBalance.policyName}
-              leaveTypeEmoji={selectedPolicyBalance.leaveType.emojiCode}
-              leaveDuration={selectedDuration}
-              startDate={selectedDates[0]}
-              endDate={selectedDates[1]}
-              resourceAvailability={resourceAvailability}
-              workingDays={workingDays}
-            />
-          )}
-        </div>
       </div>
-      <div className="flex flex-row gap-3 mt-4 justify-end">
+      <div className="mt-4 flex shrink-0 flex-row justify-end gap-3">
         <ButtonV2
           variant={"tertiary"}
           onClick={handleCancel}
