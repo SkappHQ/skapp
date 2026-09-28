@@ -2,6 +2,7 @@ package com.skapp.community.common.util;
 
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
+import lombok.experimental.UtilityClass;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -29,6 +30,7 @@ import static org.aspectj.bridge.Version.SIMPLE_DATE_FORMAT;
 /**
  * Utility class for handling UTC date and time operations.
  */
+@UtilityClass
 public class DateTimeUtils {
 
 	public static final int JANUARY = 1;
@@ -90,10 +92,6 @@ public class DateTimeUtils {
 		.ofPattern("MM/dd/yyyy hh:mm:ss a");
 
 	private static final Set<String> AVAILABLE_ZONE_IDS = Set.copyOf(ZoneId.getAvailableZoneIds());
-
-	private DateTimeUtils() {
-		throw new UnsupportedOperationException("Utility class");
-	}
 
 	/**
 	 * Get the current UTC LocalDateTime.
