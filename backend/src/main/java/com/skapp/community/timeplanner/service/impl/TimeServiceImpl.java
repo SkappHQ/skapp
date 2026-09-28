@@ -124,10 +124,8 @@ import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -1964,11 +1962,7 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	private void updateWorkHours(TimeRecord timeRecord, TimeSlot slot, SlotType slotType) {
-		LocalDateTime startTime = DateTimeUtils.epochMillisToUtcLocalDateTime(slot.getStartTime(), null);
-		LocalDateTime endTime = DateTimeUtils.epochMillisToUtcLocalDateTime(slot.getEndTime(), null);
-
-		float workHours = CommonModuleUtils.calculateHoursBetweenEpochMillis(
-				startTime.toInstant(ZoneOffset.UTC).toEpochMilli(), endTime.toInstant(ZoneOffset.UTC).toEpochMilli());
+		float workHours = CommonModuleUtils.calculateHoursBetweenEpochMillis(slot.getStartTime(), slot.getEndTime());
 		float hours;
 		if (slotType.equals(SlotType.WORK)) {
 			hours = timeRecord.getWorkedHours() + workHours;

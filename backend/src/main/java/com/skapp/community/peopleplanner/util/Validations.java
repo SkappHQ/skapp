@@ -18,6 +18,7 @@ import com.skapp.community.peopleplanner.payload.request.ProbationPeriodDto;
 import lombok.experimental.UtilityClass;
 
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -54,7 +55,7 @@ public class Validations {
 	}
 
 	public static void validateVisaDates(List<EmploymentVisaDto> employeeVisas) {
-		LocalDate currentDate = DateTimeUtils.getCurrentUtcDate();
+		LocalDate currentDate = DateTimeUtils.currentDateAt(ZoneOffset.UTC);
 		for (EmploymentVisaDto visa : employeeVisas) {
 			if (visa.getIssuedDate() != null && visa.getIssuedDate().isAfter(currentDate)) {
 				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_VALIDATION_VISA_ISSUED_DATE);

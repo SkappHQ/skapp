@@ -13,7 +13,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.MonthDay;
-import java.time.Year;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -94,14 +93,6 @@ public class DateTimeUtils {
 
 	private DateTimeUtils() {
 		throw new UnsupportedOperationException("Utility class");
-	}
-
-	/**
-	 * Get the current UTC LocalDate.
-	 * @return Current date in UTC.
-	 */
-	public static LocalDate getCurrentUtcDate() {
-		return LocalDate.now(UTC_ZONE_ID);
 	}
 
 	/**
@@ -235,53 +226,6 @@ public class DateTimeUtils {
 	}
 
 	/**
-	 * Converts an Instant to a LocalDate in UTC.
-	 * @param instant the Instant to convert; must not be null
-	 * @return the corresponding LocalDate in UTC
-	 * @throws IllegalArgumentException if the instant is null
-	 */
-	public static LocalDate fromUtcInstantToLocaldate(Instant instant) {
-		if (instant == null) {
-			throw new IllegalArgumentException("Instant cannot be null");
-		}
-		return instant.atZone(UTC_ZONE_ID).toLocalDate();
-	}
-
-	/**
-	 * Convert a UTC date-time to another time zone.
-	 * @param dateTime LocalDateTime in UTC.
-	 * @param targetZoneId The target time zone ID.
-	 * @return LocalDateTime in the target time zone.
-	 * @throws ModuleException If the dateTime or targetZoneId is null.
-	 */
-	public static LocalDateTime convertToTimeZone(LocalDateTime dateTime, ZoneId targetZoneId) {
-		if (dateTime == null) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_DATE_TIME_CANNOT_BE_NULL);
-		}
-		if (targetZoneId == null) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_TIME_ZONE_CANNOT_BE_NULL);
-		}
-		return dateTime.atZone(UTC_ZONE_ID).withZoneSameInstant(targetZoneId).toLocalDateTime();
-	}
-
-	/**
-	 * Convert a LocalDateTime in another time zone to UTC.
-	 * @param dateTime LocalDateTime in the source time zone.
-	 * @param sourceZoneId The source time zone ID.
-	 * @return LocalDateTime in UTC.
-	 * @throws ModuleException If the dateTime or sourceZoneId is null.
-	 */
-	public static LocalDateTime convertToUtc(LocalDateTime dateTime, ZoneId sourceZoneId) {
-		if (dateTime == null) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_DATE_TIME_CANNOT_BE_NULL);
-		}
-		if (sourceZoneId == null) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_TIME_ZONE_CANNOT_BE_NULL);
-		}
-		return dateTime.atZone(sourceZoneId).withZoneSameInstant(UTC_ZONE_ID).toLocalDateTime();
-	}
-
-	/**
 	 * Advances the given date by one day, skipping the weekend if the date is Friday. If
 	 * the date is a Friday, this method returns the date for the following Monday. For
 	 * any other day, it returns the next day.
@@ -344,14 +288,6 @@ public class DateTimeUtils {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_DATE_CANNOT_BE_NULL);
 		}
 		return date.getYear();
-	}
-
-	/**
-	 * Returns the current year.
-	 * @return the current year.
-	 */
-	public static int getCurrentYear() {
-		return Year.now(UTC_ZONE_ID).getValue();
 	}
 
 	/**
@@ -474,21 +410,6 @@ public class DateTimeUtils {
 	}
 
 	/**
-	 * Checks if the given LocalDate is in the current year or the next year.
-	 * @param date The LocalDate to check. Cannot be null.
-	 * @return true if the date is in the current year or next year, otherwise false.
-	 * @throws ModuleException If the date is null.
-	 */
-	public static boolean isCurrentYearOrNext(LocalDate date) {
-		if (date == null) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_DATE_CANNOT_BE_NULL);
-		}
-		int year = date.getYear();
-		int currentYear = Year.now().getValue();
-		return (year == currentYear || year == currentYear + 1);
-	}
-
-	/**
 	 * Validates whether the provided time zone ID is valid.
 	 * @param timeZone The time zone ID to validate. Cannot be null.
 	 * @return true if the time zone ID is valid, otherwise false.
@@ -499,24 +420,6 @@ public class DateTimeUtils {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_TIME_ZONE_CANNOT_BE_NULL);
 		}
 		return AVAILABLE_ZONE_IDS.contains(timeZone);
-	}
-
-	/**
-	 * Resolves a time zone string to a ZoneId, falling back to UTC if the value is null,
-	 * blank, or not a valid zone ID.
-	 * @param timezone The time zone ID string to resolve.
-	 * @return The resolved ZoneId, or UTC if the input is invalid.
-	 */
-	public static ZoneId resolveZoneId(String timezone) {
-		if (timezone == null) {
-			return UTC_ZONE_ID;
-		}
-		try {
-			return ZoneId.of(timezone);
-		}
-		catch (DateTimeException e) {
-			return UTC_ZONE_ID;
-		}
 	}
 
 	public static ZoneId requireZoneId(String timezone) {
@@ -598,35 +501,12 @@ public class DateTimeUtils {
 	}
 
 	/**
-	 * Converts epoch milliseconds to LocalDateTime using the specified ZoneId.
-	 * @param epochMillis the epoch milliseconds to convert
-	 * @param zoneId the ZoneId to apply
-	 * @return the corresponding LocalDateTime in the specified time zone, or null if
-	 * epochMillis is null
-	 */
-	public static LocalDateTime epochMillisToUtcLocalDateTime(Long epochMillis, ZoneId zoneId) {
-		if (zoneId == null) {
-			return Instant.ofEpochMilli(epochMillis).atZone(ZoneOffset.UTC).toLocalDateTime();
-		}
-		return Instant.ofEpochMilli(epochMillis).atZone(zoneId).toLocalDateTime();
-	}
-
-	/**
 	 * Converts epoch milliseconds to an {@link Instant}.
 	 * @param epochMillis the epoch milliseconds to convert
 	 * @return the corresponding {@link Instant}
 	 */
 	public static Instant epochMillisToInstant(Long epochMillis) {
 		return Instant.ofEpochMilli(epochMillis);
-	}
-
-	/**
-	 * Converts epoch milliseconds to UTC LocalDate.
-	 * @param epochMillis the epoch milliseconds to convert
-	 * @return the corresponding LocalDate in UTC, or null if epochMillis is null
-	 */
-	public static LocalDate epochMillisToUtcLocalDate(Long epochMillis) {
-		return Instant.ofEpochMilli(epochMillis).atZone(ZoneOffset.UTC).toLocalDate();
 	}
 
 	/**
@@ -645,19 +525,6 @@ public class DateTimeUtils {
 	 */
 	public static Instant epochSecondToInstant(Long epochSecond) {
 		return Instant.ofEpochSecond(epochSecond);
-	}
-
-	/**
-	 * Converts epoch milliseconds to LocalTime using UTC timezone.
-	 * @param epochMillis the epoch milliseconds to convert.
-	 * @return the corresponding LocalTime in UTC.
-	 * @throws ModuleException if epochMillis is null.
-	 */
-	public static LocalTime epochMillisToUtcLocalTime(Long epochMillis) {
-		if (epochMillis == null) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_EPOCH_MILLIS_CANNOT_BE_NULL);
-		}
-		return Instant.ofEpochMilli(epochMillis).atZone(ZoneOffset.UTC).toLocalTime();
 	}
 
 	/**
@@ -684,19 +551,6 @@ public class DateTimeUtils {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_DATE_TIME_CANNOT_BE_NULL);
 		}
 		return localDateTime.toLocalDate();
-	}
-
-	/**
-	 * Converts epoch milliseconds to LocalDate using UTC timezone.
-	 * @param epochDateTime the epoch milliseconds to convert. Cannot be null.
-	 * @return the corresponding LocalDate in UTC.
-	 * @throws ModuleException if epochDateTime is null.
-	 */
-	public static LocalDate getLocalDateFromEpoch(Long epochDateTime) {
-		if (epochDateTime == null) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_EPOCH_MILLIS_CANNOT_BE_NULL);
-		}
-		return Instant.ofEpochMilli(epochDateTime).atZone(ZoneOffset.UTC).toLocalDate();
 	}
 
 	/**
