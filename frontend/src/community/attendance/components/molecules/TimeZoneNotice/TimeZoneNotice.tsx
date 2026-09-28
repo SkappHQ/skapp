@@ -11,7 +11,7 @@ import { readsSameWallClock } from "~community/common/utils/dateTimeUtils";
 const TimeZoneNotice: FC = () => {
   const displayZone = useDisplayZone();
   const organizationZone = useOrganizationZone();
-  const translateText = useTranslator("attendanceModule", "timeWidget");
+  const translateText = useTranslator("attendanceModule", "timesheet");
 
   if (!displayZone || !organizationZone) {
     return null;

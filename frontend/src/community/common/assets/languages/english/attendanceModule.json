@@ -270,7 +270,9 @@
       "workHours": "Worked Hours",
       "title": "Timesheet"
     },
-    "nonexistentTimeDes": "This time does not exist on this date because the clocks change. Choose another time."
+    "nonexistentTimeDes": "This time does not exist on this date because the clocks change. Choose another time.",
+    "displayZoneNotice": "Times shown in {{displayZone}}.",
+    "organizationZoneNotice": "Your work day follows {{organizationZone}}."
   },
   "timeWidget": {
     "clockIn": "Clock In",
@@ -301,9 +303,7 @@
     "clockOutAlertMessage": "You will be clocked out in 10 minutes. If you wish to continue working, please clock in again.",
     "ok": "Okay",
     "clockInErrorTitle": "Oops! Something went wrong",
-    "clockInErrorDescription": "Failed to record your attendance. Please try again.",
-    "displayZoneNotice": "Times shown in {{displayZone}}.",
-    "organizationZoneNotice": "Your work day follows {{organizationZone}}."
+    "clockInErrorDescription": "Failed to record your attendance. Please try again."
   },
   "myTimesheet": {
     "pageHead": "My Timesheet | Skapp",

@@ -146,9 +146,12 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
       SystemPermissionTypes.MANAGERS
     );
 
-    const timeZoneList = generateTimezoneList();
+    const timeZoneList = useMemo(() => generateTimezoneList(), []);
 
-    const workTimeZoneDictionary = generateTimeZoneDictionary(timeZoneList);
+    const workTimeZoneDictionary = useMemo(
+      () => generateTimeZoneDictionary(timeZoneList),
+      [timeZoneList]
+    );
 
     const projectTeamList: DropdownListType[] = projectTeamNames?.map(
       (projectTeamName: TeamNamesType) => {

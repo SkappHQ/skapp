@@ -18,7 +18,8 @@ import {
   convertTo12HourByDateString,
   convertToDateTime,
   convertToUtc,
-  getDuration
+  getDuration,
+  isNonexistentWallClock
 } from "~community/attendance/utils/TimeUtils";
 import { getModalBeforeManualEntry } from "~community/attendance/utils/TimesheetModalUtils";
 import {
@@ -34,6 +35,7 @@ import {
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { ErrorResponse } from "~community/common/types/CommonTypes";
+import { isValidZone } from "~community/common/utils/dateTimeUtils";
 import {
   useAddDirectTimeEntry,
   useEditDirectTimeEntry
@@ -316,6 +318,10 @@ const useAddEntry = () => {
     values: TimeEntryFormValueType,
     isGetTimeAvailabilityLoading: boolean
   ) => {
+    if (!isValidZone(entryZone)) {
+      return true;
+    }
+
     const timeSlots = selectedDailyRecord?.timeSlots ?? [];
 
     const currentRecordStartTime = convertTo12HourByDateString(
@@ -398,10 +404,14 @@ const useAddEntry = () => {
     values: TimeEntryFormValueType
   ): TimeEntryTimeErrorsType => {
     const errors: TimeEntryTimeErrorsType = {};
-    if (!convertToDateTime(values.timeEntryDate, values.fromTime, entryZone)) {
+    if (
+      isNonexistentWallClock(values.timeEntryDate, values.fromTime, entryZone)
+    ) {
       errors.fromTime = translateText(["nonexistentTimeDes"]);
     }
-    if (!convertToDateTime(values.timeEntryDate, values.toTime, entryZone)) {
+    if (
+      isNonexistentWallClock(values.timeEntryDate, values.toTime, entryZone)
+    ) {
       errors.toTime = translateText(["nonexistentTimeDes"]);
     }
     return errors;

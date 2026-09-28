@@ -31,6 +31,7 @@ import {
 } from "~community/common/types/CommonTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import {
+  calendarDayStartMillis,
   getStartAndEndOfYear,
   nowInZone
 } from "~community/common/utils/dateTimeUtils";
@@ -144,7 +145,7 @@ export const useGetDailyLogs = (
       );
     },
     //onError: setGeneralErrors,
-    enabled: isEnable
+    enabled: isEnable && !!displayZone
   });
 };
 
@@ -183,15 +184,18 @@ export const useGetTimeSheetRequests = () => {
     employeeTimesheetRequestParams;
   const { startDateOfYear, endDateOfYear } = getStartAndEndOfYear(DATE_FORMAT);
   return useQuery({
-    queryKey: attendanceQueryKeys.getEmployeeRequests({
-      startDate: startDate,
-      endDate: endDate,
-      page,
-      size,
-      status,
-      startOfYear: startDateOfYear,
-      endOfYear: endDateOfYear
-    }),
+    queryKey: [
+      ...attendanceQueryKeys.getEmployeeRequests({
+        startDate: startDate,
+        endDate: endDate,
+        page,
+        size,
+        status,
+        startOfYear: startDateOfYear,
+        endOfYear: endDateOfYear
+      }),
+      displayZone
+    ],
     queryFn: async () => {
       const url = employeeAttendanceEndpoints.EMPLOYEE_REQUESTS;
       return await authFetch.get(url, {
@@ -204,9 +208,9 @@ export const useGetTimeSheetRequests = () => {
           sortBy: SortOrderTypes.DESC,
           sortKey: SortKeyTypes.CREATION_DATE,
           startTime: startDate
-            ? convertToMilliseconds(convertToUtc(startDate))
+            ? calendarDayStartMillis(startDate, displayZone)
             : null,
-          endTime: endDate ? convertToMilliseconds(convertToUtc(endDate)) : null
+          endTime: endDate ? calendarDayStartMillis(endDate, displayZone) : null
         }
       });
     },
@@ -348,7 +352,7 @@ export const useGetDailyLogsByEmployeeId = (
   const displayZone = useDisplayZone();
   const organizationZone = useOrganizationZone();
   return useQuery({
-    enabled: isEnabled && !!employeeId,
+    enabled: isEnabled && !!employeeId && !!displayZone,
     queryKey: attendanceQueryKeys.getEmployeeDailyLogByEmployeeId(
       startDate,
       endDate,

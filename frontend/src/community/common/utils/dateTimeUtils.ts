@@ -1,4 +1,4 @@
-import { DateTime } from "luxon";
+import { DateTime, IANAZone } from "luxon";
 import type { DateRange } from "react-day-picker";
 
 import {
@@ -202,6 +202,9 @@ export const convertUTCStringToLocalDateTime = (
   return DateTime.fromISO(isoString, { zone: "UTC" }).setZone("local");
 };
 
+export const isValidZone = (zone: string | null | undefined): zone is string =>
+  !!zone && IANAZone.isValidZone(zone);
+
 export const parseInstant = (isoInstant: string): DateTime =>
   DateTime.fromISO(isoInstant, { zone: "utc" });
 
@@ -221,6 +224,37 @@ export const nowInZone = (zone: string | undefined): DateTime => {
 
 export const currentDateIn = (zone: string | undefined): string =>
   nowInZone(zone).toFormat(DATE_FORMAT);
+
+export const pickedDayToInstant = (
+  pickedDay: Date,
+  zone: string | undefined
+): string | null =>
+  DateTime.fromObject(
+    {
+      year: pickedDay.getFullYear(),
+      month: pickedDay.getMonth() + 1,
+      day: pickedDay.getDate()
+    },
+    { zone: isValidZone(zone) ? zone : "local" }
+  )
+    .toUTC()
+    .toISO();
+
+export const instantToPickedDay = (
+  isoInstant: string,
+  zone: string | undefined
+): Date => {
+  const zoned = instantInZone(isoInstant, zone);
+  return new Date(zoned.year, zoned.month - 1, zoned.day);
+};
+
+export const calendarDayStartMillis = (
+  date: string,
+  zone: string | undefined
+): number =>
+  DateTime.fromISO(date, { zone: isValidZone(zone) ? zone : "local" })
+    .startOf("day")
+    .toMillis();
 
 export const readsSameWallClock = (
   zone: string,

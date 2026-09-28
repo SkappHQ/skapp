@@ -5,7 +5,7 @@ import {
   TimeSlotsType
 } from "~community/attendance/types/timeSheetTypes";
 import { daysTypes } from "~community/common/constants/stringConstants";
-import { nowInZone } from "~community/common/utils/dateTimeUtils";
+import { isValidZone, nowInZone } from "~community/common/utils/dateTimeUtils";
 
 export const createEmptyDailyLog = (date: string): DailyLogType => ({
   timeRecordId: null,
@@ -100,20 +100,25 @@ export const convertToMilliseconds = (timeString: string) => {
   return milliseconds;
 };
 
+const parseTypedWallClock = (date: string, time: string): DateTime =>
+  DateTime.fromFormat(`${date} ${time}`, "yyyy-MM-dd hh:mm a", {
+    zone: "utc"
+  });
+
 export const convertToDateTime = (
   date: string,
   time: string,
   zone?: string
 ): string | null => {
-  if (!zone) {
+  if (!isValidZone(zone)) {
     return null;
   }
 
-  const typedWallClock = DateTime.fromFormat(
-    `${date} ${time}`,
-    "yyyy-MM-dd hh:mm a",
-    { zone: "utc" }
-  );
+  const typedWallClock = parseTypedWallClock(date, time);
+  if (!typedWallClock.isValid) {
+    return null;
+  }
+
   const dateTime = typedWallClock.setZone(zone, { keepLocalTime: true });
   const existsInZone =
     dateTime.toISO({ includeOffset: false }) ===
@@ -121,8 +126,17 @@ export const convertToDateTime = (
   return existsInZone ? dateTime.toISO() : null;
 };
 
+export const isNonexistentWallClock = (
+  date: string,
+  time: string,
+  zone?: string
+): boolean =>
+  isValidZone(zone) &&
+  parseTypedWallClock(date, time).isValid &&
+  convertToDateTime(date, time, zone) === null;
+
 export const convertToTimeZoneISO = (isoTime: string, zone?: string) => {
-  if (!zone) {
+  if (!isValidZone(zone)) {
     return null;
   }
 

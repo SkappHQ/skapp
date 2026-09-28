@@ -7,6 +7,7 @@ import React, {
   SyntheticEvent,
   useCallback,
   useEffect,
+  useMemo,
   useState
 } from "react";
 
@@ -104,9 +105,12 @@ const useEmployeeDetailsFormHandler = ({
 
   const { data: businessUnits } = useGetBusinessUnits();
 
-  const timeZoneList = generateTimezoneList();
+  const timeZoneList = useMemo(() => generateTimezoneList(), []);
 
-  const workTimeZoneDictionary = generateTimeZoneDictionary(timeZoneList);
+  const workTimeZoneDictionary = useMemo(
+    () => generateTimeZoneDictionary(timeZoneList),
+    [timeZoneList]
+  );
 
   const projectTeamList: DropdownListType[] = projectTeamNames?.map(
     (projectTeamName: TeamNamesType) => {

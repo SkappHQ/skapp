@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { OrganizationDetailsType } from "~community/common/types/OrganizationCreateTypes";
+import { isValidZone } from "~community/common/utils/dateTimeUtils";
 import { getRequestTimezone } from "~community/common/utils/requestTimezoneUtils";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
@@ -23,7 +24,9 @@ export const useDisplayZone = (): string | undefined => {
   const { data: employee } = useGetUserPersonalDetails();
   const organizationZone = useOrganizationZone();
 
-  return employee?.timeZone || organizationZone;
+  const employeeZone = employee?.timeZone;
+
+  return isValidZone(employeeZone) ? employeeZone : organizationZone;
 };
 
 export const useSyncRequestTimezone = (): void => {
