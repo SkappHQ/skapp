@@ -217,10 +217,22 @@ class CrmCompanyControllerIntegrationTest {
 		CrmCompanyCreateDto createDto = createValidPayload();
 		createDto.setIndustryId(expectedIndustryId);
 
-		Long companyId = extractCompanyId(performPostRequest(createDto).andExpect(status().isCreated()));
+		Long companyId = extractCompanyId(performPostRequest(createDto).andExpect(status().isCreated())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industryId']").value(expectedIndustryId)));
 
 		CrmCompany savedCompany = crmCompanyDao.findById(companyId).orElseThrow();
 		assertThat(savedCompany.getIndustry().getId()).isEqualTo(expectedIndustryId);
+	}
+
+	@Test
+	@DisplayName("Create company with a blank industry name - Returns Bad Request")
+	void createCompany_BlankIndustryName_ReturnsBadRequest() throws Exception {
+		CrmCompanyCreateDto createDto = createValidPayload();
+		createDto.setIndustryName("   ");
+
+		performPostRequest(createDto).andExpect(status().isBadRequest())
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_INDUSTRY_NAME_REQUIRED)));
 	}
 
 	@Test
@@ -238,10 +250,12 @@ class CrmCompanyControllerIntegrationTest {
 		CrmCompanyCreateDto createDto = createValidPayload();
 		createDto.setIndustryName("  Deep   Sea  Tourism ");
 
-		Long companyId = extractCompanyId(performPostRequest(createDto).andExpect(status().isCreated()));
+		ResultActions result = performPostRequest(createDto).andExpect(status().isCreated());
+		Long companyId = extractCompanyId(result);
 
 		CrmCompany savedCompany = crmCompanyDao.findById(companyId).orElseThrow();
 		assertThat(savedCompany.getIndustry()).isNotNull();
+		result.andExpect(jsonPath(RESULTS_0_PATH + "['industryId']").value(savedCompany.getIndustry().getId()));
 
 		CrmIndustry createdIndustry = crmIndustryDao.findById(savedCompany.getIndustry().getId()).orElseThrow();
 		assertThat(createdIndustry.getName()).isEqualTo("Deep Sea Tourism");
@@ -270,10 +284,24 @@ class CrmCompanyControllerIntegrationTest {
 
 		CrmCompanyEditDto editDto = createValidEditPayload();
 		editDto.setIndustryId(JsonNullable.of(expectedIndustryId));
-		performPatchRequest(companyId, editDto).andExpect(status().isOk());
+		performPatchRequest(companyId, editDto).andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industryId']").value(expectedIndustryId));
 
 		CrmCompany updatedCompany = crmCompanyDao.findById(companyId).orElseThrow();
 		assertThat(updatedCompany.getIndustry().getId()).isEqualTo(expectedIndustryId);
+	}
+
+	@Test
+	@DisplayName("Edit company with a blank industry name - Returns Bad Request")
+	void editCompany_BlankIndustryName_ReturnsBadRequest() throws Exception {
+		Long companyId = extractCompanyId(performPostRequest(createValidPayload()).andExpect(status().isCreated()));
+
+		CrmCompanyEditDto editDto = createValidEditPayload();
+		editDto.setIndustryName("   ");
+
+		performPatchRequest(companyId, editDto).andExpect(status().isBadRequest())
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_INDUSTRY_NAME_REQUIRED)));
 	}
 
 	@Test

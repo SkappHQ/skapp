@@ -148,7 +148,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_INDUSTRY_NOT_FOUND));
 		}
 
-		if (industryName != null && !industryName.isBlank()) {
+		if (industryName != null) {
 			return findOrCreateIndustryByName(industryName);
 		}
 
