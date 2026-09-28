@@ -6,7 +6,7 @@ import {
 import {
   getFutureHolidays,
   getSelectAllCheckboxCheckedStatus,
-  getSelectAllCheckboxVisibility,
+  getSelectAllCheckboxEnableStatus,
   handleAddHolidayButtonClick,
   handleBulkDeleteClick,
   handleIndividualDelete,
@@ -55,26 +55,20 @@ describe("holidayTableUtils", () => {
     });
   });
 
-  describe("getSelectAllCheckboxVisibility", () => {
+  describe("getSelectAllCheckboxEnableStatus", () => {
     it("should return true if user is admin and there are future holidays", () => {
       const holidayData = [{ date: "2099-01-01" }] as Holiday[];
-      expect(getSelectAllCheckboxVisibility(true, holidayData, undefined)).toBe(
-        true
-      );
+      expect(getSelectAllCheckboxEnableStatus(true, holidayData)).toBe(true);
     });
 
     it("should return false if user is not admin", () => {
       const holidayData = [{ date: "2099-01-01" }] as Holiday[];
-      expect(
-        getSelectAllCheckboxVisibility(false, holidayData, undefined)
-      ).toBe(false);
+      expect(getSelectAllCheckboxEnableStatus(false, holidayData)).toBe(false);
     });
 
     it("should return false if no future holidays exist", () => {
       const holidayData = [{ date: "2023-01-01" }] as Holiday[];
-      expect(getSelectAllCheckboxVisibility(true, holidayData, undefined)).toBe(
-        false
-      );
+      expect(getSelectAllCheckboxEnableStatus(true, holidayData)).toBe(false);
     });
   });
 

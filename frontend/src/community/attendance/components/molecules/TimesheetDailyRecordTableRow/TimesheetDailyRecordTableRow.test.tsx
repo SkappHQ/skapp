@@ -12,22 +12,6 @@ jest.mock("~community/common/hooks/useTranslator", () => ({
   useTranslator: () => (keys: string[]) => keys.join(".")
 }));
 
-jest.mock(
-  "@rootcodelabs/skapp-ui",
-  () => require("~community/common/mocks/MockSkappUi"),
-  { virtual: true }
-);
-
-jest.mock("~community/common/hooks/useSessionData", () => ({
-  __esModule: true,
-  default: () => ({ isFreeTier: false })
-}));
-
-jest.mock("~community/common/hooks/useDisplayZone", () => ({
-  useDisplayZone: jest.fn(() => "UTC"),
-  useOrganizationZone: jest.fn(() => "UTC")
-}));
-
 beforeEach(() => {
   global.fetch = jest.fn();
 });

@@ -3,7 +3,6 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import MockTheme from "~community/common/mocks/MockTheme";
-import "~community/common/mocks/mockTimeEntryDependencies";
 
 import TimeEntryExists from "./TimeEntryExists";
 
@@ -32,7 +31,8 @@ jest.mock("~community/common/hooks/useTranslator", () => ({
 }));
 
 jest.mock("~community/attendance/utils/TimeUtils", () => ({
-  convertToUtc: jest.fn((time) => time)
+  convertToUtc: jest.fn((time) => time),
+  getCurrentTimeZone: jest.fn(() => "UTC")
 }));
 
 describe("TimeEntryExists", () => {
