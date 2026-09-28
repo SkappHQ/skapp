@@ -12,6 +12,7 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
+import useConfigurationUnsavedChanges from "~community/configurations/hooks/useConfigurationUnsavedChanges";
 import {
   useGetBirthdayNotificationConfig,
   useUpdateBirthdayNotificationConfig
@@ -93,6 +94,9 @@ const PeopleConfigurations: FC = () => {
 
   const isWorkspaceChanged = canManageGoogleWorkspace && isWorkspaceDirty;
   const isAnyChanged = birthdayFormik.dirty || isWorkspaceChanged;
+
+  useConfigurationUnsavedChanges(isAnyChanged);
+
   const isAnySubmitting =
     isPending || (canManageGoogleWorkspace && isWorkspaceSubmitting);
 

@@ -15,6 +15,7 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
+import useConfigurationUnsavedChanges from "~community/configurations/hooks/useConfigurationUnsavedChanges";
 import FingerprintSettings from "~enterprise/configurations/components/organisms/FingerprintSettings/FingerprintSettings";
 import GeoFencingSettings from "~enterprise/configurations/components/organisms/GeoFencingSettings/GeoFencingSettings";
 import ManualEntryRestrictionSettings from "~enterprise/configurations/components/organisms/ManualEntryRestrictionSettings/ManualEntryRestrictionSettings";
@@ -79,6 +80,8 @@ const AttendanceConfiguration = (): JSX.Element => {
       ([key, value]) =>
         configData?.[key as keyof AttendanceConfigurationType] !== value
     );
+
+  useConfigurationUnsavedChanges(isFormChanged());
 
   const isManualEntryRestricted = Boolean(
     config?.isManualTimeEntryRestrictionEnabled
