@@ -1,6 +1,7 @@
 package com.skapp.community.common.repository;
 
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.repository.projection.EmailUserIdProjection;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,7 +16,7 @@ public interface UserDao extends JpaRepository<User, Long> {
 
 	Optional<User> findByEmail(@NotNull @Email String email);
 
-	List<User> findByEmailIn(Collection<String> emails);
+	List<EmailUserIdProjection> findByEmailIn(Collection<String> emails);
 
 	Long countByIsActive(boolean isActive);
 
