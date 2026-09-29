@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Getter
@@ -40,13 +40,13 @@ public class PolicyLeaveRequestResponseDto {
 
 	private String reviewerComment;
 
-	private LocalDateTime reviewedDate;
+	private Instant reviewedDate;
 
 	private Boolean isViewed;
 
 	private Boolean isAutoApproved;
 
-	private LocalDateTime createdDate;
+	private Instant createdDate;
 
 	private List<PolicyLeaveAttachmentResponseDto> attachments;
 

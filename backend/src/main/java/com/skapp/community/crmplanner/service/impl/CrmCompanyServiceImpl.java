@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
@@ -45,6 +46,8 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 	private final CrmMapper crmCompanyMapper;
 
 	private final MessageUtil messageUtil;
+
+	private final TimeZoneService timeZoneService;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -141,7 +144,8 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 	@Override
 	public ResponseEntityDto getCompanies(String searchKeyword, Pageable pageable) {
 		log.info("getCompanies: execution started");
-		Page<CrmCompanyMetricsResponseDto> page = crmCompanyDao.getCompanies(pageable, searchKeyword);
+		Page<CrmCompanyMetricsResponseDto> page = crmCompanyDao.getCompanies(pageable, searchKeyword,
+				timeZoneService.currentRequestDayStart());
 
 		PageDto response = new PageDto();
 		response.setItems(page.getContent());
@@ -191,7 +195,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 	public ResponseEntityDto getCompanyMetricsById(Long id) {
 		log.info("getCompanyMetricsById: execution started");
 
-		CrmCompanyMetrics metrics = crmCompanyDao.getCompanyMetricsById(id)
+		CrmCompanyMetrics metrics = crmCompanyDao.getCompanyMetricsById(id, timeZoneService.currentRequestDayStart())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
 
 		log.info("getCompanyMetricsById: execution ended");

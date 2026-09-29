@@ -12,7 +12,6 @@ import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.NotificationDao;
 import com.skapp.community.common.service.NotificationService;
-import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.PushNotificationService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.EmailBodyTemplates;
@@ -37,9 +36,6 @@ import tools.jackson.dataformat.yaml.YAMLMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -73,8 +69,6 @@ public class NotificationServiceImpl implements NotificationService {
 	private final PageTransformer pageTransformer;
 
 	private final EmployeeDao employeeDao;
-
-	private final OrganizationService organizationService;
 
 	@Override
 	public void createNotification(Employee employee, String resourceId, NotificationType notificationType,
@@ -339,13 +333,10 @@ public class NotificationServiceImpl implements NotificationService {
 
 	public List<NotificationResponseDto> mapNotifications(List<Notification> notifications) {
 
-		String organizationTimeZone = organizationService.getOrganizationTimeZone();
-
 		return notifications.stream().map(notification -> {
 			NotificationResponseDto notificationResponseDto = new NotificationResponseDto();
 			notificationResponseDto.setId(notification.getId());
-			notificationResponseDto
-				.setCreatedDate(convertToOrganizationTimeZone(notification.getCreatedDate(), organizationTimeZone));
+			notificationResponseDto.setCreatedDate(notification.getCreatedDate());
 			notificationResponseDto.setBody(notification.getBody());
 			notificationResponseDto.setIsViewed(notification.getIsViewed());
 			notificationResponseDto.setResourceId(notification.getResourceId());
@@ -363,13 +354,6 @@ public class NotificationServiceImpl implements NotificationService {
 
 			return notificationResponseDto;
 		}).toList();
-	}
-
-	private LocalDateTime convertToOrganizationTimeZone(LocalDateTime createdDate, String organizationTimeZone) {
-		if (createdDate == null)
-			return null;
-		ZonedDateTime utcTime = createdDate.atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("UTC"));
-		return utcTime.withZoneSameInstant(ZoneId.of(organizationTimeZone)).toLocalDateTime();
 	}
 
 }

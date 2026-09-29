@@ -38,6 +38,16 @@ export const toContactIds = (contacts: CrmContactEntity[]): number[] => {
   return contactIds;
 };
 
+export const toContactCompanyIds = (contacts: CrmContactEntity[]): number[] => {
+  const companyIds: number[] = [];
+  for (const contact of contacts) {
+    if (contact.companyId != null) {
+      companyIds.push(contact.companyId);
+    }
+  }
+  return companyIds;
+};
+
 export const updateContactRecord = (
   existing: CrmContactRecord,
   incoming: CrmContactEntity[]

@@ -40,7 +40,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -53,7 +53,8 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 	private final EntityManager entityManager;
 
 	@Override
-	public Page<CrmContactListItemDto> getContacts(CrmContactMetricRequestDto filterDto, Pageable pageable) {
+	public Page<CrmContactListItemDto> getContacts(CrmContactMetricRequestDto filterDto, Pageable pageable,
+			Instant overdueBefore) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<CrmContactListItemDto> query = cb.createQuery(CrmContactListItemDto.class);
@@ -88,7 +89,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 			.where(cb.equal(overdueTask.get(CrmTask_.contact), contact),
 					cb.isFalse(overdueTask.get(CrmTask_.isCompleted)), cb.isFalse(overdueTask.get(CrmTask_.isDeleted)),
 					cb.isNotNull(overdueTask.get(CrmTask_.dueAt)),
-					cb.lessThan(overdueTask.get(CrmTask_.dueAt), cb.literal(LocalDate.now().atStartOfDay())));
+					cb.lessThan(overdueTask.get(CrmTask_.dueAt), cb.literal(overdueBefore)));
 
 		Subquery<BigDecimal> pipelineRevenueSub = query.subquery(BigDecimal.class);
 		Root<CrmDeal> pipelineDeal = pipelineRevenueSub.from(CrmDeal.class);
@@ -122,7 +123,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 	}
 
 	@Override
-	public Optional<CrmContactMetrics> getContactMetricsById(Long contactId) {
+	public Optional<CrmContactMetrics> getContactMetricsById(Long contactId, Instant overdueBefore) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmContactMetrics> query = cb.createQuery(CrmContactMetrics.class);
 		Root<CrmContact> contact = query.from(CrmContact.class);
@@ -162,7 +163,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 					cb.equal(overdueDealContact.get(CrmContact_.id), contactId)),
 					cb.isFalse(overdueTask.get(CrmTask_.isCompleted)), cb.isFalse(overdueTask.get(CrmTask_.isDeleted)),
 					cb.isNotNull(overdueTask.get(CrmTask_.dueAt)),
-					cb.lessThan(overdueTask.get(CrmTask_.dueAt), cb.literal(LocalDate.now().atStartOfDay())));
+					cb.lessThan(overdueTask.get(CrmTask_.dueAt), cb.literal(overdueBefore)));
 
 		Subquery<BigDecimal> pipelineRevenueSub = query.subquery(BigDecimal.class);
 		Root<CrmDeal> pipelineDeal = pipelineRevenueSub.from(CrmDeal.class);

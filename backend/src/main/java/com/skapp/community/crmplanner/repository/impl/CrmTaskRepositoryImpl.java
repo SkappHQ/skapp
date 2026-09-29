@@ -43,7 +43,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -58,7 +58,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 	private final EntityManager entityManager;
 
 	@Override
-	public List<CrmTaskSummary> findOpenTaskSummaryByContactIds(List<Long> contactIds) {
+	public List<CrmTaskSummary> findOpenTaskSummaryByContactIds(List<Long> contactIds, Instant overdueBefore) {
 		if (contactIds == null || contactIds.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -71,7 +71,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 				cb.count(task.get(CrmTask_.id)),
 				cb.sum(cb.<Long>selectCase()
 					.when(cb.and(cb.isNotNull(task.get(CrmTask_.dueAt)),
-							cb.lessThan(task.get(CrmTask_.dueAt), cb.literal(LocalDate.now().atStartOfDay()))), 1L)
+							cb.lessThan(task.get(CrmTask_.dueAt), cb.literal(overdueBefore))), 1L)
 					.otherwise(0L))));
 
 		query.where(task.get(CrmTask_.contact).get(CrmContact_.id).in(contactIds),
@@ -131,7 +131,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 	}
 
 	@Override
-	public CrmContactTaskMetrics findTaskMetricsByContactId(Long contactId) {
+	public CrmContactTaskMetrics findTaskMetricsByContactId(Long contactId, Instant overdueBefore) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmContactTaskMetrics> query = cb.createQuery(CrmContactTaskMetrics.class);
 		Root<CrmTask> task = query.from(CrmTask.class);
@@ -141,7 +141,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 
 		Expression<Long> overdueCount = cb.coalesce(cb.sum(cb.<Long>selectCase()
 			.when(cb.and(cb.isFalse(task.get(CrmTask_.isCompleted)), cb.isNotNull(task.get(CrmTask_.dueAt)),
-					cb.lessThan(task.get(CrmTask_.dueAt), cb.literal(LocalDate.now().atStartOfDay()))), 1L)
+					cb.lessThan(task.get(CrmTask_.dueAt), cb.literal(overdueBefore))), 1L)
 			.otherwise(0L)), 0L);
 
 		query.select(cb.construct(CrmContactTaskMetrics.class, openCount, overdueCount));
