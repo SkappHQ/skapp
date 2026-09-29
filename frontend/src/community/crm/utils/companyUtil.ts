@@ -1,9 +1,5 @@
-import { characterLengths } from "~community/common/constants/stringConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
-import {
-  ADD_NEW_INDUSTRY_OPTION_ID,
-  INDUSTRY_OPTION_KEYS
-} from "~community/crm/constants/companyConstants";
+import { INDUSTRY_OPTION_KEYS } from "~community/crm/constants/companyConstants";
 import {
   CrmIndustryEnum,
   CrmMetricLabelThemeEnum
@@ -111,10 +107,6 @@ export const getChangedCompanyFields = (
     changedFields.industryId = currentValues.industryId;
   }
 
-  if (currentValues.industryName !== initialValues.industryName) {
-    changedFields.industryName = currentValues.industryName;
-  }
-
   if (currentValues.website !== initialValues.website) {
     changedFields.website = currentValues.website;
   }
@@ -158,53 +150,35 @@ export const getIndustryDisplayName = (
 
 export interface CrmIndustryOption {
   id: string;
-  name: string;
+  value: string;
+  label: string;
 }
 
 export const getIndustryOptions = (
   industries: CrmIndustryRecord,
-  translateText: TranslatorFunctionType,
-  searchKeyword: string
-): CrmIndustryOption[] => {
-  const trimmedName = searchKeyword.trim();
-  const normalizedName = trimmedName.toLowerCase();
+  translateText: TranslatorFunctionType
+): CrmIndustryOption[] => [
+  {
+    id: CrmIndustryEnum.NONE,
+    value: CrmIndustryEnum.NONE,
+    label: translateText([
+      "companies",
+      "industryOptions",
+      INDUSTRY_OPTION_KEYS[CrmIndustryEnum.NONE]
+    ])
+  },
+  ...Object.values(industries).map((industry) => ({
+    id: String(industry.id),
+    value: String(industry.id),
+    label: getIndustryDisplayName(industry, translateText)
+  }))
+];
 
-  const options: CrmIndustryOption[] = Object.values(industries)
-    .map((industry) => ({
-      id: String(industry.id),
-      name: getIndustryDisplayName(industry, translateText)
-    }))
-    .filter((option) => option.name.toLowerCase().includes(normalizedName));
+export const toIndustryOptionValue = (industryId?: number | null): string =>
+  industryId == null ? CrmIndustryEnum.NONE : String(industryId);
 
-  const isNameAvailable = !options.some(
-    (option) => option.name.toLowerCase() === normalizedName
-  );
-
-  if (
-    trimmedName.length > 0 &&
-    trimmedName.length <= characterLengths.INDUSTRY_NAME_LENGTH &&
-    isNameAvailable
-  ) {
-    options.push({ id: ADD_NEW_INDUSTRY_OPTION_ID, name: trimmedName });
-  }
-
-  return options;
-};
-
-export const addNewIndustryToRecord = (
-  industries: CrmIndustryRecord,
-  industryId: number | null | undefined,
-  industryName: string | undefined
-): CrmIndustryRecord => {
-  if (industryId == null || !industryName || industries[industryId]) {
-    return industries;
-  }
-
-  return {
-    ...industries,
-    [industryId]: { id: industryId, name: industryName }
-  };
-};
+export const toIndustryId = (optionValue: string): number | null =>
+  optionValue === CrmIndustryEnum.NONE ? null : Number(optionValue);
 
 export const updateCompanyRecord = (
   existing: CrmCompanyRecord,

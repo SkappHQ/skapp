@@ -1,16 +1,17 @@
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
-import { ADD_NEW_INDUSTRY_OPTION_ID } from "~community/crm/constants/companyConstants";
+import { CrmIndustryEnum } from "~community/crm/enums/common";
 import {
   CrmCompanyEntity,
   CrmIndustryRecord
 } from "~community/crm/types/CrmCommonTypes";
 
 import {
-  addNewIndustryToRecord,
   getChangedCompanyFields,
   getIndustryDisplayName,
   getIndustryOptions,
-  removeCompany
+  removeCompany,
+  toIndustryId,
+  toIndustryOptionValue
 } from "../companyUtil";
 
 const acme: CrmCompanyEntity = { id: 1, name: "Acme Corp" };
@@ -60,15 +61,6 @@ describe("getChangedCompanyFields", () => {
 
     expect(result).toEqual({ industryId: null });
   });
-
-  it("includes a new industry name", () => {
-    const result = getChangedCompanyFields(
-      { name: "Acme Corp", industryId: null },
-      { name: "Acme Corp", industryId: null, industryName: "Marine" }
-    );
-
-    expect(result).toEqual({ industryName: "Marine" });
-  });
 });
 
 describe("getIndustryDisplayName", () => {
@@ -86,59 +78,39 @@ describe("getIndustryDisplayName", () => {
 });
 
 describe("getIndustryOptions", () => {
-  it("returns every industry when there is no search keyword", () => {
-    const result = getIndustryOptions(industries, translateText, "");
-
-    expect(result.map((option) => option.id)).toEqual(["1", "2"]);
-  });
-
-  it("filters by the search keyword, ignoring case", () => {
-    const result = getIndustryOptions(industries, translateText, "deep");
+  it("lists None first, then every industry from the store", () => {
+    const result = getIndustryOptions(industries, translateText);
 
     expect(result).toEqual([
-      { id: "2", name: "Deep Sea Tourism" },
-      { id: ADD_NEW_INDUSTRY_OPTION_ID, name: "deep" }
+      {
+        id: CrmIndustryEnum.NONE,
+        value: CrmIndustryEnum.NONE,
+        label: "companies.industryOptions.none"
+      },
+      { id: "1", value: "1", label: "companies.industryOptions.retail" },
+      { id: "2", value: "2", label: "Deep Sea Tourism" }
     ]);
-  });
-
-  it("does not offer to add a name that already exists", () => {
-    const result = getIndustryOptions(
-      industries,
-      translateText,
-      " deep sea tourism "
-    );
-
-    expect(result).toEqual([{ id: "2", name: "Deep Sea Tourism" }]);
-  });
-
-  it("does not offer to add a name longer than the limit", () => {
-    const result = getIndustryOptions(
-      industries,
-      translateText,
-      "A".repeat(101)
-    );
-
-    expect(result).toEqual([]);
   });
 });
 
-describe("addNewIndustryToRecord", () => {
-  it("adds a newly created industry", () => {
-    const result = addNewIndustryToRecord(industries, 3, "Marine");
-
-    expect(result[3]).toEqual({ id: 3, name: "Marine" });
+describe("toIndustryOptionValue", () => {
+  it("maps no industry to the None option", () => {
+    expect(toIndustryOptionValue(null)).toBe(CrmIndustryEnum.NONE);
+    expect(toIndustryOptionValue(undefined)).toBe(CrmIndustryEnum.NONE);
   });
 
-  it("keeps the record unchanged when the industry already exists", () => {
-    expect(addNewIndustryToRecord(industries, 1, "retail")).toBe(industries);
+  it("maps an industry id to its option value", () => {
+    expect(toIndustryOptionValue(2)).toBe("2");
+  });
+});
+
+describe("toIndustryId", () => {
+  it("maps the None option to null", () => {
+    expect(toIndustryId(CrmIndustryEnum.NONE)).toBeNull();
   });
 
-  it("keeps the record unchanged when no new name was sent", () => {
-    expect(addNewIndustryToRecord(industries, 3, undefined)).toBe(industries);
-  });
-
-  it("keeps the record unchanged when there is no industry id", () => {
-    expect(addNewIndustryToRecord(industries, null, "Marine")).toBe(industries);
+  it("maps an option value back to its industry id", () => {
+    expect(toIndustryId("2")).toBe(2);
   });
 });
 

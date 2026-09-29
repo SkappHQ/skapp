@@ -202,18 +202,13 @@
         "contactNumber": "Contact no.",
         "website": "Website URL",
         "address": "Address",
-        "industry": "Industry",
-        "addNewIndustry": "Add \"{{name}}\" as a new industry"
+        "industry": "Industry"
       },
       "placeholders": {
         "name": "Enter company name",
         "contactNumber": "Enter contact no.",
         "website": "Enter website",
-        "address": "Enter address",
-        "industry": "Search or add industry"
-      },
-      "emptyStates": {
-        "noIndustries": "No industries found"
+        "address": "Enter address"
       },
       "buttons": {
         "save": "Save",

@@ -10,7 +10,6 @@ import CompanyModalForm from "~community/crm/components/molecules/CompanyModalFo
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmCompanyEntity } from "~community/crm/types/CrmCommonTypes";
 import {
-  addNewIndustryToRecord,
   getChangedCompanyFields,
   getSelectedCompany,
   updateCompany
@@ -22,23 +21,15 @@ const EditCompanyModalContent: FC = () => {
 
   const translateText = useTranslator("crmModule");
 
-  const {
-    companies,
-    industries,
-    selectedCompanyId,
-    setCompanies,
-    setIndustries,
-    setIsCompanyModalOpen
-  } = useCrmStore(
-    useShallow((store) => ({
-      companies: store.companies,
-      industries: store.industries,
-      selectedCompanyId: store.selectedCompanyId,
-      setCompanies: store.setCompanies,
-      setIndustries: store.setIndustries,
-      setIsCompanyModalOpen: store.setIsCompanyModalOpen
-    }))
-  );
+  const { companies, selectedCompanyId, setCompanies, setIsCompanyModalOpen } =
+    useCrmStore(
+      useShallow((store) => ({
+        companies: store.companies,
+        selectedCompanyId: store.selectedCompanyId,
+        setCompanies: store.setCompanies,
+        setIsCompanyModalOpen: store.setIsCompanyModalOpen
+      }))
+    );
 
   const selectedCompany = getSelectedCompany(companies, selectedCompanyId);
 
@@ -62,7 +53,7 @@ const EditCompanyModalContent: FC = () => {
     enableReinitialize: true
   });
 
-  const { setSubmitting, values } = formik;
+  const { setSubmitting } = formik;
 
   const handleCloseModal = (): void => {
     setIsCompanyModalOpen(false);
@@ -74,14 +65,6 @@ const EditCompanyModalContent: FC = () => {
     if (selectedCompanyId !== null) {
       setCompanies(updateCompany(companies, selectedCompanyId, updatedCompany));
     }
-
-    setIndustries(
-      addNewIndustryToRecord(
-        industries,
-        updatedCompany.industryId,
-        values.industryName
-      )
-    );
 
     handleCloseModal();
     setToastMessage({
@@ -133,7 +116,6 @@ const EditCompanyModalContent: FC = () => {
     const changedFields = getChangedCompanyFields(initialValues, {
       name: values.name?.trim(),
       industryId: values.industryId,
-      industryName: values.industryName?.trim(),
       website: values.website?.trim(),
       address: values.address?.trim(),
       contactNumber: values.contactNumber?.trim()

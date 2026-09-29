@@ -8,7 +8,6 @@ export interface CrmCompanyEntity {
   id?: number;
   name?: string;
   industryId?: number | null;
-  industryName?: string;
   website?: string;
   address?: string;
   contactNumber?: string;
