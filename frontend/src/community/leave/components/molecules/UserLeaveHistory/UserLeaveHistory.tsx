@@ -211,16 +211,29 @@ const UserLeaveHistory: FC<Props> = ({
       (leaveData: LeaveHistoryRawType) => ({
         id: leaveData.leaveRequestId,
         ariaLabel: {
-          row: `${translateText(["tableHeaders", "leavePeriod"])} ${formatDateRange(
-            new Date(leaveData.startDate),
-            new Date(leaveData.endDate),
-            false,
-            leaveData.durationDays
-          )}, ${translateText(["tableHeaders", "days"])} ${leaveData.durationDays}, ${translateText(["tableHeaders", "type"])} ${leaveData.leaveType.name}, ${translateText(["tableHeaders", "dateRequested"])} ${formatDateTimeWithOrdinalIndicator(
-            instantInZone(leaveData.createdDate, displayZone)
-          )}, ${translateText(["tableHeaders", "status"])} ${translateAria(["leaveStatus", leaveData.status.toLowerCase()])}, ${translateText(["tableHeaders", "reason"])} ${leaveData.requestDesc ? leaveData.requestDesc : translateAria(["noReason"])}${
-            isSupervisorOfEmployee ? "" : `, ${translateAria(["disabled"])}`
-          }`
+          row: translateAria(["leaveHistoryRow"], {
+            leavePeriod: formatDateRange(
+              new Date(leaveData.startDate),
+              new Date(leaveData.endDate),
+              false,
+              leaveData.durationDays
+            ),
+            days: leaveData.durationDays,
+            type: leaveData.leaveType.name,
+            dateRequested: formatDateTimeWithOrdinalIndicator(
+              instantInZone(leaveData.createdDate, displayZone)
+            ),
+            status: translateAria([
+              "leaveStatus",
+              leaveData.status.toLowerCase()
+            ]),
+            reason: leaveData.requestDesc
+              ? leaveData.requestDesc
+              : translateAria(["noReason"]),
+            disabledSuffix: isSupervisorOfEmployee
+              ? ""
+              : `, ${translateAria(["disabled"])}`
+          })
         },
         leavePeriod: (
           <Box
