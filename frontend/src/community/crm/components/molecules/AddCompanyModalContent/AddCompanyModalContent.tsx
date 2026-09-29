@@ -9,11 +9,7 @@ import { useCreateCompany } from "~community/crm/api/CompanyApi";
 import CompanyModalForm from "~community/crm/components/molecules/CompanyModalForm/CompanyModalForm";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmCompanyEntity } from "~community/crm/types/CrmCommonTypes";
-import {
-  addNewIndustryToRecord,
-  getCompanyFormInitialValues,
-  getTrimmedCompanyValues
-} from "~community/crm/utils/companyUtil";
+import { addNewIndustryToRecord } from "~community/crm/utils/companyUtil";
 import { getCompanyValidationSchema } from "~community/crm/utils/companyValidations";
 
 const AddCompanyModalContent: FC = () => {
@@ -42,7 +38,13 @@ const AddCompanyModalContent: FC = () => {
   );
 
   const formik = useFormik<CrmCompanyEntity>({
-    initialValues: getCompanyFormInitialValues(),
+    initialValues: {
+      name: "",
+      industryId: null,
+      website: "",
+      address: "",
+      contactNumber: ""
+    },
     onSubmit: (values) => createCompany(values),
     validationSchema: getCompanyValidationSchema(translateText),
     validateOnChange: false,
@@ -68,7 +70,7 @@ const AddCompanyModalContent: FC = () => {
       addNewIndustryToRecord(
         industries,
         createdCompany.industryId,
-        values.industryName?.trim()
+        values.industryName
       )
     );
 
@@ -117,7 +119,14 @@ const AddCompanyModalContent: FC = () => {
   );
 
   const createCompany = (values: CrmCompanyEntity) => {
-    createNewCompany(getTrimmedCompanyValues(values));
+    createNewCompany({
+      name: values.name?.trim(),
+      industryId: values.industryId,
+      industryName: values.industryName,
+      website: values.website?.trim(),
+      address: values.address?.trim(),
+      contactNumber: values.contactNumber?.trim()
+    });
   };
 
   return (

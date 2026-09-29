@@ -8,10 +8,8 @@ import {
 import {
   addNewIndustryToRecord,
   getChangedCompanyFields,
-  getCompanyFormInitialValues,
   getIndustryDisplayName,
   getIndustryOptions,
-  getTrimmedCompanyValues,
   removeCompany
 } from "../companyUtil";
 
@@ -70,53 +68,6 @@ describe("getChangedCompanyFields", () => {
     );
 
     expect(result).toEqual({ industryName: "Marine" });
-  });
-});
-
-describe("getCompanyFormInitialValues", () => {
-  it("falls back to blank values and no industry when there is no company", () => {
-    expect(getCompanyFormInitialValues()).toEqual({
-      name: "",
-      industryId: null,
-      industryName: undefined,
-      website: "",
-      address: "",
-      contactNumber: ""
-    });
-  });
-
-  it("keeps the company's industry id", () => {
-    expect(
-      getCompanyFormInitialValues({ ...acme, industryId: 7 }).industryId
-    ).toBe(7);
-  });
-});
-
-describe("getTrimmedCompanyValues", () => {
-  it("trims the text fields and the new industry name", () => {
-    const result = getTrimmedCompanyValues({
-      name: "  Acme  ",
-      industryId: null,
-      industryName: "  Marine ",
-      website: " https://acme.com ",
-      address: " 1 Main St ",
-      contactNumber: " 0771234567 "
-    });
-
-    expect(result).toEqual({
-      name: "Acme",
-      industryId: null,
-      industryName: "Marine",
-      website: "https://acme.com",
-      address: "1 Main St",
-      contactNumber: "0771234567"
-    });
-  });
-
-  it("leaves industry name undefined when none was typed", () => {
-    expect(getTrimmedCompanyValues({ name: "Acme" }).industryName).toBe(
-      undefined
-    );
   });
 });
 

@@ -12,9 +12,7 @@ import { CrmCompanyEntity } from "~community/crm/types/CrmCommonTypes";
 import {
   addNewIndustryToRecord,
   getChangedCompanyFields,
-  getCompanyFormInitialValues,
   getSelectedCompany,
-  getTrimmedCompanyValues,
   updateCompany
 } from "~community/crm/utils/companyUtil";
 import { getCompanyValidationSchema } from "~community/crm/utils/companyValidations";
@@ -45,7 +43,13 @@ const EditCompanyModalContent: FC = () => {
   const selectedCompany = getSelectedCompany(companies, selectedCompanyId);
 
   const initialValues = useMemo(
-    () => getCompanyFormInitialValues(selectedCompany),
+    () => ({
+      name: selectedCompany?.name ?? "",
+      industryId: selectedCompany?.industryId ?? null,
+      website: selectedCompany?.website ?? "",
+      address: selectedCompany?.address ?? "",
+      contactNumber: selectedCompany?.contactNumber ?? ""
+    }),
     [selectedCompany]
   );
 
@@ -75,7 +79,7 @@ const EditCompanyModalContent: FC = () => {
       addNewIndustryToRecord(
         industries,
         updatedCompany.industryId,
-        values.industryName?.trim()
+        values.industryName
       )
     );
 
@@ -126,10 +130,14 @@ const EditCompanyModalContent: FC = () => {
   const submitEditCompany = (values: CrmCompanyEntity) => {
     if (selectedCompanyId === null) return;
 
-    const changedFields = getChangedCompanyFields(
-      initialValues,
-      getTrimmedCompanyValues(values)
-    );
+    const changedFields = getChangedCompanyFields(initialValues, {
+      name: values.name?.trim(),
+      industryId: values.industryId,
+      industryName: values.industryName,
+      website: values.website?.trim(),
+      address: values.address?.trim(),
+      contactNumber: values.contactNumber?.trim()
+    });
 
     if (Object.keys(changedFields).length === 0) {
       handleCloseModal();

@@ -95,28 +95,6 @@ export const removeCompany = (
   };
 };
 
-export const getCompanyFormInitialValues = (
-  company?: CrmCompanyEntity
-): CrmCompanyEntity => ({
-  name: company?.name ?? "",
-  industryId: company?.industryId ?? null,
-  industryName: company?.industryName,
-  website: company?.website ?? "",
-  address: company?.address ?? "",
-  contactNumber: company?.contactNumber ?? ""
-});
-
-export const getTrimmedCompanyValues = (
-  values: CrmCompanyEntity
-): CrmCompanyEntity => ({
-  name: values.name?.trim(),
-  industryId: values.industryId,
-  industryName: values.industryName?.trim(),
-  website: values.website?.trim(),
-  address: values.address?.trim(),
-  contactNumber: values.contactNumber?.trim()
-});
-
 export const getChangedCompanyFields = (
   initialValues: CrmCompanyEntity,
   currentValues: CrmCompanyEntity
