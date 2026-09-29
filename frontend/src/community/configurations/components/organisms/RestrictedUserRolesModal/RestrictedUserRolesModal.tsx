@@ -123,10 +123,11 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
       onClose={handleCancelBtnClick}
       modalHeader={translateText(["restrictedUserRolesTitle"])}
       closeButtonAriaLabel={translateText(["closeModalBtnAriaLabel"])}
+      hasDescription
       content={
         <Stack sx={classes.wrapper}>
           <Stack sx={classes.description}>
-            <Typography sx={classes.text}>
+            <Typography id="small-modal-content" sx={classes.text}>
               {translateText(["restrictedUserRolesDescriptionPartOne"])}
               <b>{translateText(["restrictedUserRolesDescriptionPartTwo"])}</b>
               {translateText(["restrictedUserRolesDescriptionPartThree"])}

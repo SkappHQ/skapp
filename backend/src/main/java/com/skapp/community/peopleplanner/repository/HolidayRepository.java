@@ -18,6 +18,6 @@ public interface HolidayRepository {
 
 	List<Holiday> findAllActiveHolidaysByDateAndWorkLocationId(LocalDate date, Long workLocationId);
 
-	List<Holiday> findFutureActiveHolidaysExclusiveToWorkLocation(Long workLocationId);
+	List<Holiday> findFutureActiveHolidaysExclusiveToWorkLocation(Long workLocationId, LocalDate fromDate);
 
 }

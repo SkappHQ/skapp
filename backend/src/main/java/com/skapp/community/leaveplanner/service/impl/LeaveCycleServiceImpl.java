@@ -2,6 +2,7 @@ package com.skapp.community.leaveplanner.service.impl;
 
 import com.skapp.community.common.model.OrganizationConfig;
 import com.skapp.community.common.repository.OrganizationConfigDao;
+import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.type.OrganizationConfigType;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.leaveplanner.constant.LeaveModuleConstant;
@@ -29,6 +30,8 @@ public class LeaveCycleServiceImpl implements LeaveCycleService {
 	private final OrganizationConfigDao organizationConfigDao;
 
 	private final JsonMapper mapper;
+
+	private final TimeZoneService timeZoneService;
 
 	@Override
 	public LeaveCycleDetailsDto getLeaveCycleConfigs() {
@@ -71,7 +74,7 @@ public class LeaveCycleServiceImpl implements LeaveCycleService {
 	public LocalDate getLeaveCycleStartDate() {
 		LocalDate date = getLocalDateFromNode(LeaveCycleConfigField.START.getField());
 		if (date == null) {
-			date = DateTimeUtils.getUtcLocalDate(DateTimeUtils.getCurrentYear(), DateTimeUtils.JANUARY,
+			date = DateTimeUtils.getUtcLocalDate(timeZoneService.currentOrganizationYear(), DateTimeUtils.JANUARY,
 					DateTimeUtils.FIRST_DAY);
 		}
 		return date;
@@ -81,7 +84,7 @@ public class LeaveCycleServiceImpl implements LeaveCycleService {
 	public LocalDate getLeaveCycleEndDate() {
 		LocalDate date = getLocalDateFromNode(LeaveCycleConfigField.END.getField());
 		if (date == null) {
-			date = DateTimeUtils.getUtcLocalDate(DateTimeUtils.getCurrentYear(), DateTimeUtils.DECEMBER,
+			date = DateTimeUtils.getUtcLocalDate(timeZoneService.currentOrganizationYear(), DateTimeUtils.DECEMBER,
 					DateTimeUtils.LAST_DAY); // December 31
 		}
 		return date;
@@ -89,7 +92,7 @@ public class LeaveCycleServiceImpl implements LeaveCycleService {
 
 	@Override
 	public boolean isInNextCycle(int startYear) {
-		int currentYear = DateTimeUtils.getCurrentYear();
+		int currentYear = timeZoneService.currentOrganizationYear();
 
 		LocalDate validFrom = DateTimeUtils.getUtcLocalDate(currentYear + 1, DateTimeUtils.JANUARY,
 				DateTimeUtils.FIRST_DAY);
@@ -104,7 +107,7 @@ public class LeaveCycleServiceImpl implements LeaveCycleService {
 
 	@Override
 	public boolean isInCurrentCycle(int year) {
-		int currentYear = DateTimeUtils.getCurrentYear();
+		int currentYear = timeZoneService.currentOrganizationYear();
 
 		LocalDate validFrom = DateTimeUtils.getUtcLocalDate(currentYear, DateTimeUtils.JANUARY,
 				DateTimeUtils.FIRST_DAY);
@@ -118,7 +121,7 @@ public class LeaveCycleServiceImpl implements LeaveCycleService {
 
 	@Override
 	public boolean isInPreviousCycle(int year) {
-		int currentYear = DateTimeUtils.getCurrentYear();
+		int currentYear = timeZoneService.currentOrganizationYear();
 
 		LocalDate validFrom = DateTimeUtils.getUtcLocalDate(currentYear - 1, DateTimeUtils.JANUARY,
 				DateTimeUtils.FIRST_DAY);
@@ -145,7 +148,7 @@ public class LeaveCycleServiceImpl implements LeaveCycleService {
 			day = leaveCycleConfigs.getEndDate();
 		}
 
-		int currentYear = DateTimeUtils.getCurrentYear();
+		int currentYear = timeZoneService.currentOrganizationYear();
 
 		try {
 			return DateTimeUtils.getUtcLocalDate(currentYear, month, day);
@@ -166,7 +169,8 @@ public class LeaveCycleServiceImpl implements LeaveCycleService {
 
 	private ObjectNode saveLeaveCycleConfigs(int startMonth, int startDate, boolean isDefault) {
 
-		LocalDate cycleStartDate = DateTimeUtils.getUtcLocalDate(DateTimeUtils.getCurrentYear(), startMonth, startDate);
+		LocalDate cycleStartDate = DateTimeUtils.getUtcLocalDate(timeZoneService.currentOrganizationYear(), startMonth,
+				startDate);
 		LocalDate cycleEndDate = DateTimeUtils.calculateEndDateAfterYears(cycleStartDate, 1);
 
 		int cycleEndMonth = DateTimeUtils.getMonthValue(cycleEndDate);

@@ -1,4 +1,5 @@
 import { NextPage } from "next";
+import { useShallow } from "zustand/react/shallow";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { Modules } from "~community/common/enums/CommonEnums";
@@ -20,9 +21,14 @@ const Deals: NextPage = () => {
   const translateText = useTranslator("crmModuleV2");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
-  const openCrmSidePanel = useCrmStoreV2((store) => store.openCrmSidePanel);
-  const selectedDealId = useCrmStoreV2((store) => store.selectedDealId);
-  const isCrmSidePanelOpen = useCrmStoreV2((store) => store.isCrmSidePanelOpen);
+  const { openCrmSidePanel, selectedDealId, isCrmSidePanelOpen } =
+    useCrmStoreV2(
+      useShallow((store) => ({
+        openCrmSidePanel: store.openCrmSidePanel,
+        selectedDealId: store.selectedDealId,
+        isCrmSidePanelOpen: store.isCrmSidePanelOpen
+      }))
+    );
 
   const { isCrmInitialDataLoading } = useInitializeCrmData();
 

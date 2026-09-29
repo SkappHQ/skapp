@@ -22,7 +22,7 @@ describe("holidayTableUtils", () => {
         { date: "2023-01-01" },
         { date: "2023-02-01" }
       ] as Holiday[];
-      expect(isDeleteButtonDisabled(holidayData)).toBe(true);
+      expect(isDeleteButtonDisabled(holidayData, undefined)).toBe(true);
     });
 
     it("should return false if there are future holidays", () => {
@@ -30,11 +30,11 @@ describe("holidayTableUtils", () => {
         { date: "2023-01-01" },
         { date: "2099-01-01" }
       ] as Holiday[];
-      expect(isDeleteButtonDisabled(holidayData)).toBe(false);
+      expect(isDeleteButtonDisabled(holidayData, undefined)).toBe(false);
     });
 
     it("should return true if holidayData is empty", () => {
-      expect(isDeleteButtonDisabled([])).toBe(true);
+      expect(isDeleteButtonDisabled([], undefined)).toBe(true);
     });
   });
 
@@ -44,14 +44,14 @@ describe("holidayTableUtils", () => {
         { date: "2023-01-01" },
         { date: "2099-01-01" }
       ] as Holiday[];
-      const result = getFutureHolidays(holidayData);
+      const result = getFutureHolidays(holidayData, undefined);
       expect(result).toHaveLength(1);
       expect(result[0].date).toBe("2099-01-01");
     });
 
     it("should return an empty array if no future holidays exist", () => {
       const holidayData = [{ date: "2023-01-01" }] as Holiday[];
-      expect(getFutureHolidays(holidayData)).toEqual([]);
+      expect(getFutureHolidays(holidayData, undefined)).toEqual([]);
     });
   });
 
@@ -77,7 +77,11 @@ describe("holidayTableUtils", () => {
       const holidayData = [{ id: 1, date: "2099-01-01" }] as Holiday[];
       const selectedHolidays = [1];
       expect(
-        getSelectAllCheckboxCheckedStatus(holidayData, selectedHolidays)
+        getSelectAllCheckboxCheckedStatus(
+          holidayData,
+          selectedHolidays,
+          undefined
+        )
       ).toBe(true);
     });
 
@@ -88,7 +92,11 @@ describe("holidayTableUtils", () => {
       ] as Holiday[];
       const selectedHolidays = [1];
       expect(
-        getSelectAllCheckboxCheckedStatus(holidayData, selectedHolidays)
+        getSelectAllCheckboxCheckedStatus(
+          holidayData,
+          selectedHolidays,
+          undefined
+        )
       ).toBe(false);
     });
   });
@@ -100,7 +108,12 @@ describe("holidayTableUtils", () => {
         { id: 2, date: "2099-02-01" }
       ] as Holiday[];
       const setSelectedHolidays = jest.fn();
-      handleSelectAllCheckboxClick(holidayData, [], setSelectedHolidays);
+      handleSelectAllCheckboxClick(
+        holidayData,
+        [],
+        setSelectedHolidays,
+        undefined
+      );
       expect(setSelectedHolidays).toHaveBeenCalledWith([1, 2]);
     });
 
@@ -110,7 +123,12 @@ describe("holidayTableUtils", () => {
         { id: 2, date: "2099-02-01" }
       ] as Holiday[];
       const setSelectedHolidays = jest.fn();
-      handleSelectAllCheckboxClick(holidayData, [1, 2], setSelectedHolidays);
+      handleSelectAllCheckboxClick(
+        holidayData,
+        [1, 2],
+        setSelectedHolidays,
+        undefined
+      );
       expect(setSelectedHolidays).toHaveBeenCalledWith([]);
     });
   });

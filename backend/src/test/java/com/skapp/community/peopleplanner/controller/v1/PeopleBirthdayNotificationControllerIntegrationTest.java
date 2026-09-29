@@ -42,6 +42,7 @@ import tools.jackson.databind.json.JsonMapper;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.function.Consumer;
 
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
@@ -132,7 +133,7 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 	@BeforeEach
 	void setup() {
 		currentUserToken = tokenFor(CURRENT_USER_EMAIL, TOKEN_USER_ID);
-		today = DateTimeUtils.getCurrentUtcDate();
+		today = DateTimeUtils.currentDateAt(ZoneOffset.UTC);
 	}
 
 	private String tokenFor(String email, Long userId) {

@@ -1,6 +1,6 @@
 import { EmptyDataView, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
-import { FC, useEffect, useState } from "react";
+import { FC, ReactNode, useEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
@@ -16,6 +16,8 @@ import { CrmErrorMessageKeyEnum } from "~community/crm/v2/enums/common";
 import { useInitializeCrmData } from "~community/crm/v2/hooks/useInitializeCrmData";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 
+import DealDetailPageSkeleton from "./DealDetailPageSkeleton";
+
 const DealDetailPage: FC = () => {
   const translateText = useTranslator("crmModuleV2");
   const router = useRouter();
@@ -26,10 +28,9 @@ const DealDetailPage: FC = () => {
   const dealId = Number(router.query.id);
   const isValidDealId = Number.isInteger(dealId) && dealId > 0;
 
-  const { setSelectedDealId, isCrmDataInitialized, dealName } = useCrmStoreV2(
+  const { setSelectedDealId, dealName } = useCrmStoreV2(
     useShallow((state) => ({
       setSelectedDealId: state.setSelectedDealId,
-      isCrmDataInitialized: state.isCrmDataInitialized,
       dealName: state.deals[dealId]?.name
     }))
   );
@@ -44,9 +45,9 @@ const DealDetailPage: FC = () => {
     return () => setSelectedDealId(null);
   }, [isRouterReady, dealId, isValidDealId]);
 
-  const { isError, error } = useGetDealById(
+  const { isError, isPending, error } = useGetDealById(
     dealId,
-    isRouterReady && isValidDealId && isCrmDataInitialized
+    isRouterReady && isValidDealId
   );
 
   const isViewDenied =
@@ -59,9 +60,43 @@ const DealDetailPage: FC = () => {
     }
   }, [router, isViewDenied]);
 
-  const isDealReadable = isRouterReady && !isViewDenied;
-  const isDealUnavailable = isDealReadable && (!isValidDealId || isError);
-  const isDealVisible = isDealReadable && isValidDealId && !isError;
+  const getDealContent = (): ReactNode => {
+    if (!isRouterReady || isViewDenied) return null;
+
+    if (!isValidDealId || isError) {
+      return (
+        <EmptyDataView
+          icon={<SearchIcon width="24" height="24" />}
+          title={translateText(["deals", "detailsPage", "dealNotFoundTitle"])}
+          description={translateText([
+            "deals",
+            "detailsPage",
+            "dealNotFoundDescription"
+          ])}
+        />
+      );
+    }
+
+    return (
+      <div className="flex flex-col gap-4">
+        {isPending ? (
+          <DealDetailPageSkeleton />
+        ) : (
+          <div className="flex items-start justify-between gap-4">
+            <DealDetailIdBadge dealId={dealId} />
+            <div className="flex items-center gap-2">
+              <DealDetailActions
+                dealId={dealId}
+                onDeleteClick={() => setIsDeleteModalOpen(true)}
+              />
+            </div>
+          </div>
+        )}
+
+        <DealDetailContent dealId={dealId} />
+      </div>
+    );
+  };
 
   return (
     <ContentLayout
@@ -78,31 +113,7 @@ const DealDetailPage: FC = () => {
       module={Modules.CRM}
     >
       <>
-        {isDealUnavailable && (
-          <EmptyDataView
-            icon={<SearchIcon width="24" height="24" />}
-            title={translateText(["deals", "detailsPage", "dealNotFoundTitle"])}
-            description={translateText([
-              "deals",
-              "detailsPage",
-              "dealNotFoundDescription"
-            ])}
-          />
-        )}
-        {isDealVisible && (
-          <div className="flex flex-col gap-4">
-            <div className="flex items-start justify-between gap-4">
-              <DealDetailIdBadge dealId={dealId} />
-              <div className="flex items-center gap-2">
-                <DealDetailActions
-                  dealId={dealId}
-                  onDeleteClick={() => setIsDeleteModalOpen(true)}
-                />
-              </div>
-            </div>
-            <DealDetailContent dealId={dealId} />
-          </div>
-        )}
+        {getDealContent()}
 
         {dealName && (
           <DeleteDealModalV2

@@ -25,8 +25,10 @@ import {
 } from "~community/common/constants/timeConstants";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { timeZonesList } from "~community/common/utils/data/timeZones";
-import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
+import {
+  convertDateToFormat,
+  getTimeZoneLabel
+} from "~community/common/utils/dateTimeUtils";
 import SupervisorSelector from "~community/people/components/molecules/SupervisorSelector/SupervisorSelector";
 import { AccountStatusTypes } from "~community/people/enums/PeopleEnums";
 import useEmployeeDetailsFormHandler from "~community/people/hooks/useEmployeeDetailsFormHandler";
@@ -141,6 +143,7 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
       selectedProbationStartDate,
       selectedProbationEndDate,
       workTimeZoneDictionary,
+      timeZoneList,
       workLocations,
       businessUnits,
       projectTeamList,
@@ -596,13 +599,16 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
 
             <Grid size={{ xs: 12, md: 6, xl: 4 }}>
               <DropdownAutocomplete
-                itemList={timeZonesList}
+                itemList={timeZoneList}
                 inputName="workTimeZone"
                 label={translateText(["workTimeZone"])}
                 value={
                   values?.workTimeZone
                     ? {
-                        label: workTimeZoneDictionary[values.workTimeZone],
+                        label: getTimeZoneLabel(
+                          workTimeZoneDictionary,
+                          values.workTimeZone
+                        ),
                         value: values.workTimeZone
                       }
                     : undefined

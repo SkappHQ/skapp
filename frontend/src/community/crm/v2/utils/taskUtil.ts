@@ -1,9 +1,9 @@
 import {
-  convertUTCStringToLocalDateTime,
   formatDateTimeWithOrdinalIndicatorWithoutYear,
-  getCurrentDateAtMidnight,
   getDayDifference,
-  isDateTimeSimilar
+  instantInZone,
+  isDateTimeSimilar,
+  nowInZone
 } from "~community/common/utils/dateTimeUtils";
 import { CrmTaskTabEnum } from "~community/crm/v2/enums/common";
 import {
@@ -150,12 +150,13 @@ export const getChangedTaskFields = (
 
 export const getDueDateStatus = (
   dueAt: string,
-  isCompleted: boolean
+  isCompleted: boolean,
+  zone: string | undefined
 ): TaskDueDateInfo | null => {
   if (!dueAt) return null;
 
-  const due = convertUTCStringToLocalDateTime(dueAt);
-  const today = getCurrentDateAtMidnight();
+  const due = instantInZone(dueAt, zone);
+  const today = nowInZone(zone).startOf("day");
 
   if (!isCompleted && due < today) {
     return {
@@ -176,24 +177,25 @@ export const getDueDateStatus = (
   };
 };
 
-export const groupTasksByDueDate = (tasks: CrmTaskEntity[]): GroupedTasks => {
+export const groupTasksByDueDate = (
+  tasks: CrmTaskEntity[],
+  zone: string | undefined
+): GroupedTasks => {
   const overdue: CrmTaskEntity[] = [];
   const dueToday: CrmTaskEntity[] = [];
   const dueTomorrow: CrmTaskEntity[] = [];
   const upcoming: CrmTaskEntity[] = [];
 
   for (const task of tasks) {
-    const localDueDate = task.dueAt
-      ? convertUTCStringToLocalDateTime(task.dueAt).toISO()
-      : null;
+    const dueAt = task.dueAt;
 
-    if (!localDueDate) {
+    if (!dueAt) {
       upcoming.push(task);
-    } else if (isOverdue(localDueDate)) {
+    } else if (isOverdue(dueAt, zone)) {
       overdue.push(task);
-    } else if (isDueToday(localDueDate)) {
+    } else if (isDueToday(dueAt, zone)) {
       dueToday.push(task);
-    } else if (isDueTomorrow(localDueDate)) {
+    } else if (isDueTomorrow(dueAt, zone)) {
       dueTomorrow.push(task);
     } else {
       upcoming.push(task);
@@ -216,14 +218,16 @@ export const groupTasksByDueDate = (tasks: CrmTaskEntity[]): GroupedTasks => {
 export const getTaskGroups = (
   tasks: CrmTaskEntity[],
   tab: CrmTaskTabEnum,
-  userId?: number
+  userId: number | undefined,
+  zone: string | undefined
 ): GroupedTasks => {
   const openTasks = tasks.filter((task) => !task.isCompleted);
 
   return groupTasksByDueDate(
     tab === CrmTaskTabEnum.MY_TASKS
       ? openTasks.filter((task) => task.ownerId === userId)
-      : openTasks
+      : openTasks,
+    zone
   );
 };
 
@@ -309,12 +313,6 @@ export const linkTaskToRelatedEntities = (
   }
 
   return links;
-};
-
-export const parseDueDate = (dueAt?: string): Date | undefined => {
-  if (dueAt) {
-    return convertUTCStringToLocalDateTime(dueAt).toJSDate();
-  }
 };
 
 export const updateTask = (

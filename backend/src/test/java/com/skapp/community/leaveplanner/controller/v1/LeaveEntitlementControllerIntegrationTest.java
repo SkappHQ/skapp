@@ -19,6 +19,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZoneOffset;
+
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
@@ -63,7 +65,7 @@ class LeaveEntitlementControllerIntegrationTest {
 	class GetLeaveEntitlementsByDateTests {
 
 		private String currentYearParam() {
-			return "?year=" + DateTimeUtils.getCurrentYear();
+			return "?year=" + DateTimeUtils.currentDateAt(ZoneOffset.UTC).getYear();
 		}
 
 		@Test
@@ -111,7 +113,7 @@ class LeaveEntitlementControllerIntegrationTest {
 			// entitlements in DB.
 			// This tests the DB query path returning 0 results (not the early-return
 			// path).
-			int nextYear = DateTimeUtils.getCurrentYear() + 1;
+			int nextYear = DateTimeUtils.currentDateAt(ZoneOffset.UTC).getYear() + 1;
 			performGetEntitlements("?year=" + nextYear).andDo(print())
 				.andExpect(status().isOk())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))

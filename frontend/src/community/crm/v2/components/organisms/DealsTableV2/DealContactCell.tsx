@@ -16,7 +16,10 @@ import {
   getMissingCompanyIds,
   updateCompanyRecord
 } from "~community/crm/v2/utils/companyUtil";
-import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
+import {
+  getContactDisplayName,
+  toContactCompanyIds
+} from "~community/crm/v2/utils/contactUtil";
 
 import EditableCell from "./EditableCell";
 
@@ -52,16 +55,15 @@ const DealContactCell: FC<Props> = ({ contactId, companyId, onSave }) => {
     [contactLookupData?.items]
   );
 
-  const missingCompanyIds = useMemo(
-    () =>
-      getMissingCompanyIds(
-        contacts
-          .map((contact) => contact.companyId)
-          .filter((id): id is number => id != null),
-        companies
-      ),
-    [contacts, companies]
-  );
+  const missingCompanyIds = useMemo(() => {
+    const companyIds = toContactCompanyIds(contacts);
+
+    if (companyId != null) {
+      companyIds.push(companyId);
+    }
+
+    return getMissingCompanyIds(companyIds, companies);
+  }, [companyId, contacts, companies]);
   const { data: fetchedCompanies } = useGetCompaniesByIds(
     missingCompanyIds,
     missingCompanyIds.length > 0
