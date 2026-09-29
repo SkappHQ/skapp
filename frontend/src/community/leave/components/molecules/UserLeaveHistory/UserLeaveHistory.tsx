@@ -43,6 +43,7 @@ import {
   requestTypeSelector,
   requestedLeaveTypesPreProcessor
 } from "~community/leave/utils/LeaveRequestFilterActions";
+import { useGetSupervisedByMe } from "~community/people/api/PeopleApi";
 import useTier from "~enterprise/common/hooks/useTier";
 import leaveHistoryMockData from "~enterprise/leave/data/leaveHistoryMockData.json";
 
@@ -114,6 +115,14 @@ const UserLeaveHistory: FC<Props> = ({
     isSuccess: getLeaveByIdSuccess,
     data: getLeaveByIdData
   } = useGetLeaveRequestData(newLeaveId as number);
+
+  const { data: supervisedData } = useGetSupervisedByMe(employeeId);
+
+  const isSupervisorOfEmployee = Boolean(
+    supervisedData?.isPrimaryManager ||
+      supervisedData?.isSecondaryManager ||
+      supervisedData?.isTeamSupervisor
+  );
 
   const handleRowClick = (leaveRequest: { id: number }) => {
     setIsManagerModal(false);
@@ -200,14 +209,18 @@ const UserLeaveHistory: FC<Props> = ({
     return employeeLeaveHistoryData?.items?.map(
       (leaveData: LeaveHistoryRawType) => ({
         id: leaveData.leaveRequestId,
-        ariaLabel: `${translateText(["tableHeaders", "leavePeriod"])} ${formatDateRange(
-          new Date(leaveData.startDate),
-          new Date(leaveData.endDate),
-          false,
-          leaveData.durationDays
-        )} ${translateText(["tableHeaders", "dateRequested"])} ${formatDateTimeWithOrdinalIndicator(
-          instantInZone(leaveData.createdDate, displayZone)
-        )}`,
+        ariaLabel: {
+          row: `${translateText(["tableHeaders", "leavePeriod"])} ${formatDateRange(
+            new Date(leaveData.startDate),
+            new Date(leaveData.endDate),
+            false,
+            leaveData.durationDays
+          )}, ${translateText(["tableHeaders", "days"])} ${leaveData.durationDays}, ${translateText(["tableHeaders", "type"])} ${leaveData.leaveType.name}, ${translateText(["tableHeaders", "dateRequested"])} ${formatDateTimeWithOrdinalIndicator(
+            instantInZone(leaveData.createdDate, displayZone)
+          )}, ${translateText(["tableHeaders", "status"])} ${leaveData.status}, ${translateText(["tableHeaders", "reason"])} ${leaveData.requestDesc ? leaveData.requestDesc : "-"}${
+            isSupervisorOfEmployee ? "" : `, ${translateAria(["disabled"])}`
+          }`
+        },
         leavePeriod: (
           <Box
             sx={{
@@ -299,6 +312,9 @@ const UserLeaveHistory: FC<Props> = ({
               <IconChip
                 icon={leaveData.leaveType.emojiCode}
                 label={leaveData.leaveType.name}
+                accessibility={{
+                  ariaLabel: `${translateText(["tableHeaders", "type"])} ${leaveData.leaveType.name}`
+                }}
                 isResponsive
                 chipStyles={{
                   color: "common.black",
@@ -511,6 +527,7 @@ const UserLeaveHistory: FC<Props> = ({
         tableName={TableNames.USER_LEAVE_HISTORY}
         headers={tableHeaders}
         rows={transformToTableRows()}
+        isRowDisabled={() => !isSupervisorOfEmployee}
         tableBody={{
           emptyState: {
             noData: {
@@ -529,7 +546,7 @@ const UserLeaveHistory: FC<Props> = ({
               rows: 5
             }
           },
-          onRowClick: handleRowClick
+          onRowClick: isSupervisorOfEmployee ? handleRowClick : undefined
         }}
         tableFoot={{
           pagination: {

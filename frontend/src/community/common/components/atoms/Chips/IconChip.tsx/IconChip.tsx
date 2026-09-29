@@ -46,7 +46,7 @@ const IconChip = forwardRef<HTMLDivElement, Props>(
       isResponsive = false,
       textTransform = "capitalize",
       onDelete = () => {},
-      onClick = () => {},
+      onClick,
       endIcon,
       dataTestId,
       mediumScreenWidth = 1300, // couldn't set to 1280, as the row is tightly packed from 1300

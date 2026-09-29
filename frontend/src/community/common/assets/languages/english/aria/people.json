@@ -97,7 +97,8 @@
       "denied": "Denied",
       "cancelled": "Cancelled",
       "revoked": "Revoked"
-    }
+    },
+    "disabled": "Disabled"
   },
   "peopleFormTable": {
     "actionColumn": {
