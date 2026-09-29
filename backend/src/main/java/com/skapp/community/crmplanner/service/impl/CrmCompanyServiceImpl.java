@@ -96,6 +96,9 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		CrmValidations.validateContactNumber(crmCompany.getContactNumber());
 		CrmValidations.validateWebsite(crmCompany.getWebsite());
 		CrmValidations.validateAddress(crmCompany.getAddress());
+		if (crmCompany.getIndustryId() == null && crmCompany.getIndustryName() != null) {
+			CrmValidations.validateIndustryName(crmCompany.getIndustryName());
+		}
 		validateCompanyCreationLimit();
 
 		if (checkCompanyExists(crmCompany.getName())) {
