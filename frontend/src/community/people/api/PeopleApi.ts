@@ -980,6 +980,13 @@ export const useEditEmployee = (employeeId: string) => {
 export const getSupervisedEmployeesAndTeams = (userId: number) =>
   authFetch.get(peoplesEndpoints.GET_SUPERVISOR_ROLES(userId));
 
+export const fetchSupervisorRolesData = async (
+  userId: number
+): Promise<SupervisorRolesData | undefined> => {
+  const response = await getSupervisedEmployeesAndTeams(userId);
+  return response.data?.results?.[0];
+};
+
 export const useGetSupervisedEmployeesAndTeams = (
   userId: number,
   enabled: boolean = true
