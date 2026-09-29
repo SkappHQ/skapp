@@ -1,7 +1,9 @@
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
-import { ADD_NEW_INDUSTRY_OPTION_ID } from "~community/crm/constants/commonConstants";
-import { INDUSTRY_OPTION_KEYS } from "~community/crm/constants/companyConstants";
+import {
+  ADD_NEW_INDUSTRY_OPTION_ID,
+  INDUSTRY_OPTION_KEYS
+} from "~community/crm/constants/companyConstants";
 import {
   CrmIndustryEnum,
   CrmMetricLabelThemeEnum
@@ -162,8 +164,7 @@ export interface CrmIndustryOption {
 export const getIndustryOptions = (
   industries: CrmIndustryRecord,
   translateText: TranslatorFunctionType,
-  searchKeyword: string,
-  canAddNewIndustry: boolean
+  searchKeyword: string
 ): CrmIndustryOption[] => {
   const trimmedName = searchKeyword.trim();
   const normalizedName = trimmedName.toLowerCase();
@@ -180,7 +181,6 @@ export const getIndustryOptions = (
   );
 
   if (
-    canAddNewIndustry &&
     trimmedName.length > 0 &&
     trimmedName.length <= characterLengths.INDUSTRY_NAME_LENGTH &&
     isNameAvailable

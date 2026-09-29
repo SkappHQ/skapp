@@ -133,7 +133,7 @@ const EditCompanyModalContent: FC = () => {
     const changedFields = getChangedCompanyFields(initialValues, {
       name: values.name?.trim(),
       industryId: values.industryId,
-      industryName: values.industryName,
+      industryName: values.industryName?.trim(),
       website: values.website?.trim(),
       address: values.address?.trim(),
       contactNumber: values.contactNumber?.trim()

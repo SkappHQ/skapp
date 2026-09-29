@@ -1,24 +1,14 @@
 import { ButtonV2, CloseIcon, InputField } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { ChangeEvent, FC, useMemo, useState } from "react";
-import { useShallow } from "zustand/react/shallow";
+import { FC } from "react";
 
-import { SearchableDropdownItem } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import { SEARCH_DEBOUNCE_DELAY } from "~community/common/constants/commonConstants";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCheckCompanyNameExists } from "~community/crm/api/CompanyApi";
-import AddIndustryOption from "~community/crm/components/atoms/AddIndustryOption/AddIndustryOption";
-import SelectableSearchField from "~community/crm/components/molecules/SelectableSearchField/SelectableSearchField";
-import { ADD_NEW_INDUSTRY_OPTION_ID } from "~community/crm/constants/commonConstants";
-import { useCrmStore } from "~community/crm/store/store";
+import EditableCompanyIndustryField from "~community/crm/components/molecules/EditableCompanyIndustryField/EditableCompanyIndustryField";
 import { CrmCompanyEntity } from "~community/crm/types/CrmCommonTypes";
-import {
-  CrmIndustryOption,
-  getIndustryDisplayName,
-  getIndustryOptions
-} from "~community/crm/utils/companyUtil";
 
 interface CompanyModalFormProps {
   formik: FormikProps<CrmCompanyEntity>;
@@ -35,14 +25,6 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
 }) => {
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
-
-  const { industries } = useCrmStore(
-    useShallow((store) => ({
-      industries: store.industries
-    }))
-  );
-
-  const [industrySearchTerm, setIndustrySearchTerm] = useState("");
 
   const {
     values,
@@ -72,68 +54,6 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
   const nameError = isAlreadyNameExists
     ? translateText(["companies", "modal", "validations", "companyExists"])
     : errors.name;
-
-  const industryOptions = useMemo(
-    () =>
-      getIndustryOptions(industries, translateText, industrySearchTerm, true),
-    [industries, translateText, industrySearchTerm]
-  );
-
-  const renderIndustryOptionContent = (option: CrmIndustryOption) => {
-    if (option.id === ADD_NEW_INDUSTRY_OPTION_ID) {
-      return (
-        <AddIndustryOption
-          label={translateText(
-            ["companies", "modal", "labels", "addNewIndustry"],
-            {
-              name: option.name
-            }
-          )}
-        />
-      );
-    }
-
-    return option.name;
-  };
-
-  const industryDropdownItems: SearchableDropdownItem[] = industryOptions.map(
-    (option) => ({
-      id: option.id,
-      content: renderIndustryOptionContent(option)
-    })
-  );
-
-  const selectedIndustry =
-    values.industryId != null ? industries[values.industryId] : undefined;
-
-  const selectedIndustryLabel =
-    values.industryName ??
-    (selectedIndustry
-      ? getIndustryDisplayName(selectedIndustry, translateText)
-      : "");
-
-  const handleIndustrySearchChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setIndustrySearchTerm(e.target.value);
-  };
-
-  const handleIndustrySelect = (item: SearchableDropdownItem) => {
-    if (item.id === ADD_NEW_INDUSTRY_OPTION_ID) {
-      setFieldValue("industryId", null);
-      setFieldValue("industryName", industrySearchTerm.trim());
-      setIndustrySearchTerm("");
-      return;
-    }
-
-    setFieldValue("industryId", Number(item.id));
-    setFieldValue("industryName", undefined);
-    setIndustrySearchTerm("");
-  };
-
-  const handleClearIndustry = () => {
-    setFieldValue("industryId", null);
-    setFieldValue("industryName", undefined);
-    setIndustrySearchTerm("");
-  };
 
   return (
     <div className="flex flex-col h-full justify-between gap-[0.625rem]">
@@ -211,29 +131,18 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
         fullWidth
       />
 
-      <SelectableSearchField
-        id="company-industry-search"
-        label={translateText(["companies", "modal", "labels", "industry"])}
-        placeholder={translateText([
-          "companies",
-          "modal",
-          "placeholders",
-          "industry"
-        ])}
-        selectedValue={selectedIndustryLabel}
-        onClear={handleClearIndustry}
-        clearAriaLabel={translateAria(["companies", "modal", "clearIndustry"])}
-        fieldAriaLabel={translateAria(["companies", "modal", "industry"])}
-        searchValue={industrySearchTerm}
-        onSearchChange={handleIndustrySearchChange}
-        items={industryDropdownItems}
-        onSelect={handleIndustrySelect}
-        emptyMessage={translateText([
-          "companies",
-          "modal",
-          "emptyStates",
-          "noIndustries"
-        ])}
+      <EditableCompanyIndustryField
+        industryId={values.industryId}
+        industryName={values.industryName}
+        onSelect={(industryId) => {
+          setFieldValue("industryId", industryId);
+          setFieldValue("industryName", undefined);
+        }}
+        onAddNew={(industryName) => setFieldValue("industryName", industryName)}
+        onClear={() => {
+          setFieldValue("industryId", null);
+          setFieldValue("industryName", undefined);
+        }}
       />
 
       <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">

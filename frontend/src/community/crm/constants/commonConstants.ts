@@ -4,5 +4,3 @@ export const CONTACT_PAGE_SIZE = 10;
 export const DEFAULT_LOOKUP_PAGE_SIZE = 50;
 export const DOMAIN_SEARCH_LIMIT = 10;
 export const SEARCH_DEBOUNCE_DELAY = 500;
-
-export const ADD_NEW_INDUSTRY_OPTION_ID = "ADD_NEW_INDUSTRY";

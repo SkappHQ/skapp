@@ -1,5 +1,5 @@
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
-import { ADD_NEW_INDUSTRY_OPTION_ID } from "~community/crm/constants/commonConstants";
+import { ADD_NEW_INDUSTRY_OPTION_ID } from "~community/crm/constants/companyConstants";
 import {
   CrmCompanyEntity,
   CrmIndustryRecord
@@ -87,13 +87,13 @@ describe("getIndustryDisplayName", () => {
 
 describe("getIndustryOptions", () => {
   it("returns every industry when there is no search keyword", () => {
-    const result = getIndustryOptions(industries, translateText, "", true);
+    const result = getIndustryOptions(industries, translateText, "");
 
     expect(result.map((option) => option.id)).toEqual(["1", "2"]);
   });
 
   it("filters by the search keyword, ignoring case", () => {
-    const result = getIndustryOptions(industries, translateText, "deep", true);
+    const result = getIndustryOptions(industries, translateText, "deep");
 
     expect(result).toEqual([
       { id: "2", name: "Deep Sea Tourism" },
@@ -105,30 +105,17 @@ describe("getIndustryOptions", () => {
     const result = getIndustryOptions(
       industries,
       translateText,
-      " deep sea tourism ",
-      true
+      " deep sea tourism "
     );
 
     expect(result).toEqual([{ id: "2", name: "Deep Sea Tourism" }]);
-  });
-
-  it("does not offer to add when adding is not allowed", () => {
-    const result = getIndustryOptions(
-      industries,
-      translateText,
-      "Marine",
-      false
-    );
-
-    expect(result).toEqual([]);
   });
 
   it("does not offer to add a name longer than the limit", () => {
     const result = getIndustryOptions(
       industries,
       translateText,
-      "A".repeat(101),
-      true
+      "A".repeat(101)
     );
 
     expect(result).toEqual([]);
