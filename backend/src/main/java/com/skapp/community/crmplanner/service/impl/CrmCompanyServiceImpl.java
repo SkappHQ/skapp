@@ -150,7 +150,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	private CrmIndustry resolveIndustry(Long industryId, String industryName) {
 		if (industryId != null) {
-			return crmIndustryDao.findById(industryId)
+			return crmIndustryDao.findByIdAndIsDeletedFalse(industryId)
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_INDUSTRY_NOT_FOUND));
 		}
 

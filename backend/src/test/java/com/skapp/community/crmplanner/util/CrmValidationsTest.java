@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest(classes = TestSkappApplication.class)
@@ -181,6 +182,76 @@ class CrmValidationsTest {
 		@DisplayName("Valid domain - does not throw")
 		void validateDomain_Valid_DoesNotThrow() {
 			assertDoesNotThrow(() -> CrmValidations.validateDomain("acme.com"));
+		}
+
+	}
+
+	// --- validateIndustryName ---
+
+	@Nested
+	@DisplayName("validateIndustryName")
+	class ValidateIndustryName {
+
+		@Test
+		@DisplayName("Null name - throws CRM_ERROR_INDUSTRY_NAME_REQUIRED")
+		void validateIndustryName_Null_ThrowsRequired() {
+			ModuleException ex = assertThrows(ModuleException.class, () -> CrmValidations.validateIndustryName(null));
+			assertEquals(CrmMessageConstant.CRM_ERROR_INDUSTRY_NAME_REQUIRED, ex.getMessageKey());
+		}
+
+		@Test
+		@DisplayName("Blank name - throws CRM_ERROR_INDUSTRY_NAME_REQUIRED")
+		void validateIndustryName_Blank_ThrowsRequired() {
+			ModuleException ex = assertThrows(ModuleException.class, () -> CrmValidations.validateIndustryName("   "));
+			assertEquals(CrmMessageConstant.CRM_ERROR_INDUSTRY_NAME_REQUIRED, ex.getMessageKey());
+		}
+
+		@Test
+		@DisplayName("Name exceeding max length - throws CRM_ERROR_INDUSTRY_NAME_TOO_LONG")
+		void validateIndustryName_TooLong_ThrowsTooLong() {
+			String tooLong = "A".repeat(CrmConstants.INDUSTRY_NAME_MAX_LENGTH + 1);
+			ModuleException ex = assertThrows(ModuleException.class,
+					() -> CrmValidations.validateIndustryName(tooLong));
+			assertEquals(CrmMessageConstant.CRM_ERROR_INDUSTRY_NAME_TOO_LONG, ex.getMessageKey());
+		}
+
+		@Test
+		@DisplayName("Name that fits after collapsing spaces - does not throw")
+		void validateIndustryName_FitsAfterCollapsingSpaces_DoesNotThrow() {
+			String name = "A".repeat(49) + "     " + "A".repeat(50);
+			assertDoesNotThrow(() -> CrmValidations.validateIndustryName(name));
+		}
+
+		@Test
+		@DisplayName("Valid name - does not throw")
+		void validateIndustryName_Valid_DoesNotThrow() {
+			assertDoesNotThrow(() -> CrmValidations.validateIndustryName("Retail"));
+		}
+
+	}
+
+	// --- normalizeIndustryName ---
+
+	@Nested
+	@DisplayName("normalizeIndustryName")
+	class NormalizeIndustryName {
+
+		@Test
+		@DisplayName("Null name - returns null")
+		void normalizeIndustryName_Null_ReturnsNull() {
+			assertNull(CrmValidations.normalizeIndustryName(null));
+		}
+
+		@Test
+		@DisplayName("Extra spaces - trims and collapses to single spaces")
+		void normalizeIndustryName_ExtraSpaces_TrimsAndCollapses() {
+			assertEquals("Deep Sea Tourism", CrmValidations.normalizeIndustryName("  Deep   Sea  Tourism "));
+		}
+
+		@Test
+		@DisplayName("Non-breaking space between words - becomes a normal space")
+		void normalizeIndustryName_NonBreakingSpaceBetweenWords_BecomesSpace() {
+			assertEquals("Deep Sea", CrmValidations.normalizeIndustryName("Deep Sea"));
 		}
 
 	}

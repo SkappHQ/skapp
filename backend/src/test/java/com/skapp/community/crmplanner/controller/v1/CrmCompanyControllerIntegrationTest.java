@@ -242,7 +242,24 @@ class CrmCompanyControllerIntegrationTest {
 		CrmCompanyCreateDto createDto = createValidPayload();
 		createDto.setIndustryId(999999L);
 
-		performPostRequest(createDto).andExpect(status().isBadRequest());
+		performPostRequest(createDto).andExpect(status().isBadRequest())
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_INDUSTRY_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Create company with a deleted industry id - Returns Bad Request")
+	void createCompany_DeletedIndustryId_ReturnsBadRequest() throws Exception {
+		CrmIndustry deletedIndustry = savedIndustry("Deleted Industry");
+		deletedIndustry.setIsDeleted(true);
+		crmIndustryDao.save(deletedIndustry);
+
+		CrmCompanyCreateDto createDto = createValidPayload();
+		createDto.setIndustryId(deletedIndustry.getId());
+
+		performPostRequest(createDto).andExpect(status().isBadRequest())
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_INDUSTRY_NOT_FOUND)));
 	}
 
 	@Test
@@ -268,7 +285,7 @@ class CrmCompanyControllerIntegrationTest {
 		Long expectedIndustryId = seedIndustries(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA);
 
 		CrmCompanyCreateDto createDto = createValidPayload();
-		createDto.setIndustryName(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA.name().toLowerCase());
+		createDto.setIndustryName(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA.getDisplayName().toLowerCase());
 
 		Long companyId = extractCompanyId(performPostRequest(createDto).andExpect(status().isCreated()));
 
@@ -348,8 +365,8 @@ class CrmCompanyControllerIntegrationTest {
 
 	private Long seedIndustries(CrmIndustryName industry) {
 		crmIndustryDao.saveAll(DefaultCrmIndustryTemplate.getDefaultIndustries());
-		return crmIndustryDao.findByNameIgnoreCaseAndIsDeletedFalse(industry.name())
-			.orElseThrow(() -> new AssertionError("crm_industry has no row named " + industry.name()))
+		return crmIndustryDao.findByNameIgnoreCaseAndIsDeletedFalse(industry.getDisplayName())
+			.orElseThrow(() -> new AssertionError("crm_industry has no row named " + industry.getDisplayName()))
 			.getId();
 	}
 
@@ -890,7 +907,7 @@ class CrmCompanyControllerIntegrationTest {
 	private CrmCompany createMetricsCompany(String name) {
 		CrmCompany company = new CrmCompany();
 		company.setName(name);
-		company.setIndustry(savedIndustry(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA.name()));
+		company.setIndustry(savedIndustry(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA.getDisplayName()));
 		return crmCompanyDao.save(company);
 	}
 
@@ -1029,7 +1046,7 @@ class CrmCompanyControllerIntegrationTest {
 	void getCompanyById_HappyPath_ReturnsCompany() throws Exception {
 		CrmCompany company = new CrmCompany();
 		company.setName("DetailCoUnique");
-		company.setIndustry(savedIndustry(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA.name()));
+		company.setIndustry(savedIndustry(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA.getDisplayName()));
 		company.setWebsite("https://detail.com");
 		company.setAddress("1 Detail St");
 		company.setContactNumber("94770000001");
@@ -1119,7 +1136,7 @@ class CrmCompanyControllerIntegrationTest {
 	private CrmCompany savedBatchCompany(String name) {
 		CrmCompany company = new CrmCompany();
 		company.setName(name);
-		company.setIndustry(savedIndustry(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA.name()));
+		company.setIndustry(savedIndustry(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA.getDisplayName()));
 		company.setWebsite("https://batch.com");
 		company.setAddress("1 Batch St");
 		company.setContactNumber("94770000010");
