@@ -30,6 +30,7 @@ interface Props {
   isTruncated?: boolean;
   dataTestId?: string;
   tabIndex?: number;
+  clickable?: boolean;
 }
 
 const IconChip = forwardRef<HTMLDivElement, Props>(
@@ -46,13 +47,14 @@ const IconChip = forwardRef<HTMLDivElement, Props>(
       isResponsive = false,
       textTransform = "capitalize",
       onDelete = () => {},
-      onClick,
+      onClick = () => {},
       endIcon,
       dataTestId,
       mediumScreenWidth = 1300, // couldn't set to 1280, as the row is tightly packed from 1300
       emojiSize,
       isTruncated = true,
-      tabIndex
+      tabIndex,
+      clickable
     }: Props,
     ref
   ) => {
@@ -103,6 +105,7 @@ const IconChip = forwardRef<HTMLDivElement, Props>(
         onDelete={endIcon ? onDelete : undefined}
         data-testid={dataTestId}
         onClick={onClick}
+        clickable={clickable}
         label={renderLabel()}
         sx={classes.chip({
           isResponsive,

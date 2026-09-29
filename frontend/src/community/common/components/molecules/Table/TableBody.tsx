@@ -94,7 +94,7 @@ const TableBody: FC<TableBodyProps & CommonTableProps> = ({
         rows.map((row) => (
           <TableRow
             key={row.id}
-            tabIndex={0}
+            tabIndex={onRowClick ? 0 : -1}
             onClick={onRowClick ? () => handleTableRowClick(row) : undefined}
             aria-label={row?.ariaLabel?.row ?? ""}
             aria-description={row?.ariaDescription?.row ?? ""}

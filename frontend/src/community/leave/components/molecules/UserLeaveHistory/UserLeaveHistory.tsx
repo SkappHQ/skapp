@@ -116,7 +116,8 @@ const UserLeaveHistory: FC<Props> = ({
     data: getLeaveByIdData
   } = useGetLeaveRequestData(newLeaveId as number);
 
-  const { data: supervisedData } = useGetSupervisedByMe(employeeId);
+  const { data: supervisedData, isLoading: isSupervisedDataLoading } =
+    useGetSupervisedByMe(employeeId);
 
   const isSupervisorOfEmployee = Boolean(
     supervisedData?.isPrimaryManager ||
@@ -217,7 +218,7 @@ const UserLeaveHistory: FC<Props> = ({
             leaveData.durationDays
           )}, ${translateText(["tableHeaders", "days"])} ${leaveData.durationDays}, ${translateText(["tableHeaders", "type"])} ${leaveData.leaveType.name}, ${translateText(["tableHeaders", "dateRequested"])} ${formatDateTimeWithOrdinalIndicator(
             instantInZone(leaveData.createdDate, displayZone)
-          )}, ${translateText(["tableHeaders", "status"])} ${leaveData.status}, ${translateText(["tableHeaders", "reason"])} ${leaveData.requestDesc ? leaveData.requestDesc : "-"}${
+          )}, ${translateText(["tableHeaders", "status"])} ${translateAria(["leaveStatus", leaveData.status.toLowerCase()])}, ${translateText(["tableHeaders", "reason"])} ${leaveData.requestDesc ? leaveData.requestDesc : translateAria(["noReason"])}${
             isSupervisorOfEmployee ? "" : `, ${translateAria(["disabled"])}`
           }`
         },
@@ -312,10 +313,8 @@ const UserLeaveHistory: FC<Props> = ({
               <IconChip
                 icon={leaveData.leaveType.emojiCode}
                 label={leaveData.leaveType.name}
-                accessibility={{
-                  ariaLabel: `${translateText(["tableHeaders", "type"])} ${leaveData.leaveType.name}`
-                }}
                 isResponsive
+                clickable={false}
                 chipStyles={{
                   color: "common.black",
                   height: "2.25rem",
@@ -372,6 +371,7 @@ const UserLeaveHistory: FC<Props> = ({
                 getLeaveRequestStatus(leaveData.status)
               )}
               isResponsive={true}
+              clickable={false}
               chipStyles={{
                 alignSelf: "flex-end",
                 [`@media (max-width: 81.25rem)`]: {
@@ -546,7 +546,7 @@ const UserLeaveHistory: FC<Props> = ({
               rows: 5
             }
           },
-          onRowClick: isSupervisorOfEmployee ? handleRowClick : undefined
+          onRowClick: handleRowClick
         }}
         tableFoot={{
           pagination: {
@@ -576,7 +576,7 @@ const UserLeaveHistory: FC<Props> = ({
             rightButton: renderFilterBy()
           }
         }}
-        isLoading={isLoading}
+        isLoading={isLoading || isSupervisedDataLoading}
         tabIndex={{
           wrapper: getTabIndex(isFreeTier),
           container: getTabIndex(isFreeTier),

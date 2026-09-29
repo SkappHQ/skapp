@@ -98,7 +98,8 @@
       "cancelled": "Cancelled",
       "revoked": "Revoked"
     },
-    "disabled": "Disabled"
+    "disabled": "Disabled",
+    "noReason": "No reason provided"
   },
   "peopleFormTable": {
     "actionColumn": {
