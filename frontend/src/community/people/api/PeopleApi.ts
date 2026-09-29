@@ -312,19 +312,19 @@ export const useGetSearchedEmployees = (
   });
 };
 
+const getAllActiveEmployees = async (permission: SystemPermissionTypes) => {
+  const response = await authFetch.get(peoplesEndpoints.SEARCH_EMPLOYEE, {
+    params: { keyword: "", permission }
+  });
+  return searchEmployeeDataPreProcessor(response?.data?.results);
+};
+
 export const useGetAllActiveEmployees = (
   permission: SystemPermissionTypes = SystemPermissionTypes.EMPLOYEES
 ) => {
-  const queryFn = async () => {
-    const response = await authFetch.get(peoplesEndpoints.SEARCH_EMPLOYEE, {
-      params: { keyword: "", permission }
-    });
-    return searchEmployeeDataPreProcessor(response?.data?.results);
-  };
-
   return useQuery({
     queryKey: ["all-active-employees", permission],
-    queryFn,
+    queryFn: () => getAllActiveEmployees(permission),
     refetchOnWindowFocus: false
   });
 };
