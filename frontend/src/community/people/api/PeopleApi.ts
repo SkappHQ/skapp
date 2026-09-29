@@ -168,7 +168,8 @@ export const useGetEmployeeData =
         const employeeData = await authFetchV2.get(url, {
           params: {
             page: pageParam,
-            ...params
+            ...params,
+            size: 8
           }
         });
 

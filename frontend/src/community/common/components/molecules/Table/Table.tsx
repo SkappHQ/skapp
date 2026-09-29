@@ -32,7 +32,6 @@ interface Props {
     container?: SxProps<Theme>;
     table?: SxProps<Theme>;
   };
-  containerClassName?: string;
   tableContainerRef?: RefObject<HTMLDivElement>;
 }
 
@@ -82,7 +81,6 @@ const Table: FC<Props & CommonTableProps & TableProps & TableTypes> = ({
   tableBody,
   tableFoot,
   customStyles,
-  containerClassName,
   tableContainerRef
 }) => {
   const theme: Theme = useTheme();
@@ -98,7 +96,6 @@ const Table: FC<Props & CommonTableProps & TableProps & TableTypes> = ({
 
       <TableContainer
         ref={tableContainerRef}
-        className={containerClassName}
         sx={mergeSx([classes.container, customStyles?.container])}
       >
         <MuiTable
