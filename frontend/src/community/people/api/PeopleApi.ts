@@ -41,6 +41,7 @@ import {
   peopleConfigQueryKeys,
   peopleQueryKeys
 } from "~community/people/api/utils/QueryKeys";
+import { PEOPLE_DIRECTORY_PAGE_SIZE } from "~community/people/constants/stringConstants";
 import { SkillTypes } from "~community/people/enums/PeopleEnums";
 import { usePeopleStore } from "~community/people/store/store";
 import {
@@ -168,7 +169,8 @@ export const useGetEmployeeData =
         const employeeData = await authFetchV2.get(url, {
           params: {
             page: pageParam,
-            ...params
+            ...params,
+            size: PEOPLE_DIRECTORY_PAGE_SIZE
           }
         });
 

@@ -20,14 +20,14 @@ import {
 import {
   useGetDealStages,
   useReorderDealStages
-} from "~community/crm/v2/api/DealApi";
-import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { CrmStageEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import { CrmModalTypes } from "~community/crm/v2/types/CrmTypes";
+} from "~community/crm/api/DealApi";
+import { useCrmStore } from "~community/crm/store/store";
+import { CrmStageEntity } from "~community/crm/types/CrmCommonTypes";
+import { CrmModalTypes } from "~community/crm/types/CrmTypes";
 import {
   getOrderedStages,
   toStagesRecord
-} from "~community/crm/v2/utils/commonUtil";
+} from "~community/crm/utils/commonUtil";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
@@ -43,7 +43,7 @@ const DealStagesSection: FC = () => {
     setIsDealStageModalOpen,
     setDealStageModalType,
     setSelectedDealStageId
-  } = useCrmStoreV2(
+  } = useCrmStore(
     useShallow((store) => ({
       stages: store.stages,
       setStages: store.setStages,

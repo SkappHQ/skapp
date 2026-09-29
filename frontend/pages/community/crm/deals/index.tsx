@@ -5,36 +5,35 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import { Modules } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-import AddDealSidePanelV2 from "~community/crm/v2/components/organisms/AddDealSidePanelV2/AddDealSidePanelV2";
-import DealSidePanelV2 from "~community/crm/v2/components/organisms/DealSidePanelV2/DealSidePanelV2";
-import DealsKanbanBoardSkeletonV2 from "~community/crm/v2/components/organisms/DealsKanbanBoardV2/DealsKanbanBoardSkeletonV2";
-import DealsSectionV2 from "~community/crm/v2/components/organisms/DealsSectionV2/DealsSectionV2";
-import TaskModalControllerV2 from "~community/crm/v2/components/organisms/TaskModalController/TaskModalController";
-import SidePanelWrapperV2 from "~community/crm/v2/components/templates/SidePanelWrapper/SidePanelWrapper";
-import { useInitializeCrmData } from "~community/crm/v2/hooks/useInitializeCrmData";
-import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { CrmSidePanelTypes as CrmSidePanelTypesV2 } from "~community/crm/v2/types/CrmTypes";
+import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePanel/AddDealSidePanel";
+import DealSidePanel from "~community/crm/components/organisms/DealSidePanel/DealSidePanel";
+import DealsKanbanBoardSkeleton from "~community/crm/components/organisms/DealsKanbanBoard/DealsKanbanBoardSkeleton";
+import DealsSection from "~community/crm/components/organisms/DealsSection/DealsSection";
+import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
+import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
+import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
+import { useCrmStore } from "~community/crm/store/store";
+import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 const Deals: NextPage = () => {
-  const translateText = useTranslator("crmModuleV2");
+  const translateText = useTranslator("crmModule");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
-  const { openCrmSidePanel, selectedDealId, isCrmSidePanelOpen } =
-    useCrmStoreV2(
-      useShallow((store) => ({
-        openCrmSidePanel: store.openCrmSidePanel,
-        selectedDealId: store.selectedDealId,
-        isCrmSidePanelOpen: store.isCrmSidePanelOpen
-      }))
-    );
+  const { openCrmSidePanel, selectedDealId, isCrmSidePanelOpen } = useCrmStore(
+    useShallow((store) => ({
+      openCrmSidePanel: store.openCrmSidePanel,
+      selectedDealId: store.selectedDealId,
+      isCrmSidePanelOpen: store.isCrmSidePanelOpen
+    }))
+  );
 
   const { isCrmInitialDataLoading } = useInitializeCrmData();
 
   const handleAddDeal = () => {
     guardCrmCreate(CrmLimitResource.DEALS, () =>
-      openCrmSidePanel(CrmSidePanelTypesV2.ADD_DEAL_SIDE_PANEL)
+      openCrmSidePanel(CrmSidePanelTypes.ADD_DEAL_SIDE_PANEL)
     );
   };
 
@@ -53,15 +52,15 @@ const Deals: NextPage = () => {
       onPrimaryButtonClick={handleAddDeal}
     >
       <>
-        <SidePanelWrapperV2 isOpen={isCrmSidePanelOpen}>
-          {selectedDealId !== null && <DealSidePanelV2 />}
-          <AddDealSidePanelV2 />
-        </SidePanelWrapperV2>
-        <TaskModalControllerV2 />
+        <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
+          {selectedDealId !== null && <DealSidePanel />}
+          <AddDealSidePanel />
+        </SidePanelWrapper>
+        <TaskModalController />
         {isCrmInitialDataLoading ? (
-          <DealsKanbanBoardSkeletonV2 laneCount={4} cardCount={5} />
+          <DealsKanbanBoardSkeleton laneCount={4} cardCount={5} />
         ) : (
-          <DealsSectionV2 />
+          <DealsSection />
         )}
       </>
     </ContentLayout>

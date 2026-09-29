@@ -2,12 +2,12 @@ import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import {
   CrmDealStageEnum,
   DefaultStageNameEnum
-} from "~community/crm/v2/enums/common";
+} from "~community/crm/enums/common";
 import {
   CrmStageEntity,
   CrmStageRecord
-} from "~community/crm/v2/types/CrmCommonTypes";
-import { CrmDealStageReorderItem } from "~community/crm/v2/types/CrmTypes";
+} from "~community/crm/types/CrmCommonTypes";
+import { CrmDealStageReorderItem } from "~community/crm/types/CrmTypes";
 
 export const getSelectedStage = (
   stages: CrmStageRecord,

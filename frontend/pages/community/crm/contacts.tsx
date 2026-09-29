@@ -5,23 +5,23 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import { Modules } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-import ContactModalControllerV2 from "~community/crm/v2/components/organisms/ContactModalController/ContactModalController";
-import ContactSidePanelV2 from "~community/crm/v2/components/organisms/ContactSidePanel/ContactSidePanel";
-import { ContactTable as ContactTableV2 } from "~community/crm/v2/components/organisms/ContactTable/ContactTable";
-import TaskModalControllerV2 from "~community/crm/v2/components/organisms/TaskModalController/TaskModalController";
-import SidePanelWrapperV2 from "~community/crm/v2/components/templates/SidePanelWrapper/SidePanelWrapper";
-import { useInitializeCrmData } from "~community/crm/v2/hooks/useInitializeCrmData";
-import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { CrmModalTypes as CrmModalTypesV2 } from "~community/crm/v2/types/CrmTypes";
+import ContactModalController from "~community/crm/components/organisms/ContactModalController/ContactModalController";
+import ContactSidePanel from "~community/crm/components/organisms/ContactSidePanel/ContactSidePanel";
+import { ContactTable } from "~community/crm/components/organisms/ContactTable/ContactTable";
+import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
+import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
+import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
+import { useCrmStore } from "~community/crm/store/store";
+import { CrmModalTypes } from "~community/crm/types/CrmTypes";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 const Contacts: NextPage = () => {
-  const translateText = useTranslator("crmModuleV2");
+  const translateText = useTranslator("crmModule");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const { setIsContactModalOpen, setContactModalType, selectedContactId } =
-    useCrmStoreV2(
+    useCrmStore(
       useShallow((store) => ({
         setIsContactModalOpen: store.setIsContactModalOpen,
         setContactModalType: store.setContactModalType,
@@ -34,7 +34,7 @@ const Contacts: NextPage = () => {
   const onPrimaryButtonClick = () => {
     guardCrmCreate(CrmLimitResource.CONTACTS, () => {
       setIsContactModalOpen(true);
-      setContactModalType(CrmModalTypesV2.ADD_CONTACT_MODAL);
+      setContactModalType(CrmModalTypes.ADD_CONTACT_MODAL);
     });
   };
 
@@ -54,14 +54,14 @@ const Contacts: NextPage = () => {
     >
       <>
         {selectedContactId && (
-          <SidePanelWrapperV2>
-            <ContactSidePanelV2 contactId={selectedContactId} />
-          </SidePanelWrapperV2>
+          <SidePanelWrapper>
+            <ContactSidePanel contactId={selectedContactId} />
+          </SidePanelWrapper>
         )}
 
-        <ContactModalControllerV2 />
-        <TaskModalControllerV2 />
-        <ContactTableV2 isCrmDataLoading={isCrmInitialDataLoading} />
+        <ContactModalController />
+        <TaskModalController />
+        <ContactTable isCrmDataLoading={isCrmInitialDataLoading} />
       </>
     </ContentLayout>
   );
