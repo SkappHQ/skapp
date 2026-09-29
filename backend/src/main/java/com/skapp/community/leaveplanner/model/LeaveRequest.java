@@ -21,8 +21,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
@@ -58,7 +58,7 @@ public class LeaveRequest extends Auditable<String> {
 	private String reviewerComment;
 
 	@Column(name = "reviewed_date")
-	private LocalDateTime reviewedDate;
+	private Instant reviewedDate;
 
 	@Column(name = "duration_days")
 	private Float durationDays;

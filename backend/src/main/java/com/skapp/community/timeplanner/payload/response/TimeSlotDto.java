@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 import tools.jackson.databind.annotation.JsonDeserialize;
 
-import java.time.LocalDate;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -29,12 +29,12 @@ public class TimeSlotDto {
 	@JsonDeserialize(using = Base64BooleanDeserializer.class)
 	private Boolean isManualEntry;
 
-	public LocalDate getStartTime() {
-		return this.startTime != null ? DateTimeUtils.getLocalDateFromEpoch(this.startTime) : null;
+	public Instant getStartTime() {
+		return this.startTime != null ? DateTimeUtils.epochMillisToInstant(this.startTime) : null;
 	}
 
-	public LocalDate getEndTime() {
-		return this.endTime != null ? DateTimeUtils.getLocalDateFromEpoch(this.endTime) : null;
+	public Instant getEndTime() {
+		return this.endTime != null ? DateTimeUtils.epochMillisToInstant(this.endTime) : null;
 	}
 
 }

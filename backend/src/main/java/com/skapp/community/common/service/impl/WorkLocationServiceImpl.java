@@ -25,6 +25,7 @@ import com.skapp.community.common.payload.request.WorkLocationRequestDto;
 import com.skapp.community.common.payload.response.WorkLocationResponseDto;
 import com.skapp.community.common.payload.response.WorkLocationSummaryResponseDto;
 import com.skapp.community.common.repository.WorkLocationDao;
+import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.WorkLocationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +53,8 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 	private final LeaveRequestDao leaveRequestDao;
 
 	private final MessageUtil messageUtil;
+
+	private final TimeZoneService timeZoneService;
 
 	@Override
 	@Transactional
@@ -246,7 +249,8 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 	}
 
 	private void deleteFutureHolidaysSpecificToWorkLocation(Long workLocationId) {
-		List<Holiday> holidaysToDelete = holidayDao.findFutureActiveHolidaysExclusiveToWorkLocation(workLocationId);
+		List<Holiday> holidaysToDelete = holidayDao.findFutureActiveHolidaysExclusiveToWorkLocation(workLocationId,
+				timeZoneService.currentOrganizationDate());
 
 		for (Holiday holiday : holidaysToDelete) {
 			LeaveRequestFilterDto leaveRequestFilterDto = new LeaveRequestFilterDto();

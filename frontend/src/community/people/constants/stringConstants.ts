@@ -15,3 +15,5 @@ export const BIRTHDAY_DISMISSED_ENTRIES_CACHE_KEY = "birthdayDismissedEntries";
 export const PAYROLL_ID_LENGTH = 50;
 
 export const TIN_LENGTH = 50;
+
+export const PEOPLE_DIRECTORY_PAGE_SIZE = 8;

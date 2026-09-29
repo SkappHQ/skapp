@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -14,7 +14,7 @@ import java.util.Objects;
 @Setter
 public class ErrorResponse {
 
-	private LocalDateTime timestamp;
+	private Instant timestamp;
 
 	private int code;
 
@@ -27,7 +27,7 @@ public class ErrorResponse {
 	private List<ValidationError> errors;
 
 	public ErrorResponse() {
-		this.timestamp = LocalDateTime.now();
+		this.timestamp = Instant.now();
 	}
 
 	public ErrorResponse(HttpStatus httpStatus, String message, MessageConstant messageKey) {

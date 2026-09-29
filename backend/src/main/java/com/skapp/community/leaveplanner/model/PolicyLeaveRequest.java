@@ -21,8 +21,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -73,7 +73,7 @@ public class PolicyLeaveRequest extends Auditable<String> {
 	private String reviewerComment;
 
 	@Column(name = "reviewed_date")
-	private LocalDateTime reviewedDate;
+	private Instant reviewedDate;
 
 	@Column(name = "is_auto_approved")
 	private Boolean isAutoApproved = Boolean.FALSE;

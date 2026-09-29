@@ -28,6 +28,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import tools.jackson.databind.json.JsonMapper;
 
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -153,7 +154,7 @@ class HolidayControllerIntegrationTest {
 		@Test
 		@DisplayName("Save bulk holidays - Returns Created")
 		void saveBulkHolidays_ReturnsCreated() throws Exception {
-			int currentYear = DateTimeUtils.getCurrentYear();
+			int currentYear = DateTimeUtils.currentDateAt(ZoneOffset.UTC).getYear();
 			List<HolidayRequestDto> holidayDtoList = new ArrayList<>();
 
 			holidayDtoList.add(createHolidayDto(String.format("%d-11-30", currentYear), "Poya day"));
@@ -194,7 +195,7 @@ class HolidayControllerIntegrationTest {
 		@Test
 		@DisplayName("Delete all holidays - Returns OK")
 		void deleteAllHolidays_ReturnsSuccessful() throws Exception {
-			performDeleteRequest(BASE_PATH + "/" + DateTimeUtils.getCurrentYear()).andDo(print())
+			performDeleteRequest(BASE_PATH + "/" + DateTimeUtils.currentDateAt(ZoneOffset.UTC).getYear()).andDo(print())
 				.andExpect(status().isOk())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)

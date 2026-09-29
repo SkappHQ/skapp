@@ -23,6 +23,8 @@ export const MONTH_DATE_FORMAT = "dd/MM";
 
 export const MEDIUM_DATE_FORMAT = "dd MMM yyyy";
 
+export const MEDIUM_DATE_TIME_FORMAT = "dd MMM yyyy, h:mm a";
+
 export const FULL_MONTH_DATE_FORMAT = "dd MMMM";
 export const monthAbbreviations = [
   "Jan",
@@ -40,3 +42,5 @@ export const monthAbbreviations = [
 ];
 
 export type DateFormatType = "YYYY/MM/DD" | "MM/DD/YYYY" | "DD/MM/YYYY";
+
+export const HALF_YEAR_IN_MONTHS = 6;

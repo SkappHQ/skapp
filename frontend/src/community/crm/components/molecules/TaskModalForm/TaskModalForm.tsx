@@ -12,8 +12,12 @@ import { FC, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { characterLengths } from "~community/common/constants/stringConstants";
+import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { convertUTCStringToLocalDateTime } from "~community/common/utils/dateTimeUtils";
+import {
+  instantToPickedDay,
+  pickedDayToInstant
+} from "~community/common/utils/dateTimeUtils";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 import { useGetPriorityOptions } from "~community/crm/hooks/useGetPriorityOptions";
 import { useCrmStore } from "~community/crm/store/store";
@@ -45,6 +49,7 @@ const TaskModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
 
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
+  const displayZone = useDisplayZone();
 
   const { taskTypes } = useCrmStore(
     useShallow((store) => ({
@@ -72,11 +77,15 @@ const TaskModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
   };
 
   const handleDueDateSelect = (date: Date | undefined) => {
-    setFieldValue("dueAt", date?.toISOString() ?? null, true);
+    setFieldValue(
+      "dueAt",
+      date ? pickedDayToInstant(date, displayZone) : null,
+      true
+    );
   };
 
   const dueDate = values.dueAt
-    ? convertUTCStringToLocalDateTime(values.dueAt).toJSDate()
+    ? instantToPickedDay(values.dueAt, displayZone)
     : undefined;
 
   return (
