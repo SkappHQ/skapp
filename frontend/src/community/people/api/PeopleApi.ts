@@ -41,6 +41,7 @@ import {
   peopleConfigQueryKeys,
   peopleQueryKeys
 } from "~community/people/api/utils/QueryKeys";
+import { PEOPLE_DIRECTORY_PAGE_SIZE } from "~community/people/constants/stringConstants";
 import { SkillTypes } from "~community/people/enums/PeopleEnums";
 import { usePeopleStore } from "~community/people/store/store";
 import {
@@ -169,7 +170,7 @@ export const useGetEmployeeData =
           params: {
             page: pageParam,
             ...params,
-            size: 8
+            size: PEOPLE_DIRECTORY_PAGE_SIZE
           }
         });
 
