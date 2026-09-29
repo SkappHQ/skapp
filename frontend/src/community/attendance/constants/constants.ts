@@ -1,3 +1,5 @@
+import { TimeOfDayType } from "~community/common/types/CommonTypes";
+
 export const colorSelector: Record<string, string> = {
   WORK: "#D1FAE5",
   MANUAL: "#FEF3C7",
@@ -34,4 +36,16 @@ export const holidayDurationSelector: Record<string, string> = {
   FULL_DAY: "Full Day",
   HALF_DAY_EVENING: "Half Day - Evening",
   HALF_DAY_MORNING: "Half Day - Morning"
+};
+
+export const PRE_MIDNIGHT_ALERT_TIME: TimeOfDayType = {
+  hour: 23,
+  minute: 50,
+  second: 0
+};
+
+export const AUTO_CLOCK_OUT_TIME: TimeOfDayType = {
+  hour: 23,
+  minute: 59,
+  second: 58
 };

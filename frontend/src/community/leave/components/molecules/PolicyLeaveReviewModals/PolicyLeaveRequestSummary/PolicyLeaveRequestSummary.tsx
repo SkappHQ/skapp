@@ -4,6 +4,7 @@ import { ArrowRightIcon, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
+import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import PolicyLeaveAttachmentRow from "~community/leave/components/molecules/PolicyLeaveAttachmentRow/PolicyLeaveAttachmentRow";
@@ -38,6 +39,7 @@ const PolicyLeaveRequestSummary: FC<Props> = ({
 }) => {
   const theme: Theme = useTheme();
   const translateText = useTranslator("leaveModule", "myRequests");
+  const displayZone = useDisplayZone();
 
   const layout = SUMMARY_LAYOUTS[popupType];
 
@@ -85,13 +87,13 @@ const PolicyLeaveRequestSummary: FC<Props> = ({
         {layout.showDateApplied && request.createdDate && (
           <StatusPopupRow
             label={translateText(["myLeaveRequests", "dateApplied"])}
-            durationDate={formatOptionalDate(request.createdDate)}
+            durationDate={formatOptionalDate(request.createdDate, displayZone)}
           />
         )}
         {layout.showDateApproved && request.reviewedDate && (
           <StatusPopupRow
             label={translateText(["myLeaveRequests", "dateApproved"])}
-            durationDate={formatOptionalDate(request.reviewedDate)}
+            durationDate={formatOptionalDate(request.reviewedDate, displayZone)}
           />
         )}
         <StatusPopupRow

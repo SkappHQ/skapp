@@ -1,9 +1,7 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { SxProps, type Theme, useTheme } from "@mui/material/styles";
-import { DateTime } from "luxon";
 import { Dispatch, FC, SetStateAction, useEffect, useRef } from "react";
 
-import { TIME_FORMAT_AM_PM } from "~community/attendance/constants/constants";
 import {
   ClockInSummaryFilterTypes,
   ClockInSummaryTypes
@@ -142,13 +140,7 @@ const ClockInTable: FC<Props> = ({
                   leaveType={data?.leave?.leaveState}
                 />
               ) : (
-                <Typography>
-                  {DateTime.fromFormat(data?.clockInTime, TIME_FORMAT_AM_PM, {
-                    zone: "utc"
-                  })
-                    .toLocal()
-                    .toFormat(TIME_FORMAT_AM_PM)}
-                </Typography>
+                <Typography>{data?.clockInTime}</Typography>
               )}
               {data?.isLateArrival && (
                 <Box
@@ -187,13 +179,7 @@ const ClockInTable: FC<Props> = ({
       clockOutTime: (
         <>
           {data?.clockOutTime ? (
-            <Typography>
-              {DateTime.fromFormat(data?.clockOutTime, TIME_FORMAT_AM_PM, {
-                zone: "utc"
-              })
-                .toLocal()
-                .toFormat(TIME_FORMAT_AM_PM)}
-            </Typography>
+            <Typography>{data?.clockOutTime}</Typography>
           ) : (
             <>-</>
           )}

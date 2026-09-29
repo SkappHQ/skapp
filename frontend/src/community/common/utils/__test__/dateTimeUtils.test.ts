@@ -481,26 +481,46 @@ describe("formatRelativeDateTime", () => {
 
   it("should return a formatted string with a relative date and time", () => {
     const mockDate = DateTime.now().minus({ days: 1 }).toISO();
-    const result = fromDateToRelativeTime(mockDate, mockTranslate, "en");
+    const result = fromDateToRelativeTime(
+      mockDate,
+      mockTranslate,
+      "en",
+      undefined
+    );
 
     expect(result).toContain("Yesterday at");
     expect(result).toMatch(/\d{1,2}:\d{2} (AM|PM)/);
   });
 
   it("should handle invalid dates gracefully", () => {
-    const result = fromDateToRelativeTime("invalid-date", mockTranslate, "en");
+    const result = fromDateToRelativeTime(
+      "invalid-date",
+      mockTranslate,
+      "en",
+      undefined
+    );
     expect(result).toBe("Unknown date at Invalid DateTime");
   });
 
   it("should capitalize the first word of the relative date", () => {
     const mockDate = DateTime.now().minus({ days: 1 }).toISO();
-    const result = fromDateToRelativeTime(mockDate, mockTranslate, "en");
+    const result = fromDateToRelativeTime(
+      mockDate,
+      mockTranslate,
+      "en",
+      undefined
+    );
     expect(result.startsWith("Yesterday")).toBeTruthy();
   });
 
   it("should return the correct format for 'Today'", () => {
     const mockDate = DateTime.now().toISO();
-    const result = fromDateToRelativeTime(mockDate, mockTranslate, "en");
+    const result = fromDateToRelativeTime(
+      mockDate,
+      mockTranslate,
+      "en",
+      undefined
+    );
     expect(result).toMatch(/Today at \d{1,2}:\d{2} (AM|PM)/);
   });
 });
