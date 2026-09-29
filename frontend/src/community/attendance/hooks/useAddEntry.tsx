@@ -18,8 +18,8 @@ import {
   convertTo12HourByDateString,
   convertToDateTime,
   convertToUtc,
-  getCurrentTimeZone,
-  getDuration
+  getDuration,
+  isNonexistentWallClock
 } from "~community/attendance/utils/TimeUtils";
 import { getModalBeforeManualEntry } from "~community/attendance/utils/TimesheetModalUtils";
 import {
@@ -28,9 +28,14 @@ import {
   TIME_ERROR_MANUAL_ENTRY_RESTRICTED
 } from "~community/common/constants/errorMessageKeys";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import {
+  useDisplayZone,
+  useOrganizationZone
+} from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { ErrorResponse } from "~community/common/types/CommonTypes";
+import { isValidZone } from "~community/common/utils/dateTimeUtils";
 import {
   useAddDirectTimeEntry,
   useEditDirectTimeEntry
@@ -63,6 +68,8 @@ const useAddEntry = () => {
     directManualTimeEntryEligibleEmployee
   } = useAttendanceStore((state) => state);
   const status = attendanceParams.slotType;
+  const entryZone = useDisplayZone();
+  const organizationZone = useOrganizationZone();
 
   const showErrorToast = (titleKey: string, descriptionKey: string) => {
     setToastMessage({
@@ -175,22 +182,23 @@ const useAddEntry = () => {
   const submitManualTimeEntry = (
     values: TimeEntryFormValueType,
     timeAvailability: TimeAvailabilityType,
-    dateTimeFromTime: string | null,
-    dateTimeToTime: string | null,
+    dateTimeFromTime: string,
+    dateTimeToTime: string,
     setFromDateTime: Dispatch<SetStateAction<string>>,
     setToDateTime: Dispatch<SetStateAction<string>>
   ) => {
     const employeeConfirmationModalType = getModalBeforeManualEntry(
-      values,
+      dateTimeFromTime,
       timeAvailability,
-      status
+      status,
+      organizationZone
     );
 
     if (employeeConfirmationModalType === null) {
       manualEntryMutate({
         startTime: convertToUtc(dateTimeFromTime),
         endTime: convertToUtc(dateTimeToTime),
-        zoneId: getCurrentTimeZone()
+        zoneId: entryZone
       });
       setIsEmployeeTimesheetModalOpen(false);
       setCurrentAddTimeChanges(values);
@@ -210,8 +218,8 @@ const useAddEntry = () => {
         employeeConfirmationModalType
       )
     ) {
-      setFromDateTime(dateTimeFromTime ?? "");
-      setToDateTime(dateTimeToTime ?? "");
+      setFromDateTime(dateTimeFromTime);
+      setToDateTime(dateTimeToTime);
     }
 
     setIsEmployeeTimesheetModalOpen(true);
@@ -227,14 +235,18 @@ const useAddEntry = () => {
   ) => {
     const dateTimeFromTime = convertToDateTime(
       values.timeEntryDate,
-      values.fromTime
+      values.fromTime,
+      entryZone
     );
     const dateTimeToTime = convertToDateTime(
       values.timeEntryDate,
-      values.toTime
+      values.toTime,
+      entryZone
     );
 
     if (!isDurationValid(values.fromTime, values.toTime)) return;
+
+    if (!dateTimeFromTime || !dateTimeToTime) return;
 
     if (directManualTimeEntryEligibleEmployee) {
       const existingRecordId = selectedDailyRecord?.timeRecordId || undefined;
@@ -244,7 +256,7 @@ const useAddEntry = () => {
           startTime: convertToUtc(dateTimeFromTime),
           endTime: convertToUtc(dateTimeToTime),
           recordId: existingRecordId,
-          zoneId: getCurrentTimeZone()
+          zoneId: entryZone
         }
       };
 
@@ -280,7 +292,7 @@ const useAddEntry = () => {
       manualEntryMutate({
         startTime: convertToUtc(dateTimeFromTime),
         endTime: convertToUtc(dateTimeToTime),
-        zoneId: getCurrentTimeZone()
+        zoneId: entryZone
       });
       setIsEmployeeTimesheetModalOpen(false);
       return;
@@ -296,7 +308,7 @@ const useAddEntry = () => {
         startTime: convertToUtc(dateTimeFromTime),
         endTime: convertToUtc(dateTimeToTime),
         recordId: selectedDailyRecord?.timeRecordId || undefined,
-        zoneId: getCurrentTimeZone()
+        zoneId: entryZone
       });
       setIsEmployeeTimesheetModalOpen(false);
     }
@@ -306,13 +318,19 @@ const useAddEntry = () => {
     values: TimeEntryFormValueType,
     isGetTimeAvailabilityLoading: boolean
   ) => {
+    if (!isValidZone(entryZone)) {
+      return true;
+    }
+
     const timeSlots = selectedDailyRecord?.timeSlots ?? [];
 
     const currentRecordStartTime = convertTo12HourByDateString(
-      timeSlots[0]?.startTime ?? ""
+      timeSlots[0]?.startTime ?? "",
+      entryZone
     );
     const currentRecordEndTime = convertTo12HourByDateString(
-      timeSlots.at(-1)?.endTime ?? ""
+      timeSlots.at(-1)?.endTime ?? "",
+      entryZone
     );
 
     if (
@@ -341,14 +359,15 @@ const useAddEntry = () => {
     prevFromTime: string,
     prevToTime: string
   ): TimeEntryTimeErrorsType => {
-    const prevStartTimeWithDate = DateTime.fromISO(prevFromTime);
+    const prevStartTimeWithDate = DateTime.fromISO(prevFromTime, {
+      zone: entryZone
+    });
     const prevEndTimeWithDate = prevToTime
-      ? DateTime.fromISO(prevToTime)
+      ? DateTime.fromISO(prevToTime, { zone: entryZone })
       : null;
-    const startTimeWithDate = DateTime.fromFormat(
-      fromTime,
-      TIME_FORMAT_AM_PM
-    ).set({
+    const startTimeWithDate = DateTime.fromFormat(fromTime, TIME_FORMAT_AM_PM, {
+      zone: entryZone
+    }).set({
       day: prevStartTimeWithDate.day,
       month: prevStartTimeWithDate.month,
       year: prevStartTimeWithDate.year
@@ -364,7 +383,9 @@ const useAddEntry = () => {
       return {};
     }
 
-    const endTimeWithDate = DateTime.fromFormat(toTime, TIME_FORMAT_AM_PM).set({
+    const endTimeWithDate = DateTime.fromFormat(toTime, TIME_FORMAT_AM_PM, {
+      zone: entryZone
+    }).set({
       day: prevEndTimeWithDate.day,
       month: prevEndTimeWithDate.month,
       year: prevEndTimeWithDate.year
@@ -377,6 +398,23 @@ const useAddEntry = () => {
       return { toTime: translateText(["invalidClockOutDes"]) };
     }
     return {};
+  };
+
+  const getNonexistentTimeErrors = (
+    values: TimeEntryFormValueType
+  ): TimeEntryTimeErrorsType => {
+    const errors: TimeEntryTimeErrorsType = {};
+    if (
+      isNonexistentWallClock(values.timeEntryDate, values.fromTime, entryZone)
+    ) {
+      errors.fromTime = translateText(["nonexistentTimeDes"]);
+    }
+    if (
+      isNonexistentWallClock(values.timeEntryDate, values.toTime, entryZone)
+    ) {
+      errors.toTime = translateText(["nonexistentTimeDes"]);
+    }
+    return errors;
   };
 
   const clockInOutValidation = (
@@ -403,7 +441,8 @@ const useAddEntry = () => {
     handleTimeEntrySubmit,
     isSubmitDisabled,
     clockInOutWithPrevTimeValidation,
-    clockInOutValidation
+    clockInOutValidation,
+    getNonexistentTimeErrors
   };
 };
 

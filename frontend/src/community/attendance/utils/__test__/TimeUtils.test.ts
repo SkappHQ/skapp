@@ -136,7 +136,7 @@ describe("Date and Time Utility Functions", () => {
       { zone: "Asia/Colombo" }
     ).toISO();
 
-    const result = convertToDateTime("2023-11-03", "12:00 PM");
+    const result = convertToDateTime("2023-11-03", "12:00 PM", "Asia/Colombo");
     expect(result).toBe(expectedDateTime);
   });
 
@@ -145,7 +145,7 @@ describe("Date and Time Utility Functions", () => {
     const expectedTime = DateTime.fromISO(isoTime)
       .setZone("Asia/Colombo")
       .toISO();
-    expect(convertToTimeZoneISO(isoTime)).toBe(expectedTime);
+    expect(convertToTimeZoneISO(isoTime, "Asia/Colombo")).toBe(expectedTime);
   });
 
   describe("convertTo12HourByDateString", () => {

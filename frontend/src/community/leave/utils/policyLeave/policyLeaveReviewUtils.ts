@@ -1,5 +1,5 @@
 import { DAY_MONTH_YEAR_FORMAT } from "~community/attendance/constants/constants";
-import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
+import { formatInstant } from "~community/common/utils/dateTimeUtils";
 import { EmployeeLeaveRequestType } from "~community/leave/types/EmployeeLeaveRequestTypes";
 import {
   PolicyLeaveReviewEmployeeType,
@@ -21,14 +21,13 @@ export const getPolicyManagerLeaveRequestQueryParams = (
   };
 };
 
-export const formatOptionalDate = (value: string | null): string => {
+export const formatOptionalDate = (
+  value: string | null,
+  zone: string | undefined
+): string => {
   if (!value) return "";
 
-  const date = new Date(value);
-
-  return Number.isNaN(date.getTime())
-    ? ""
-    : convertDateToFormat(date, DAY_MONTH_YEAR_FORMAT);
+  return formatInstant(value, zone, DAY_MONTH_YEAR_FORMAT);
 };
 
 /** StatusPopupRow types the reviewer with a non nullable avatar. */
