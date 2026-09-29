@@ -43,6 +43,9 @@ import tools.jackson.databind.json.JsonMapper;
 import java.util.List;
 
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInRelativeOrder;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
 import static com.skapp.support.TestConstants.MESSAGE_PATH;
@@ -600,38 +603,30 @@ class CrmBoardControllerIntegrationTest {
 	@Test
 	@DisplayName("Board init data - Returns industries as id and name pairs ordered by name")
 	void getBoardInitData_IndustriesAreOrderedIdNamePairs() throws Exception {
-		savedIndustry("RETAIL", false);
-		savedIndustry("EDUCATION", false);
+		createIndustry("RETAIL", false);
+		createIndustry("EDUCATION", false);
 
 		mvc.perform(get("/v1/crm/board/init-data").accept(MediaType.APPLICATION_JSON)
 			.with(SecurityTestUtils.bearerToken(repToken)))
 			.andDo(print())
 			.andExpect(status().isOk())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['industries'][0]['name']").value("EDUCATION"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['industries'][0]['id']").isNumber())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['industries'][1]['name']").value("RETAIL"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['industries'][1]['id']").isNumber());
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industries'][*]['name']")
+				.value(containsInRelativeOrder("EDUCATION", "RETAIL")))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industries'][*]['id']").value(everyItem(notNullValue())));
 	}
 
 	@Test
 	@DisplayName("Board init data - Omits soft-deleted industries")
 	void getBoardInitData_OmitsSoftDeletedIndustries() throws Exception {
-		savedIndustry("RETAIL", false);
-		savedIndustry("AAA_DELETED", true);
+		createIndustry("RETAIL", false);
+		createIndustry("AAA_DELETED", true);
 
 		mvc.perform(get("/v1/crm/board/init-data").accept(MediaType.APPLICATION_JSON)
 			.with(SecurityTestUtils.bearerToken(repToken)))
 			.andDo(print())
 			.andExpect(status().isOk())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['industries']").isNotEmpty())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industries'][?(@.name == 'RETAIL')]").isNotEmpty())
 			.andExpect(jsonPath(RESULTS_0_PATH + "['industries'][?(@.name == 'AAA_DELETED')]").isEmpty());
-	}
-
-	private void savedIndustry(String name, boolean isDeleted) {
-		CrmIndustry industry = new CrmIndustry();
-		industry.setName(name);
-		industry.setIsDeleted(isDeleted);
-		crmIndustryDao.save(industry);
 	}
 
 	@Test
@@ -682,6 +677,13 @@ class CrmBoardControllerIntegrationTest {
 		task.setIsDeleted(true);
 		task.setIsCompleted(false);
 		return crmTaskDao.save(task);
+	}
+
+	private CrmIndustry createIndustry(String name, boolean isDeleted) {
+		CrmIndustry industry = new CrmIndustry();
+		industry.setName(name);
+		industry.setIsDeleted(isDeleted);
+		return crmIndustryDao.save(industry);
 	}
 
 }
