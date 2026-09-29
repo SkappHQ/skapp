@@ -28,7 +28,10 @@ import {
   getMissingCompanyIds,
   updateCompanyRecord
 } from "~community/crm/v2/utils/companyUtil";
-import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
+import {
+  getContactDisplayName,
+  toContactCompanyIds
+} from "~community/crm/v2/utils/contactUtil";
 import { validateDealAmount } from "~community/crm/v2/utils/dealValidations";
 
 interface DealPropertiesSidebarProps {
@@ -83,16 +86,15 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
     [contactLookupData?.items]
   );
 
-  const missingCompanyIds = useMemo(
-    () =>
-      getMissingCompanyIds(
-        contacts
-          .map((contact) => contact.companyId)
-          .filter((id): id is number => id != null),
-        companies
-      ),
-    [contacts, companies]
-  );
+  const missingCompanyIds = useMemo(() => {
+    const companyIds = toContactCompanyIds(contacts);
+
+    if (deal?.companyId != null) {
+      companyIds.push(deal.companyId);
+    }
+
+    return getMissingCompanyIds(companyIds, companies);
+  }, [deal, contacts, companies]);
   const { data: fetchedCompanies } = useGetCompaniesByIds(
     missingCompanyIds,
     missingCompanyIds.length > 0
