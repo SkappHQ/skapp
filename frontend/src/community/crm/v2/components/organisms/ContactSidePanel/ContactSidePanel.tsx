@@ -42,6 +42,7 @@ import {
   CrmTaskFilterRequest
 } from "~community/crm/v2/types/CrmTypes";
 import {
+  getContactDisplayName,
   getContactMetricItems,
   updateContact
 } from "~community/crm/v2/utils/contactUtil";
@@ -284,7 +285,7 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
           <SidePanelHeaderSkeleton isShowLastUpdate={true} />
         ) : (
           <SidePanelContactHeader
-            name={contact?.name}
+            name={getContactDisplayName(contact)}
             lastModifiedDate={contact?.lastModifiedDate}
           />
         )

@@ -8,6 +8,7 @@ import { useDeleteContact } from "~community/crm/v2/api/ContactApi";
 import CrmDeleteModalContent from "~community/crm/v2/components/molecules/CrmDeleteModalContent/CrmDeleteModalContent";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
+  getContactDisplayName,
   getSelectedContact,
   removeContact,
   unlinkContactFromCompany
@@ -81,7 +82,7 @@ const DeleteContactModalContent: FC = () => {
       description: translateText(
         ["contacts", "deleteModal", "toastMessages", "successDescription"],
         {
-          contactName: selectedContact?.name
+          contactName: getContactDisplayName(selectedContact)
         }
       )
     });
@@ -128,7 +129,7 @@ const DeleteContactModalContent: FC = () => {
   return (
     <CrmDeleteModalContent
       description={translateText(["contacts", "deleteModal", "description"], {
-        contactName: selectedContact?.name
+        contactName: getContactDisplayName(selectedContact)
       })}
       isPending={isPending}
       confirmLabel={translateText([

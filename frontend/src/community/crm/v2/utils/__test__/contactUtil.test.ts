@@ -1,7 +1,10 @@
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { ADD_NEW_COMPANY_OPTION_ID } from "~community/crm/v2/constants/contactConstants";
 import { CrmCompanyEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import { getCompanyOptions } from "~community/crm/v2/utils/contactUtil";
+import {
+  getCompanyOptions,
+  getContactDisplayName
+} from "~community/crm/v2/utils/contactUtil";
 
 const lookupCompanies: CrmCompanyEntity[] = [
   { id: 1, name: "Acme" },
@@ -95,5 +98,45 @@ describe("getCompanyOptions add-new prompt", () => {
         getCompanyOptions(lookupCompanies, suggested, "suggested co")
       )
     ).toBeUndefined();
+  });
+});
+
+describe("getContactDisplayName", () => {
+  it("joins first and last name with a single space", () => {
+    expect(
+      getContactDisplayName({ firstName: "Mary", lastName: "Jane Watson" })
+    ).toBe("Mary Jane Watson");
+  });
+
+  it("shows the first name alone, with no trailing space, when last name is missing", () => {
+    expect(getContactDisplayName({ firstName: "Cher" })).toBe("Cher");
+    expect(getContactDisplayName({ firstName: "Cher", lastName: "" })).toBe(
+      "Cher"
+    );
+  });
+
+  it("keeps internal spaces in the first name", () => {
+    expect(
+      getContactDisplayName({ firstName: "Jean Luc", lastName: "Picard" })
+    ).toBe("Jean Luc Picard");
+  });
+
+  it("is blank when both names are empty", () => {
+    expect(getContactDisplayName({ firstName: "", lastName: "" })).toBe("");
+    expect(getContactDisplayName({})).toBe("");
+  });
+
+  it("is blank when there is no contact", () => {
+    expect(getContactDisplayName(undefined)).toBe("");
+  });
+
+  it("uses the legacy single name while the backend still sends it", () => {
+    expect(
+      getContactDisplayName({
+        name: "Legacy Name",
+        firstName: "Mary",
+        lastName: "Watson"
+      })
+    ).toBe("Legacy Name");
   });
 });
