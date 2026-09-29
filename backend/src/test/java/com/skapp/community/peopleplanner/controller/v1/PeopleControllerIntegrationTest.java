@@ -41,6 +41,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -99,12 +100,12 @@ class PeopleControllerIntegrationTest {
 		Long[] teamIds = { 1L };
 		employeeEmploymentBasicDetailsDto.setTeamIds(teamIds);
 
-		employeeEmploymentBasicDetailsDto
-			.setJoinedDate(DateTimeUtils.getUtcLocalDate(DateTimeUtils.getCurrentYear() - 1, 1, 1));
-		employeeEmploymentBasicDetailsDto
-			.setProbationStartDate(DateTimeUtils.getUtcLocalDate(DateTimeUtils.getCurrentYear() - 1, 2, 1));
-		employeeEmploymentBasicDetailsDto
-			.setProbationEndDate(DateTimeUtils.getUtcLocalDate(DateTimeUtils.getCurrentYear() - 1, 4, 1));
+		employeeEmploymentBasicDetailsDto.setJoinedDate(
+				DateTimeUtils.getUtcLocalDate(DateTimeUtils.currentDateAt(ZoneOffset.UTC).getYear() - 1, 1, 1));
+		employeeEmploymentBasicDetailsDto.setProbationStartDate(
+				DateTimeUtils.getUtcLocalDate(DateTimeUtils.currentDateAt(ZoneOffset.UTC).getYear() - 1, 2, 1));
+		employeeEmploymentBasicDetailsDto.setProbationEndDate(
+				DateTimeUtils.getUtcLocalDate(DateTimeUtils.currentDateAt(ZoneOffset.UTC).getYear() - 1, 4, 1));
 
 		employeeEmploymentBasicDetailsDto.setEmploymentAllocation(EmploymentAllocation.FULL_TIME);
 		return employeeEmploymentBasicDetailsDto;

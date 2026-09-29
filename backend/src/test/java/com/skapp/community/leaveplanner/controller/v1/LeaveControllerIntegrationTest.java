@@ -28,6 +28,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.time.ZoneOffset;
 
 import static com.skapp.support.TestConstants.MESSAGE_PATH;
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
@@ -84,8 +85,10 @@ class LeaveControllerIntegrationTest {
 
 	private LeaveRequestDto createFullDayLeaveRequest() {
 		LeaveRequestDto leaveRequestDto = new LeaveRequestDto();
-		leaveRequestDto.setStartDate(DateTimeUtils.getUtcLocalDate(DateTimeUtils.getCurrentYear(), 2, 12));
-		leaveRequestDto.setEndDate(DateTimeUtils.getUtcLocalDate(DateTimeUtils.getCurrentYear(), 2, 13));
+		leaveRequestDto
+			.setStartDate(DateTimeUtils.getUtcLocalDate(DateTimeUtils.currentDateAt(ZoneOffset.UTC).getYear(), 2, 12));
+		leaveRequestDto
+			.setEndDate(DateTimeUtils.getUtcLocalDate(DateTimeUtils.currentDateAt(ZoneOffset.UTC).getYear(), 2, 13));
 		leaveRequestDto.setTypeId(1L);
 		leaveRequestDto.setRequestDesc("Full day leave");
 		leaveRequestDto.setLeaveState(LeaveState.FULLDAY);
@@ -94,8 +97,10 @@ class LeaveControllerIntegrationTest {
 
 	private LeaveRequestDto createHalfDayLeaveRequest() {
 		LeaveRequestDto leaveRequestDto = new LeaveRequestDto();
-		leaveRequestDto.setStartDate(DateTimeUtils.getUtcLocalDate(DateTimeUtils.getCurrentYear(), 2, 12));
-		leaveRequestDto.setEndDate(DateTimeUtils.getUtcLocalDate(DateTimeUtils.getCurrentYear(), 2, 12));
+		leaveRequestDto
+			.setStartDate(DateTimeUtils.getUtcLocalDate(DateTimeUtils.currentDateAt(ZoneOffset.UTC).getYear(), 2, 12));
+		leaveRequestDto
+			.setEndDate(DateTimeUtils.getUtcLocalDate(DateTimeUtils.currentDateAt(ZoneOffset.UTC).getYear(), 2, 12));
 		leaveRequestDto.setTypeId(6L);
 		leaveRequestDto.setLeaveState(LeaveState.HALFDAY_MORNING);
 		return leaveRequestDto;
@@ -148,7 +153,7 @@ class LeaveControllerIntegrationTest {
 		}
 
 		private String dateRangeParams() {
-			int year = DateTimeUtils.getCurrentYear();
+			int year = DateTimeUtils.currentDateAt(ZoneOffset.UTC).getYear();
 			return "?startDate=" + year + "-01-01&endDate=" + year + "-12-31";
 		}
 

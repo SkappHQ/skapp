@@ -37,4 +37,6 @@ public class CommonConstants {
 
 	public static final String IMAGE_CONTENT_TYPE_PREFIX = "image/";
 
+	public static final String TIMEZONE_HEADER = "X-Timezone";
+
 }
