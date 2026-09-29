@@ -1,7 +1,6 @@
 import {
   CrmDealStageColorsEnum,
   CrmDealStageEnum,
-  CrmIndustryEnum,
   CrmPriorityEnum
 } from "../enums/common";
 
