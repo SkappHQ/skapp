@@ -7,9 +7,12 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useCreateCompany } from "~community/crm/v2/api/CompanyApi";
 import CompanyModalForm from "~community/crm/v2/components/molecules/CompanyModalForm/CompanyModalForm";
-import { CrmIndustryEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmCompanyEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import {
+  getCompanyFormInitialValues,
+  getTrimmedCompanyValues
+} from "~community/crm/v2/utils/companyUtil";
 import { getCompanyValidationSchema } from "~community/crm/v2/utils/companyValidations";
 
 const AddCompanyModalContent: FC = () => {
@@ -34,13 +37,7 @@ const AddCompanyModalContent: FC = () => {
   );
 
   const formik = useFormik<CrmCompanyEntity>({
-    initialValues: {
-      name: "",
-      industry: CrmIndustryEnum.NONE,
-      website: "",
-      address: "",
-      contactNumber: ""
-    },
+    initialValues: getCompanyFormInitialValues(),
     onSubmit: (values) => createCompany(values),
     validationSchema: getCompanyValidationSchema(translateText),
     validateOnChange: false,
@@ -107,13 +104,7 @@ const AddCompanyModalContent: FC = () => {
   );
 
   const createCompany = (values: CrmCompanyEntity) => {
-    createNewCompany({
-      name: values.name?.trim(),
-      industry: values.industry,
-      website: values.website?.trim(),
-      address: values.address?.trim(),
-      contactNumber: values.contactNumber?.trim()
-    });
+    createNewCompany(getTrimmedCompanyValues(values));
   };
 
   return (
