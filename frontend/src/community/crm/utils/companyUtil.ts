@@ -6,9 +6,7 @@ import {
 } from "~community/crm/enums/common";
 import {
   CrmCompanyEntity,
-  CrmCompanyRecord,
-  CrmIndustryEntity,
-  CrmIndustryRecord
+  CrmCompanyRecord
 } from "~community/crm/types/CrmCommonTypes";
 
 export const toCompanyIds = (companies: CrmCompanyEntity[]): number[] => {
@@ -137,48 +135,12 @@ const isCrmIndustryEnum = (value: string): value is CrmIndustryEnum =>
   Object.values<string>(CrmIndustryEnum).includes(value);
 
 export const getIndustryDisplayName = (
-  industry: CrmIndustryEntity,
+  industryName: string,
   translateText: TranslatorFunctionType
 ): string =>
-  isCrmIndustryEnum(industry.name)
-    ? translateText([
-        "companies",
-        "industryOptions",
-        INDUSTRY_OPTION_KEYS[industry.name]
-      ])
-    : industry.name;
-
-export interface CrmIndustryOption {
-  id: string;
-  value: string;
-  label: string;
-}
-
-export const getIndustryOptions = (
-  industries: CrmIndustryRecord,
-  translateText: TranslatorFunctionType
-): CrmIndustryOption[] => [
-  {
-    id: CrmIndustryEnum.NONE,
-    value: CrmIndustryEnum.NONE,
-    label: translateText([
-      "companies",
-      "industryOptions",
-      INDUSTRY_OPTION_KEYS[CrmIndustryEnum.NONE]
-    ])
-  },
-  ...Object.values(industries).map((industry) => ({
-    id: String(industry.id),
-    value: String(industry.id),
-    label: getIndustryDisplayName(industry, translateText)
-  }))
-];
-
-export const toIndustryOptionValue = (industryId?: number | null): string =>
-  industryId == null ? CrmIndustryEnum.NONE : String(industryId);
-
-export const toIndustryId = (optionValue: string): number | null =>
-  optionValue === CrmIndustryEnum.NONE ? null : Number(optionValue);
+  isCrmIndustryEnum(industryName)
+    ? translateText([INDUSTRY_OPTION_KEYS[industryName]])
+    : industryName;
 
 export const updateCompanyRecord = (
   existing: CrmCompanyRecord,

@@ -31,12 +31,9 @@ import {
   CONTACT_PAGE_SIZE,
   DEAL_PAGE_SIZE
 } from "~community/crm/constants/commonConstants";
-import { INDUSTRY_OPTION_KEYS } from "~community/crm/constants/companyConstants";
 import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
-import {
-  CrmIndustryEnum,
-  CrmSidePanelTabEnum
-} from "~community/crm/enums/common";
+import { CrmSidePanelTabEnum } from "~community/crm/enums/common";
+import { useGetIndustryOptions } from "~community/crm/hooks/useGetIndustryOptions";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmCompanyEntity,
@@ -51,7 +48,6 @@ import {
 } from "~community/crm/types/CrmTypes";
 import {
   getCompanyMetricItems,
-  getIndustryDisplayName,
   updateCompany
 } from "~community/crm/utils/companyUtil";
 import {
@@ -76,6 +72,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
   const translateText = useTranslator("crmModule");
   const { isCrmSalesManager } = useSessionData();
   const { setToastMessage } = useToast();
+  const { getIndustryLabel } = useGetIndustryOptions();
 
   const [activeTab, setActiveTab] = useState<CrmSidePanelTabEnum>(
     CrmSidePanelTabEnum.TASKS
@@ -83,7 +80,6 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
 
   const {
     companies,
-    industries,
     tasks,
     isCrmDataInitialized,
     deals,
@@ -101,7 +97,6 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
   } = useCrmStore(
     useShallow((state) => ({
       companies: state.companies,
-      industries: state.industries,
       tasks: state.tasks,
       isCrmDataInitialized: state.isCrmDataInitialized,
       deals: state.deals,
@@ -261,16 +256,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
   };
 
   const company = companies[companyId];
-  const industry =
-    company?.industryId != null ? industries[company.industryId] : undefined;
-
-  const industryName = industry
-    ? getIndustryDisplayName(industry, translateText)
-    : translateText([
-        "companies",
-        "industryOptions",
-        INDUSTRY_OPTION_KEYS[CrmIndustryEnum.NONE]
-      ]);
+  const industryName = getIndustryLabel(company?.industryId);
 
   const isOpen =
     isCrmSidePanelOpen &&

@@ -6,20 +6,14 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import { FC } from "react";
-import { useShallow } from "zustand/react/shallow";
 
 import { SEARCH_DEBOUNCE_DELAY } from "~community/common/constants/commonConstants";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCheckCompanyNameExists } from "~community/crm/api/CompanyApi";
-import { useCrmStore } from "~community/crm/store/store";
+import { useGetIndustryOptions } from "~community/crm/hooks/useGetIndustryOptions";
 import { CrmCompanyEntity } from "~community/crm/types/CrmCommonTypes";
-import {
-  getIndustryOptions,
-  toIndustryId,
-  toIndustryOptionValue
-} from "~community/crm/utils/companyUtil";
 
 interface CompanyModalFormProps {
   formik: FormikProps<CrmCompanyEntity>;
@@ -37,13 +31,7 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
 
-  const { industries } = useCrmStore(
-    useShallow((store) => ({
-      industries: store.industries
-    }))
-  );
-
-  const industryOptions = getIndustryOptions(industries, translateText);
+  const { industryOptions } = useGetIndustryOptions();
 
   const {
     values,
@@ -75,7 +63,7 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
     : errors.name;
 
   const handleIndustryChange = (value: string) => {
-    setFieldValue("industryId", toIndustryId(value));
+    setFieldValue("industryId", value ? Number(value) : null);
   };
 
   return (
@@ -156,7 +144,7 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
 
       <Dropdown
         options={industryOptions}
-        value={toIndustryOptionValue(values.industryId)}
+        value={values.industryId ? String(values.industryId) : ""}
         onChange={handleIndustryChange}
         label={translateText(["companies", "modal", "labels", "industry"])}
         className="rounded-lg"
