@@ -13,13 +13,13 @@ import com.skapp.community.common.util.StringUtils;
 import com.skapp.community.crmplanner.model.CrmIndustry;
 import com.skapp.community.crmplanner.model.CrmIndustry_;
 import com.skapp.community.crmplanner.payload.request.CrmIndustryFilterDto;
+import com.skapp.community.crmplanner.payload.response.CrmIndustryLookupResponseDto;
 import com.skapp.community.crmplanner.repository.CrmIndustryRepository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
@@ -31,16 +31,20 @@ public class CrmIndustryRepositoryImpl implements CrmIndustryRepository {
 	private final EntityManager entityManager;
 
 	@Override
-	public Page<CrmIndustry> findIndustries(CrmIndustryFilterDto filterDto, Pageable pageable) {
+	public Page<CrmIndustryLookupResponseDto> findIndustriesForLookup(CrmIndustryFilterDto filterDto,
+			Pageable pageable) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmIndustry> query = cb.createQuery(CrmIndustry.class);
+		CriteriaQuery<CrmIndustryLookupResponseDto> query = cb.createQuery(CrmIndustryLookupResponseDto.class);
 		Root<CrmIndustry> industry = query.from(CrmIndustry.class);
 
 		List<Predicate> predicates = buildPredicatesToFindIndustries(cb, industry, filterDto);
-		query.where(predicates.toArray(new Predicate[0]));
-		query.orderBy(cb.asc(cb.lower(industry.get(CrmIndustry_.name))));
 
-		TypedQuery<CrmIndustry> typedQuery = entityManager.createQuery(query);
+		query.select(cb.construct(CrmIndustryLookupResponseDto.class, industry.get(CrmIndustry_.id),
+				industry.get(CrmIndustry_.name)));
+		query.where(predicates.toArray(new Predicate[0]));
+		query.orderBy(cb.asc(cb.lower(industry.get(CrmIndustry_.name))), cb.asc(industry.get(CrmIndustry_.id)));
+
+		TypedQuery<CrmIndustryLookupResponseDto> typedQuery = entityManager.createQuery(query);
 		typedQuery.setFirstResult((int) pageable.getOffset());
 		typedQuery.setMaxResults(pageable.getPageSize());
 
@@ -55,11 +59,7 @@ public class CrmIndustryRepositoryImpl implements CrmIndustryRepository {
 		String searchKeyword = filterDto.getSearchKeyword();
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
 			String escaped = StringUtils.escapeLikePattern(searchKeyword.trim().toLowerCase(Locale.ROOT));
-			// Built-in names are stored as keys like HOSPITALS_AND_HEALTH_CARE, so match
-			// underscores as spaces to let "health care" find them.
-			Expression<String> searchableName = cb.function("REPLACE", String.class,
-					cb.lower(industry.get(CrmIndustry_.name)), cb.literal("_"), cb.literal(" "));
-			predicates.add(cb.like(searchableName, "%" + escaped + "%", '\\'));
+			predicates.add(cb.like(cb.lower(industry.get(CrmIndustry_.name)), "%" + escaped + "%", '\\'));
 		}
 
 		return predicates;

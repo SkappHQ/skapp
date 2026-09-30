@@ -104,9 +104,9 @@ class CrmIndustryControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Lookup with spaces in search keyword - Matches built-in names stored with underscores")
-	void getIndustriesLookup_SearchKeywordWithSpaces_MatchesUnderscoredNames() throws Exception {
-		performLookup("health care", null).andDo(print())
+	@DisplayName("Lookup with part of a built-in name - Matches the stored name")
+	void getIndustriesLookup_PartOfBuiltInName_MatchesStoredName() throws Exception {
+		performLookup("health", null).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(ITEMS_PATH + "[*]['name']").value(contains("HOSPITALS_AND_HEALTH_CARE")));
 	}
