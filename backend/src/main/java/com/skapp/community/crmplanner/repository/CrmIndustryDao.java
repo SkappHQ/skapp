@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CrmIndustryDao extends JpaRepository<CrmIndustry, Long> {
 
+	boolean existsByNameIgnoreCaseAndIsDeletedFalse(String name);
+
 }

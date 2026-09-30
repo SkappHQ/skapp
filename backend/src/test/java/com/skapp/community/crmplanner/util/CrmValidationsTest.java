@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest(classes = TestSkappApplication.class)
@@ -43,6 +44,101 @@ class CrmValidationsTest {
 		@DisplayName("Valid name - does not throw")
 		void validateCompanyName_ValidName_DoesNotThrow() {
 			assertDoesNotThrow(() -> CrmValidations.validateCompanyName("Acme Corp"));
+		}
+
+	}
+
+	// --- normalizeIndustryName ---
+
+	@Nested
+	@DisplayName("normalizeIndustryName")
+	class NormalizeIndustryName {
+
+		@Test
+		@DisplayName("Null name - returns null")
+		void normalizeIndustryName_Null_ReturnsNull() {
+			assertNull(CrmValidations.normalizeIndustryName(null));
+		}
+
+		@Test
+		@DisplayName("Surrounding whitespace - is trimmed")
+		void normalizeIndustryName_SurroundingWhitespace_IsTrimmed() {
+			assertEquals("Retail", CrmValidations.normalizeIndustryName("   Retail   "));
+		}
+
+		@Test
+		@DisplayName("Repeated internal whitespace - collapses to a single space")
+		void normalizeIndustryName_InternalWhitespace_Collapses() {
+			assertEquals("Real Estate", CrmValidations.normalizeIndustryName("Real     Estate"));
+		}
+
+		@Test
+		@DisplayName("Tabs and newlines between words - collapse to a single space")
+		void normalizeIndustryName_MixedWhitespace_Collapses() {
+			assertEquals("Oil Gas And Mining", CrmValidations.normalizeIndustryName("Oil\tGas\nAnd  Mining"));
+		}
+
+		@Test
+		@DisplayName("Already normalized name - is returned unchanged")
+		void normalizeIndustryName_AlreadyNormalized_ReturnsUnchanged() {
+			assertEquals("Financial Services", CrmValidations.normalizeIndustryName("Financial Services"));
+		}
+
+		@Test
+		@DisplayName("Casing is preserved - only whitespace is normalized")
+		void normalizeIndustryName_PreservesCasing() {
+			assertEquals("eCommerce & B2B", CrmValidations.normalizeIndustryName("  eCommerce   & B2B "));
+		}
+
+	}
+
+	// --- validateIndustryName ---
+
+	@Nested
+	@DisplayName("validateIndustryName")
+	class ValidateIndustryName {
+
+		@Test
+		@DisplayName("Null name - throws CRM_ERROR_INDUSTRY_NAME_REQUIRED")
+		void validateIndustryName_Null_ThrowsRequired() {
+			ModuleException ex = assertThrows(ModuleException.class, () -> CrmValidations.validateIndustryName(null));
+			assertEquals(CrmMessageConstant.CRM_ERROR_INDUSTRY_NAME_REQUIRED, ex.getMessageKey());
+		}
+
+		@Test
+		@DisplayName("Whitespace-only name - throws CRM_ERROR_INDUSTRY_NAME_REQUIRED")
+		void validateIndustryName_WhitespaceOnly_ThrowsRequired() {
+			ModuleException ex = assertThrows(ModuleException.class, () -> CrmValidations.validateIndustryName("    "));
+			assertEquals(CrmMessageConstant.CRM_ERROR_INDUSTRY_NAME_REQUIRED, ex.getMessageKey());
+		}
+
+		@Test
+		@DisplayName("Name exceeding max length - throws CRM_ERROR_INDUSTRY_NAME_TOO_LONG")
+		void validateIndustryName_TooLong_ThrowsTooLong() {
+			String tooLong = "A".repeat(CrmConstants.INDUSTRY_NAME_MAX_LENGTH + 1);
+			ModuleException ex = assertThrows(ModuleException.class,
+					() -> CrmValidations.validateIndustryName(tooLong));
+			assertEquals(CrmMessageConstant.CRM_ERROR_INDUSTRY_NAME_TOO_LONG, ex.getMessageKey());
+		}
+
+		@Test
+		@DisplayName("Name at exactly max length - does not throw")
+		void validateIndustryName_AtMaxLength_DoesNotThrow() {
+			String maxLength = "A".repeat(CrmConstants.INDUSTRY_NAME_MAX_LENGTH);
+			assertDoesNotThrow(() -> CrmValidations.validateIndustryName(maxLength));
+		}
+
+		@Test
+		@DisplayName("Length is measured after normalization - padded max-length name does not throw")
+		void validateIndustryName_LengthMeasuredAfterNormalization_DoesNotThrow() {
+			String padded = "  " + "A".repeat(CrmConstants.INDUSTRY_NAME_MAX_LENGTH) + "  ";
+			assertDoesNotThrow(() -> CrmValidations.validateIndustryName(padded));
+		}
+
+		@Test
+		@DisplayName("Valid name - does not throw")
+		void validateIndustryName_ValidName_DoesNotThrow() {
+			assertDoesNotThrow(() -> CrmValidations.validateIndustryName("Renewable Energy"));
 		}
 
 	}
