@@ -1,0 +1,33 @@
+name: Check Node.js App Formatting
+
+on:
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  check-format:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Prettier only
+        run: |
+          mkdir -p "$RUNNER_TEMP/prettier"
+          cd "$RUNNER_TEMP/prettier"
+          npm init -y > /dev/null
+          npm install \
+            prettier@^3.9.6 \
+            @trivago/prettier-plugin-sort-imports@^6.0.2
+          ln -s "$RUNNER_TEMP/prettier/node_modules" "$GITHUB_WORKSPACE/frontend/node_modules"
+
+      - name: Check formatting
+        working-directory: frontend
+        run: npm run check-format
