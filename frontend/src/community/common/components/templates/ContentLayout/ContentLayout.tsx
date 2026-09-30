@@ -71,6 +71,7 @@ interface Props {
   subtitleNextToTitle?: string;
   onBackClick?: () => void;
   customRightContent?: JSX.Element;
+  customContentBeforeButtons?: JSX.Element;
   isTitleHidden?: boolean;
   isPrimaryBtnLoading?: boolean;
   backIcon?: IconName;
@@ -117,6 +118,7 @@ const ContentLayout = ({
   onBackClick,
   dividerStyles,
   customRightContent,
+  customContentBeforeButtons,
   isTitleHidden = false,
   isPrimaryBtnLoading = false,
   backIcon = IconName.LEFT_ARROW_ICON,
@@ -350,6 +352,7 @@ const ContentLayout = ({
             )}
           </Stack>
           <Stack sx={classes.rightContent} id={id?.btnWrapper}>
+            {customContentBeforeButtons}
             {secondaryBtnText && (
               <ButtonV2
                 isFullWidth={isBelow600}
