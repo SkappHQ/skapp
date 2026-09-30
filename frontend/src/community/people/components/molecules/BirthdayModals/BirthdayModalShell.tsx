@@ -3,6 +3,7 @@ import { FC, useEffect, useState } from "react";
 
 import Confetti from "~community/common/components/atoms/Confetti/Confetti";
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
+import useInertBackground from "~community/common/hooks/useInertBackground";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { concatStrings } from "~community/common/utils/commonUtil";
 import BirthdayCelebration from "~community/people/assets/images/BirthdayCelebration";
@@ -48,6 +49,8 @@ const BirthdayModalShell: FC<Props> = ({
 
     return () => clearTimeout(timer);
   }, [showConfetti]);
+  
+  useInertBackground("content-with-drawer-root");
 
   useEffect(() => {
     const timer = setTimeout(() => {
