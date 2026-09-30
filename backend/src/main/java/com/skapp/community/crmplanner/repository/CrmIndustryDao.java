@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CrmIndustryDao extends JpaRepository<CrmIndustry, Long> {
+public interface CrmIndustryDao extends JpaRepository<CrmIndustry, Long>, CrmIndustryRepository {
 
 }

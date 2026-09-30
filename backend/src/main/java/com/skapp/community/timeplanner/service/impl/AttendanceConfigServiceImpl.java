@@ -18,7 +18,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -32,12 +36,20 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 	private final UserService userService;
 
 	@Override
+	@Transactional
 	public void setDefaultAttendanceConfig() {
 		log.info("setDefaultAttendanceConfig: execution started");
 
-		for (AttendanceConfigType configType : AttendanceConfigType.values()) {
-			updateOrCreateConfig(configType, TimeConstants.DEFAULT_CONFIG_VALUE);
-		}
+		Map<AttendanceConfigType, AttendanceConfig> existingConfigs = attendanceConfigDao.findAll()
+			.stream()
+			.collect(Collectors.toMap(AttendanceConfig::getAttendanceConfigType, Function.identity()));
+
+		List<AttendanceConfig> defaultConfigs = Arrays.stream(AttendanceConfigType.values())
+			.map(configType -> applyConfigValue(existingConfigs.get(configType), configType,
+					TimeConstants.DEFAULT_CONFIG_VALUE))
+			.toList();
+
+		attendanceConfigDao.saveAll(defaultConfigs);
 
 		log.info("setDefaultAttendanceConfig: execution ended");
 	}
@@ -91,16 +103,17 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 	}
 
 	private void updateOrCreateConfig(AttendanceConfigType configType, String configValue) {
-		AttendanceConfig config = attendanceConfigDao.findByAttendanceConfigType(configType);
+		AttendanceConfig existingConfig = attendanceConfigDao.findByAttendanceConfigType(configType);
+		attendanceConfigDao.save(applyConfigValue(existingConfig, configType, configValue));
+	}
 
-		if (config == null) {
-			config = new AttendanceConfig(configType, configValue);
+	private AttendanceConfig applyConfigValue(AttendanceConfig existingConfig, AttendanceConfigType configType,
+			String configValue) {
+		if (existingConfig == null) {
+			return new AttendanceConfig(configType, configValue);
 		}
-		else {
-			config.setAttendanceConfigValue(configValue);
-		}
-
-		attendanceConfigDao.save(config);
+		existingConfig.setAttendanceConfigValue(configValue);
+		return existingConfig;
 	}
 
 	@Override

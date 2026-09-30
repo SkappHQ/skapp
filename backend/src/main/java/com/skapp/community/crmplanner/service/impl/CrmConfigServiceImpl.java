@@ -3,6 +3,9 @@ package com.skapp.community.crmplanner.service.impl;
 import com.skapp.community.crmplanner.constant.DefaultCrmDealStageTemplate;
 import com.skapp.community.crmplanner.constant.DefaultCrmIndustryTemplate;
 import com.skapp.community.crmplanner.constant.DefaultCrmTaskTypeTemplate;
+import com.skapp.community.crmplanner.model.CrmDealStage;
+import com.skapp.community.crmplanner.model.CrmIndustry;
+import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.repository.CrmIndustryDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
@@ -13,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @Slf4j
@@ -36,7 +41,10 @@ public class CrmConfigServiceImpl implements CrmConfigService {
 	private void setDefaultCrmDealStages() {
 		log.info("setDefaultCrmDealStages: execution started");
 
-		crmDealStageDao.saveAll(DefaultCrmDealStageTemplate.getDefaultStages());
+		List<CrmDealStage> dealStages = DefaultCrmDealStageTemplate.getDefaultStages();
+		if (!dealStages.isEmpty()) {
+			crmDealStageDao.insertAll(dealStages);
+		}
 
 		log.info("setDefaultCrmDealStages: execution ended");
 	}
@@ -44,7 +52,10 @@ public class CrmConfigServiceImpl implements CrmConfigService {
 	private void setDefaultCrmTaskTypes() {
 		log.info("setDefaultCrmTaskTypes: execution started");
 
-		crmTaskTypeDao.saveAll(DefaultCrmTaskTypeTemplate.getDefaultTaskTypes());
+		List<CrmTaskType> taskTypes = DefaultCrmTaskTypeTemplate.getDefaultTaskTypes();
+		if (!taskTypes.isEmpty()) {
+			crmTaskTypeDao.insertAll(taskTypes);
+		}
 
 		log.info("setDefaultCrmTaskTypes: execution ended");
 	}
@@ -52,7 +63,10 @@ public class CrmConfigServiceImpl implements CrmConfigService {
 	private void setDefaultCrmIndustries() {
 		log.info("setDefaultCrmIndustries: execution started");
 
-		crmIndustryDao.saveAll(DefaultCrmIndustryTemplate.getDefaultIndustries());
+		List<CrmIndustry> industries = DefaultCrmIndustryTemplate.getDefaultIndustries();
+		if (!industries.isEmpty()) {
+			crmIndustryDao.insertAll(industries);
+		}
 
 		log.info("setDefaultCrmIndustries: execution ended");
 	}
