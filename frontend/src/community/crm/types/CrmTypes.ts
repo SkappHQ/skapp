@@ -211,12 +211,6 @@ export interface CrmTaskTypeOption {
   label: string;
 }
 
-export interface CrmIndustryOption {
-  id: string;
-  value: string;
-  label: string;
-}
-
 export interface CrmTaskTab {
   id: CrmTaskTabEnum;
   label: string;

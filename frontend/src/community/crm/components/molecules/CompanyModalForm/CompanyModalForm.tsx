@@ -5,14 +5,17 @@ import {
   InputField
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { FC } from "react";
+import { FC, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { SEARCH_DEBOUNCE_DELAY } from "~community/common/constants/commonConstants";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCheckCompanyNameExists } from "~community/crm/api/CompanyApi";
-import { useGetIndustryOptions } from "~community/crm/hooks/useGetIndustryOptions";
+import { CrmIndustryEnum } from "~community/crm/enums/common";
+import { useIndustryNameMapper } from "~community/crm/hooks/useIndustryNameMapper";
+import { useCrmStore } from "~community/crm/store/store";
 import { CrmCompanyEntity } from "~community/crm/types/CrmCommonTypes";
 
 interface CompanyModalFormProps {
@@ -31,7 +34,29 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
 
-  const { industryOptions } = useGetIndustryOptions();
+  const { getIndustryByName } = useIndustryNameMapper();
+
+  const { industries } = useCrmStore(
+    useShallow((store) => ({
+      industries: store.industries
+    }))
+  );
+
+  const industryOptions = useMemo(
+    () => [
+      {
+        id: "",
+        value: "",
+        label: getIndustryByName(CrmIndustryEnum.NONE)
+      },
+      ...Object.values(industries).map((industry) => ({
+        id: String(industry.id),
+        value: String(industry.id),
+        label: getIndustryByName(industry.name)
+      }))
+    ],
+    [industries, getIndustryByName]
+  );
 
   const {
     values,

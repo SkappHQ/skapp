@@ -13,7 +13,7 @@ import { CrmCompanyEntity } from "~community/crm/types/CrmCommonTypes";
 
 interface SidePanelCompanyHeaderProps {
   company: CrmCompanyEntity;
-  industryName: string;
+  industryName?: string;
 }
 
 const SidePanelCompanyHeader: FC<SidePanelCompanyHeaderProps> = ({
@@ -62,16 +62,18 @@ const SidePanelCompanyHeader: FC<SidePanelCompanyHeaderProps> = ({
           value={address}
         />
       )}
-      <SidePanelHeaderInfoItem
-        icon={
-          <OfficeIcon
-            width="20"
-            height="20"
-            fill="var(--color-secondary-icon)"
-          />
-        }
-        value={industryName}
-      />
+      {industryName && (
+        <SidePanelHeaderInfoItem
+          icon={
+            <OfficeIcon
+              width="20"
+              height="20"
+              fill="var(--color-secondary-icon)"
+            />
+          }
+          value={industryName}
+        />
+      )}
     </div>
   );
 };
