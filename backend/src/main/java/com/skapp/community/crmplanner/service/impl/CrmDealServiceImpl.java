@@ -26,6 +26,7 @@ import com.skapp.community.crmplanner.payload.request.CrmDealListReorderRequestD
 import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
 import com.skapp.community.crmplanner.payload.response.CrmExistsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmIndustryResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskTypeResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardContactResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardInitDataResponseDto;
@@ -38,6 +39,7 @@ import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
+import com.skapp.community.crmplanner.repository.CrmIndustryDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.service.CrmDealOrderIndexService;
@@ -89,6 +91,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 	private final MessageUtil messageUtil;
 
 	private final CrmDealOrderIndexService crmDealOrderIndexService;
+
+	private final CrmIndustryDao crmIndustryDao;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -275,12 +279,16 @@ public class CrmDealServiceImpl implements CrmDealService {
 		List<CrmTaskTypeResponseDto> taskTypes = crmMapper
 			.crmTaskTypesToCrmTaskTypeResponseDtos(crmTaskTypeDao.findAllByOrderByOrderIndexAscIdAsc());
 
+		List<CrmIndustryResponseDto> industries = crmMapper
+			.crmIndustriesToCrmIndustryResponseDtos(crmIndustryDao.findAllByIsDeletedFalseOrderByNameAsc());
+
 		CrmBoardInitDataResponseDto responseDto = new CrmBoardInitDataResponseDto();
 		responseDto.setStages(stages);
 		responseDto.setContacts(contacts);
 		responseDto.setCrmRoles(CrmConstants.ASSIGNABLE_CRM_ROLES.stream().map(Enum::name).sorted().toList());
 		responseDto.setOwners(owners);
 		responseDto.setTaskTypes(taskTypes);
+		responseDto.setIndustries(industries);
 
 		log.info("getBoardInitData: execution ended");
 		return new ResponseEntityDto(false, responseDto);
