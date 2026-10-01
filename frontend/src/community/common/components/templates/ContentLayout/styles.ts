@@ -41,6 +41,9 @@ const styles = (theme: Theme): StyleProps => ({
     flexDirection: { xs: "column-reverse", sm: "row" },
     gap: "0.625rem"
   },
+  contentBeforeButtons: {
+    order: { xs: 1, sm: 0 }
+  },
   dividerWrapper: {
     padding: "1rem 0rem 1rem 0rem"
   }

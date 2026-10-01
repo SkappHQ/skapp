@@ -352,7 +352,11 @@ const ContentLayout = ({
             )}
           </Stack>
           <Stack sx={classes.rightContent} id={id?.btnWrapper}>
-            {customContentBeforeButtons}
+            {customContentBeforeButtons && (
+              <Stack sx={classes.contentBeforeButtons}>
+                {customContentBeforeButtons}
+              </Stack>
+            )}
             {secondaryBtnText && (
               <ButtonV2
                 isFullWidth={isBelow600}
