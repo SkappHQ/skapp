@@ -33,6 +33,7 @@ import {
 } from "~community/crm/constants/commonConstants";
 import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
 import { CrmSidePanelTabEnum } from "~community/crm/enums/common";
+import { useIndustryNameMapper } from "~community/crm/hooks/useIndustryNameMapper";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmCompanyEntity,
@@ -71,6 +72,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
   const translateText = useTranslator("crmModule");
   const { isCrmSalesManager } = useSessionData();
   const { setToastMessage } = useToast();
+  const { getIndustryByName } = useIndustryNameMapper();
 
   const [activeTab, setActiveTab] = useState<CrmSidePanelTabEnum>(
     CrmSidePanelTabEnum.TASKS
@@ -78,6 +80,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
 
   const {
     companies,
+    industries,
     tasks,
     isCrmDataInitialized,
     deals,
@@ -95,6 +98,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
   } = useCrmStore(
     useShallow((state) => ({
       companies: state.companies,
+      industries: state.industries,
       tasks: state.tasks,
       isCrmDataInitialized: state.isCrmDataInitialized,
       deals: state.deals,
@@ -254,6 +258,8 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
   };
 
   const company = companies[companyId];
+  const industry =
+    company?.industryId != null ? industries[company.industryId] : undefined;
 
   const isOpen =
     isCrmSidePanelOpen &&
@@ -332,7 +338,12 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
           <CompanySidePanelSkeleton />
         ) : (
           <>
-            <SidePanelCompanyHeader company={company} />
+            <SidePanelCompanyHeader
+              company={company}
+              industryName={
+                industry?.name ? getIndustryByName(industry.name) : undefined
+              }
+            />
 
             <SidePanelMetricCards
               metrics={getCompanyMetricItems(company, translateText)}

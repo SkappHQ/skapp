@@ -59,3 +59,7 @@ export const crmBoardEndpoints = {
   REORDER_DEAL_WITHIN_STAGE: `${moduleAPIPath.CRM}/board/deal-reorder-within-stage`,
   MOVE_DEAL_BETWEEN_STAGES: `${moduleAPIPath.CRM}/board/deal-move-between-stages`
 };
+
+export const crmIndustryEndpoints = {
+  INDUSTRY_LOOKUP: `${moduleAPIPath.CRM}/industry/lookup`
+};

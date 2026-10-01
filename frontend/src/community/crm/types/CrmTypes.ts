@@ -77,6 +77,13 @@ export interface CrmCompanyListResponse {
   totalPages: number;
 }
 
+export interface CrmIndustryListResponse {
+  items: CrmIndustryEntity[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
 export interface CrmCompanyDomainSearchResponse {
   companies: CrmCompanyEntity[];
 }
@@ -148,6 +155,12 @@ export interface CrmCompanyFilterRequest {
   size?: number;
 }
 
+export interface CrmIndustryFilterRequest {
+  searchKeyword?: string;
+  page?: number;
+  size?: number;
+}
+
 export interface CrmCompanyDomainSearchFilterRequest {
   domain: string;
   limit: number;
@@ -211,6 +224,11 @@ export interface CrmTaskTypeOption {
   id: string;
   value: string;
   label: string;
+}
+
+export interface CrmIndustryOption {
+  id: string;
+  name: string;
 }
 
 export interface CrmTaskTab {

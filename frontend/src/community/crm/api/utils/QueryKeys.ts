@@ -4,6 +4,7 @@ import {
   CrmContactFilterRequest,
   CrmDealFilterRequest,
   CrmDealsByStagesRequest,
+  CrmIndustryFilterRequest,
   CrmOwnerLookupFilterRequest,
   CrmRelatedTasksFilter,
   CrmTaskFilterRequest
@@ -12,6 +13,7 @@ import {
 const CRM_COMPANIES = "crm-companies";
 const CRM_CONTACTS = "crm-contacts";
 const CRM_TASKS = "crm-tasks";
+const CRM_INDUSTRIES = "crm-industries";
 
 export const crmContactQueryKeys = {
   LIST: (params: CrmContactFilterRequest) => [CRM_CONTACTS, "list", params],
@@ -76,6 +78,14 @@ export const crmBoardQueryKeys = {
   BOARD_INIT_DATA: ["crm-board-init-data-v2"],
   DEALS_GROUPED_BY_STAGES: (params: CrmDealsByStagesRequest) => [
     "crm-board-deals-grouped-by-stages-v2",
+    params
+  ]
+};
+
+export const crmIndustryQueryKeys = {
+  LOOKUP: (params: CrmIndustryFilterRequest) => [
+    CRM_INDUSTRIES,
+    "lookup",
     params
   ]
 };

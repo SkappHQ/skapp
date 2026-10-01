@@ -1,9 +1,4 @@
-import {
-  ButtonV2,
-  CloseIcon,
-  Dropdown,
-  InputField
-} from "@rootcodelabs/skapp-ui";
+import { ButtonV2, CloseIcon, InputField } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import { FC } from "react";
 
@@ -12,13 +7,14 @@ import { characterLengths } from "~community/common/constants/stringConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCheckCompanyNameExists } from "~community/crm/api/CompanyApi";
-import { useGetIndustryOptions } from "~community/crm/hooks/useGetIndustryOptions";
+import EditableCompanyIndustryField from "~community/crm/components/molecules/EditableCompanyIndustryField/EditableCompanyIndustryField";
 import { CrmCompanyEntity } from "~community/crm/types/CrmCommonTypes";
 
 interface CompanyModalFormProps {
   formik: FormikProps<CrmCompanyEntity>;
   isPending: boolean;
   originalName?: string;
+  canAddNewIndustry?: boolean;
   onCancel: () => void;
 }
 
@@ -26,12 +22,11 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
   formik,
   isPending,
   originalName,
+  canAddNewIndustry,
   onCancel
 }) => {
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
-
-  const { industryOptions } = useGetIndustryOptions();
 
   const {
     values,
@@ -62,8 +57,18 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
     ? translateText(["companies", "modal", "validations", "companyExists"])
     : errors.name;
 
-  const handleIndustryChange = (value: string) => {
-    setFieldValue("industry", value);
+  const handleIndustrySelect = (industryId: number) => {
+    setFieldValue("industryId", industryId);
+    setFieldValue("industryName", undefined);
+  };
+
+  const handleIndustryAddNew = (industryName: string) => {
+    setFieldValue("industryName", industryName);
+  };
+
+  const handleIndustryClear = () => {
+    setFieldValue("industryId", null);
+    setFieldValue("industryName", undefined);
   };
 
   return (
@@ -142,15 +147,13 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
         fullWidth
       />
 
-      <Dropdown
-        options={industryOptions}
-        value={values.industry}
-        onChange={handleIndustryChange}
-        label={translateText(["companies", "modal", "labels", "industry"])}
-        className="rounded-lg"
-        variant="primary"
-        ariaLabel={translateAria(["companies", "modal", "industry"])}
-        width="100%"
+      <EditableCompanyIndustryField
+        industryId={values.industryId}
+        industryName={values.industryName}
+        canAddNewIndustry={canAddNewIndustry}
+        onSelect={handleIndustrySelect}
+        onAddNew={handleIndustryAddNew}
+        onClear={handleIndustryClear}
       />
 
       <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">

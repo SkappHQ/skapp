@@ -3,32 +3,38 @@ import { FC } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useCreateCompany } from "~community/crm/api/CompanyApi";
 import CompanyModalForm from "~community/crm/components/molecules/CompanyModalForm/CompanyModalForm";
-import { CrmIndustryEnum } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmCompanyEntity } from "~community/crm/types/CrmCommonTypes";
+import { addNewIndustryToRecord } from "~community/crm/utils/companyUtil";
 import { getCompanyValidationSchema } from "~community/crm/utils/companyValidations";
 
 const AddCompanyModalContent: FC = () => {
   const { setToastMessage } = useToast();
+  const { isCrmSalesManager } = useSessionData();
 
   const translateText = useTranslator("crmModule");
 
   const {
     companies,
     companyIds,
+    industries,
     setCompanies,
     setCompanyIds,
+    setIndustries,
     setIsCompanyModalOpen
   } = useCrmStore(
     useShallow((store) => ({
       companies: store.companies,
       companyIds: store.companyIds,
+      industries: store.industries,
       setCompanies: store.setCompanies,
       setCompanyIds: store.setCompanyIds,
+      setIndustries: store.setIndustries,
       setIsCompanyModalOpen: store.setIsCompanyModalOpen
     }))
   );
@@ -36,7 +42,7 @@ const AddCompanyModalContent: FC = () => {
   const formik = useFormik<CrmCompanyEntity>({
     initialValues: {
       name: "",
-      industry: CrmIndustryEnum.NONE,
+      industryId: null,
       website: "",
       address: "",
       contactNumber: ""
@@ -48,7 +54,7 @@ const AddCompanyModalContent: FC = () => {
     enableReinitialize: true
   });
 
-  const { setSubmitting } = formik;
+  const { setSubmitting, values } = formik;
 
   const handleCloseModal = (): void => {
     setIsCompanyModalOpen(false);
@@ -61,6 +67,14 @@ const AddCompanyModalContent: FC = () => {
       setCompanies({ ...companies, [createdCompany.id]: createdCompany });
       setCompanyIds([createdCompany.id, ...companyIds]);
     }
+
+    setIndustries(
+      addNewIndustryToRecord(
+        industries,
+        createdCompany.industryId,
+        values.industryName
+      )
+    );
 
     handleCloseModal();
     setToastMessage({
@@ -109,7 +123,8 @@ const AddCompanyModalContent: FC = () => {
   const createCompany = (values: CrmCompanyEntity) => {
     createNewCompany({
       name: values.name?.trim(),
-      industry: values.industry,
+      industryId: values.industryId,
+      industryName: values.industryName?.trim(),
       website: values.website?.trim(),
       address: values.address?.trim(),
       contactNumber: values.contactNumber?.trim()
@@ -120,6 +135,7 @@ const AddCompanyModalContent: FC = () => {
     <CompanyModalForm
       formik={formik}
       isPending={isPending}
+      canAddNewIndustry={isCrmSalesManager}
       onCancel={handleCloseModal}
     />
   );
