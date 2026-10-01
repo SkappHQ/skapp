@@ -1556,8 +1556,6 @@ public class PeopleServiceImpl implements PeopleService {
 	@Override
 	public BulkReassignSupervisorsAndTerminateOrDeleteEmployeesResponseDto bulkReassignSupervisorsAndTerminateOrDeleteEmployees(
 			BulkReassignSupervisorsAndTerminateOrDeleteEmployeesRequestDto requestDto) {
-		log.info("bulkReassignSupervisorsAndTerminateOrDeleteEmployees: execution started");
-
 		List<BulkReassignSupervisorsAndTerminateOrDeleteEmployeeItemDto> employees = requestDto.getEmployees();
 
 		TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
@@ -1570,15 +1568,12 @@ public class PeopleServiceImpl implements PeopleService {
 						status -> reassignSupervisorsAndTerminateOrDeleteEmployeeCore(employee.getUserId(), employee));
 			}
 			catch (Exception e) {
-				log.info("bulkReassignSupervisorsAndTerminateOrDeleteEmployees: failed for user {}: {}",
-						employee.getUserId(), e.getMessage(), e);
 				failedUserIds.add(employee.getUserId());
 			}
 		}
 
 		int succeeded = employees.size() - failedUserIds.size();
 
-		log.info("bulkReassignSupervisorsAndTerminateOrDeleteEmployees: execution ended");
 		return new BulkReassignSupervisorsAndTerminateOrDeleteEmployeesResponseDto(employees.size(), succeeded,
 				failedUserIds);
 	}
