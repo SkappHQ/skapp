@@ -77,13 +77,14 @@ const EditCompanyModalContent: FC = () => {
       setCompanies(updateCompany(companies, selectedCompanyId, updatedCompany));
     }
 
-    setIndustries(
-      addNewIndustryToRecord(
-        industries,
-        updatedCompany.industryId,
-        values.industryName
-      )
-    );
+    if (updatedCompany.industryId != null && values.industryName) {
+      setIndustries(
+        addNewIndustryToRecord(industries, {
+          id: updatedCompany.industryId,
+          name: values.industryName
+        })
+      );
+    }
 
     handleCloseModal();
     setToastMessage({

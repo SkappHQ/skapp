@@ -205,17 +205,11 @@ export const updateIndustryRecord = (
 
 export const addNewIndustryToRecord = (
   industries: CrmIndustryRecord,
-  industryId: number | null | undefined,
-  industryName: string | undefined
-): CrmIndustryRecord => {
-  if (industryId == null || !industryName || industries[industryId]) {
-    return industries;
-  }
-
-  return updateIndustryRecord(industries, [
-    { id: industryId, name: industryName.trim().replace(/\s+/g, " ") }
-  ]);
-};
+  industry: CrmIndustryEntity
+): CrmIndustryRecord =>
+  industries[industry.id]
+    ? industries
+    : updateIndustryRecord(industries, [industry]);
 
 export const updateCompanyRecord = (
   existing: CrmCompanyRecord,

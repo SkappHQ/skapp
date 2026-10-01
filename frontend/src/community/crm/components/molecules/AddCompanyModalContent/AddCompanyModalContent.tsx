@@ -68,13 +68,14 @@ const AddCompanyModalContent: FC = () => {
       setCompanyIds([createdCompany.id, ...companyIds]);
     }
 
-    setIndustries(
-      addNewIndustryToRecord(
-        industries,
-        createdCompany.industryId,
-        values.industryName
-      )
-    );
+    if (createdCompany.industryId != null && values.industryName) {
+      setIndustries(
+        addNewIndustryToRecord(industries, {
+          id: createdCompany.industryId,
+          name: values.industryName
+        })
+      );
+    }
 
     handleCloseModal();
     setToastMessage({

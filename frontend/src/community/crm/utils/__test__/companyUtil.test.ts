@@ -159,22 +159,19 @@ describe("updateIndustryRecord", () => {
 describe("addNewIndustryToRecord", () => {
   const industries: CrmIndustryRecord = { 1: { id: 1, name: "RETAIL" } };
 
-  it("adds a newly created industry with collapsed spaces", () => {
-    const result = addNewIndustryToRecord(industries, 3, " Deep   Sea ");
+  it("adds a newly created industry", () => {
+    const result = addNewIndustryToRecord(industries, {
+      id: 3,
+      name: "Deep Sea"
+    });
 
     expect(result[3]).toEqual({ id: 3, name: "Deep Sea" });
   });
 
   it("keeps the record unchanged when the industry already exists", () => {
-    expect(addNewIndustryToRecord(industries, 1, "retail")).toBe(industries);
-  });
-
-  it("keeps the record unchanged when no new name was sent", () => {
-    expect(addNewIndustryToRecord(industries, 3, undefined)).toBe(industries);
-  });
-
-  it("keeps the record unchanged when there is no industry id", () => {
-    expect(addNewIndustryToRecord(industries, null, "Marine")).toBe(industries);
+    expect(addNewIndustryToRecord(industries, { id: 1, name: "retail" })).toBe(
+      industries
+    );
   });
 });
 
