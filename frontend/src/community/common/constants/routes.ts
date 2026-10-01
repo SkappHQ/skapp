@@ -174,6 +174,7 @@ const ROUTES = {
       ID: (id: any) => `/invoice/view/${id}`
     },
     INTEGRATIONS: {
+      BASE: "/invoice/integrations",
       SYNC: (provider: string, resource: string) =>
         `/invoice/integrations/${provider}?resource=${resource}`
     }
