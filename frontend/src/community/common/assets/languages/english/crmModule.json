@@ -253,7 +253,6 @@
       }
     },
     "industryOptions": {
-      "none": "None",
       "accommodationServices": "Accommodation services",
       "administrativeAndSupportServices": "Administrative and support services",
       "construction": "Construction",
