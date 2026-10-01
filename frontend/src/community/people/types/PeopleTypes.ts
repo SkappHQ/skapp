@@ -298,6 +298,20 @@ export interface ReassignSupervisorsAndTerminateOrDeleteEmployeePayload {
   action: EmployeeRemoveAction;
 }
 
+export interface BulkReassignSupervisorsAndTerminateOrDeleteEmployeeItem extends ReassignSupervisorsAndTerminateOrDeleteEmployeePayload {
+  userId: number;
+}
+
+export interface BulkReassignSupervisorsAndTerminateOrDeleteEmployeesPayload {
+  employees: BulkReassignSupervisorsAndTerminateOrDeleteEmployeeItem[];
+}
+
+export interface BulkReassignSupervisorsAndTerminateOrDeleteEmployeesResponse {
+  requested: number;
+  succeeded: number;
+  failedUserIds: number[];
+}
+
 export enum EmployeeRemoveAction {
   TERMINATE = "TERMINATE",
   DELETE = "DELETE"

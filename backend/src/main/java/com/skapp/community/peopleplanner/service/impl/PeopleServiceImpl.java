@@ -55,6 +55,8 @@ import com.skapp.community.peopleplanner.model.JobFamily;
 import com.skapp.community.peopleplanner.model.JobTitle;
 import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.payload.CurrentEmployeeDto;
+import com.skapp.community.peopleplanner.payload.request.BulkReassignSupervisorsAndTerminateOrDeleteEmployeeItemDto;
+import com.skapp.community.peopleplanner.payload.request.BulkReassignSupervisorsAndTerminateOrDeleteEmployeesRequestDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeBasicDetailsResponseDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeBulkDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeDataValidationDto;
@@ -91,6 +93,7 @@ import com.skapp.community.peopleplanner.payload.request.employee.personal.Emplo
 import com.skapp.community.peopleplanner.payload.response.AnalyticsSearchResponseDto;
 import com.skapp.community.peopleplanner.payload.response.BirthdayNotificationResponseDto;
 import com.skapp.community.peopleplanner.payload.response.BirthdayNotificationViewedResponseDto;
+import com.skapp.community.peopleplanner.payload.response.BulkReassignSupervisorsAndTerminateOrDeleteEmployeesResponseDto;
 import com.skapp.community.peopleplanner.payload.response.CreateEmployeeResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeAllDataExportResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeBirthdayResponseDto;
@@ -143,6 +146,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -1542,6 +1546,45 @@ public class PeopleServiceImpl implements PeopleService {
 			ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto requestDto) {
 		log.info("reassignSupervisorsAndTerminateOrDeleteEmployee: execution started");
 
+		PeopleMessageConstant successMessage = reassignSupervisorsAndTerminateOrDeleteEmployeeCore(userId,
+				requestDto);
+
+		log.info("reassignSupervisorsAndTerminateOrDeleteEmployee: execution ended");
+		return new ResponseEntityDto(messageUtil.getMessage(successMessage), false);
+	}
+
+	@Override
+	public BulkReassignSupervisorsAndTerminateOrDeleteEmployeesResponseDto bulkReassignSupervisorsAndTerminateOrDeleteEmployees(
+			BulkReassignSupervisorsAndTerminateOrDeleteEmployeesRequestDto requestDto) {
+		log.info("bulkReassignSupervisorsAndTerminateOrDeleteEmployees: execution started");
+
+		List<BulkReassignSupervisorsAndTerminateOrDeleteEmployeeItemDto> employees = requestDto.getEmployees();
+
+		TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
+		transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+
+		List<Long> failedUserIds = new ArrayList<>();
+		for (BulkReassignSupervisorsAndTerminateOrDeleteEmployeeItemDto employee : employees) {
+			try {
+				transactionTemplate.executeWithoutResult(
+						status -> reassignSupervisorsAndTerminateOrDeleteEmployeeCore(employee.getUserId(), employee));
+			}
+			catch (Exception e) {
+				log.info("bulkReassignSupervisorsAndTerminateOrDeleteEmployees: failed for user {}: {}",
+						employee.getUserId(), e.getMessage(), e);
+				failedUserIds.add(employee.getUserId());
+			}
+		}
+
+		int succeeded = employees.size() - failedUserIds.size();
+
+		log.info("bulkReassignSupervisorsAndTerminateOrDeleteEmployees: execution ended");
+		return new BulkReassignSupervisorsAndTerminateOrDeleteEmployeesResponseDto(employees.size(), succeeded,
+				failedUserIds);
+	}
+
+	private PeopleMessageConstant reassignSupervisorsAndTerminateOrDeleteEmployeeCore(Long userId,
+			ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto requestDto) {
 		if (requestDto.getAction() == null) {
 			throw new ModuleException(
 					PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_TERMINATION_OR_DELETION_ACTION_REQUIRED);
@@ -1562,22 +1605,18 @@ public class PeopleServiceImpl implements PeopleService {
 						teamSupervisorTransferRequest));
 		}
 
-		PeopleMessageConstant successMessage;
 		switch (requestDto.getAction()) {
 			case TERMINATE -> {
 				updateUserStatus(userId, AccountStatus.TERMINATED, false);
-				successMessage = PeopleMessageConstant.PEOPLE_SUCCESS_SUPERVISORS_REASSIGNED_AND_EMPLOYEE_TERMINATED;
+				return PeopleMessageConstant.PEOPLE_SUCCESS_SUPERVISORS_REASSIGNED_AND_EMPLOYEE_TERMINATED;
 			}
 			case DELETE -> {
 				updateUserStatus(userId, AccountStatus.DELETED, true);
-				successMessage = PeopleMessageConstant.PEOPLE_SUCCESS_SUPERVISORS_REASSIGNED_AND_EMPLOYEE_DELETED;
+				return PeopleMessageConstant.PEOPLE_SUCCESS_SUPERVISORS_REASSIGNED_AND_EMPLOYEE_DELETED;
 			}
 			default -> throw new ModuleException(
 					PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_TERMINATION_OR_DELETION_ACTION_REQUIRED);
 		}
-
-		log.info("reassignSupervisorsAndTerminateOrDeleteEmployee: execution ended");
-		return new ResponseEntityDto(messageUtil.getMessage(successMessage), false);
 	}
 
 	@Override
