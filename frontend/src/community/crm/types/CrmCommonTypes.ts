@@ -1,14 +1,13 @@
 import {
   CrmDealStageColorsEnum,
   CrmDealStageEnum,
-  CrmIndustryEnum,
   CrmPriorityEnum
 } from "../enums/common";
 
 export interface CrmCompanyEntity {
   id?: number;
   name?: string;
-  industry?: CrmIndustryEnum;
+  industryId?: number | null;
   website?: string;
   address?: string;
   contactNumber?: string;

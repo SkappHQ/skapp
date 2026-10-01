@@ -7,7 +7,6 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useEditCompany } from "~community/crm/api/CompanyApi";
 import CompanyModalForm from "~community/crm/components/molecules/CompanyModalForm/CompanyModalForm";
-import { CrmIndustryEnum } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmCompanyEntity } from "~community/crm/types/CrmCommonTypes";
 import {
@@ -37,7 +36,7 @@ const EditCompanyModalContent: FC = () => {
   const initialValues = useMemo(
     () => ({
       name: selectedCompany?.name ?? "",
-      industry: selectedCompany?.industry ?? CrmIndustryEnum.NONE,
+      industryId: selectedCompany?.industryId ?? null,
       website: selectedCompany?.website ?? "",
       address: selectedCompany?.address ?? "",
       contactNumber: selectedCompany?.contactNumber ?? ""
@@ -116,7 +115,7 @@ const EditCompanyModalContent: FC = () => {
 
     const changedFields = getChangedCompanyFields(initialValues, {
       name: values.name?.trim(),
-      industry: values.industry,
+      industryId: values.industryId,
       website: values.website?.trim(),
       address: values.address?.trim(),
       contactNumber: values.contactNumber?.trim()

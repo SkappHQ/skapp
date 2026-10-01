@@ -9,19 +9,18 @@ import { FC } from "react";
 import { IconName } from "~community/common/types/IconTypes";
 import { openInNewTab } from "~community/common/utils/commonUtil";
 import SidePanelHeaderInfoItem from "~community/crm/components/molecules/SidePanelHeaderInfoItem/SidePanelHeaderInfoItem";
-import { useGetIndustryOptions } from "~community/crm/hooks/useGetIndustryOptions";
 import { CrmCompanyEntity } from "~community/crm/types/CrmCommonTypes";
 
 interface SidePanelCompanyHeaderProps {
   company: CrmCompanyEntity;
+  industryName?: string;
 }
 
 const SidePanelCompanyHeader: FC<SidePanelCompanyHeaderProps> = ({
-  company
+  company,
+  industryName
 }) => {
-  const { getIndustryLabel } = useGetIndustryOptions();
-
-  const { website, contactNumber, address, industry } = company;
+  const { website, contactNumber, address } = company;
 
   return (
     <div className="flex items-center gap-12 flex-wrap">
@@ -63,7 +62,7 @@ const SidePanelCompanyHeader: FC<SidePanelCompanyHeaderProps> = ({
           value={address}
         />
       )}
-      {industry && (
+      {industryName && (
         <SidePanelHeaderInfoItem
           icon={
             <OfficeIcon
@@ -72,7 +71,7 @@ const SidePanelCompanyHeader: FC<SidePanelCompanyHeaderProps> = ({
               fill="var(--color-secondary-icon)"
             />
           }
-          value={getIndustryLabel(industry)}
+          value={industryName}
         />
       )}
     </div>

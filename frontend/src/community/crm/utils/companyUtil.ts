@@ -1,5 +1,9 @@
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
-import { CrmMetricLabelThemeEnum } from "~community/crm/enums/common";
+import { INDUSTRY_OPTION_KEYS } from "~community/crm/constants/companyConstants";
+import {
+  CrmIndustryEnum,
+  CrmMetricLabelThemeEnum
+} from "~community/crm/enums/common";
 import {
   CrmCompanyEntity,
   CrmCompanyRecord
@@ -97,8 +101,8 @@ export const getChangedCompanyFields = (
     changedFields.name = currentValues.name;
   }
 
-  if (currentValues.industry !== initialValues.industry) {
-    changedFields.industry = currentValues.industry;
+  if (currentValues.industryId !== initialValues.industryId) {
+    changedFields.industryId = currentValues.industryId;
   }
 
   if (currentValues.website !== initialValues.website) {
@@ -126,6 +130,17 @@ export const getMissingCompanyIds = (
   }
   return Array.from(unique);
 };
+
+const isCrmIndustryEnum = (value: string): value is CrmIndustryEnum =>
+  Object.values<string>(CrmIndustryEnum).includes(value);
+
+export const getIndustryDisplayName = (
+  industryName: string,
+  translateText: TranslatorFunctionType
+): string =>
+  isCrmIndustryEnum(industryName)
+    ? translateText([INDUSTRY_OPTION_KEYS[industryName]])
+    : industryName;
 
 export const updateCompanyRecord = (
   existing: CrmCompanyRecord,

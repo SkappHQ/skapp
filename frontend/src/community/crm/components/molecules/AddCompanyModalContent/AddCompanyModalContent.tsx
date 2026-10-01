@@ -7,7 +7,6 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useCreateCompany } from "~community/crm/api/CompanyApi";
 import CompanyModalForm from "~community/crm/components/molecules/CompanyModalForm/CompanyModalForm";
-import { CrmIndustryEnum } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmCompanyEntity } from "~community/crm/types/CrmCommonTypes";
 import { getCompanyValidationSchema } from "~community/crm/utils/companyValidations";
@@ -36,7 +35,7 @@ const AddCompanyModalContent: FC = () => {
   const formik = useFormik<CrmCompanyEntity>({
     initialValues: {
       name: "",
-      industry: CrmIndustryEnum.NONE,
+      industryId: null,
       website: "",
       address: "",
       contactNumber: ""
@@ -109,7 +108,7 @@ const AddCompanyModalContent: FC = () => {
   const createCompany = (values: CrmCompanyEntity) => {
     createNewCompany({
       name: values.name?.trim(),
-      industry: values.industry,
+      industryId: values.industryId,
       website: values.website?.trim(),
       address: values.address?.trim(),
       contactNumber: values.contactNumber?.trim()
