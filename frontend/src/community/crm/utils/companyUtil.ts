@@ -1,13 +1,20 @@
+import { characterLengths } from "~community/common/constants/stringConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
-import { INDUSTRY_OPTION_KEYS } from "~community/crm/constants/companyConstants";
+import {
+  ADD_NEW_INDUSTRY_OPTION_ID,
+  INDUSTRY_OPTION_KEYS
+} from "~community/crm/constants/companyConstants";
 import {
   CrmIndustryEnum,
   CrmMetricLabelThemeEnum
 } from "~community/crm/enums/common";
 import {
   CrmCompanyEntity,
-  CrmCompanyRecord
+  CrmCompanyRecord,
+  CrmIndustryEntity,
+  CrmIndustryRecord
 } from "~community/crm/types/CrmCommonTypes";
+import { CrmIndustryOption } from "~community/crm/types/CrmTypes";
 
 export const toCompanyIds = (companies: CrmCompanyEntity[]): number[] => {
   const companyIds: number[] = [];
@@ -105,6 +112,10 @@ export const getChangedCompanyFields = (
     changedFields.industryId = currentValues.industryId;
   }
 
+  if (currentValues.industryName !== initialValues.industryName) {
+    changedFields.industryName = currentValues.industryName;
+  }
+
   if (currentValues.website !== initialValues.website) {
     changedFields.website = currentValues.website;
   }
@@ -141,6 +152,64 @@ export const getIndustryDisplayName = (
   isCrmIndustryEnum(industryName)
     ? translateText([INDUSTRY_OPTION_KEYS[industryName]])
     : industryName;
+
+const normalizeIndustryName = (name: string): string =>
+  name.trim().replace(/\s+/g, " ").toLowerCase();
+
+export const getIndustryOptions = (
+  lookupIndustries: CrmIndustryEntity[] | undefined,
+  getIndustryByName: (name: string) => string,
+  newIndustryName?: string
+): CrmIndustryOption[] => {
+  const options: CrmIndustryOption[] = [];
+
+  for (const industry of lookupIndustries ?? []) {
+    options.push({
+      id: String(industry.id),
+      name: getIndustryByName(industry.name)
+    });
+  }
+
+  if (newIndustryName) {
+    const trimmedName = newIndustryName.trim();
+    const normalizedName = normalizeIndustryName(trimmedName);
+    const isNameAvailable = !(lookupIndustries ?? []).some(
+      (industry) =>
+        normalizeIndustryName(industry.name) === normalizedName ||
+        normalizeIndustryName(getIndustryByName(industry.name)) ===
+          normalizedName
+    );
+
+    if (
+      trimmedName.length > 0 &&
+      trimmedName.length <= characterLengths.INDUSTRY_NAME_LENGTH &&
+      isNameAvailable
+    ) {
+      options.push({ id: ADD_NEW_INDUSTRY_OPTION_ID, name: trimmedName });
+    }
+  }
+
+  return options;
+};
+
+export const updateIndustryRecord = (
+  existing: CrmIndustryRecord,
+  incoming: CrmIndustryEntity[]
+): CrmIndustryRecord => {
+  const merged: CrmIndustryRecord = { ...existing };
+  for (const industry of incoming) {
+    merged[industry.id] = { ...merged[industry.id], ...industry };
+  }
+  return merged;
+};
+
+export const addNewIndustryToRecord = (
+  industries: CrmIndustryRecord,
+  industry: CrmIndustryEntity
+): CrmIndustryRecord =>
+  industries[industry.id]
+    ? industries
+    : updateIndustryRecord(industries, [industry]);
 
 export const updateCompanyRecord = (
   existing: CrmCompanyRecord,

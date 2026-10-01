@@ -12,6 +12,7 @@ import {
   useGetCompanyLookup,
   useSearchCompaniesByDomain
 } from "~community/crm/api/CompanyApi";
+import AddNewOption from "~community/crm/components/atoms/AddNewOption/AddNewOption";
 import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   DOMAIN_SEARCH_LIMIT
@@ -32,7 +33,6 @@ import {
   getCompanyOptions
 } from "~community/crm/utils/contactUtil";
 
-import AddNewCompanyOption from "./AddNewCompanyOption";
 import SuggestedBadge from "./SuggestedBadge";
 
 interface EditableContactCompanyFieldProps {
@@ -110,7 +110,7 @@ const EditableContactCompanyField: FC<EditableContactCompanyFieldProps> = ({
   const renderOptionContent = (option: CrmCompanyOption) => {
     if (option.id === ADD_NEW_COMPANY_OPTION_ID) {
       return (
-        <AddNewCompanyOption
+        <AddNewOption
           label={translateText(
             ["contacts", "modal", "labels", "addNewCompany"],
             {

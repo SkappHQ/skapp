@@ -3,6 +3,7 @@ import { FC, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useEditCompany } from "~community/crm/api/CompanyApi";
@@ -10,6 +11,7 @@ import CompanyModalForm from "~community/crm/components/molecules/CompanyModalFo
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmCompanyEntity } from "~community/crm/types/CrmCommonTypes";
 import {
+  addNewIndustryToRecord,
   getChangedCompanyFields,
   getSelectedCompany,
   updateCompany
@@ -18,18 +20,27 @@ import { getCompanyValidationSchema } from "~community/crm/utils/companyValidati
 
 const EditCompanyModalContent: FC = () => {
   const { setToastMessage } = useToast();
+  const { isCrmSalesManager } = useSessionData();
 
   const translateText = useTranslator("crmModule");
 
-  const { companies, selectedCompanyId, setCompanies, setIsCompanyModalOpen } =
-    useCrmStore(
-      useShallow((store) => ({
-        companies: store.companies,
-        selectedCompanyId: store.selectedCompanyId,
-        setCompanies: store.setCompanies,
-        setIsCompanyModalOpen: store.setIsCompanyModalOpen
-      }))
-    );
+  const {
+    companies,
+    industries,
+    selectedCompanyId,
+    setCompanies,
+    setIndustries,
+    setIsCompanyModalOpen
+  } = useCrmStore(
+    useShallow((store) => ({
+      companies: store.companies,
+      industries: store.industries,
+      selectedCompanyId: store.selectedCompanyId,
+      setCompanies: store.setCompanies,
+      setIndustries: store.setIndustries,
+      setIsCompanyModalOpen: store.setIsCompanyModalOpen
+    }))
+  );
 
   const selectedCompany = getSelectedCompany(companies, selectedCompanyId);
 
@@ -53,7 +64,7 @@ const EditCompanyModalContent: FC = () => {
     enableReinitialize: true
   });
 
-  const { setSubmitting } = formik;
+  const { setSubmitting, values } = formik;
 
   const handleCloseModal = (): void => {
     setIsCompanyModalOpen(false);
@@ -64,6 +75,15 @@ const EditCompanyModalContent: FC = () => {
 
     if (selectedCompanyId !== null) {
       setCompanies(updateCompany(companies, selectedCompanyId, updatedCompany));
+    }
+
+    if (updatedCompany.industryId != null && values.industryName) {
+      setIndustries(
+        addNewIndustryToRecord(industries, {
+          id: updatedCompany.industryId,
+          name: values.industryName
+        })
+      );
     }
 
     handleCloseModal();
@@ -116,6 +136,7 @@ const EditCompanyModalContent: FC = () => {
     const changedFields = getChangedCompanyFields(initialValues, {
       name: values.name?.trim(),
       industryId: values.industryId,
+      industryName: values.industryName?.trim(),
       website: values.website?.trim(),
       address: values.address?.trim(),
       contactNumber: values.contactNumber?.trim()
@@ -134,6 +155,7 @@ const EditCompanyModalContent: FC = () => {
       formik={formik}
       isPending={isPending}
       originalName={selectedCompany?.name}
+      canAddNewIndustry={isCrmSalesManager}
       onCancel={handleCloseModal}
     />
   );

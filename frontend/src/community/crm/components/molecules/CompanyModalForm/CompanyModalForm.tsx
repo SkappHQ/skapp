@@ -1,27 +1,20 @@
-import {
-  ButtonV2,
-  CloseIcon,
-  Dropdown,
-  InputField
-} from "@rootcodelabs/skapp-ui";
+import { ButtonV2, CloseIcon, InputField } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { FC, useMemo } from "react";
-import { useShallow } from "zustand/react/shallow";
+import { FC } from "react";
 
 import { SEARCH_DEBOUNCE_DELAY } from "~community/common/constants/commonConstants";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCheckCompanyNameExists } from "~community/crm/api/CompanyApi";
-import { CrmIndustryEnum } from "~community/crm/enums/common";
-import { useIndustryNameMapper } from "~community/crm/hooks/useIndustryNameMapper";
-import { useCrmStore } from "~community/crm/store/store";
+import EditableCompanyIndustryField from "~community/crm/components/molecules/EditableCompanyIndustryField/EditableCompanyIndustryField";
 import { CrmCompanyEntity } from "~community/crm/types/CrmCommonTypes";
 
 interface CompanyModalFormProps {
   formik: FormikProps<CrmCompanyEntity>;
   isPending: boolean;
   originalName?: string;
+  canAddNewIndustry?: boolean;
   onCancel: () => void;
 }
 
@@ -29,34 +22,11 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
   formik,
   isPending,
   originalName,
+  canAddNewIndustry,
   onCancel
 }) => {
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
-
-  const { getIndustryByName } = useIndustryNameMapper();
-
-  const { industries } = useCrmStore(
-    useShallow((store) => ({
-      industries: store.industries
-    }))
-  );
-
-  const industryOptions = useMemo(
-    () => [
-      {
-        id: "",
-        value: "",
-        label: getIndustryByName(CrmIndustryEnum.NONE)
-      },
-      ...Object.values(industries).map((industry) => ({
-        id: String(industry.id),
-        value: String(industry.id),
-        label: getIndustryByName(industry.name)
-      }))
-    ],
-    [industries, getIndustryByName]
-  );
 
   const {
     values,
@@ -87,8 +57,18 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
     ? translateText(["companies", "modal", "validations", "companyExists"])
     : errors.name;
 
-  const handleIndustryChange = (value: string) => {
-    setFieldValue("industryId", value ? Number(value) : null);
+  const handleIndustrySelect = (industryId: number) => {
+    setFieldValue("industryId", industryId);
+    setFieldValue("industryName", undefined);
+  };
+
+  const handleIndustryAddNew = (industryName: string) => {
+    setFieldValue("industryName", industryName);
+  };
+
+  const handleIndustryClear = () => {
+    setFieldValue("industryId", null);
+    setFieldValue("industryName", undefined);
   };
 
   return (
@@ -167,15 +147,13 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
         fullWidth
       />
 
-      <Dropdown
-        options={industryOptions}
-        value={values.industryId ? String(values.industryId) : ""}
-        onChange={handleIndustryChange}
-        label={translateText(["companies", "modal", "labels", "industry"])}
-        className="rounded-lg"
-        variant="primary"
-        ariaLabel={translateAria(["companies", "modal", "industry"])}
-        width="100%"
+      <EditableCompanyIndustryField
+        industryId={values.industryId}
+        industryName={values.industryName}
+        canAddNewIndustry={canAddNewIndustry}
+        onSelect={handleIndustrySelect}
+        onAddNew={handleIndustryAddNew}
+        onClear={handleIndustryClear}
       />
 
       <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">

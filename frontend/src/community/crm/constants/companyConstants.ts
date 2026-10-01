@@ -1,7 +1,8 @@
 import { CrmIndustryEnum } from "~community/crm/enums/common";
 
+export const ADD_NEW_INDUSTRY_OPTION_ID = "ADD_NEW_INDUSTRY";
+
 export const INDUSTRY_OPTION_KEYS: Record<CrmIndustryEnum, string> = {
-  [CrmIndustryEnum.NONE]: "none",
   [CrmIndustryEnum.ACCOMMODATION_SERVICES]: "accommodationServices",
   [CrmIndustryEnum.ADMINISTRATIVE_AND_SUPPORT_SERVICES]:
     "administrativeAndSupportServices",
