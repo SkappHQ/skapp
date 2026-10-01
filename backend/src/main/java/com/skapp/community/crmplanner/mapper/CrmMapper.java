@@ -54,6 +54,7 @@ public interface CrmMapper {
 
 	CrmCompany crmCompanyCreateDtoToCrmCompany(CrmCompanyCreateDto crmCompanyCreateDto);
 
+	@Mapping(target = "industryId", source = "industry.id")
 	CrmCompanyResponseDto crmCompanyToCrmCompanyResponseDto(CrmCompany crmCompany);
 
 	List<CrmCompanyResponseDto> crmCompaniesToCrmCompanyResponseDtos(List<CrmCompany> crmCompanies);
