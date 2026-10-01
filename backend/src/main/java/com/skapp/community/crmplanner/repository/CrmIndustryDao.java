@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface CrmIndustryDao extends JpaRepository<CrmIndustry, Long> {
+public interface CrmIndustryDao extends JpaRepository<CrmIndustry, Long>, CrmIndustryRepository {
 
 	Optional<CrmIndustry> findByIdAndIsDeletedFalse(Long id);
 
