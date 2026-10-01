@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.payload.response.board;
 
+import com.skapp.community.crmplanner.payload.response.CrmIndustryResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskTypeResponseDto;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,5 +20,7 @@ public class CrmBoardInitDataResponseDto {
 	private List<CrmBoardOwnerResponseDto> owners;
 
 	private List<CrmTaskTypeResponseDto> taskTypes;
+
+	private List<CrmIndustryResponseDto> industries;
 
 }

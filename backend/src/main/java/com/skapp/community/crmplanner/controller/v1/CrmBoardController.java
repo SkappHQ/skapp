@@ -27,7 +27,7 @@ public class CrmBoardController {
 	private final CrmDealService crmDealService;
 
 	@Operation(summary = "Get board init data",
-			description = "Returns all data required for the kanban board initial load: stages, contacts, CRM roles, owners, and task types.")
+			description = "Returns all data required for the kanban board initial load: stages, contacts, CRM roles, owners, task types, and industries.")
 	@GetMapping("/init-data")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getBoardInitData() {

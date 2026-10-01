@@ -5,6 +5,7 @@ import {
   CrmCompanyRecord,
   CrmContactRecord,
   CrmDealRecord,
+  CrmIndustryRecord,
   CrmOwnerRecord,
   CrmStageRecord,
   CrmTaskRecord,
@@ -27,6 +28,7 @@ const CrmDataSlice: StateCreator<
   owners: {},
   stages: {},
   taskTypes: {},
+  industries: {},
 
   setCompanies: (companies: CrmCompanyRecord) => set({ companies }),
 
@@ -42,7 +44,9 @@ const CrmDataSlice: StateCreator<
 
   setStages: (stages: CrmStageRecord) => set({ stages }),
 
-  setTaskTypes: (taskTypes: CrmTaskTypeRecord) => set({ taskTypes })
+  setTaskTypes: (taskTypes: CrmTaskTypeRecord) => set({ taskTypes }),
+
+  setIndustries: (industries: CrmIndustryRecord) => set({ industries })
 });
 
 export default CrmDataSlice;

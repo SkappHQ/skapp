@@ -8,6 +8,7 @@ import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
+import com.skapp.community.crmplanner.model.CrmIndustry;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmDealUpdateStageRequestDto;
@@ -16,6 +17,7 @@ import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
+import com.skapp.community.crmplanner.repository.CrmIndustryDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
@@ -41,6 +43,9 @@ import tools.jackson.databind.json.JsonMapper;
 import java.util.List;
 
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInRelativeOrder;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
 import static com.skapp.support.TestConstants.MESSAGE_PATH;
@@ -92,6 +97,8 @@ class CrmBoardControllerIntegrationTest {
 	private final CrmTaskDao crmTaskDao;
 
 	private final CrmTaskTypeDao crmTaskTypeDao;
+
+	private final CrmIndustryDao crmIndustryDao;
 
 	private String adminToken;
 
@@ -594,6 +601,35 @@ class CrmBoardControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Board init data - Returns industries as id and name pairs ordered by name")
+	void getBoardInitData_IndustriesAreOrderedIdNamePairs() throws Exception {
+		createIndustry("RETAIL", false);
+		createIndustry("EDUCATION", false);
+
+		mvc.perform(get("/v1/crm/board/init-data").accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(repToken)))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industries'][*]['name']")
+				.value(containsInRelativeOrder("EDUCATION", "RETAIL")))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industries'][*]['id']").value(everyItem(notNullValue())));
+	}
+
+	@Test
+	@DisplayName("Board init data - Omits soft-deleted industries")
+	void getBoardInitData_OmitsSoftDeletedIndustries() throws Exception {
+		createIndustry("RETAIL", false);
+		createIndustry("AAA_DELETED", true);
+
+		mvc.perform(get("/v1/crm/board/init-data").accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(repToken)))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industries'][?(@.name == 'RETAIL')]").isNotEmpty())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industries'][?(@.name == 'AAA_DELETED')]").isEmpty());
+	}
+
+	@Test
 	@DisplayName("Board init data - without CRM role returns Forbidden")
 	void getBoardInitData_WithoutCrmRole_ReturnsForbidden() throws Exception {
 		String noCrmRoleToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user4@gmail.com"),
@@ -641,6 +677,13 @@ class CrmBoardControllerIntegrationTest {
 		task.setIsDeleted(true);
 		task.setIsCompleted(false);
 		return crmTaskDao.save(task);
+	}
+
+	private CrmIndustry createIndustry(String name, boolean isDeleted) {
+		CrmIndustry industry = new CrmIndustry();
+		industry.setName(name);
+		industry.setIsDeleted(isDeleted);
+		return crmIndustryDao.save(industry);
 	}
 
 }
