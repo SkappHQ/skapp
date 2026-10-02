@@ -35,6 +35,7 @@ import {
   useHandleUpdateDefaultCapacity
 } from "~community/configurations/api/timeConfigurationApi";
 import { timeConfigurationQueryKeys } from "~community/configurations/api/utils/QueryKeys";
+import useConfigurationUnsavedChanges from "~community/configurations/hooks/useConfigurationUnsavedChanges";
 import {
   TimeBlocksTypes,
   TimeConfigurationType,
@@ -81,6 +82,8 @@ const TimeConfigurations = (): JSX.Element => {
 
   const { data: configIsRemovable } =
     useGetConfigIsRemovable(newNonWorkingDays);
+
+  useConfigurationUnsavedChanges(formChanged);
 
   const handleSuccess = () => {
     setToastMessage({

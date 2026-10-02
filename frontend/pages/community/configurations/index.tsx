@@ -3,12 +3,15 @@ import { Tabs } from "@rootcodelabs/skapp-ui";
 import { type NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { appModes } from "~community/common/constants/configs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { replaceTabQueryParam } from "~community/common/utils/commonUtil";
+import UnsavedConfigChangesModal from "~community/configurations/components/molecules/UnsavedConfigChangesModal/UnsavedConfigChangesModal";
+import { useConfigurationStore } from "~community/configurations/stores/configurationStore";
 import { getConfigurationTabs } from "~community/configurations/utils/configurationTabsUtil";
 import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
@@ -49,9 +52,39 @@ const Configurations: NextPage = () => {
     }
   }, [router.isReady, router.query.tab]);
 
-  const handleTabChange = (id: string) => {
+  const { hasUnsavedChanges, setHasUnsavedChanges } = useConfigurationStore(
+    useShallow((state) => ({
+      hasUnsavedChanges: state.hasUnsavedChanges,
+      setHasUnsavedChanges: state.setHasUnsavedChanges
+    }))
+  );
+
+  const [pendingTab, setPendingTab] = useState<string | null>(null);
+
+  const switchTab = (id: string) => {
     setActiveTab(id);
     replaceTabQueryParam(router.asPath, id);
+  };
+
+  const handleTabChange = (id: string) => {
+    if (id === activeTab) return;
+    if (hasUnsavedChanges) {
+      setPendingTab(id);
+      return;
+    }
+    switchTab(id);
+  };
+
+  const handleStayOnPage = () => {
+    setPendingTab(null);
+  };
+
+  const handleLeaveWithoutSaving = () => {
+    if (pendingTab) {
+      setHasUnsavedChanges(false);
+      switchTab(pendingTab);
+    }
+    setPendingTab(null);
   };
 
   return (
@@ -71,6 +104,11 @@ const Configurations: NextPage = () => {
         />
         <Divider />
         {visibleTabs.find((tab) => tab.id === activeTab)?.component}
+        <UnsavedConfigChangesModal
+          isOpen={pendingTab !== null}
+          onStay={handleStayOnPage}
+          onLeave={handleLeaveWithoutSaving}
+        />
       </Box>
     </ContentLayout>
   );
