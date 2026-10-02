@@ -79,7 +79,6 @@ const Modal: FC<Props> = ({
         sx={mergeSx([classes.modelContentWrapper, modalContentStyles])}
         role={role}
         aria-label={translateAria(["modal"], { title })}
-        aria-describedby={ids?.description}
       >
         <Stack sx={mergeSx([classes.modalHeader, modalHeaderStyles])}>
           <Stack sx={classes.modalHeaderIconContainer}>
