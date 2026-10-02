@@ -1,6 +1,7 @@
 package com.skapp.community.peopleplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.peopleplanner.payload.request.BulkReassignSupervisorsAndTerminateOrDeleteEmployeesRequestDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeBulkDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeDataValidationDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeExportFilterDto;
@@ -13,6 +14,7 @@ import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
 import com.skapp.community.peopleplanner.payload.request.ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.TinExistsCheckDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
+import com.skapp.community.peopleplanner.payload.response.BulkReassignSupervisorsAndTerminateOrDeleteEmployeesResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeManagerResponseDto;
 import com.skapp.community.peopleplanner.service.PeopleReadService;
 import com.skapp.community.peopleplanner.service.PeopleService;
@@ -232,6 +234,17 @@ public class PeopleController {
 	public ResponseEntity<ResponseEntityDto> reassignSupervisorsAndTerminateOrDeleteEmployee(@PathVariable Long userId,
 			@RequestBody ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto requestDto) {
 		ResponseEntityDto response = peopleService.reassignSupervisorsAndTerminateOrDeleteEmployee(userId, requestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Reassign supervisor roles and terminate or delete multiple employees",
+			description = "Reassigns primary supervisor and team supervisor roles for a batch of users and then terminates or deletes each employee")
+	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_ADMIN')")
+	@PatchMapping("/user/bulk/reassign-supervisors-and-terminate-or-delete")
+	public ResponseEntity<BulkReassignSupervisorsAndTerminateOrDeleteEmployeesResponseDto> bulkReassignSupervisorsAndTerminateOrDeleteEmployees(
+			@RequestBody BulkReassignSupervisorsAndTerminateOrDeleteEmployeesRequestDto requestDto) {
+		BulkReassignSupervisorsAndTerminateOrDeleteEmployeesResponseDto response = peopleService
+			.bulkReassignSupervisorsAndTerminateOrDeleteEmployees(requestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

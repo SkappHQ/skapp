@@ -81,6 +81,8 @@ import { EmployeeTimelineType } from "~enterprise/people/types/PeopleTypes";
 
 import {
   AllEmployeeDataResponse,
+  BulkReassignSupervisorsAndTerminateOrDeleteEmployeesPayload,
+  BulkReassignSupervisorsAndTerminateOrDeleteEmployeesResponse,
   L1EmployeeType,
   ReassignSupervisorsAndTerminateOrDeleteEmployeePayload,
   SkillResponseDto,
@@ -311,6 +313,23 @@ export const useGetSearchedEmployees = (
     refetchOnWindowFocus: false,
     enabled:
       debouncedSearchTerm.length > 0 && debouncedSearchTerm === searchTerm
+  });
+};
+
+const getAllActiveEmployees = async (permission: SystemPermissionTypes) => {
+  const response = await authFetch.get(peoplesEndpoints.SEARCH_EMPLOYEE, {
+    params: { keyword: "", permission }
+  });
+  return searchEmployeeDataPreProcessor(response?.data?.results);
+};
+
+export const useGetAllActiveEmployees = (
+  permission: SystemPermissionTypes = SystemPermissionTypes.EMPLOYEES
+) => {
+  return useQuery({
+    queryKey: ["all-active-employees", permission],
+    queryFn: () => getAllActiveEmployees(permission),
+    refetchOnWindowFocus: false
   });
 };
 
@@ -962,17 +981,47 @@ export const useEditEmployee = (employeeId: string) => {
   });
 };
 
+export const getSupervisedEmployeesAndTeams = (userId: number) =>
+  authFetch.get(peoplesEndpoints.GET_SUPERVISOR_ROLES(userId));
+
+export const fetchSupervisorRolesData = async (
+  userId: number
+): Promise<SupervisorRolesData | undefined> => {
+  const response = await getSupervisedEmployeesAndTeams(userId);
+  return response.data?.results?.[0];
+};
+
 export const useGetSupervisedEmployeesAndTeams = (
   userId: number,
   enabled: boolean = true
 ): UseQueryResult<SupervisorRolesData> => {
   return useQuery({
     queryKey: peopleQueryKeys.SUPERVISOR_ROLES(userId),
-    queryFn: async () =>
-      await authFetch.get(peoplesEndpoints.GET_SUPERVISOR_ROLES(userId)),
+    queryFn: () => getSupervisedEmployeesAndTeams(userId),
     select: (data) => data?.data?.results[0],
     enabled: !!userId && enabled
   });
+};
+
+export const reassignSupervisorsAndTerminateOrDeleteEmployee = (
+  userId: number,
+  payload: ReassignSupervisorsAndTerminateOrDeleteEmployeePayload
+) =>
+  authFetch.patch(
+    peoplesEndpoints.REASSIGN_SUPERVISORS_AND_TERMINATE_OR_DELETE_EMPLOYEE(
+      userId
+    ),
+    payload
+  );
+
+export const bulkReassignSupervisorsAndTerminateOrDeleteEmployees = async (
+  payload: BulkReassignSupervisorsAndTerminateOrDeleteEmployeesPayload
+): Promise<BulkReassignSupervisorsAndTerminateOrDeleteEmployeesResponse> => {
+  const response = await authFetch.patch(
+    peoplesEndpoints.BULK_REASSIGN_SUPERVISORS_AND_TERMINATE_OR_DELETE_EMPLOYEES,
+    payload
+  );
+  return response.data;
 };
 
 export const useReassignSupervisorsAndTerminateOrDeleteEmployee = (
@@ -984,13 +1033,7 @@ export const useReassignSupervisorsAndTerminateOrDeleteEmployee = (
   return useMutation({
     mutationFn: (
       payload: ReassignSupervisorsAndTerminateOrDeleteEmployeePayload
-    ) =>
-      authFetch.patch(
-        peoplesEndpoints.REASSIGN_SUPERVISORS_AND_TERMINATE_OR_DELETE_EMPLOYEE(
-          userId
-        ),
-        payload
-      ),
+    ) => reassignSupervisorsAndTerminateOrDeleteEmployee(userId, payload),
     onSuccess: () => {
       [
         peopleQueryKeys.SUPERVISOR_ROLES(userId),

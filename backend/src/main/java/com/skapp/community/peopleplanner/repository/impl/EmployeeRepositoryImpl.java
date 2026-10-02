@@ -71,9 +71,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -1777,6 +1779,23 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		query.select(cb.count(root)).where(predicates.toArray(new Predicate[0]));
 
 		return entityManager.createQuery(query).getSingleResult() > 0;
+	}
+
+	@Override
+	public Map<String, Long> findEmployeeIdsByEmailIgnoreCase(List<String> emails) {
+		List<String> lowerCaseEmails = emails.stream().map(email -> email.toLowerCase(Locale.ROOT)).toList();
+
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Object[]> query = cb.createQuery(Object[].class);
+		Root<User> root = query.from(User.class);
+		Expression<String> lowerCaseEmail = cb.lower(root.get(User_.email));
+
+		query.select(cb.array(lowerCaseEmail, root.get(User_.userId))).where(lowerCaseEmail.in(lowerCaseEmails));
+
+		return entityManager.createQuery(query)
+			.getResultList()
+			.stream()
+			.collect(Collectors.toMap(row -> (String) row[0], row -> (Long) row[1], (first, second) -> first));
 	}
 
 }
