@@ -8,8 +8,8 @@ import {
   SaveIcon
 } from "@rootcodelabs/skapp-ui";
 import { AxiosError } from "axios";
-import { FormikHelpers, useFormik } from "formik";
-import { ChangeEvent, FC } from "react";
+import { FormikProps, useFormik } from "formik";
+import { ChangeEvent, FC, useEffect, useRef } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -55,6 +55,8 @@ const EditLeavePolicyView: FC<Props> = ({ policy, onClose }) => {
 
   const isAccrual = policy.policyType === PolicyType.ACCRUAL;
 
+  const formikRef = useRef<FormikProps<EditLeavePolicyFormValues> | null>(null);
+
   const onUpdateSuccess = (): void => {
     setToastMessage({
       open: true,
@@ -67,8 +69,13 @@ const EditLeavePolicyView: FC<Props> = ({ policy, onClose }) => {
   };
 
   const onUpdateError = (error: AxiosError): void => {
-    // Duplicate names are shown inline on the field from onSubmit
-    if (isDuplicatePolicyNameError(error)) return;
+    if (isDuplicatePolicyNameError(error)) {
+      formikRef.current?.setFieldError(
+        "policyName",
+        translateText(["createPolicy", "errors", "policyNameDuplicate"])
+      );
+      return;
+    }
 
     const { title, description } = getLeavePolicyErrorToastKeys(error);
 
@@ -86,38 +93,29 @@ const EditLeavePolicyView: FC<Props> = ({ policy, onClose }) => {
     onUpdateError
   );
 
-  const onSubmit = (
-    formValues: EditLeavePolicyFormValues,
-    { setFieldError, setFieldTouched }: FormikHelpers<EditLeavePolicyFormValues>
-  ): void => {
-    updateLeavePolicy(
-      {
-        id: policy.id,
-        payload: { name: formValues.policyName.trim() }
-      },
-      {
-        onError: (error: AxiosError) => {
-          if (!isDuplicatePolicyNameError(error)) return;
-
-          setFieldTouched("policyName", true, false);
-          setFieldError(
-            "policyName",
-            translateText(["editPolicy", "policyNameDuplicateError"])
-          );
-        }
-      }
-    );
+  const onSubmit = (formValues: EditLeavePolicyFormValues): void => {
+    updateLeavePolicy({
+      id: policy.id,
+      payload: { name: formValues.policyName.trim() }
+    });
   };
 
+  const formik = useFormik<EditLeavePolicyFormValues>({
+    initialValues: { policyName: policy.name },
+    validationSchema: editLeavePolicyValidation((suffixes: string[]) =>
+      translateText(["editPolicy", ...suffixes])
+    ),
+    validateOnBlur: false,
+    enableReinitialize: true,
+    onSubmit
+  });
+
+  useEffect(() => {
+    formikRef.current = formik;
+  });
+
   const { values, errors, touched, handleBlur, handleChange, handleSubmit } =
-    useFormik<EditLeavePolicyFormValues>({
-      initialValues: { policyName: policy.name },
-      validationSchema: editLeavePolicyValidation((suffixes: string[]) =>
-        translateText(["editPolicy", ...suffixes])
-      ),
-      enableReinitialize: true,
-      onSubmit
-    });
+    formik;
 
   const policyNameError = touched.policyName ? errors.policyName : undefined;
 
