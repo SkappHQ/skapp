@@ -298,17 +298,18 @@ export interface ReassignSupervisorsAndTerminateOrDeleteEmployeePayload {
   action: EmployeeRemoveAction;
 }
 
-export interface BulkReassignSupervisorsAndTerminateOrDeleteEmployeeItem extends ReassignSupervisorsAndTerminateOrDeleteEmployeePayload {
+export interface BulkReassignAndRemoveEmployeeItem {
   userId: number;
+  primarySupervisors: PrimarySupervisorTransfer[];
+  teamSupervisors: TeamSupervisorTransfer[];
 }
 
-export interface BulkReassignSupervisorsAndTerminateOrDeleteEmployeesPayload {
-  employees: BulkReassignSupervisorsAndTerminateOrDeleteEmployeeItem[];
+export interface BulkReassignAndRemoveEmployeesPayload {
+  action: EmployeeRemoveAction;
+  employees: BulkReassignAndRemoveEmployeeItem[];
 }
 
-export interface BulkReassignSupervisorsAndTerminateOrDeleteEmployeesResponse {
-  requested: number;
-  succeeded: number;
+export interface BulkReassignAndRemoveEmployeesResponse {
   failedUserIds: number[];
 }
 

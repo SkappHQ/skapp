@@ -1,7 +1,7 @@
 package com.skapp.community.peopleplanner.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.peopleplanner.payload.request.BulkReassignSupervisorsAndTerminateOrDeleteEmployeesRequestDto;
+import com.skapp.community.peopleplanner.payload.request.BulkReassignAndRemoveEmployeesRequestDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeBulkDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeDataValidationDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeExportFilterDto;
@@ -13,7 +13,7 @@ import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
 import com.skapp.community.peopleplanner.payload.request.ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.TinExistsCheckDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
-import com.skapp.community.peopleplanner.payload.response.BulkReassignSupervisorsAndTerminateOrDeleteEmployeesResponseDto;
+import com.skapp.community.peopleplanner.payload.response.BulkReassignAndRemoveEmployeesResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeManagerResponseDto;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 
@@ -77,8 +77,8 @@ public interface PeopleService {
 	ResponseEntityDto reassignSupervisorsAndTerminateOrDeleteEmployee(Long userId,
 			ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto requestDto);
 
-	BulkReassignSupervisorsAndTerminateOrDeleteEmployeesResponseDto bulkReassignSupervisorsAndTerminateOrDeleteEmployees(
-			BulkReassignSupervisorsAndTerminateOrDeleteEmployeesRequestDto requestDto);
+	BulkReassignAndRemoveEmployeesResponseDto bulkReassignAndRemoveEmployees(
+			BulkReassignAndRemoveEmployeesRequestDto requestDto);
 
 	ResponseEntityDto getTodayBirthdayNotifications();
 

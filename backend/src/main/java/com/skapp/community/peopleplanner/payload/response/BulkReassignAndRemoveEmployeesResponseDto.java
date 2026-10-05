@@ -11,11 +11,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BulkReassignSupervisorsAndTerminateOrDeleteEmployeesResponseDto {
-
-	private Integer requested;
-
-	private Integer succeeded;
+public class BulkReassignAndRemoveEmployeesResponseDto {
 
 	private List<Long> failedUserIds;
 
