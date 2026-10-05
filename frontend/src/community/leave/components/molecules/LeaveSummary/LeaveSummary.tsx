@@ -9,19 +9,19 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { LeaveStates } from "~community/common/types/CommonTypes";
 import { AvatarPropTypes } from "~community/common/types/MoleculeTypes";
 import { getEmoji } from "~community/common/utils/commonUtil";
-import { ResourceAvailabilityPayload } from "~community/leave/types/MyRequests";
 import {
   getDuration,
   getLeavePeriod
 } from "~community/leave/utils/myRequests/leaveSummaryUtils";
 import { useGetMyManagers } from "~community/people/api/PeopleApi";
+import { Holiday } from "~community/people/types/HolidayTypes";
 import { L4ManagerType } from "~community/people/types/PeopleTypes";
 
 import styles from "./styles";
 
 interface Props {
   workingDays: daysTypes[];
-  resourceAvailability: ResourceAvailabilityPayload[] | undefined;
+  allHolidays: Holiday[] | undefined;
   leaveTypeName: string;
   leaveTypeEmoji: string;
   leaveDuration: LeaveStates;
@@ -31,7 +31,7 @@ interface Props {
 
 const LeaveSummary = ({
   workingDays,
-  resourceAvailability,
+  allHolidays,
   leaveTypeName,
   leaveTypeEmoji,
   leaveDuration,
@@ -65,13 +65,20 @@ const LeaveSummary = ({
   const duration = useMemo(() => {
     return getDuration({
       workingDays: workingDays,
-      resourceAvailability: resourceAvailability,
+      allHolidays: allHolidays,
       leaveState: leaveDuration,
       translateText: commonTranslateText,
       startDate: startDate,
       endDate: endDate
     });
-  }, [commonTranslateText, leaveDuration]);
+  }, [
+    commonTranslateText,
+    leaveDuration,
+    workingDays,
+    allHolidays,
+    startDate,
+    endDate
+  ]);
 
   const supervisorNames = useMemo(() => {
     const allManagers = [primaryManager, ...otherManagers].filter(Boolean);

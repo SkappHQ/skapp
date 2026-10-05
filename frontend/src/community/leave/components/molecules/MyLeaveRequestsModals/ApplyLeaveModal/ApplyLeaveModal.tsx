@@ -485,7 +485,7 @@ const ApplyLeaveModal = () => {
                 leaveDuration={selectedDuration}
                 startDate={selectedDates[0]}
                 endDate={selectedDates[1]}
-                resourceAvailability={resourceAvailability}
+                allHolidays={allHolidays}
                 workingDays={workingDays}
               />
             )}
