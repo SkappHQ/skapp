@@ -1,6 +1,7 @@
 package com.skapp.community.crmplanner.repository.impl;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +15,8 @@ import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyFilterDto;
 import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.model.CrmIndustry;
+import com.skapp.community.crmplanner.model.CrmIndustry_;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.model.CrmDealStage_;
 import com.skapp.community.crmplanner.model.CrmDeal_;
@@ -32,6 +35,8 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.From;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -46,7 +51,8 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 	private final EntityManager entityManager;
 
 	@Override
-	public Page<CrmCompanyMetricsResponseDto> getCompanies(Pageable pageable, String searchKeyword) {
+	public Page<CrmCompanyMetricsResponseDto> getCompanies(Pageable pageable, String searchKeyword,
+			Instant overdueBefore) {
 		List<Long> closedStageIds = getClosedStageIds();
 
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
@@ -66,7 +72,7 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 					cb.isFalse(subOverdueTask.get(CrmTask_.isDeleted)),
 					cb.isFalse(subOverdueTask.get(CrmTask_.isCompleted)),
 					cb.isNotNull(subOverdueTask.get(CrmTask_.dueAt)),
-					cb.lessThan(subOverdueTask.get(CrmTask_.dueAt), cb.localDateTime()));
+					cb.lessThan(subOverdueTask.get(CrmTask_.dueAt), cb.literal(overdueBefore)));
 
 		Subquery<BigDecimal> openValueSubquery = query.subquery(BigDecimal.class);
 		Root<CrmDeal> openDeal = openValueSubquery.from(CrmDeal.class);
@@ -96,8 +102,10 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 					cb.isFalse(openCountDeal.get(CrmDeal_.isDeleted)),
 					cb.not(openCountDeal.get(CrmDeal_.stage).get(CrmDealStage_.id).in(closedStageIds)));
 
+		Join<CrmCompany, CrmIndustry> industry = company.join(CrmCompany_.industry, JoinType.LEFT);
+
 		query.select(cb.construct(CrmCompanyMetricsResponseDto.class, company.get(CrmCompany_.id),
-				company.get(CrmCompany_.name), company.get(CrmCompany_.industry), company.get(CrmCompany_.website),
+				company.get(CrmCompany_.name), industry.get(CrmIndustry_.id), company.get(CrmCompany_.website),
 				company.get(CrmCompany_.address), company.get(CrmCompany_.contactNumber),
 				cb.construct(CrmCompanyMetrics.class, taskSubquery, overdueSubquery,
 						openValueSubquery.cast(String.class), accountValueSubquery.cast(String.class),
@@ -122,7 +130,7 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 	}
 
 	@Override
-	public Optional<CrmCompanyMetrics> getCompanyMetricsById(Long companyId) {
+	public Optional<CrmCompanyMetrics> getCompanyMetricsById(Long companyId, Instant overdueBefore) {
 		List<Long> closedStageIds = getClosedStageIds();
 
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
@@ -142,7 +150,7 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 					cb.isFalse(subOverdueTask.get(CrmTask_.isDeleted)),
 					cb.isFalse(subOverdueTask.get(CrmTask_.isCompleted)),
 					cb.isNotNull(subOverdueTask.get(CrmTask_.dueAt)),
-					cb.lessThan(subOverdueTask.get(CrmTask_.dueAt), cb.localDateTime()));
+					cb.lessThan(subOverdueTask.get(CrmTask_.dueAt), cb.literal(overdueBefore)));
 
 		Subquery<BigDecimal> openValueSubquery = query.subquery(BigDecimal.class);
 		Root<CrmDeal> openDeal = openValueSubquery.from(CrmDeal.class);

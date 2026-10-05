@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
@@ -23,8 +24,10 @@ import com.skapp.community.crmplanner.payload.response.CrmExistsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
+import com.skapp.community.crmplanner.repository.CrmIndustryDao;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
 import com.skapp.community.crmplanner.type.CrmCompanyMetrics;
+import com.skapp.community.crmplanner.model.CrmIndustry;
 import com.skapp.community.crmplanner.util.CrmValidations;
 
 import lombok.RequiredArgsConstructor;
@@ -42,9 +45,13 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	private final CrmCompanyDao crmCompanyDao;
 
+	private final CrmIndustryDao crmIndustryDao;
+
 	private final CrmMapper crmCompanyMapper;
 
 	private final MessageUtil messageUtil;
+
+	private final TimeZoneService timeZoneService;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -92,7 +99,9 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		CrmValidations.validateContactNumber(crmCompany.getContactNumber());
 		CrmValidations.validateWebsite(crmCompany.getWebsite());
 		CrmValidations.validateAddress(crmCompany.getAddress());
-		CrmValidations.validateIndustry(crmCompany.getIndustry());
+		if (crmCompany.getIndustryId() == null && crmCompany.getIndustryName() != null) {
+			CrmValidations.validateIndustryName(crmCompany.getIndustryName());
+		}
 		validateCompanyCreationLimit();
 
 		if (checkCompanyExists(crmCompany.getName())) {
@@ -100,6 +109,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		}
 
 		CrmCompany newCompany = crmCompanyMapper.crmCompanyCreateDtoToCrmCompany(crmCompany);
+		newCompany.setIndustry(resolveIndustry(crmCompany.getIndustryId(), crmCompany.getIndustryName()));
 		CrmCompany result = crmCompanyDao.save(newCompany);
 		CrmCompanyResponseDto responseDto = crmCompanyMapper.crmCompanyToCrmCompanyResponseDto(result);
 
@@ -138,10 +148,44 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		return crmCompanyDao.existsByNameIgnoreCaseAndIsDeletedFalse(name);
 	}
 
+	private CrmIndustry resolveIndustry(Long industryId, String industryName) {
+		if (industryId != null) {
+			return crmIndustryDao.findByIdAndIsDeletedFalse(industryId)
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_INDUSTRY_NOT_FOUND));
+		}
+
+		if (industryName != null) {
+			return findOrCreateIndustryByName(industryName);
+		}
+
+		return null;
+	}
+
+	private CrmIndustry findOrCreateIndustryByName(String name) {
+		log.info("findOrCreateIndustryByName: execution started");
+
+		CrmValidations.validateIndustryName(name);
+		String normalizedName = CrmValidations.normalizeIndustryName(name);
+
+		Optional<CrmIndustry> existingIndustry = crmIndustryDao.findByNameIgnoreCaseAndIsDeletedFalse(normalizedName);
+		if (existingIndustry.isPresent()) {
+			log.info("findOrCreateIndustryByName: matched an existing industry");
+			return existingIndustry.get();
+		}
+
+		CrmIndustry newIndustry = new CrmIndustry();
+		newIndustry.setName(normalizedName);
+		CrmIndustry savedIndustry = crmIndustryDao.save(newIndustry);
+
+		log.info("findOrCreateIndustryByName: execution ended");
+		return savedIndustry;
+	}
+
 	@Override
 	public ResponseEntityDto getCompanies(String searchKeyword, Pageable pageable) {
 		log.info("getCompanies: execution started");
-		Page<CrmCompanyMetricsResponseDto> page = crmCompanyDao.getCompanies(pageable, searchKeyword);
+		Page<CrmCompanyMetricsResponseDto> page = crmCompanyDao.getCompanies(pageable, searchKeyword,
+				timeZoneService.currentRequestDayStart());
 
 		PageDto response = new PageDto();
 		response.setItems(page.getContent());
@@ -191,7 +235,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 	public ResponseEntityDto getCompanyMetricsById(Long id) {
 		log.info("getCompanyMetricsById: execution started");
 
-		CrmCompanyMetrics metrics = crmCompanyDao.getCompanyMetricsById(id)
+		CrmCompanyMetrics metrics = crmCompanyDao.getCompanyMetricsById(id, timeZoneService.currentRequestDayStart())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
 
 		log.info("getCompanyMetricsById: execution ended");
@@ -271,8 +315,9 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 			existingCompany.setAddress(address);
 		}
 
-		if (crmCompany.getIndustry() != null) {
-			existingCompany.setIndustry(crmCompany.getIndustry());
+		if (crmCompany.getIndustryId().isPresent() || crmCompany.getIndustryName() != null) {
+			existingCompany
+				.setIndustry(resolveIndustry(crmCompany.getIndustryId().orElse(null), crmCompany.getIndustryName()));
 		}
 
 		CrmCompany updatedCompany = crmCompanyDao.save(existingCompany);

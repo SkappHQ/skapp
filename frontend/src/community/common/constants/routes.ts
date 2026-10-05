@@ -172,6 +172,11 @@ const ROUTES = {
     VIEW: {
       BASE: "/invoice/view",
       ID: (id: any) => `/invoice/view/${id}`
+    },
+    INTEGRATIONS: {
+      BASE: "/invoice/integrations",
+      SYNC: (provider: string, resource: string) =>
+        `/invoice/integrations/${provider}?resource=${resource}`
     }
   }
 };

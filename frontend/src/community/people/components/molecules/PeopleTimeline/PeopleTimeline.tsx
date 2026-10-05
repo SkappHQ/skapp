@@ -4,6 +4,7 @@ import { FC, useMemo } from "react";
 import RightArrowIcon from "~community/common/assets/Icons/RightArrowIcon";
 import ReadOnlyChip from "~community/common/components/atoms/Chips/BasicChip/ReadOnlyChip";
 import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
+import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { theme } from "~community/common/theme/theme";
 import {
@@ -31,6 +32,7 @@ const PeopleTimeline: FC<Props> = ({ employeeId }) => {
   const classes = styles(theme);
 
   const { isAtLeastCoreTier } = useTier();
+  const displayZone = useDisplayZone();
 
   const translateText = useTranslator("peopleModule", "editAllInfo");
   const translateTimelineText = useTranslator(
@@ -56,7 +58,7 @@ const PeopleTimeline: FC<Props> = ({ employeeId }) => {
   }, [isAtLeastCoreTier, timelineData]);
 
   const getGroupTitle = (date: string): string => {
-    const monthAndYear = formatISODateToMonthYear(date);
+    const monthAndYear = formatISODateToMonthYear(date, displayZone);
     return monthAndYear;
   };
 

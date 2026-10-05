@@ -1,17 +1,23 @@
 import React from "react";
 
-import { isDateGraterThanToday } from "~community/common/utils/dateTimeUtils";
+import { currentDateIn } from "~community/common/utils/dateTimeUtils";
 import {
   Holiday,
   HolidayDataType,
   holidayModalTypes
 } from "~community/people/types/HolidayTypes";
 
+export const isFutureHoliday = (
+  date: string,
+  organizationZone: string | undefined
+): boolean => date > currentDateIn(organizationZone);
+
 export const isDeleteButtonDisabled = (
-  holidayData: Holiday[] | undefined
+  holidayData: Holiday[] | undefined,
+  organizationZone: string | undefined
 ): boolean => {
   if (holidayData && holidayData?.length > 0) {
-    const currentDate = new Date().toISOString().slice(0, 10);
+    const currentDate = currentDateIn(organizationZone);
     const filteredHolidays = holidayData?.filter(
       (holiday: HolidayDataType) => (holiday?.date || "") < currentDate
     );
@@ -23,11 +29,12 @@ export const isDeleteButtonDisabled = (
 };
 
 export const getFutureHolidays = (
-  holidayData: Holiday[] | undefined
+  holidayData: Holiday[] | undefined,
+  organizationZone: string | undefined
 ): Holiday[] => {
   if (holidayData && holidayData?.length > 0) {
     const filteredHolidays = holidayData?.filter((holiday: HolidayDataType) => {
-      return isDateGraterThanToday(holiday?.date || "");
+      return isFutureHoliday(holiday?.date || "", organizationZone);
     });
 
     return filteredHolidays;
@@ -38,23 +45,25 @@ export const getFutureHolidays = (
 
 export const getSelectAllCheckboxVisibility = (
   isPeopleAdmin: boolean | undefined,
-  holidayData: Holiday[] | undefined
+  holidayData: Holiday[] | undefined,
+  organizationZone: string | undefined
 ): boolean => {
   if (!isPeopleAdmin || !holidayData) {
     return false;
   }
 
-  const futureHolidays = getFutureHolidays(holidayData);
+  const futureHolidays = getFutureHolidays(holidayData, organizationZone);
 
   return futureHolidays?.length !== 0;
 };
 
 export const getSelectAllCheckboxCheckedStatus = (
   holidayData: Holiday[] | undefined,
-  selectedHolidays: number[]
+  selectedHolidays: number[],
+  organizationZone: string | undefined
 ): boolean => {
   if (selectedHolidays.length > 0) {
-    const futureHolidays = getFutureHolidays(holidayData);
+    const futureHolidays = getFutureHolidays(holidayData, organizationZone);
 
     return futureHolidays.every((holiday) =>
       selectedHolidays.includes(holiday.id)
@@ -66,9 +75,10 @@ export const getSelectAllCheckboxCheckedStatus = (
 export const handleSelectAllCheckboxClick = (
   holidayData: Holiday[] | undefined,
   selectedHolidays: number[],
-  setSelectedHolidays: React.Dispatch<React.SetStateAction<number[]>>
+  setSelectedHolidays: React.Dispatch<React.SetStateAction<number[]>>,
+  organizationZone: string | undefined
 ) => {
-  const futureHolidays = getFutureHolidays(holidayData);
+  const futureHolidays = getFutureHolidays(holidayData, organizationZone);
 
   if (selectedHolidays.length === futureHolidays?.length) {
     setSelectedHolidays([]);

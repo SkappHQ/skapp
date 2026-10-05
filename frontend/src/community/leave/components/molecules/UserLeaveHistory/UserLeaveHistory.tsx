@@ -14,12 +14,14 @@ import FilterIconButton from "~community/common/components/atoms/FilterIconButto
 import DateRangePicker from "~community/common/components/molecules/DateRangePicker/DateRangePicker";
 import Table from "~community/common/components/molecules/Table/Table";
 import { TableNames } from "~community/common/enums/Table";
+import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { MenuTypes } from "~community/common/types/MoleculeTypes";
 import {
   convertDateToFormat,
-  formatDateWithOrdinalIndicator,
-  getDateForPeriod
+  formatDateTimeWithOrdinalIndicator,
+  getDateForPeriod,
+  instantInZone
 } from "~community/common/utils/dateTimeUtils";
 import { getTabIndex } from "~community/common/utils/keyboardUtils";
 import { useGetEmployeeLeaveHistory } from "~community/leave/api/LeaveAnalyticsApi";
@@ -41,6 +43,7 @@ import {
   requestTypeSelector,
   requestedLeaveTypesPreProcessor
 } from "~community/leave/utils/LeaveRequestFilterActions";
+import { useGetSupervisedByMe } from "~community/people/api/PeopleApi";
 import useTier from "~enterprise/common/hooks/useTier";
 import leaveHistoryMockData from "~enterprise/leave/data/leaveHistoryMockData.json";
 
@@ -63,6 +66,7 @@ const UserLeaveHistory: FC<Props> = ({
 
   const { isFreeTier, isAtLeastCoreTier } = useTier();
 
+  const displayZone = useDisplayZone();
   const translateText = useTranslator(
     "peopleModule",
     "individualLeaveAnalytics"
@@ -111,6 +115,15 @@ const UserLeaveHistory: FC<Props> = ({
     isSuccess: getLeaveByIdSuccess,
     data: getLeaveByIdData
   } = useGetLeaveRequestData(newLeaveId as number);
+
+  const { data: supervisedData, isLoading: isSupervisedDataLoading } =
+    useGetSupervisedByMe(employeeId);
+
+  const isSupervisorOfEmployee = Boolean(
+    supervisedData?.isPrimaryManager ||
+    supervisedData?.isSecondaryManager ||
+    supervisedData?.isTeamSupervisor
+  );
 
   const handleRowClick = (leaveRequest: { id: number }) => {
     setIsManagerModal(false);
@@ -197,12 +210,31 @@ const UserLeaveHistory: FC<Props> = ({
     return employeeLeaveHistoryData?.items?.map(
       (leaveData: LeaveHistoryRawType) => ({
         id: leaveData.leaveRequestId,
-        ariaLabel: `${translateText(["tableHeaders", "leavePeriod"])} ${formatDateRange(
-          new Date(leaveData.startDate),
-          new Date(leaveData.endDate),
-          false,
-          leaveData.durationDays
-        )} ${translateText(["tableHeaders", "dateRequested"])} ${formatDateWithOrdinalIndicator(new Date(leaveData.createdDate))}`,
+        ariaLabel: {
+          row: translateAria(["leaveHistoryRow"], {
+            leavePeriod: formatDateRange(
+              new Date(leaveData.startDate),
+              new Date(leaveData.endDate),
+              false,
+              leaveData.durationDays
+            ),
+            days: leaveData.durationDays,
+            type: leaveData.leaveType.name,
+            dateRequested: formatDateTimeWithOrdinalIndicator(
+              instantInZone(leaveData.createdDate, displayZone)
+            ),
+            status: translateAria([
+              "leaveStatus",
+              leaveData.status.toLowerCase()
+            ]),
+            reason: leaveData.requestDesc
+              ? leaveData.requestDesc
+              : translateAria(["noReason"]),
+            disabledSuffix: isSupervisorOfEmployee
+              ? ""
+              : `, ${translateAria(["disabled"])}`
+          })
+        },
         leavePeriod: (
           <Box
             sx={{
@@ -295,6 +327,7 @@ const UserLeaveHistory: FC<Props> = ({
                 icon={leaveData.leaveType.emojiCode}
                 label={leaveData.leaveType.name}
                 isResponsive
+                clickable={false}
                 chipStyles={{
                   color: "common.black",
                   height: "2.25rem",
@@ -332,7 +365,9 @@ const UserLeaveHistory: FC<Props> = ({
                 textAlign: "center"
               }}
             >
-              {formatDateWithOrdinalIndicator(new Date(leaveData.createdDate))}
+              {formatDateTimeWithOrdinalIndicator(
+                instantInZone(leaveData.createdDate, displayZone)
+              )}
             </Typography>
           </Box>
         ),
@@ -349,6 +384,7 @@ const UserLeaveHistory: FC<Props> = ({
                 getLeaveRequestStatus(leaveData.status)
               )}
               isResponsive={true}
+              clickable={false}
               chipStyles={{
                 alignSelf: "flex-end",
                 [`@media (max-width: 81.25rem)`]: {
@@ -504,6 +540,7 @@ const UserLeaveHistory: FC<Props> = ({
         tableName={TableNames.USER_LEAVE_HISTORY}
         headers={tableHeaders}
         rows={transformToTableRows()}
+        isRowDisabled={() => !isSupervisorOfEmployee}
         tableBody={{
           emptyState: {
             noData: {
@@ -552,7 +589,7 @@ const UserLeaveHistory: FC<Props> = ({
             rightButton: renderFilterBy()
           }
         }}
-        isLoading={isLoading}
+        isLoading={isLoading || isSupervisedDataLoading}
         tabIndex={{
           wrapper: getTabIndex(isFreeTier),
           container: getTabIndex(isFreeTier),

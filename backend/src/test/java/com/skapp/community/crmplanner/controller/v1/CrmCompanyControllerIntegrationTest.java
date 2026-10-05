@@ -3,6 +3,7 @@ package com.skapp.community.crmplanner.controller.v1;
 import com.jayway.jsonpath.JsonPath;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.model.CrmIndustry;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
@@ -23,6 +24,7 @@ import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
+import com.skapp.community.crmplanner.repository.CrmIndustryDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
@@ -35,11 +37,12 @@ import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyIdsRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
-import com.skapp.community.crmplanner.type.CrmIndustry;
+import com.skapp.community.crmplanner.type.CrmIndustryName;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyEditDto;
 import com.skapp.support.SecurityTestUtils;
 
 import com.skapp.community.crmplanner.model.CrmCompany;
+import com.skapp.community.crmplanner.constant.DefaultCrmIndustryTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -62,7 +65,8 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static com.skapp.support.TestConstants.MESSAGE_PATH;
@@ -114,6 +118,8 @@ class CrmCompanyControllerIntegrationTest {
 	private final CrmDealDao crmDealDao;
 
 	private final CrmDealStageDao crmDealStageDao;
+
+	private final CrmIndustryDao crmIndustryDao;
 
 	private final CrmContactDao crmContactDao;
 
@@ -178,7 +184,6 @@ class CrmCompanyControllerIntegrationTest {
 	private CrmCompanyCreateDto createValidPayload() {
 		CrmCompanyCreateDto dto = new CrmCompanyCreateDto();
 		dto.setName("Acme Corp");
-		dto.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
 		dto.setWebsite("https://acme.com");
 		dto.setAddress("123 Main St");
 		dto.setContactNumber("94771234567");
@@ -188,7 +193,6 @@ class CrmCompanyControllerIntegrationTest {
 	private CrmCompanyEditDto createValidEditPayload() {
 		CrmCompanyEditDto dto = new CrmCompanyEditDto();
 		dto.setName("Acme Corp");
-		dto.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
 		dto.setWebsite(JsonNullable.of("https://acme.com"));
 		dto.setAddress(JsonNullable.of("123 Main St"));
 		dto.setContactNumber(JsonNullable.of("94771234567"));
@@ -204,6 +208,172 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Acme Corp"));
+	}
+
+	@Test
+	@DisplayName("Create company with an existing industry id - Persists that industry id")
+	void createCompany_ExistingIndustryId_PersistsIndustryId() throws Exception {
+		Long expectedIndustryId = seedIndustries(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA);
+
+		CrmCompanyCreateDto createDto = createValidPayload();
+		createDto.setIndustryId(expectedIndustryId);
+
+		Long companyId = extractCompanyId(performPostRequest(createDto).andExpect(status().isCreated())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industryId']").value(expectedIndustryId)));
+
+		CrmCompany savedCompany = crmCompanyDao.findById(companyId).orElseThrow();
+		assertThat(savedCompany.getIndustry().getId()).isEqualTo(expectedIndustryId);
+	}
+
+	@Test
+	@DisplayName("Create company with a blank industry name - Returns Bad Request")
+	void createCompany_BlankIndustryName_ReturnsBadRequest() throws Exception {
+		CrmCompanyCreateDto createDto = createValidPayload();
+		createDto.setIndustryName("   ");
+
+		performPostRequest(createDto).andExpect(status().isBadRequest())
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_INDUSTRY_NAME_REQUIRED)));
+	}
+
+	@Test
+	@DisplayName("Create company with an unknown industry id - Returns Bad Request")
+	void createCompany_UnknownIndustryId_ReturnsBadRequest() throws Exception {
+		CrmCompanyCreateDto createDto = createValidPayload();
+		createDto.setIndustryId(999999L);
+
+		performPostRequest(createDto).andExpect(status().isBadRequest())
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_INDUSTRY_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Create company with a deleted industry id - Returns Bad Request")
+	void createCompany_DeletedIndustryId_ReturnsBadRequest() throws Exception {
+		CrmIndustry deletedIndustry = savedIndustry("Deleted Industry");
+		deletedIndustry.setIsDeleted(true);
+		crmIndustryDao.save(deletedIndustry);
+
+		CrmCompanyCreateDto createDto = createValidPayload();
+		createDto.setIndustryId(deletedIndustry.getId());
+
+		performPostRequest(createDto).andExpect(status().isBadRequest())
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_INDUSTRY_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Create company with a new industry name - Creates and links the industry")
+	void createCompany_NewIndustryName_CreatesAndLinksIndustry() throws Exception {
+		CrmCompanyCreateDto createDto = createValidPayload();
+		createDto.setIndustryName("  Deep   Sea  Tourism ");
+
+		ResultActions result = performPostRequest(createDto).andExpect(status().isCreated());
+		Long companyId = extractCompanyId(result);
+
+		CrmCompany savedCompany = crmCompanyDao.findById(companyId).orElseThrow();
+		assertThat(savedCompany.getIndustry()).isNotNull();
+		result.andExpect(jsonPath(RESULTS_0_PATH + "['industryId']").value(savedCompany.getIndustry().getId()));
+
+		CrmIndustry createdIndustry = crmIndustryDao.findById(savedCompany.getIndustry().getId()).orElseThrow();
+		assertThat(createdIndustry.getName()).isEqualTo("Deep Sea Tourism");
+	}
+
+	@Test
+	@DisplayName("Create company with an existing industry name - Reuses the existing industry")
+	void createCompany_ExistingIndustryName_ReusesIndustry() throws Exception {
+		Long expectedIndustryId = seedIndustries(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA);
+
+		CrmCompanyCreateDto createDto = createValidPayload();
+		createDto.setIndustryName(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA.getDisplayName().toLowerCase());
+
+		Long companyId = extractCompanyId(performPostRequest(createDto).andExpect(status().isCreated()));
+
+		CrmCompany savedCompany = crmCompanyDao.findById(companyId).orElseThrow();
+		assertThat(savedCompany.getIndustry().getId()).isEqualTo(expectedIndustryId);
+	}
+
+	@Test
+	@DisplayName("Edit company with an existing industry id - Persists that industry id")
+	void editCompany_ExistingIndustryId_PersistsIndustryId() throws Exception {
+		Long expectedIndustryId = seedIndustries(CrmIndustryName.FINANCIAL_SERVICES);
+
+		Long companyId = extractCompanyId(performPostRequest(createValidPayload()).andExpect(status().isCreated()));
+
+		CrmCompanyEditDto editDto = createValidEditPayload();
+		editDto.setIndustryId(JsonNullable.of(expectedIndustryId));
+		performPatchRequest(companyId, editDto).andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industryId']").value(expectedIndustryId));
+
+		CrmCompany updatedCompany = crmCompanyDao.findById(companyId).orElseThrow();
+		assertThat(updatedCompany.getIndustry().getId()).isEqualTo(expectedIndustryId);
+	}
+
+	@Test
+	@DisplayName("Edit company with a blank industry name - Returns Bad Request")
+	void editCompany_BlankIndustryName_ReturnsBadRequest() throws Exception {
+		Long companyId = extractCompanyId(performPostRequest(createValidPayload()).andExpect(status().isCreated()));
+
+		CrmCompanyEditDto editDto = createValidEditPayload();
+		editDto.setIndustryName("   ");
+
+		performPatchRequest(companyId, editDto).andExpect(status().isBadRequest())
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_INDUSTRY_NAME_REQUIRED)));
+	}
+
+	@Test
+	@DisplayName("Edit company with an explicit null industry id - Clears the industry")
+	void editCompany_NullIndustryId_ClearsIndustry() throws Exception {
+		Long seededIndustryId = seedIndustries(CrmIndustryName.FINANCIAL_SERVICES);
+
+		CrmCompanyCreateDto createDto = createValidPayload();
+		createDto.setIndustryId(seededIndustryId);
+		Long companyId = extractCompanyId(performPostRequest(createDto).andExpect(status().isCreated()));
+
+		CrmCompanyEditDto editDto = createValidEditPayload();
+		editDto.setIndustryId(JsonNullable.of(null));
+		performPatchRequest(companyId, editDto).andExpect(status().isOk());
+
+		CrmCompany updatedCompany = crmCompanyDao.findById(companyId).orElseThrow();
+		assertThat(updatedCompany.getIndustry()).isNull();
+	}
+
+	@Test
+	@DisplayName("Edit company with a new industry name - Creates and links the industry")
+	void editCompany_NewIndustryName_CreatesAndLinksIndustry() throws Exception {
+		Long companyId = extractCompanyId(performPostRequest(createValidPayload()).andExpect(status().isCreated()));
+
+		CrmCompanyEditDto editDto = createValidEditPayload();
+		editDto.setIndustryName("Marine Logistics");
+		performPatchRequest(companyId, editDto).andExpect(status().isOk());
+
+		CrmCompany updatedCompany = crmCompanyDao.findById(companyId).orElseThrow();
+		assertThat(updatedCompany.getIndustry()).isNotNull();
+
+		CrmIndustry createdIndustry = crmIndustryDao.findById(updatedCompany.getIndustry().getId()).orElseThrow();
+		assertThat(createdIndustry.getName()).isEqualTo("Marine Logistics");
+	}
+
+	private Long extractCompanyId(ResultActions result) throws Exception {
+		return objectMapper.readTree(result.andReturn().getResponse().getContentAsString())
+			.path("results")
+			.get(0)
+			.path("id")
+			.asLong();
+	}
+
+	private Long seedIndustries(CrmIndustryName industry) {
+		crmIndustryDao.saveAll(DefaultCrmIndustryTemplate.getDefaultIndustries());
+		return crmIndustryDao.findByNameIgnoreCaseAndIsDeletedFalse(industry.getDisplayName())
+			.orElseThrow(() -> new AssertionError("crm_industry has no row named " + industry.getDisplayName()))
+			.getId();
+	}
+
+	private CrmIndustry savedIndustry(String name) {
+		CrmIndustry industry = new CrmIndustry();
+		industry.setName(name);
+		return crmIndustryDao.save(industry);
 	}
 
 	@Test
@@ -354,9 +524,8 @@ class CrmCompanyControllerIntegrationTest {
 		assertThat(crmDealDao.findDeals(new CrmDealFilterDto(), null, PageRequest.of(0, 100)).getContent())
 			.extracting(CrmDealResponseDto::getId)
 			.contains(dealId);
-		assertThat(crmContactDao.getContacts(new CrmContactMetricRequestDto(), PageRequest.of(0, 100)).getContent())
-			.extracting(CrmContactListItemDto::getId)
-			.contains(contactId);
+		assertThat(crmContactDao.getContacts(new CrmContactMetricRequestDto(), PageRequest.of(0, 100), Instant.now())
+			.getContent()).extracting(CrmContactListItemDto::getId).contains(contactId);
 		assertThat(crmTaskDao.findTasks(1L, new CrmTaskFilterDto(), Pageable.unpaged()).getContent())
 			.extracting(CrmTaskResponseDto::getId)
 			.contains(taskId);
@@ -406,10 +575,10 @@ class CrmCompanyControllerIntegrationTest {
 			.extracting(CrmTaskResponseDto::getId)
 			.contains(taskId);
 
-		assertThat(crmTaskDao.findTaskMetricsByContactId(contactId).getOpenTasksCount())
+		assertThat(crmTaskDao.findTaskMetricsByContactId(contactId, Instant.now()).getOpenTasksCount())
 			.as("contact task metrics still count tasks of a deleted company")
 			.isEqualTo(1L);
-		assertThat(crmTaskDao.findOpenTaskSummaryByContactIds(java.util.List.of(contactId)))
+		assertThat(crmTaskDao.findOpenTaskSummaryByContactIds(java.util.List.of(contactId), Instant.now()))
 			.as("open task summary still counts tasks of a deleted company")
 			.extracting(s -> s.getContactId())
 			.contains(contactId);
@@ -446,7 +615,6 @@ class CrmCompanyControllerIntegrationTest {
 
 		CrmCompanyEditDto editDto = new CrmCompanyEditDto();
 		editDto.setName("Acme Corp Updated");
-		editDto.setIndustry(CrmIndustry.FINANCIAL_SERVICES);
 		editDto.setWebsite(JsonNullable.of("https://acme-updated.com"));
 		editDto.setAddress(JsonNullable.of("456 New St"));
 		editDto.setContactNumber(JsonNullable.of("94779876543"));
@@ -455,14 +623,12 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Acme Corp Updated"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['industry']").value(CrmIndustry.FINANCIAL_SERVICES.name()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['website']").value("https://acme-updated.com"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['address']").value("456 New St"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").value("94779876543"));
 
 		CrmCompany persisted = crmCompanyDao.findByIdAndIsDeletedFalse(companyId).orElseThrow();
 		assertThat(persisted.getName()).isEqualTo("Acme Corp Updated");
-		assertThat(persisted.getIndustry()).isEqualTo(CrmIndustry.FINANCIAL_SERVICES);
 		assertThat(persisted.getWebsite()).isEqualTo("https://acme-updated.com");
 		assertThat(persisted.getAddress()).isEqualTo("456 New St");
 		assertThat(persisted.getContactNumber()).isEqualTo("94779876543");
@@ -512,7 +678,6 @@ class CrmCompanyControllerIntegrationTest {
 
 		CrmCompanyCreateDto secondCompanyDto = new CrmCompanyCreateDto();
 		secondCompanyDto.setName("Beta Corp");
-		secondCompanyDto.setIndustry(CrmIndustry.HOSPITALS_AND_HEALTH_CARE);
 		ResultActions secondResult = performPostRequest(secondCompanyDto).andExpect(status().isCreated());
 		Long secondCompanyId = objectMapper.readTree(secondResult.andReturn().getResponse().getContentAsString())
 			.path("results")
@@ -522,7 +687,6 @@ class CrmCompanyControllerIntegrationTest {
 
 		CrmCompanyEditDto editDto = new CrmCompanyEditDto();
 		editDto.setName("ACME CORP");
-		editDto.setIndustry(CrmIndustry.HOSPITALS_AND_HEALTH_CARE);
 
 		performPatchRequest(secondCompanyId, editDto).andDo(print())
 			.andExpect(status().isBadRequest())
@@ -635,7 +799,8 @@ class CrmCompanyControllerIntegrationTest {
 		createMetricsCompany("Rankacme Corp");
 		createMetricsCompany("Rankacme");
 
-		List<CrmCompanyMetricsResponseDto> metrics = crmCompanyDao.getCompanies(PageRequest.of(0, 100), "rankacme")
+		List<CrmCompanyMetricsResponseDto> metrics = crmCompanyDao
+			.getCompanies(PageRequest.of(0, 100), "rankacme", Instant.now())
 			.getContent();
 
 		assertThat(metrics).extracting(CrmCompanyMetricsResponseDto::getName)
@@ -667,8 +832,7 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['id']").value(company.getId()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("MetricsCoUnique"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['industry']")
-				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['industryId']").value(company.getIndustry().getId()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['website']").value("https://metrics-co.com"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['address']").value("123 Metrics St"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['contactNumber']").value("94771234567"))
@@ -688,8 +852,8 @@ class CrmCompanyControllerIntegrationTest {
 	void getCompanies_WithTasks_ReturnsOpenAndOverdueCounts() throws Exception {
 		CrmCompany company = createMetricsCompany("TaskMetricsCoUnique");
 
-		createCompanyTask(company.getId(), LocalDateTime.now().plusDays(5));
-		createCompanyTask(company.getId(), LocalDateTime.now().minusDays(1));
+		createCompanyTask(company.getId(), Instant.now().plus(5, ChronoUnit.DAYS));
+		createCompanyTask(company.getId(), Instant.now().minus(1, ChronoUnit.DAYS));
 
 		performGetCompaniesRequest("TaskMetricsCoUnique").andDo(print())
 			.andExpect(status().isOk())
@@ -730,7 +894,8 @@ class CrmCompanyControllerIntegrationTest {
 	}
 
 	private CrmCompanyMetricsResponseDto fetchMetrics(Long companyId, String searchKeyword) {
-		List<CrmCompanyMetricsResponseDto> metrics = crmCompanyDao.getCompanies(PageRequest.of(0, 100), searchKeyword)
+		List<CrmCompanyMetricsResponseDto> metrics = crmCompanyDao
+			.getCompanies(PageRequest.of(0, 100), searchKeyword, Instant.now())
 			.getContent();
 
 		return metrics.stream()
@@ -742,7 +907,7 @@ class CrmCompanyControllerIntegrationTest {
 	private CrmCompany createMetricsCompany(String name) {
 		CrmCompany company = new CrmCompany();
 		company.setName(name);
-		company.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		company.setIndustry(savedIndustry(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA.getDisplayName()));
 		return crmCompanyDao.save(company);
 	}
 
@@ -781,7 +946,7 @@ class CrmCompanyControllerIntegrationTest {
 
 	private int orderIndexCounter = 0;
 
-	private void createCompanyTask(Long companyId, LocalDateTime dueAt) {
+	private void createCompanyTask(Long companyId, Instant dueAt) {
 		CrmTaskType taskType = new CrmTaskType();
 		taskType.setName("Metrics Task Type");
 		taskType.setOrderIndex(1);
@@ -808,8 +973,8 @@ class CrmCompanyControllerIntegrationTest {
 		CrmDealStage wonStage = createStage("Won Stage", CrmDealStageType.WON, 2);
 		createDeal("Open Deal", company, contact, openStage, "200", false);
 		createDeal("Won Deal", company, contact, wonStage, "400", false);
-		createCompanyTask(company.getId(), LocalDateTime.now().plusDays(5));
-		createCompanyTask(company.getId(), LocalDateTime.now().minusDays(1));
+		createCompanyTask(company.getId(), Instant.now().plus(5, ChronoUnit.DAYS));
+		createCompanyTask(company.getId(), Instant.now().minus(1, ChronoUnit.DAYS));
 
 		// Second company with its own deals and tasks - metrics must stay correlated to
 		// the
@@ -818,8 +983,8 @@ class CrmCompanyControllerIntegrationTest {
 		CrmContact otherContact = createMetricsContact(otherCompany, "metrics.other@example.com");
 		createDeal("Other Open Deal", otherCompany, otherContact, openStage, "999", false);
 		createDeal("Other Won Deal", otherCompany, otherContact, wonStage, "888", false);
-		createCompanyTask(otherCompany.getId(), LocalDateTime.now().plusDays(3));
-		createCompanyTask(otherCompany.getId(), LocalDateTime.now().minusDays(2));
+		createCompanyTask(otherCompany.getId(), Instant.now().plus(3, ChronoUnit.DAYS));
+		createCompanyTask(otherCompany.getId(), Instant.now().minus(2, ChronoUnit.DAYS));
 
 		String content = performRequest(
 				get(BASE_PATH + "/" + company.getId() + "/metrics").accept(MediaType.APPLICATION_JSON))
@@ -881,7 +1046,7 @@ class CrmCompanyControllerIntegrationTest {
 	void getCompanyById_HappyPath_ReturnsCompany() throws Exception {
 		CrmCompany company = new CrmCompany();
 		company.setName("DetailCoUnique");
-		company.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		company.setIndustry(savedIndustry(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA.getDisplayName()));
 		company.setWebsite("https://detail.com");
 		company.setAddress("1 Detail St");
 		company.setContactNumber("94770000001");
@@ -892,8 +1057,7 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(company.getId()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("DetailCoUnique"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['industry']")
-				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industryId']").value(company.getIndustry().getId()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['website']").value("https://detail.com"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['address']").value("1 Detail St"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").value("94770000001"));
@@ -972,7 +1136,7 @@ class CrmCompanyControllerIntegrationTest {
 	private CrmCompany savedBatchCompany(String name) {
 		CrmCompany company = new CrmCompany();
 		company.setName(name);
-		company.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		company.setIndustry(savedIndustry(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA.getDisplayName()));
 		company.setWebsite("https://batch.com");
 		company.setAddress("1 Batch St");
 		company.setContactNumber("94770000010");
@@ -990,8 +1154,7 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_PATH + ".length()").value(1))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(company.getId()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("BatchCoUnique"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['industry']")
-				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industryId']").value(company.getIndustry().getId()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['website']").value("https://batch.com"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['address']").value("1 Batch St"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").value("94770000010"));

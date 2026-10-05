@@ -18,8 +18,8 @@ import com.skapp.community.peopleplanner.payload.request.ProbationPeriodDto;
 import lombok.experimental.UtilityClass;
 
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
-import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 import static com.skapp.community.common.util.Validation.ADDRESS_REGEX;
@@ -54,13 +54,8 @@ public class Validations {
 		return identificationNo.matches(VALID_IDENTIFICATION_NUMBER_REGEXP);
 	}
 
-	public static boolean validateTimeZone(String timeZone) {
-		List<String> validIDs = List.of(TimeZone.getAvailableIDs());
-		return validIDs.contains(timeZone);
-	}
-
 	public static void validateVisaDates(List<EmploymentVisaDto> employeeVisas) {
-		LocalDate currentDate = DateTimeUtils.getCurrentUtcDate();
+		LocalDate currentDate = DateTimeUtils.currentDateAt(ZoneOffset.UTC);
 		for (EmploymentVisaDto visa : employeeVisas) {
 			if (visa.getIssuedDate() != null && visa.getIssuedDate().isAfter(currentDate)) {
 				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_VALIDATION_VISA_ISSUED_DATE);
@@ -134,7 +129,7 @@ public class Validations {
 		}
 
 		if (employeeDetailsDto.getTimeZone() != null && !employeeDetailsDto.getTimeZone().isEmpty()
-				&& !validateTimeZone(employeeDetailsDto.getTimeZone())) {
+				&& !DateTimeUtils.isValidTimeZone(employeeDetailsDto.getTimeZone())) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_INVALID_TIMEZONE);
 		}
 

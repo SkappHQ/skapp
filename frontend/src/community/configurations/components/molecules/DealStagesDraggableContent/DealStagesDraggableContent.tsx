@@ -17,8 +17,8 @@ import {
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import DraggableDealStageCard from "~community/configurations/components/molecules/DraggableDealStageCard/DraggableDealStageCard";
 import { toStageIds } from "~community/configurations/utils/stageUtil";
-import { CrmDealStageEnum } from "~community/crm/v2/enums/common";
-import { CrmStageEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import { CrmDealStageEnum } from "~community/crm/enums/common";
+import { CrmStageEntity } from "~community/crm/types/CrmCommonTypes";
 
 interface DealStagesDraggableContentProps {
   stagesData: CrmStageEntity[];

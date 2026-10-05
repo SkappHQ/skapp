@@ -15,7 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Getter
@@ -39,7 +39,7 @@ public class CrmContact extends Auditable<String> {
 	private String contactNumber;
 
 	@Column(name = "last_contact_at")
-	private LocalDateTime lastContactAt;
+	private Instant lastContactAt;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "company_id")

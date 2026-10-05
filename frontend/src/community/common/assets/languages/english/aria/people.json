@@ -97,7 +97,10 @@
       "denied": "Denied",
       "cancelled": "Cancelled",
       "revoked": "Revoked"
-    }
+    },
+    "disabled": "Disabled",
+    "noReason": "No reason provided",
+    "leaveHistoryRow": "Leave Period {{leavePeriod}}, Days {{days}}, Type {{type}}, Date Requested {{dateRequested}}, Status {{status}}, Reason {{reason}}{{disabledSuffix}}"
   },
   "peopleFormTable": {
     "actionColumn": {

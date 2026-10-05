@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.util;
 
+import com.skapp.community.common.constant.ValidationConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
@@ -11,7 +12,6 @@ import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.type.CrmDealStageColors;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
-import com.skapp.community.crmplanner.type.CrmIndustry;
 import com.skapp.community.peopleplanner.util.Validations;
 import com.skapp.community.crmplanner.payload.request.CrmDealListViewConfigDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealListViewFieldDto;
@@ -21,7 +21,7 @@ import lombok.experimental.UtilityClass;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -243,7 +243,7 @@ public class CrmValidations {
 		}
 	}
 
-	public static void validateTaskDueAt(LocalDateTime dueAt) {
+	public static void validateTaskDueAt(Instant dueAt) {
 		if (dueAt == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_DUE_DATE_REQUIRED);
 		}
@@ -259,9 +259,20 @@ public class CrmValidations {
 		}
 	}
 
-	public static void validateIndustry(CrmIndustry industry) {
-		if (industry == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_INDUSTRY_INVALID);
+	public static String normalizeIndustryName(String name) {
+		if (name == null) {
+			return null;
+		}
+		return ValidationConstant.MULTIPLE_WHITESPACE_PATTERN.matcher(name.trim()).replaceAll(" ");
+	}
+
+	public static void validateIndustryName(String name) {
+		if (name == null || name.isBlank()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_INDUSTRY_NAME_REQUIRED);
+		}
+
+		if (normalizeIndustryName(name).length() > CrmConstants.INDUSTRY_NAME_MAX_LENGTH) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_INDUSTRY_NAME_TOO_LONG);
 		}
 	}
 

@@ -1,14 +1,17 @@
-import { DateTime } from "luxon";
+import { DateTime, IANAZone } from "luxon";
 import type { DateRange } from "react-day-picker";
 
 import {
   DATE_FORMAT,
+  HALF_YEAR_IN_MONTHS,
   LONG_DATE_TIME_FORMAT,
+  MEDIUM_DATE_TIME_FORMAT,
   monthAbbreviations
 } from "~community/common/constants/timeConstants";
 import {
-  DropdownListType,
   OptionType,
+  TimeOfDayType,
+  TimeZoneOption,
   TranslatorFunctionType
 } from "~community/common/types/CommonTypes";
 
@@ -180,16 +183,11 @@ export const getFormattedMonth = (
   date: string,
   format: "short" | "long" = "short"
 ): string => {
-  const dateFormate = new Date(date);
-  const dateIOS = DateTime.fromISO(dateFormate.toISOString());
-  return dateIOS.toLocaleString({ month: format });
+  return DateTime.fromISO(date).toLocaleString({ month: format });
 };
 
 export const getFormattedYear = (date: string): string => {
-  const dateFormate = new Date(date);
-  const dateIOS = DateTime.fromISO(dateFormate.toISOString());
-  const year = dateIOS.toLocaleString({ year: "numeric" });
-  return year;
+  return DateTime.fromISO(date).toLocaleString({ year: "numeric" });
 };
 
 export const convertDateToUTC = (date: string) => {
@@ -202,6 +200,93 @@ export const convertUTCStringToLocalDateTime = (
   isoString: string
 ): DateTime => {
   return DateTime.fromISO(isoString, { zone: "UTC" }).setZone("local");
+};
+
+export const isValidZone = (zone: string | null | undefined): zone is string =>
+  !!zone && IANAZone.isValidZone(zone);
+
+export const parseInstant = (isoInstant: string): DateTime =>
+  DateTime.fromISO(isoInstant, { zone: "utc" });
+
+export const instantInZone = (
+  isoInstant: string,
+  zone: string | undefined
+): DateTime => {
+  const parsed = parseInstant(isoInstant);
+  const zoned = zone ? parsed.setZone(zone) : parsed.toLocal();
+  return zoned.isValid ? zoned : parsed.toLocal();
+};
+
+export const nowInZone = (zone: string | undefined): DateTime => {
+  const zoned = zone ? DateTime.now().setZone(zone) : DateTime.local();
+  return zoned.isValid ? zoned : DateTime.local();
+};
+
+export const currentDateIn = (zone: string | undefined): string =>
+  nowInZone(zone).toFormat(DATE_FORMAT);
+
+export const pickedDayToInstant = (
+  pickedDay: Date,
+  zone: string | undefined
+): string | null =>
+  DateTime.fromObject(
+    {
+      year: pickedDay.getFullYear(),
+      month: pickedDay.getMonth() + 1,
+      day: pickedDay.getDate()
+    },
+    { zone: isValidZone(zone) ? zone : "local" }
+  )
+    .toUTC()
+    .toISO();
+
+export const instantToPickedDay = (
+  isoInstant: string,
+  zone: string | undefined
+): Date => {
+  const zoned = instantInZone(isoInstant, zone);
+  return new Date(zoned.year, zoned.month - 1, zoned.day);
+};
+
+export const calendarDayStartMillis = (
+  date: string,
+  zone: string | undefined
+): number =>
+  DateTime.fromISO(date, { zone: isValidZone(zone) ? zone : "local" })
+    .startOf("day")
+    .toMillis();
+
+export const readsSameWallClock = (
+  zone: string,
+  otherZone: string
+): boolean => {
+  const yearStart = DateTime.now().startOf("year");
+  return [yearStart, yearStart.plus({ months: HALF_YEAR_IN_MONTHS })].every(
+    (instant) =>
+      instant.setZone(zone).offset === instant.setZone(otherZone).offset
+  );
+};
+
+export const millisUntilTodayAt = (
+  time: TimeOfDayType,
+  zone: string | undefined
+): number | undefined => {
+  const now = nowInZone(zone);
+  const target = now.set({ ...time, millisecond: 0 });
+  const remaining = target.diff(now).toMillis();
+
+  return remaining > 0 ? remaining : undefined;
+};
+
+export const formatInstant = (
+  isoInstant: string | null | undefined,
+  zone: string | undefined,
+  format: string = MEDIUM_DATE_TIME_FORMAT
+): string => {
+  if (!isoInstant) return "";
+
+  const zoned = instantInZone(isoInstant, zone);
+  return zoned.isValid ? zoned.toFormat(format) : "";
 };
 
 export const parseTimestampToDate = (timestamp: string): Date => {
@@ -371,10 +456,6 @@ export const getMonthStartAndEndDates = (month: number) => {
     start: startDate.toFormat("yyyy-MM-dd"),
     end: endDate.toFormat("yyyy-MM-dd")
   };
-};
-
-export const getCurrentDateAtMidnight = () => {
-  return DateTime.now().startOf("day");
 };
 
 export const getRelativeDates = () => {
@@ -547,7 +628,7 @@ export const formatDateRange = (
   return `${startFormat} ${start.year} to ${endFormat} ${end.year}`;
 };
 
-export const generateTimezoneList = (): DropdownListType[] => {
+export const generateTimezoneList = (): TimeZoneOption[] => {
   const date = new Date();
 
   const timezones = Intl.supportedValuesOf("timeZone");
@@ -578,23 +659,38 @@ export const generateTimezoneList = (): DropdownListType[] => {
         return null;
       }
     })
-    .filter(Boolean) as DropdownListType[];
+    .filter(Boolean) as TimeZoneOption[];
 
   return options.sort((a, b) => {
-    const offsetA = (a.label as string).match(/GMT([+-]\d+)/)?.[1] || "0";
-    const offsetB = (b.label as string).match(/GMT([+-]\d+)/)?.[1] || "0";
+    const offsetA = a.label.match(/GMT([+-]\d+)/)?.[1] || "0";
+    const offsetB = b.label.match(/GMT([+-]\d+)/)?.[1] || "0";
     return parseInt(offsetA) - parseInt(offsetB);
   });
 };
+
+export const generateTimeZoneDictionary = (
+  timeZones: TimeZoneOption[]
+): Record<string, string> =>
+  timeZones.reduce<Record<string, string>>((acc, timeZone) => {
+    acc[timeZone.value] = timeZone.label;
+    return acc;
+  }, {});
+
+export const getTimeZoneLabel = (
+  dictionary: Record<string, string>,
+  timeZone: string
+): string =>
+  Object.hasOwn(dictionary, timeZone) ? dictionary[timeZone] : timeZone;
 
 // example: Input - 2024-12-02T14:10:00.036411
 // example: Output - after Today at 2:10 PM
 export const fromDateToRelativeTime = (
   date: string,
   translateText: TranslatorFunctionType,
-  language: string
+  language: string,
+  zone: string | undefined
 ): string => {
-  const dateTime = DateTime.fromISO(date).setLocale(language);
+  const dateTime = instantInZone(date, zone).setLocale(language);
   const relativeCalendar = dateTime ? dateTime.toRelativeCalendar() : "";
   const str: string = `${relativeCalendar ? relativeCalendar.toString() : "Unknown date"} at ${dateTime.toFormat("h:mm a")}`;
   const strArray = str.split(" ");
@@ -626,10 +722,23 @@ export const formatISODateWithSuffixLocal = (isoString: string): string => {
   return `${day}${suffix} ${date.toFormat("MMMM yyyy")}`;
 };
 
+export const formatInstantWithSuffix = (
+  isoInstant: string,
+  zone: string | undefined
+): string => {
+  const date = instantInZone(isoInstant, zone);
+  const day = date.day;
+
+  return `${day}${getDaySuffix(day)} ${date.toFormat("MMMM yyyy")}`;
+};
+
 // Example: "2024-03-05" → "March 2024"
-export const formatISODateToMonthYear = (isoString: string): string => {
+export const formatISODateToMonthYear = (
+  isoString: string,
+  zone: string | undefined
+): string => {
   if (isoString !== "") {
-    const date = DateTime.fromISO(isoString, { zone: "utc" });
+    const date = instantInZone(isoString, zone);
 
     return `${date.toFormat("MMMM")} ${date.year}`;
   }

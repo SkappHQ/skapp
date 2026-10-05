@@ -5,8 +5,8 @@ import { useShallow } from "zustand/react/shallow";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import DealStageModalForm from "~community/configurations/components/molecules/DealStageModalForm/DealStageModalForm";
 import DeleteDealStageModalContent from "~community/configurations/components/molecules/DeleteDealStageModalContent/DeleteDealStageModalContent";
-import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { CrmModalTypes } from "~community/crm/v2/types/CrmTypes";
+import { useCrmStore } from "~community/crm/store/store";
+import { CrmModalTypes } from "~community/crm/types/CrmTypes";
 
 interface DealStageModalControllerProps {
   onStageCreated: () => void;
@@ -18,7 +18,7 @@ const DealStageModalController: FC<DealStageModalControllerProps> = ({
   const translateText = useTranslator("configurations", "crm");
 
   const { isDealStageModalOpen, dealStageModalType, setIsDealStageModalOpen } =
-    useCrmStoreV2(
+    useCrmStore(
       useShallow((store) => ({
         isDealStageModalOpen: store.isDealStageModalOpen,
         dealStageModalType: store.dealStageModalType,

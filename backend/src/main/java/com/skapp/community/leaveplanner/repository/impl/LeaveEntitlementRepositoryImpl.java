@@ -47,7 +47,6 @@ import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -57,6 +56,7 @@ import org.springframework.data.jpa.repository.query.QueryUtils;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.node.ObjectNode;
 
+import java.time.ZoneId;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -331,7 +331,7 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 	}
 
 	@Override
-	public LinkedHashMap<LeaveType, Long> findLeaveTypeAndEmployeeCountForTeam(@NotNull Long teamId) {
+	public LinkedHashMap<LeaveType, Long> findLeaveTypeAndEmployeeCountForTeam(Long teamId, ZoneId organizationZone) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();
 		Root<LeaveEntitlement> root = criteriaQuery.from(LeaveEntitlement.class);
@@ -339,7 +339,8 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 		Join<Employee, EmployeeTeam> employeeTeam = employee.join(Employee_.employeeTeams);
 		Join<Employee, User> user = employee.join(Employee_.user);
 
-		List<Predicate> predicates = getTeamLeaveSummaryPredicates(criteriaBuilder, root, user, employeeTeam, teamId);
+		List<Predicate> predicates = getTeamLeaveSummaryPredicates(criteriaBuilder, root, user, employeeTeam, teamId,
+				organizationZone);
 
 		Predicate[] predArray = new Predicate[predicates.size()];
 		predicates.toArray(predArray);
@@ -360,7 +361,7 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 	}
 
 	@Override
-	public Map<Long, Double> findLeaveTypeIdAllocatedLeaveDaysForTeam(@NotNull Long teamId) {
+	public Map<Long, Double> findLeaveTypeIdAllocatedLeaveDaysForTeam(Long teamId, ZoneId organizationZone) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();
 		Root<LeaveEntitlement> root = criteriaQuery.from(LeaveEntitlement.class);
@@ -368,7 +369,8 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 		Join<Employee, EmployeeTeam> employeeTeam = employee.join(Employee_.employeeTeams);
 		Join<Employee, User> user = employee.join(Employee_.user);
 
-		List<Predicate> predicates = getTeamLeaveSummaryPredicates(criteriaBuilder, root, user, employeeTeam, teamId);
+		List<Predicate> predicates = getTeamLeaveSummaryPredicates(criteriaBuilder, root, user, employeeTeam, teamId,
+				organizationZone);
 
 		Predicate[] predArray = new Predicate[predicates.size()];
 		predicates.toArray(predArray);
@@ -390,7 +392,7 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 	}
 
 	public List<LeaveEntitlement> findAllByEmployeeId(Long employeeId,
-			@NotNull LeaveEntitlementsFilterDto leaveEntitlementsFilterDto) {
+			LeaveEntitlementsFilterDto leaveEntitlementsFilterDto, ZoneId organizationZone) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<LeaveEntitlement> criteriaQuery = criteriaBuilder.createQuery(LeaveEntitlement.class);
 		Root<LeaveEntitlement> root = criteriaQuery.from(LeaveEntitlement.class);
@@ -407,7 +409,7 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 		if (Boolean.FALSE.equals(leaveEntitlementsFilterDto.getIsManual())) {
 			predicates.add(criteriaBuilder.equal(root.get(LeaveEntitlement_.IS_MANUAL), false));
 		}
-		setDateRangeFiltration(leaveEntitlementsFilterDto, criteriaBuilder, root, predicates);
+		setDateRangeFiltration(leaveEntitlementsFilterDto, criteriaBuilder, root, predicates, organizationZone);
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
 		criteriaQuery.select(root);
 		criteriaQuery.orderBy(QueryUtils.toOrders(Sort.by(Sort.Direction.ASC, "name"), leaveType, criteriaBuilder));
@@ -477,7 +479,8 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 	}
 
 	@Override
-	public List<LeaveEntitlement> getEmployeeLeaveBalanceForLeaveType(Long employeeId, Long typeId) {
+	public List<LeaveEntitlement> getEmployeeLeaveBalanceForLeaveType(Long employeeId, Long typeId,
+			ZoneId organizationZone) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<LeaveEntitlement> criteriaQuery = criteriaBuilder.createQuery(LeaveEntitlement.class);
 
@@ -489,7 +492,7 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 		predicates.add(criteriaBuilder.equal(root.get(LeaveEntitlement_.isActive), true));
 		predicates.add(criteriaBuilder.equal(root.get(LeaveEntitlement_.LEAVE_TYPE).get(TYPE_ID), typeId));
 
-		LeaveCycleDatesDto leaveCycleDatesDto = leaveCycleStartAndEndDates();
+		LeaveCycleDatesDto leaveCycleDatesDto = leaveCycleStartAndEndDates(organizationZone);
 		Predicate dateBetween = criteriaBuilder.and(
 				criteriaBuilder.between(root.get(LeaveEntitlement_.validFrom), leaveCycleDatesDto.getCycleStartDate(),
 						leaveCycleDatesDto.getCycleEndDate()),
@@ -875,7 +878,8 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 	}
 
 	private void setDateRangeFiltration(LeaveEntitlementsFilterDto leaveEntitlementsFilterDto,
-			CriteriaBuilder criteriaBuilder, Root<LeaveEntitlement> root, List<Predicate> predicates) {
+			CriteriaBuilder criteriaBuilder, Root<LeaveEntitlement> root, List<Predicate> predicates,
+			ZoneId organizationZone) {
 		ObjectNode leaveCycleConfig = getLeaveCycleConfig();
 		if (leaveCycleConfig == null) {
 			throw new IllegalArgumentException(
@@ -891,7 +895,7 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 		// int cycleStartYear = startMonth == 1 && startDate == 1 ? leaveCycleEndYear :
 		// leaveCycleEndYear - 1;
 
-		LocalDate currentDate = DateTimeUtils.getCurrentUtcDate();
+		LocalDate currentDate = DateTimeUtils.currentDateAt(organizationZone);
 		int cycleStartYear = currentDate.getYear();
 		int leaveCycleEndYear = cycleStartYear + 1;
 
@@ -913,7 +917,7 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 		}
 	}
 
-	private LeaveCycleDatesDto leaveCycleStartAndEndDates() {
+	private LeaveCycleDatesDto leaveCycleStartAndEndDates(ZoneId organizationZone) {
 		ObjectNode leaveCycleConfig = getLeaveCycleConfig();
 		if (leaveCycleConfig == null) {
 			throw new IllegalArgumentException(
@@ -925,7 +929,7 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 		int endMonth = leaveCycleConfig.get(LeaveModuleConstant.END).get(LeaveModuleConstant.MONTH).intValue();
 		int endDate = leaveCycleConfig.get(LeaveModuleConstant.END).get(LeaveModuleConstant.DATE).intValue();
 
-		int leaveCycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(startMonth, startDate);
+		int leaveCycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(startMonth, startDate, organizationZone);
 		int cycleStartYear = startMonth == 1 && startDate == 1 ? leaveCycleEndYear : leaveCycleEndYear - 1;
 
 		LocalDate yearStartDate = DateTimeUtils.getUtcLocalDate(cycleStartYear, startMonth, startDate);
@@ -949,14 +953,15 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 	}
 
 	private List<Predicate> getTeamLeaveSummaryPredicates(CriteriaBuilder criteriaBuilder, Root<LeaveEntitlement> root,
-			Join<Employee, User> employee, Join<Employee, EmployeeTeam> employeeTeam, Long teamId) {
+			Join<Employee, User> employee, Join<Employee, EmployeeTeam> employeeTeam, Long teamId,
+			ZoneId organizationZone) {
 
 		List<Predicate> predicates = new ArrayList<>();
 
 		predicates.add(criteriaBuilder.notEqual(employee.get(User_.isActive), false));
 		predicates.add(criteriaBuilder.equal(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId), teamId));
 		LeaveEntitlementsFilterDto leaveEntitlementsFilterDto = new LeaveEntitlementsFilterDto();
-		leaveEntitlementsFilterDto.setYear(DateTimeUtils.getCurrentYear());
+		leaveEntitlementsFilterDto.setYear(DateTimeUtils.currentDateAt(organizationZone).getYear());
 		leaveEntitlementsFilterDto.setIsFollowingYear(false);
 		setYearRangeFiltration(leaveEntitlementsFilterDto, criteriaBuilder, root, predicates);
 		return predicates;

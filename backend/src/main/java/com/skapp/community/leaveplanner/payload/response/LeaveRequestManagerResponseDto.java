@@ -6,7 +6,7 @@ import com.skapp.community.peopleplanner.payload.request.EmployeeBasicDetailsRes
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -30,7 +30,7 @@ public class LeaveRequestManagerResponseDto {
 
 	private Float durationDays;
 
-	private LocalDateTime createdDate;
+	private Instant createdDate;
 
 	private String requestDesc;
 

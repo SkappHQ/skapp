@@ -85,7 +85,6 @@ const PolicyLeaveModalController = () => {
         modalHeader={modalTitle}
         content={modalContent()}
         backdropVariant="dark"
-        className="w-[75vw] max-w-[1100px]"
       />
     );
   }

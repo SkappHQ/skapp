@@ -21,24 +21,31 @@ import {
 } from "~community/attendance/utils/TimeUtils";
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
 import {
+  useDisplayZone,
+  useOrganizationZone
+} from "~community/common/hooks/useDisplayZone";
+import {
   ErrorResponse,
   SortKeyTypes,
   SortOrderTypes
 } from "~community/common/types/CommonTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import {
-  getLocalDate,
-  getStartAndEndOfYear
+  calendarDayStartMillis,
+  getStartAndEndOfYear,
+  nowInZone
 } from "~community/common/utils/dateTimeUtils";
 
 export const useGetTodaysTimeRequestAvailability = () => {
-  //const { setGeneralErrors } = useGeneralErrors();
-  const nextDate = new Date();
-  nextDate.setDate(nextDate.getDate() + 1);
+  const organizationZone = useOrganizationZone();
+  const startOfToday = nowInZone(organizationZone).startOf("day");
+  const today = startOfToday.toFormat(DATE_FORMAT);
+  const tomorrow = startOfToday.plus({ days: 1 }).toFormat(DATE_FORMAT);
   return useQuery({
+    enabled: !!organizationZone,
     queryKey: attendanceQueryKeys.getEmployeeRequests({
-      startDate: getLocalDate(new Date()),
-      endDate: getLocalDate(nextDate),
+      startDate: today,
+      endDate: tomorrow,
       page: 1,
       size: 5,
       status: [
@@ -50,20 +57,16 @@ export const useGetTodaysTimeRequestAvailability = () => {
       const url = employeeAttendanceEndpoints.EMPLOYEE_REQUESTS;
       return await authFetch.get(url, {
         params: {
-          startDate: getLocalDate(new Date()),
-          endDate: getLocalDate(nextDate),
+          startDate: today,
+          endDate: tomorrow,
           page: 1,
           size: 5,
           status: [
             TimeSheetRequestStates.PENDING,
             TimeSheetRequestStates.APPROVED
           ].toString(),
-          startTime: convertToMilliseconds(
-            convertToUtc(getLocalDate(new Date()))
-          ),
-          endTime: nextDate
-            ? convertToMilliseconds(convertToUtc(getLocalDate(nextDate)))
-            : null
+          startTime: startOfToday.toMillis(),
+          endTime: startOfToday.plus({ days: 1 }).toMillis()
         }
       });
     },
@@ -83,9 +86,10 @@ export const useGetPeriodAvailabilityMutation = (
   endTime: string,
   onSuccess: (data: TimeAvailabilityType) => void
 ) => {
+  const entryZone = useDisplayZone();
   const fetchPeriodAvailability = async () => {
-    const startDateTime = convertToDateTime(date, startTime);
-    const endDateTime = convertToDateTime(date, endTime);
+    const startDateTime = convertToDateTime(date, startTime, entryZone);
+    const endDateTime = convertToDateTime(date, endTime, entryZone);
     const startUTC = convertToUtc(startDateTime);
     const endUTC = convertToUtc(endDateTime);
     const startTimestamp = convertToMilliseconds(startUTC);
@@ -114,6 +118,8 @@ export const useGetDailyLogs = (
   endDate: string,
   isEnable: boolean = true
 ) => {
+  const displayZone = useDisplayZone();
+  const organizationZone = useOrganizationZone();
   //const { setGeneralErrors } = useGeneralErrors();
   return useQuery({
     queryKey: attendanceQueryKeys.getEmployeeDailyLog(startDate, endDate),
@@ -132,10 +138,14 @@ export const useGetDailyLogs = (
       });
     },
     select(data) {
-      return dailyLogPreProcessor(data?.data?.results?.[0]?.items);
+      return dailyLogPreProcessor(
+        data?.data?.results?.[0]?.items,
+        displayZone,
+        organizationZone
+      );
     },
     //onError: setGeneralErrors,
-    enabled: isEnable
+    enabled: isEnable && !!displayZone
   });
 };
 
@@ -165,6 +175,7 @@ export const useGetEmployeeWorkSummary = (
 };
 
 export const useGetTimeSheetRequests = () => {
+  const displayZone = useDisplayZone();
   //const { setGeneralErrors } = useGeneralErrors();
   const employeeTimesheetRequestParams = useAttendanceStore(
     (state) => state.employeeTimesheetRequestParams
@@ -173,15 +184,18 @@ export const useGetTimeSheetRequests = () => {
     employeeTimesheetRequestParams;
   const { startDateOfYear, endDateOfYear } = getStartAndEndOfYear(DATE_FORMAT);
   return useQuery({
-    queryKey: attendanceQueryKeys.getEmployeeRequests({
-      startDate: startDate,
-      endDate: endDate,
-      page,
-      size,
-      status,
-      startOfYear: startDateOfYear,
-      endOfYear: endDateOfYear
-    }),
+    queryKey: [
+      ...attendanceQueryKeys.getEmployeeRequests({
+        startDate: startDate,
+        endDate: endDate,
+        page,
+        size,
+        status,
+        startOfYear: startDateOfYear,
+        endOfYear: endDateOfYear
+      }),
+      displayZone
+    ],
     queryFn: async () => {
       const url = employeeAttendanceEndpoints.EMPLOYEE_REQUESTS;
       return await authFetch.get(url, {
@@ -194,14 +208,15 @@ export const useGetTimeSheetRequests = () => {
           sortBy: SortOrderTypes.DESC,
           sortKey: SortKeyTypes.CREATION_DATE,
           startTime: startDate
-            ? convertToMilliseconds(convertToUtc(startDate))
+            ? calendarDayStartMillis(startDate, displayZone)
             : null,
-          endTime: endDate ? convertToMilliseconds(convertToUtc(endDate)) : null
+          endTime: endDate ? calendarDayStartMillis(endDate, displayZone) : null
         }
       });
     },
+    enabled: !!displayZone,
     select(data) {
-      return timeRequestPreProcessor(data?.data.results?.[0]);
+      return timeRequestPreProcessor(data?.data.results?.[0], displayZone);
     }
     //onError: setGeneralErrors
   });
@@ -295,8 +310,9 @@ export const useGetPeriodAvailability = (
   startTime: string,
   endTime: string
 ) => {
-  const dateTimeFromTime = convertToDateTime(date, startTime);
-  const dateTimeToTime = convertToDateTime(date, endTime);
+  const entryZone = useDisplayZone();
+  const dateTimeFromTime = convertToDateTime(date, startTime, entryZone);
+  const dateTimeToTime = convertToDateTime(date, endTime, entryZone);
   const timestampStartTime = convertToMilliseconds(
     convertToUtc(dateTimeFromTime)
   );
@@ -334,8 +350,10 @@ export const useGetDailyLogsByEmployeeId = (
   employeeId?: number,
   isEnabled: boolean = true
 ) => {
+  const displayZone = useDisplayZone();
+  const organizationZone = useOrganizationZone();
   return useQuery({
-    enabled: isEnabled && !!employeeId,
+    enabled: isEnabled && !!employeeId && !!displayZone,
     queryKey: attendanceQueryKeys.getEmployeeDailyLogByEmployeeId(
       startDate,
       endDate,
@@ -361,7 +379,11 @@ export const useGetDailyLogsByEmployeeId = (
       });
     },
     select(data) {
-      return dailyLogPreProcessor(data?.data?.results?.[0]?.items);
+      return dailyLogPreProcessor(
+        data?.data?.results?.[0]?.items,
+        displayZone,
+        organizationZone
+      );
     }
   });
 };

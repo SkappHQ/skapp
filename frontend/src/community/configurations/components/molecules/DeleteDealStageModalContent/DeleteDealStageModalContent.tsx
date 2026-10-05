@@ -10,20 +10,20 @@ import {
   getStageDisplayName,
   removeStage
 } from "~community/configurations/utils/stageUtil";
-import { useDeleteDealStage } from "~community/crm/v2/api/DealApi";
-import { useCrmStoreV2 } from "~community/crm/v2/store/store";
+import { useDeleteDealStage } from "~community/crm/api/DealApi";
+import { useCrmStore } from "~community/crm/store/store";
 
 const DeleteDealStageModalContent: FC = () => {
   const translateText = useTranslator("configurations", "crm");
   const translateStageName = useTranslator(
-    "crmModuleV2",
+    "crmModule",
     "deals",
     "defaultStageNames"
   );
   const { setToastMessage } = useToast();
 
   const { stages, setStages, selectedDealStageId, setIsDealStageModalOpen } =
-    useCrmStoreV2(
+    useCrmStore(
       useShallow((store) => ({
         stages: store.stages,
         setStages: store.setStages,
