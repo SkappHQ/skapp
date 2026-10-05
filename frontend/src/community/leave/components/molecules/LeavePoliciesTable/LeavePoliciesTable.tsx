@@ -103,7 +103,7 @@ const LeavePoliciesTable: FC<Props> = ({
     hasNextPage,
     isFetchingNextPage
   } = useGetLeavePoliciesInfinite({
-    searchKeyword: debouncedSearch,
+    searchKeyword: debouncedSearch.trim(),
     leaveTypeId: leaveTypeFilter,
     size: LEAVE_POLICY_PAGE_SIZE
   });
