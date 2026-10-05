@@ -738,8 +738,9 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 	private PolicyLeaveBalanceDto calculateBalanceForDate(EmployeeLeavePolicy assignment, LocalDate date) {
 		MonthDay cycleAnchor = resolveCycleAnchor();
-		return calculateBalance(assignment, PolicyLeaveAccrualUtil.resolveCycleContaining(date, cycleAnchor),
-				cycleAnchor, date, date);
+		PolicyLeaveDateWindowDto cycle = PolicyLeaveAccrualUtil.resolveCycleContaining(date, cycleAnchor);
+		LocalDate accrualAsOf = resolveAccrualAsOf(timeZoneService.currentOrganizationDate(), cycle);
+		return calculateBalance(assignment, cycle, cycleAnchor, date, accrualAsOf);
 	}
 
 	private MonthDay resolveCycleAnchor() {
