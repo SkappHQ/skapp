@@ -83,7 +83,7 @@ const TimeConfigurations = (): JSX.Element => {
   const { data: configIsRemovable } =
     useGetConfigIsRemovable(newNonWorkingDays);
 
-  useConfigurationUnsavedChanges(formChanged);
+  useConfigurationUnsavedChanges(!!defaultCapacity?.length && formChanged);
 
   const handleSuccess = () => {
     setToastMessage({
