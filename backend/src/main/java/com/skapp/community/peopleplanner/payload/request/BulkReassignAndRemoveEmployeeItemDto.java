@@ -9,7 +9,7 @@ import java.util.List;
 @Setter
 public class BulkReassignAndRemoveEmployeeItemDto {
 
-	private Long userId;
+	private Long employeeId;
 
 	private List<PrimarySupervisorTransferDto> primarySupervisors;
 

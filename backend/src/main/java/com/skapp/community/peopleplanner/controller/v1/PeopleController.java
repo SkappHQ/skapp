@@ -14,7 +14,6 @@ import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
 import com.skapp.community.peopleplanner.payload.request.ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.TinExistsCheckDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
-import com.skapp.community.peopleplanner.payload.response.BulkReassignAndRemoveEmployeesResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeManagerResponseDto;
 import com.skapp.community.peopleplanner.service.PeopleReadService;
 import com.skapp.community.peopleplanner.service.PeopleService;
@@ -241,9 +240,9 @@ public class PeopleController {
 			description = "Reassigns primary supervisor and team supervisor roles for a batch of users and then terminates or deletes each employee")
 	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_ADMIN')")
 	@PatchMapping("/user/bulk/reassign-and-remove")
-	public ResponseEntity<BulkReassignAndRemoveEmployeesResponseDto> bulkReassignAndRemoveEmployees(
+	public ResponseEntity<ResponseEntityDto> bulkReassignAndRemoveEmployees(
 			@RequestBody BulkReassignAndRemoveEmployeesRequestDto requestDto) {
-		BulkReassignAndRemoveEmployeesResponseDto response = peopleService.bulkReassignAndRemoveEmployees(requestDto);
+		ResponseEntityDto response = peopleService.bulkReassignAndRemoveEmployees(requestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

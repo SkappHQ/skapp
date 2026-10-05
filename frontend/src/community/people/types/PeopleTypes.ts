@@ -299,7 +299,7 @@ export interface ReassignSupervisorsAndTerminateOrDeleteEmployeePayload {
 }
 
 export interface BulkReassignAndRemoveEmployeeItem {
-  userId: number;
+  employeeId: number;
   primarySupervisors: PrimarySupervisorTransfer[];
   teamSupervisors: TeamSupervisorTransfer[];
 }
@@ -307,10 +307,6 @@ export interface BulkReassignAndRemoveEmployeeItem {
 export interface BulkReassignAndRemoveEmployeesPayload {
   action: EmployeeRemoveAction;
   employees: BulkReassignAndRemoveEmployeeItem[];
-}
-
-export interface BulkReassignAndRemoveEmployeesResponse {
-  failedUserIds: number[];
 }
 
 export enum EmployeeRemoveAction {

@@ -81,7 +81,6 @@ import { EmployeeTimelineType } from "~enterprise/people/types/PeopleTypes";
 import {
   AllEmployeeDataResponse,
   BulkReassignAndRemoveEmployeesPayload,
-  BulkReassignAndRemoveEmployeesResponse,
   L1EmployeeType,
   ReassignSupervisorsAndTerminateOrDeleteEmployeePayload,
   SkillResponseDto,
@@ -1012,15 +1011,10 @@ export const reassignSupervisorsAndTerminateOrDeleteEmployee = (
     payload
   );
 
-export const bulkReassignAndRemoveEmployees = async (
+export const bulkReassignAndRemoveEmployees = (
   payload: BulkReassignAndRemoveEmployeesPayload
-): Promise<BulkReassignAndRemoveEmployeesResponse> => {
-  const response = await authFetch.patch(
-    peoplesEndpoints.BULK_REASSIGN_AND_REMOVE_EMPLOYEES,
-    payload
-  );
-  return response.data;
-};
+) =>
+  authFetch.patch(peoplesEndpoints.BULK_REASSIGN_AND_REMOVE_EMPLOYEES, payload);
 
 export const useReassignSupervisorsAndTerminateOrDeleteEmployee = (
   userId: number,

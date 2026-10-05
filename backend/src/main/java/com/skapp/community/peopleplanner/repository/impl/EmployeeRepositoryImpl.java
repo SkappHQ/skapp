@@ -32,6 +32,7 @@ import com.skapp.community.peopleplanner.payload.request.EmployeeFilterDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeFilterDtoV2;
 import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeCountDto;
+import com.skapp.community.peopleplanner.payload.response.EmployeeEmailIdDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeManagerDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeTeamDto;
 import com.skapp.community.peopleplanner.payload.response.PrimarySecondaryOrTeamSupervisorResponseDto;
@@ -71,7 +72,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -1782,20 +1782,19 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 	}
 
 	@Override
-	public Map<String, Long> findEmployeeIdsByEmailIgnoreCase(List<String> emails) {
-		List<String> lowerCaseEmails = emails.stream().map(email -> email.toLowerCase(Locale.ROOT)).toList();
-
+	public Map<String, Long> findEmployeeIdsByEmailIgnoreCase(List<String> lowerCaseEmails) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Object[]> query = cb.createQuery(Object[].class);
+		CriteriaQuery<EmployeeEmailIdDto> query = cb.createQuery(EmployeeEmailIdDto.class);
 		Root<User> root = query.from(User.class);
 		Expression<String> lowerCaseEmail = cb.lower(root.get(User_.email));
 
-		query.select(cb.array(lowerCaseEmail, root.get(User_.userId))).where(lowerCaseEmail.in(lowerCaseEmails));
+		query.select(cb.construct(EmployeeEmailIdDto.class, lowerCaseEmail, root.get(User_.userId)))
+			.where(lowerCaseEmail.in(lowerCaseEmails));
 
 		return entityManager.createQuery(query)
 			.getResultList()
 			.stream()
-			.collect(Collectors.toMap(row -> (String) row[0], row -> (Long) row[1], (first, second) -> first));
+			.collect(Collectors.toMap(EmployeeEmailIdDto::getEmail, EmployeeEmailIdDto::getEmployeeId));
 	}
 
 }

@@ -93,7 +93,6 @@ import com.skapp.community.peopleplanner.payload.request.employee.personal.Emplo
 import com.skapp.community.peopleplanner.payload.response.AnalyticsSearchResponseDto;
 import com.skapp.community.peopleplanner.payload.response.BirthdayNotificationResponseDto;
 import com.skapp.community.peopleplanner.payload.response.BirthdayNotificationViewedResponseDto;
-import com.skapp.community.peopleplanner.payload.response.BulkReassignAndRemoveEmployeesResponseDto;
 import com.skapp.community.peopleplanner.payload.response.CreateEmployeeResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeAllDataExportResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeBirthdayResponseDto;
@@ -1553,26 +1552,19 @@ public class PeopleServiceImpl implements PeopleService {
 
 	@Override
 	@Transactional
-	public BulkReassignAndRemoveEmployeesResponseDto bulkReassignAndRemoveEmployees(
-			BulkReassignAndRemoveEmployeesRequestDto requestDto) {
-		List<BulkReassignAndRemoveEmployeeItemDto> employees = requestDto.getEmployees();
-
-		List<Long> failedUserIds = new ArrayList<>();
-		for (BulkReassignAndRemoveEmployeeItemDto employee : employees) {
+	public ResponseEntityDto bulkReassignAndRemoveEmployees(BulkReassignAndRemoveEmployeesRequestDto requestDto) {
+		PeopleMessageConstant successMessage = null;
+		for (BulkReassignAndRemoveEmployeeItemDto employee : requestDto.getEmployees()) {
 			ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto itemRequestDto = new ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto();
 			itemRequestDto.setPrimarySupervisors(employee.getPrimarySupervisors());
 			itemRequestDto.setTeamSupervisors(employee.getTeamSupervisors());
 			itemRequestDto.setAction(requestDto.getAction());
 
-			try {
-				reassignSupervisorsAndTerminateOrDeleteEmployeeCore(employee.getUserId(), itemRequestDto);
-			}
-			catch (Exception e) {
-				failedUserIds.add(employee.getUserId());
-			}
+			successMessage = reassignSupervisorsAndTerminateOrDeleteEmployeeCore(employee.getEmployeeId(),
+					itemRequestDto);
 		}
 
-		return new BulkReassignAndRemoveEmployeesResponseDto(failedUserIds);
+		return new ResponseEntityDto(messageUtil.getMessage(successMessage), false);
 	}
 
 	private PeopleMessageConstant reassignSupervisorsAndTerminateOrDeleteEmployeeCore(Long userId,

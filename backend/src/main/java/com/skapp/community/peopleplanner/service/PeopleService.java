@@ -13,7 +13,6 @@ import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
 import com.skapp.community.peopleplanner.payload.request.ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.TinExistsCheckDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
-import com.skapp.community.peopleplanner.payload.response.BulkReassignAndRemoveEmployeesResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeManagerResponseDto;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 
@@ -77,8 +76,7 @@ public interface PeopleService {
 	ResponseEntityDto reassignSupervisorsAndTerminateOrDeleteEmployee(Long userId,
 			ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto requestDto);
 
-	BulkReassignAndRemoveEmployeesResponseDto bulkReassignAndRemoveEmployees(
-			BulkReassignAndRemoveEmployeesRequestDto requestDto);
+	ResponseEntityDto bulkReassignAndRemoveEmployees(BulkReassignAndRemoveEmployeesRequestDto requestDto);
 
 	ResponseEntityDto getTodayBirthdayNotifications();
 
