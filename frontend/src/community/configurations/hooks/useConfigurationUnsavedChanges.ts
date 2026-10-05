@@ -9,8 +9,9 @@ const useConfigurationUnsavedChanges = (hasUnsavedChanges: boolean): void => {
 
   useEffect(() => {
     setHasUnsavedChanges(hasUnsavedChanges);
-    return () => setHasUnsavedChanges(false);
   }, [hasUnsavedChanges]);
+
+  useEffect(() => () => setHasUnsavedChanges(false), []);
 };
 
 export default useConfigurationUnsavedChanges;
