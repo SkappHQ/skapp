@@ -8,7 +8,7 @@ import {
 import { AxiosError } from "axios";
 import { FormikProps, useFormik } from "formik";
 import { useRouter } from "next/router";
-import { FC, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
 import StepperComponent from "~community/common/components/molecules/Stepper/Stepper";
 import ROUTES from "~community/common/constants/routes";
@@ -78,6 +78,11 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
 
   const formikRef = useRef<FormikProps<LeavePolicyFormData> | null>(null);
   const isAdvancingRef = useRef<boolean>(false);
+  const wizardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    wizardRef.current?.scrollIntoView({ block: "start" });
+  }, [activeStep]);
 
   const steps = [
     translateText(["steps", "basicInfo"]),
@@ -242,7 +247,10 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
   };
 
   return (
-    <div className="flex w-full flex-1 flex-col gap-8">
+    <div
+      ref={wizardRef}
+      className="flex min-h-full w-full flex-1 scroll-mt-4 flex-col gap-8 sm:scroll-mt-6"
+    >
       <div className="flex flex-col gap-6">
         <div className="flex items-center gap-4">
           <IconButton
