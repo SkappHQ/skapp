@@ -242,7 +242,7 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
   };
 
   return (
-    <div className="flex min-h-full w-full flex-col gap-8">
+    <div className="flex w-full flex-1 flex-col gap-8">
       <div className="flex flex-col gap-6">
         <div className="flex items-center gap-4">
           <IconButton

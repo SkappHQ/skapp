@@ -35,8 +35,10 @@ const CreateLeavePolicy: NextPage = () => {
         <title>{translateText(["pageHead"])}</title>
       </Head>
       {policyType && (
-        <div className="h-full p-4 sm:px-12 sm:py-6">
-          <LeavePolicyWizard policyType={policyType} />
+        <div className="h-full overflow-y-auto">
+          <div className="flex min-h-full flex-col p-4 sm:px-12 sm:py-6">
+            <LeavePolicyWizard policyType={policyType} />
+          </div>
         </div>
       )}
     </>
