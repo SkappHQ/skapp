@@ -321,6 +321,7 @@
       "policyNamePlaceholder": "Enter policy name",
       "policyNameRequiredError": "Policy name is required.",
       "policyNameMaxLengthError": "Policy name cannot exceed 100 characters.",
+      "policyNameDuplicateError": "A policy with this name already exists for this leave type.",
       "leaveTypeLabel": "Leave type",
       "backBtnTxt": "Back",
       "saveChangesBtnTxt": "Save changes",

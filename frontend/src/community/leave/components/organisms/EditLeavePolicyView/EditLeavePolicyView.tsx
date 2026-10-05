@@ -8,7 +8,7 @@ import {
   SaveIcon
 } from "@rootcodelabs/skapp-ui";
 import { AxiosError } from "axios";
-import { useFormik } from "formik";
+import { FormikHelpers, useFormik } from "formik";
 import { ChangeEvent, FC } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -27,7 +27,8 @@ import {
 } from "~community/leave/types/LeavePolicyTypes";
 import {
   formatCarryoverExpiryDate,
-  getLeavePolicyErrorToastKeys
+  getLeavePolicyErrorToastKeys,
+  isDuplicatePolicyNameError
 } from "~community/leave/utils/leavePolicy/leavePolicyUtils";
 import { editLeavePolicyValidation } from "~community/leave/utils/validations";
 
@@ -66,6 +67,9 @@ const EditLeavePolicyView: FC<Props> = ({ policy, onClose }) => {
   };
 
   const onUpdateError = (error: AxiosError): void => {
+    // Duplicate names are shown inline on the field from onSubmit
+    if (isDuplicatePolicyNameError(error)) return;
+
     const { title, description } = getLeavePolicyErrorToastKeys(error);
 
     setToastMessage({
@@ -82,11 +86,27 @@ const EditLeavePolicyView: FC<Props> = ({ policy, onClose }) => {
     onUpdateError
   );
 
-  const onSubmit = (formValues: EditLeavePolicyFormValues): void => {
-    updateLeavePolicy({
-      id: policy.id,
-      payload: { name: formValues.policyName.trim() }
-    });
+  const onSubmit = (
+    formValues: EditLeavePolicyFormValues,
+    { setFieldError, setFieldTouched }: FormikHelpers<EditLeavePolicyFormValues>
+  ): void => {
+    updateLeavePolicy(
+      {
+        id: policy.id,
+        payload: { name: formValues.policyName.trim() }
+      },
+      {
+        onError: (error: AxiosError) => {
+          if (!isDuplicatePolicyNameError(error)) return;
+
+          setFieldTouched("policyName", true, false);
+          setFieldError(
+            "policyName",
+            translateText(["editPolicy", "policyNameDuplicateError"])
+          );
+        }
+      }
+    );
   };
 
   const { values, errors, touched, handleBlur, handleChange, handleSubmit } =
