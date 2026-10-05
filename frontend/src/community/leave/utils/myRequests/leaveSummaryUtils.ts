@@ -71,8 +71,6 @@ export const calculateWorkingDays = ({
   startDate: DateTime;
   endDate: DateTime;
 }): number => {
-  if (!allHolidays) return 0;
-
   let noOfWorkingDays = 0;
   let currentDate = startDate.startOf("day");
   const lastDate = endDate.startOf("day");
