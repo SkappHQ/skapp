@@ -77,7 +77,8 @@ public class PolicyLeaveAccrualUtil {
 
 	public static float accruedWithinCycle(LeavePolicy policy, LocalDate accrualStartDate,
 			PolicyLeaveDateWindowDto cycle, LocalDate asOf) {
-		LocalDate windowEnd = asOf.isBefore(cycle.getEndDate()) ? asOf : cycle.getEndDate();
+		LocalDate lastCreditDate = policy.getAccrualTiming() == AccrualTiming.PERIOD_START ? asOf : asOf.minusDays(1);
+		LocalDate windowEnd = lastCreditDate.isBefore(cycle.getEndDate()) ? lastCreditDate : cycle.getEndDate();
 		if (windowEnd.isBefore(cycle.getStartDate())) {
 			return 0f;
 		}
@@ -162,7 +163,7 @@ public class PolicyLeaveAccrualUtil {
 
 	private static float accrualAllocationInCycle(LeavePolicy policy, LocalDate effectiveFrom,
 			PolicyLeaveDateWindowDto cycle) {
-		return accrualAllocationAsOf(policy, effectiveFrom, cycle, cycle.getEndDate());
+		return accrualAllocationAsOf(policy, effectiveFrom, cycle, cycle.getEndDate().plusDays(1));
 	}
 
 	private static float accrualAllocationAsOf(LeavePolicy policy, LocalDate effectiveFrom,

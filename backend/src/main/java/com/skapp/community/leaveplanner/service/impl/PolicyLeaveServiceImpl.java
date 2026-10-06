@@ -422,12 +422,13 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		PolicyLeaveDateWindowDto cycle = PolicyLeaveAccrualUtil.resolveCycle(resolveCycleYear(year, today, cycleAnchor),
 				cycleAnchor);
 		LocalDate asOf = clampToCycle(today, cycle);
+		LocalDate accrualAsOf = today.isAfter(cycle.getEndDate()) ? cycle.getEndDate().plusDays(1) : asOf;
 
 		Map<Long, PolicyLeaveUsageLookup> usageLookups = buildUsageLookups(employeeId, assignments, cycle, cycleAnchor);
 
 		Map<Long, PolicyLeaveBalanceDto> balancesByAssignment = new LinkedHashMap<>();
 		assignments.forEach(assignment -> balancesByAssignment.put(assignment.getId(), calculateBalance(assignment,
-				cycle, cycleAnchor, asOf, asOf, () -> usageLookups.get(assignment.getId()))));
+				cycle, cycleAnchor, asOf, accrualAsOf, () -> usageLookups.get(assignment.getId()))));
 
 		log.info("calculateBalancesForYear: execution ended");
 		return balancesByAssignment;
