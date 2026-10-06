@@ -1,4 +1,4 @@
-import { KebabMenu } from "@rootcodelabs/skapp-ui";
+import { KebabMenu, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { AxiosError } from "axios";
 import {
   ChangeEvent,
@@ -103,7 +103,7 @@ const LeavePoliciesTable: FC<Props> = ({
     hasNextPage,
     isFetchingNextPage
   } = useGetLeavePoliciesInfinite({
-    searchKeyword: debouncedSearch,
+    searchKeyword: debouncedSearch.trim(),
     leaveTypeId: leaveTypeFilter,
     size: LEAVE_POLICY_PAGE_SIZE
   });
@@ -309,7 +309,11 @@ const LeavePoliciesTable: FC<Props> = ({
         }}
         emptyState={
           isFiltering
-            ? { title: translateText(["noSearchResultsTitle"]) }
+            ? {
+                icon: <SearchIcon />,
+                title: translateText(["noSearchResultsTitle"]),
+                description: translateText(["noSearchResultsDescription"])
+              }
             : {
                 title: translateText(["noPoliciesYetTitle"]),
                 description: translateText(["noPoliciesYetDescription"]),

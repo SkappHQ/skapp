@@ -501,7 +501,8 @@
     "entitlementTypeHeader": "ENTITLEMENT TYPE",
     "assignedEmployeesHeader": "ASSIGNED EMPLOYEES",
     "leaveTypeFilterLabel": "Leave Type",
-    "noSearchResultsTitle": "No policies found. Try a different search term.",
+    "noSearchResultsTitle": "No results found",
+    "noSearchResultsDescription": "We couldn't find any matches for your search. Please try using a different term.",
     "noPoliciesYetTitle": "No leave policies yet.",
     "noPoliciesYetDescription": "Create your first policy to get started."
   },
