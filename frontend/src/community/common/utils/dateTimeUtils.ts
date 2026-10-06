@@ -458,6 +458,22 @@ export const getMonthStartAndEndDates = (month: number) => {
   };
 };
 
+export const getMonthAndSelectedDatesRange = (
+  month: number,
+  selectedDates: DateTime[]
+) => {
+  const { start, end } = getMonthStartAndEndDates(month);
+  if (!selectedDates[0]) return { start, end };
+
+  const monthStart = DateTime.fromISO(start);
+  const monthEnd = DateTime.fromISO(end);
+
+  return {
+    start: DateTime.min(monthStart, ...selectedDates).toFormat("yyyy-MM-dd"),
+    end: DateTime.max(monthEnd, ...selectedDates).toFormat("yyyy-MM-dd")
+  };
+};
+
 export const getRelativeDates = () => {
   const now = DateTime.now();
   return {

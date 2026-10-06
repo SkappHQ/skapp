@@ -26,7 +26,7 @@ import { IconName } from "~community/common/types/IconTypes";
 import {
   convertToYYYYMMDDFromDateTime,
   convertYYYYMMDDToDateTime,
-  getMonthStartAndEndDates
+  getMonthAndSelectedDatesRange
 } from "~community/common/utils/dateTimeUtils";
 import { NINETY_PERCENT } from "~community/common/utils/getConstants";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
@@ -264,8 +264,8 @@ const ApplyPolicyLeaveModal = () => {
   );
 
   const startAndEndDates = useMemo(
-    () => getMonthStartAndEndDates(selectedMonth),
-    [selectedMonth]
+    () => getMonthAndSelectedDatesRange(selectedMonth, selectedDates),
+    [selectedMonth, selectedDates]
   );
 
   useEffect(() => {

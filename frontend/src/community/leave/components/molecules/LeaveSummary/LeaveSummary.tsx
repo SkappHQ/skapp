@@ -71,7 +71,14 @@ const LeaveSummary = ({
       startDate: startDate,
       endDate: endDate
     });
-  }, [commonTranslateText, leaveDuration]);
+  }, [
+    commonTranslateText,
+    leaveDuration,
+    workingDays,
+    resourceAvailability,
+    startDate,
+    endDate
+  ]);
 
   const supervisorNames = useMemo(() => {
     const allManagers = [primaryManager, ...otherManagers].filter(Boolean);
