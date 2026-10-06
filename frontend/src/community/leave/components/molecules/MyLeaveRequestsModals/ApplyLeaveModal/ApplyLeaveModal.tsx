@@ -19,7 +19,7 @@ import {
   currentYear,
   getFirstDateOfYear,
   getMaxDateOfYear,
-  getMonthStartAndEndDates
+  getMonthAndSelectedDatesRange
 } from "~community/common/utils/dateTimeUtils";
 import { NINETY_PERCENT } from "~community/common/utils/getConstants";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
@@ -226,8 +226,8 @@ const ApplyLeaveModal = () => {
   }, [myLeaveRequests]);
 
   const startAndEndDates = useMemo(
-    () => getMonthStartAndEndDates(selectedMonth),
-    [selectedMonth]
+    () => getMonthAndSelectedDatesRange(selectedMonth, selectedDates),
+    [selectedMonth, selectedDates]
   );
 
   const workingDays = useMemo(
@@ -485,7 +485,7 @@ const ApplyLeaveModal = () => {
                 leaveDuration={selectedDuration}
                 startDate={selectedDates[0]}
                 endDate={selectedDates[1]}
-                allHolidays={allHolidays}
+                resourceAvailability={resourceAvailability}
                 workingDays={workingDays}
               />
             )}

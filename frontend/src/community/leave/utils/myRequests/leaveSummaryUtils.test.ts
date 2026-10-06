@@ -7,6 +7,7 @@ import {
   getLeavePeriod
 } from "./leaveSummaryUtils";
 import {
+  createMockResourceAvailability,
   mockDateTimes,
   mockTranslateText,
   mockWorkingDays
@@ -18,7 +19,7 @@ describe("getDuration", () => {
       leaveState: LeaveStates.FULL_DAY,
       translateText: mockTranslateText,
       workingDays: mockWorkingDays,
-      allHolidays: [],
+      resourceAvailability: [],
       startDate: mockDateTimes.singleDate
     });
 
@@ -26,11 +27,13 @@ describe("getDuration", () => {
   });
 
   it("should return 'Full Day' for single day full-day leave", () => {
+    const resourceAvailability = createMockResourceAvailability(["25 Mar"]);
+
     const result = getDuration({
       leaveState: LeaveStates.FULL_DAY,
       translateText: mockTranslateText,
       workingDays: mockWorkingDays,
-      allHolidays: [],
+      resourceAvailability,
       startDate: mockDateTimes.singleDate,
       endDate: mockDateTimes.singleDate
     });
@@ -39,11 +42,13 @@ describe("getDuration", () => {
   });
 
   it("should return 'Morning' for half-day morning leave", () => {
+    const resourceAvailability = createMockResourceAvailability(["25 Mar"]);
+
     const result = getDuration({
       leaveState: LeaveStates.MORNING,
       translateText: mockTranslateText,
       workingDays: mockWorkingDays,
-      allHolidays: [],
+      resourceAvailability,
       startDate: mockDateTimes.singleDate,
       endDate: mockDateTimes.singleDate
     });
@@ -85,25 +90,30 @@ describe("getDuration", () => {
   //   expect(result).toBe("2 days");
   // });
 
-  it("should treat undefined holidays as no holidays", () => {
+  it("should handle empty resource availability", () => {
     const result = getDuration({
       leaveState: LeaveStates.FULL_DAY,
       translateText: mockTranslateText,
       workingDays: mockWorkingDays,
-      allHolidays: undefined,
+      resourceAvailability: undefined,
       startDate: mockDateTimes.startDate,
       endDate: mockDateTimes.endDate
     });
 
-    expect(result).toBe("3 days");
+    expect(result).toBe("Full Day");
   });
 
   it("should exclude non-working weekend days", () => {
+    const resourceAvailability = createMockResourceAvailability([
+      "23 Mar", // Saturday
+      "25 Mar" // Monday
+    ]);
+
     const result = getDuration({
       leaveState: LeaveStates.FULL_DAY,
       translateText: mockTranslateText,
       workingDays: mockWorkingDays,
-      allHolidays: [],
+      resourceAvailability,
       startDate: mockDateTimes.weekendDate,
       endDate: mockDateTimes.singleDate
     });
@@ -154,15 +164,15 @@ describe("getLeavePeriod", () => {
 });
 
 describe("calculateWorkingDays", () => {
-  it("should count working days when holidays are undefined", () => {
+  it("should return 0 when resource availability is undefined", () => {
     const result = calculateWorkingDays({
       workingDays: mockWorkingDays,
-      allHolidays: undefined,
+      resourceAvailability: undefined,
       startDate: mockDateTimes.startDate,
       endDate: mockDateTimes.endDate
     });
 
-    expect(result).toBe(3);
+    expect(result).toBe(0);
   });
 
   // it("should count working days correctly", () => {

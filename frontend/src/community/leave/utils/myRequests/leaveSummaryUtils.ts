@@ -2,18 +2,19 @@ import { DateTime } from "luxon";
 
 import { daysTypes } from "~community/common/constants/stringConstants";
 import { LeaveStates } from "~community/common/types/CommonTypes";
+import { isNotAWorkingDate } from "~community/common/utils/calendarDateRangePickerUtils";
 import {
-  getHolidaysForDay,
-  isNotAWorkingDate
-} from "~community/common/utils/calendarDateRangePickerUtils";
-import { formatDateTimeWithOrdinalIndicatorWithoutYear } from "~community/common/utils/dateTimeUtils";
-import { Holiday } from "~community/people/types/HolidayTypes";
+  formatDateTimeWithOrdinalIndicatorWithoutYear,
+  isDateTimeSimilar,
+  parseStringWithCurrentYearAndConvertToDateTime
+} from "~community/common/utils/dateTimeUtils";
+import { ResourceAvailabilityPayload } from "~community/leave/types/MyRequests";
 
 interface GetDurationProps {
   leaveState: LeaveStates;
   translateText: (key: string[]) => string;
   workingDays: daysTypes[];
-  allHolidays: Holiday[] | undefined;
+  resourceAvailability: ResourceAvailabilityPayload[] | undefined;
   startDate: DateTime;
   endDate?: DateTime;
 }
@@ -22,7 +23,7 @@ export const getDuration = ({
   leaveState,
   translateText,
   workingDays,
-  allHolidays,
+  resourceAvailability,
   startDate,
   endDate
 }: GetDurationProps) => {
@@ -32,7 +33,7 @@ export const getDuration = ({
 
   const workingDayCount = calculateWorkingDays({
     workingDays,
-    allHolidays,
+    resourceAvailability,
     startDate,
     endDate
   });
@@ -62,34 +63,43 @@ export const getDefaultDurationText = (
 
 export const calculateWorkingDays = ({
   workingDays,
-  allHolidays,
+  resourceAvailability,
   startDate,
   endDate
 }: {
   workingDays: daysTypes[];
-  allHolidays: Holiday[] | undefined;
+  resourceAvailability: ResourceAvailabilityPayload[] | undefined;
   startDate: DateTime;
   endDate: DateTime;
 }): number => {
-  let noOfWorkingDays = 0;
-  let currentDate = startDate.startOf("day");
-  const lastDate = endDate.startOf("day");
+  if (!resourceAvailability) return 0;
 
-  while (currentDate <= lastDate) {
-    const isHoliday = !!getHolidaysForDay({ allHolidays, date: currentDate })
-      ?.length;
+  const requestingDays = resourceAvailability.filter((resource) => {
+    const resourceDate = parseStringWithCurrentYearAndConvertToDateTime(
+      resource.date
+    );
+
+    if (!endDate) {
+      return isDateTimeSimilar(startDate, resourceDate);
+    }
+
+    return startDate <= resourceDate && resourceDate <= endDate;
+  });
+
+  const workingDaysWithoutHolidays = requestingDays.filter(
+    (day) => day.holidays.length === 0
+  );
+
+  const noOfWorkingDays = workingDaysWithoutHolidays.reduce((count, day) => {
+    const date = parseStringWithCurrentYearAndConvertToDateTime(day.date);
 
     const isWorkingDay = !isNotAWorkingDate({
-      date: currentDate,
+      date,
       workingDays
     });
 
-    if (!isHoliday && isWorkingDay) {
-      noOfWorkingDays++;
-    }
-
-    currentDate = currentDate.plus({ days: 1 });
-  }
+    return isWorkingDay ? count + 1 : count;
+  }, 0);
 
   return noOfWorkingDays;
 };
