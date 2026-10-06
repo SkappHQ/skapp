@@ -465,13 +465,12 @@ export const getMonthAndSelectedDatesRange = (
   const { start, end } = getMonthStartAndEndDates(month);
   if (!selectedDates[0]) return { start, end };
 
-  const rangeStart = selectedDates[0].toFormat("yyyy-MM-dd");
-  const rangeEnd =
-    selectedDates[selectedDates.length - 1].toFormat("yyyy-MM-dd");
+  const monthStart = DateTime.fromISO(start);
+  const monthEnd = DateTime.fromISO(end);
 
   return {
-    start: rangeStart < start ? rangeStart : start,
-    end: rangeEnd > end ? rangeEnd : end
+    start: DateTime.min(monthStart, ...selectedDates).toFormat("yyyy-MM-dd"),
+    end: DateTime.max(monthEnd, ...selectedDates).toFormat("yyyy-MM-dd")
   };
 };
 
