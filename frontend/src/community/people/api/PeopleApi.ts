@@ -1016,6 +1016,12 @@ export const bulkReassignAndRemoveEmployees = (
 ) =>
   authFetch.patch(peoplesEndpoints.BULK_REASSIGN_AND_REMOVE_EMPLOYEES, payload);
 
+export const useBulkReassignAndRemoveEmployees = () => {
+  return useMutation({
+    mutationFn: bulkReassignAndRemoveEmployees
+  });
+};
+
 export const useReassignSupervisorsAndTerminateOrDeleteEmployee = (
   userId: number,
   onSuccess: () => void,
