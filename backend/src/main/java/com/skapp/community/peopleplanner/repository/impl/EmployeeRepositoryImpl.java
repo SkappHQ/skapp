@@ -32,6 +32,7 @@ import com.skapp.community.peopleplanner.payload.request.EmployeeFilterDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeFilterDtoV2;
 import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeCountDto;
+import com.skapp.community.peopleplanner.payload.response.EmployeeEmailIdDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeManagerDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeTeamDto;
 import com.skapp.community.peopleplanner.payload.response.PrimarySecondaryOrTeamSupervisorResponseDto;
@@ -74,6 +75,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -1777,6 +1779,22 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		query.select(cb.count(root)).where(predicates.toArray(new Predicate[0]));
 
 		return entityManager.createQuery(query).getSingleResult() > 0;
+	}
+
+	@Override
+	public Map<String, Long> findEmployeeIdsByEmailIgnoreCase(List<String> lowerCaseEmails) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<EmployeeEmailIdDto> query = cb.createQuery(EmployeeEmailIdDto.class);
+		Root<User> root = query.from(User.class);
+		Expression<String> lowerCaseEmail = cb.lower(root.get(User_.email));
+
+		query.select(cb.construct(EmployeeEmailIdDto.class, lowerCaseEmail, root.get(User_.userId)))
+			.where(lowerCaseEmail.in(lowerCaseEmails));
+
+		return entityManager.createQuery(query)
+			.getResultList()
+			.stream()
+			.collect(Collectors.toMap(EmployeeEmailIdDto::getEmail, EmployeeEmailIdDto::getEmployeeId));
 	}
 
 }

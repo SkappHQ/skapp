@@ -55,6 +55,8 @@ import com.skapp.community.peopleplanner.model.JobFamily;
 import com.skapp.community.peopleplanner.model.JobTitle;
 import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.payload.CurrentEmployeeDto;
+import com.skapp.community.peopleplanner.payload.request.BulkReassignAndRemoveEmployeeItemDto;
+import com.skapp.community.peopleplanner.payload.request.BulkReassignAndRemoveEmployeesRequestDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeBasicDetailsResponseDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeBulkDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeDataValidationDto;
@@ -1541,6 +1543,31 @@ public class PeopleServiceImpl implements PeopleService {
 			ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto requestDto) {
 		log.info("reassignSupervisorsAndTerminateOrDeleteEmployee: execution started");
 
+		PeopleMessageConstant successMessage = reassignSupervisorsAndTerminateOrDeleteEmployeeCore(userId, requestDto);
+
+		log.info("reassignSupervisorsAndTerminateOrDeleteEmployee: execution ended");
+		return new ResponseEntityDto(messageUtil.getMessage(successMessage), false);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto bulkReassignAndRemoveEmployees(BulkReassignAndRemoveEmployeesRequestDto requestDto) {
+		PeopleMessageConstant successMessage = null;
+		for (BulkReassignAndRemoveEmployeeItemDto employee : requestDto.getEmployees()) {
+			ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto itemRequestDto = new ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto();
+			itemRequestDto.setPrimarySupervisors(employee.getPrimarySupervisors());
+			itemRequestDto.setTeamSupervisors(employee.getTeamSupervisors());
+			itemRequestDto.setAction(requestDto.getAction());
+
+			successMessage = reassignSupervisorsAndTerminateOrDeleteEmployeeCore(employee.getEmployeeId(),
+					itemRequestDto);
+		}
+
+		return new ResponseEntityDto(messageUtil.getMessage(successMessage), false);
+	}
+
+	private PeopleMessageConstant reassignSupervisorsAndTerminateOrDeleteEmployeeCore(Long userId,
+			ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto requestDto) {
 		if (requestDto.getAction() == null) {
 			throw new ModuleException(
 					PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_TERMINATION_OR_DELETION_ACTION_REQUIRED);
@@ -1561,22 +1588,18 @@ public class PeopleServiceImpl implements PeopleService {
 						teamSupervisorTransferRequest));
 		}
 
-		PeopleMessageConstant successMessage;
 		switch (requestDto.getAction()) {
 			case TERMINATE -> {
 				updateUserStatus(userId, AccountStatus.TERMINATED, false);
-				successMessage = PeopleMessageConstant.PEOPLE_SUCCESS_SUPERVISORS_REASSIGNED_AND_EMPLOYEE_TERMINATED;
+				return PeopleMessageConstant.PEOPLE_SUCCESS_SUPERVISORS_REASSIGNED_AND_EMPLOYEE_TERMINATED;
 			}
 			case DELETE -> {
 				updateUserStatus(userId, AccountStatus.DELETED, true);
-				successMessage = PeopleMessageConstant.PEOPLE_SUCCESS_SUPERVISORS_REASSIGNED_AND_EMPLOYEE_DELETED;
+				return PeopleMessageConstant.PEOPLE_SUCCESS_SUPERVISORS_REASSIGNED_AND_EMPLOYEE_DELETED;
 			}
 			default -> throw new ModuleException(
 					PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_TERMINATION_OR_DELETION_ACTION_REQUIRED);
 		}
-
-		log.info("reassignSupervisorsAndTerminateOrDeleteEmployee: execution ended");
-		return new ResponseEntityDto(messageUtil.getMessage(successMessage), false);
 	}
 
 	@Override

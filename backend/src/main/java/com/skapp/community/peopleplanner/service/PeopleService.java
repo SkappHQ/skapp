@@ -1,6 +1,7 @@
 package com.skapp.community.peopleplanner.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.peopleplanner.payload.request.BulkReassignAndRemoveEmployeesRequestDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeBulkDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeDataValidationDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeExportFilterDto;
@@ -74,6 +75,8 @@ public interface PeopleService {
 
 	ResponseEntityDto reassignSupervisorsAndTerminateOrDeleteEmployee(Long userId,
 			ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto requestDto);
+
+	ResponseEntityDto bulkReassignAndRemoveEmployees(BulkReassignAndRemoveEmployeesRequestDto requestDto);
 
 	ResponseEntityDto getTodayBirthdayNotifications();
 

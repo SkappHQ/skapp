@@ -116,4 +116,6 @@ public interface EmployeeRepository {
 	List<Employee> findEmployeeBirthdaysOnByViewerAndScope(LocalDate date, Long viewerEmployeeId,
 			BirthdayNotificationScope scope);
 
+	Map<String, Long> findEmployeeIdsByEmailIgnoreCase(List<String> lowerCaseEmails);
+
 }
