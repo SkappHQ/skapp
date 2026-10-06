@@ -13,6 +13,7 @@ export const useConfigurationStore = create<
     (set) => ({
       isUserRoleModalOpen: false,
       moduleType: Modules.NONE,
+      hasUnsavedChanges: false,
       setIsUserRoleModalOpen: (status: boolean) =>
         set((state: ConfigurationStoreTypes) => ({
           ...state,
@@ -22,6 +23,11 @@ export const useConfigurationStore = create<
         set((state: ConfigurationStoreTypes) => ({
           ...state,
           moduleType: moduleType
+        })),
+      setHasUnsavedChanges: (status: boolean) =>
+        set((state: ConfigurationStoreTypes) => ({
+          ...state,
+          hasUnsavedChanges: status
         }))
     }),
     { name: "configurationStore" }

@@ -127,6 +127,17 @@
   },
   "pageHead": "Configurations | Skapp",
   "title": "Configurations",
+  "unsavedChangesModal": {
+    "title": "Unsaved Changes",
+    "description": "You have unsaved changes. Are you sure you want to leave?",
+    "stayOnPageBtn": "Stay on Page",
+    "leaveWithoutSavingBtn": "Leave Without Saving",
+    "aria": {
+      "closeButton": "Close unsaved changes modal and stay on page",
+      "stayOnPageBtn": "Stay on page and keep your unsaved changes",
+      "leaveWithoutSavingBtn": "Leave without saving and discard your unsaved changes"
+    }
+  },
   "tabs": {
     "time": "Time",
     "attendance": "Attendance",
