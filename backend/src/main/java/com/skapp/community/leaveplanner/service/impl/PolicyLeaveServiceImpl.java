@@ -421,14 +421,14 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		MonthDay cycleAnchor = resolveCycleAnchor();
 		PolicyLeaveDateWindowDto cycle = PolicyLeaveAccrualUtil.resolveCycle(resolveCycleYear(year, today, cycleAnchor),
 				cycleAnchor);
-		LocalDate carryoverAsOf = clampToCycle(today, cycle);
-		LocalDate accrualAsOf = resolveAccrualAsOf(today, cycle);
+		LocalDate asOf = clampToCycle(today, cycle);
+		LocalDate accrualAsOf = today.isAfter(cycle.getEndDate()) ? cycle.getEndDate().plusDays(1) : asOf;
 
 		Map<Long, PolicyLeaveUsageLookup> usageLookups = buildUsageLookups(employeeId, assignments, cycle, cycleAnchor);
 
 		Map<Long, PolicyLeaveBalanceDto> balancesByAssignment = new LinkedHashMap<>();
 		assignments.forEach(assignment -> balancesByAssignment.put(assignment.getId(), calculateBalance(assignment,
-				cycle, cycleAnchor, carryoverAsOf, accrualAsOf, () -> usageLookups.get(assignment.getId()))));
+				cycle, cycleAnchor, asOf, accrualAsOf, () -> usageLookups.get(assignment.getId()))));
 
 		log.info("calculateBalancesForYear: execution ended");
 		return balancesByAssignment;
@@ -738,20 +738,14 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 	private PolicyLeaveBalanceDto calculateBalanceForDate(EmployeeLeavePolicy assignment, LocalDate date) {
 		MonthDay cycleAnchor = resolveCycleAnchor();
-		return calculateBalance(assignment, PolicyLeaveAccrualUtil.resolveCycleContaining(date, cycleAnchor),
-				cycleAnchor, date, date);
+		LocalDate today = timeZoneService.currentOrganizationDate();
+		PolicyLeaveDateWindowDto cycle = PolicyLeaveAccrualUtil.resolveCycleContaining(today, cycleAnchor);
+		return calculateBalance(assignment, cycle, cycleAnchor, date, today);
 	}
 
 	private MonthDay resolveCycleAnchor() {
 		LeaveCycleDetailsDto leaveCycle = leaveCycleService.getLeaveCycleConfigs();
 		return MonthDay.of(leaveCycle.getStartMonth(), leaveCycle.getStartDate());
-	}
-
-	private LocalDate resolveAccrualAsOf(LocalDate today, PolicyLeaveDateWindowDto cycle) {
-		if (today.isBefore(cycle.getStartDate())) {
-			return cycle.getEndDate();
-		}
-		return clampToCycle(today, cycle);
 	}
 
 	private LocalDate clampToCycle(LocalDate date, PolicyLeaveDateWindowDto cycle) {
@@ -1092,10 +1086,13 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 	}
 
 	private int resolveCycleYear(Integer year, LocalDate today, MonthDay cycleAnchor) {
+		int currentCycleYear = PolicyLeaveAccrualUtil.resolveCycleContaining(today, cycleAnchor)
+			.getStartDate()
+			.getYear();
 		if (year == null) {
-			return PolicyLeaveAccrualUtil.resolveCycleContaining(today, cycleAnchor).getStartDate().getYear();
+			return currentCycleYear;
 		}
-		if (year < Year.MIN_VALUE || year > today.getYear() + 1) {
+		if (year < Year.MIN_VALUE || year > currentCycleYear) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INVALID_YEAR);
 		}
 		return year;
