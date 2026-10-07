@@ -52,6 +52,7 @@ import {
 import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 import { useLeaveStore } from "~community/leave/store/store";
 import { MyLeaveRequestPayloadType } from "~community/leave/types/MyRequests";
+import { PolicyLeaveValidationFailure } from "~community/leave/types/PolicyLeaveTypes";
 import {
   getDurationInitialValue,
   getDurationSelectorDisabledOptions
@@ -340,6 +341,17 @@ const ApplyPolicyLeaveModal = () => {
         onSuccess: (data) => {
           if (requestId === availabilityRequestIdRef.current) {
             setAvailability(data);
+
+            if (
+              data.failureReason ===
+              PolicyLeaveValidationFailure.INSUFFICIENT_BALANCE
+            ) {
+              handlePolicyLeaveToast({
+                type: PolicyLeaveToastEnums.INSUFFICIENT_BALANCE,
+                setToastMessage,
+                translateText
+              });
+            }
           }
         },
         onError: () => {

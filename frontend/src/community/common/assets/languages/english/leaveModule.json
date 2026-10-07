@@ -236,7 +236,7 @@
         },
         "insufficientBalance": {
           "title": "Insufficient Balance",
-          "description": "You do not have enough balance remaining on this leave policy."
+          "description": "Not enough balance to apply for leave on the selected date/s."
         },
         "notApplicable": {
           "title": "Oops! Something went wrong",
