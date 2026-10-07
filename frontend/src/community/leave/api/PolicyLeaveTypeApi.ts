@@ -21,6 +21,7 @@ import {
   UpdatePolicyLeaveTypeVariables,
   UseGetPolicyLeaveTypesArgs
 } from "~community/leave/types/PolicyLeaveTypeTypes";
+import { quickSetupQueryKeys } from "~enterprise/common/api/utils/QueryKeys";
 
 const getPolicyLeaveTypes = async (
   params: PolicyLeaveTypesParams
@@ -93,6 +94,9 @@ export const useAddPolicyLeaveType = (
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: policyLeaveTypeQueryKeys.ALL
+      });
+      queryClient.invalidateQueries({
+        queryKey: quickSetupQueryKeys.QUICK_SETUP_PROGRESS
       });
       onSuccess();
     },

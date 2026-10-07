@@ -89,10 +89,10 @@ export const useAddLeaveType = (onSuccess: () => void, onError: () => void) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [
-          leaveTypeQueryKeys.LEAVE_TYPES(params),
-          quickSetupQueryKeys.QUICK_SETUP_PROGRESS
-        ]
+        queryKey: [leaveTypeQueryKeys.LEAVE_TYPES(params)]
+      });
+      queryClient.invalidateQueries({
+        queryKey: quickSetupQueryKeys.QUICK_SETUP_PROGRESS
       });
       onSuccess();
     },
