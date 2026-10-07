@@ -25,6 +25,7 @@ import tools.jackson.databind.json.JsonMapper;
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -87,6 +88,32 @@ class SharePasswordIntegrationTest {
 				"DB temp_password should be a bcrypt hash of the returned plaintext");
 		assertTrue(passwordEncoder.matches(returnedTempPassword, user.getPassword()),
 				"DB password should also be updated to bcrypt hash of the returned plaintext");
+	}
+
+	@Test
+	@DisplayName("Reset and share password requires the user to change the shared password at first sign-in")
+	void resetAndSharePassword_RequiresPasswordChangeAtFirstSignIn() throws Exception {
+		MvcResult result = mvc
+			.perform(get("/v1/auth/reset/share-password/2").accept(MediaType.APPLICATION_JSON)
+				.with(SecurityTestUtils.bearerToken(authToken)))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['employeeCredentials']['email']").value("user2@gmail.com"))
+			.andReturn();
+
+		String returnedTempPassword = jsonMapper.readTree(result.getResponse().getContentAsString())
+			.get("results")
+			.get(0)
+			.get("employeeCredentials")
+			.get("tempPassword")
+			.asString();
+
+		User user = userDao.findById(2L).orElseThrow();
+		assertTrue(passwordEncoder.matches(returnedTempPassword, user.getPassword()),
+				"DB password should be a bcrypt hash of the returned plaintext");
+		assertFalse(user.getIsPasswordChangedForTheFirstTime(),
+				"The user should be asked to change the shared password at first sign-in");
 	}
 
 	@Test
