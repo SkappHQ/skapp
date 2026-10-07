@@ -7,6 +7,7 @@ import SwitchRow from "~community/common/components/atoms/SwitchRow/SwitchRow";
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
 import Modal from "~community/common/components/organisms/Modal/Modal";
 import { appModes } from "~community/common/constants/configs";
+import { GlobalLoginMethod } from "~community/common/enums/CommonEnums";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -28,6 +29,7 @@ import { usePeopleStore } from "~community/people/store/store";
 import { L2SystemPermissionsType } from "~community/people/types/PeopleTypes";
 import { useHandlePeopleEdit } from "~community/people/utils/peopleEditFlowUtils/useHandlePeopleEdit";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
+import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
 import AddSectionButtonWrapper from "../../molecules/AddSectionButtonWrapper/AddSectionButtonWrapper";
 import EditSectionButtonWrapper from "../../molecules/EditSectionButtonWrapper/EditSectionButtonWrapper";
@@ -52,6 +54,9 @@ const SystemPermissionFormSection = ({
 }: Props) => {
   const classes = styles();
   const environment = useGetEnvironment();
+  const globalLoginMethod = useCommonEnterpriseStore(
+    (state) => state.globalLoginMethod
+  );
 
   const translateText = useTranslator(
     "peopleModule",
@@ -412,7 +417,11 @@ const SystemPermissionFormSection = ({
 
           {isUpdate &&
             !isInputsDisabled &&
-            environment === appModes.COMMUNITY && <SystemCredentials />}
+            !isReadOnly &&
+            (environment === appModes.COMMUNITY ||
+              globalLoginMethod === GlobalLoginMethod.CREDENTIALS) && (
+              <SystemCredentials />
+            )}
 
           {!isInputsDisabled &&
             (isAddFlow ? (
