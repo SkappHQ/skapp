@@ -582,14 +582,14 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	private void validatePasswordResetAllowed(Employee targetEmployee) {
-		AccountStatus targetStatus = targetEmployee.getAccountStatus();
-		boolean isStatusResettable = profileActivator.isEpProfile() ? targetStatus == AccountStatus.PENDING
-				: targetStatus == AccountStatus.PENDING || targetStatus == AccountStatus.ACTIVE;
-
-		if (!isStatusResettable
+		if (!isPasswordResetAllowed(targetEmployee.getAccountStatus())
 				|| (isSuperAdmin(targetEmployee) && !isSuperAdmin(userService.getCurrentUser().getEmployee()))) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_PASSWORD_RESET_NOT_ALLOWED);
 		}
+	}
+
+	protected boolean isPasswordResetAllowed(AccountStatus accountStatus) {
+		return accountStatus == AccountStatus.PENDING || accountStatus == AccountStatus.ACTIVE;
 	}
 
 	private boolean isSuperAdmin(Employee employee) {
