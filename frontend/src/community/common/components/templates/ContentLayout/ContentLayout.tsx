@@ -21,6 +21,7 @@ import Icon from "~community/common/components/atoms/Icon/Icon";
 import VersionUpgradeBanner from "~community/common/components/molecules/VersionUpgradeBanner/VersionUpgradeBanner";
 import { appModes } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
+import { ORGANIZATION_THEME_COLOR_KEY } from "~community/common/constants/stringConstants";
 import { contentLayoutTestId } from "~community/common/constants/testIds";
 import { Modules } from "~community/common/enums/CommonEnums";
 import {
@@ -34,6 +35,7 @@ import { themeSelector } from "~community/common/theme/themeSelector";
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
 import { IconName } from "~community/common/types/IconTypes";
+import { getDataFromLocalStorage } from "~community/common/utils/accessLocalStorage";
 import { getBlinkClass, mergeSx } from "~community/common/utils/commonUtil";
 import { EIGHTY_PERCENT } from "~community/common/utils/getConstants";
 import QuickSetupContainer from "~enterprise/common/components/molecules/QuickSetupContainer/QuickSetupContainer";
@@ -209,7 +211,9 @@ const ContentLayout = ({
 
   const themeColor = shouldUseDefaultTheme(asPath)
     ? ThemeTypes.BLUE_THEME
-    : organizationDetails?.results?.[0]?.themeColor || ThemeTypes.BLUE_THEME;
+    : organizationDetails?.results?.[0]?.themeColor ||
+      getDataFromLocalStorage(ORGANIZATION_THEME_COLOR_KEY) ||
+      ThemeTypes.BLUE_THEME;
 
   const updatedTheme = themeSelector(themeColor);
 

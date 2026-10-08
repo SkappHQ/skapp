@@ -26,6 +26,7 @@ import NotificationBadge from "~community/common/components/atoms/NotificationBa
 import NotificationDot from "~community/common/components/atoms/NotificationDot/NotificationDot";
 import { appModes } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
+import { ORGANIZATION_THEME_COLOR_KEY } from "~community/common/constants/stringConstants";
 import { appDrawerTestId } from "~community/common/constants/testIds";
 import { FileTypes } from "~community/common/enums/CommonEnums";
 import useDrawer from "~community/common/hooks/useDrawer";
@@ -40,6 +41,7 @@ import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
 import { IconName } from "~community/common/types/IconTypes";
 import { NotificationSummaryType } from "~community/common/types/notificationTypes";
 import { CommonStoreTypes } from "~community/common/types/zustand/StoreTypes";
+import { getDataFromLocalStorage } from "~community/common/utils/accessLocalStorage";
 import getDrawerRoutes from "~community/common/utils/getDrawerRoutes";
 import { shouldActivateLink } from "~community/common/utils/keyboardUtils";
 import useCanViewLeavePolicies from "~community/leave/hooks/useCanViewLeavePolicies";
@@ -172,7 +174,9 @@ const Drawer = (): JSX.Element => {
   );
 
   const updatedTheme = themeSelector(
-    organizationDetails?.results?.[0]?.themeColor || ThemeTypes.BLUE_THEME
+    organizationDetails?.results?.[0]?.themeColor ||
+      getDataFromLocalStorage(ORGANIZATION_THEME_COLOR_KEY) ||
+      ThemeTypes.BLUE_THEME
   );
 
   theme.palette = updatedTheme.palette;
