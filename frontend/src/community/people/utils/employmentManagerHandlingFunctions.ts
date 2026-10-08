@@ -59,10 +59,14 @@ export const onManagerSearchChange = async ({
   isProTier
 }: ManagerSearchType): Promise<void> => {
   setManagerSearchTerm(searchTerm);
-  await formik.setFieldValue(managerType, {});
-  const currentEmploymentDetails = formik.values || {};
 
   if (!(isProTier && managerType === "otherSupervisors")) {
+    await formik.setFieldValue(
+      managerType,
+      managerType === "otherSupervisors" ? [] : {}
+    );
+    const currentEmploymentDetails = formik.values || {};
+
     setSupervisor({
       employmentDetails: {
         ...currentEmploymentDetails,
@@ -79,7 +83,10 @@ export const onManagerRemove = async ({
   setSupervisor
 }: ManagerRemoveType): Promise<void> => {
   searchTermSetter("");
-  await formik.setFieldValue(fieldName, {});
+  await formik.setFieldValue(
+    fieldName,
+    fieldName === "otherSupervisors" ? [] : {}
+  );
 
   const currentEmploymentDetails = formik.values || {};
 

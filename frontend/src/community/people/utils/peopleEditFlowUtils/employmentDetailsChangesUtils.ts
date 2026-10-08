@@ -84,14 +84,18 @@ export const getEmploymentChanges = (
     changes.primarySupervisor = newEmployment?.primarySupervisor;
   }
 
-  const previousOtherSupervisorIds =
+  const previousOtherSupervisorIds = Array.isArray(
     previousEmployement?.otherSupervisors
-      ?.map((supervisor) => supervisor.employeeId)
-      .filter((id): id is number => id !== undefined) ?? [];
-  const newOtherSupervisorIds =
-    newEmployment?.otherSupervisors
-      ?.map((supervisor) => supervisor.employeeId)
-      .filter((id): id is number => id !== undefined) ?? [];
+  )
+    ? previousEmployement.otherSupervisors
+        .map((supervisor) => supervisor.employeeId)
+        .filter((id): id is number => id !== undefined)
+    : [];
+  const newOtherSupervisorIds = Array.isArray(newEmployment?.otherSupervisors)
+    ? newEmployment.otherSupervisors
+        .map((supervisor) => supervisor.employeeId)
+        .filter((id): id is number => id !== undefined)
+    : [];
 
   if (
     isArrayFieldDifferentAndValid(
