@@ -40,6 +40,7 @@ import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.Validation;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
+import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.payload.response.EmployeeCredentialsResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
@@ -428,6 +429,7 @@ public class AuthServiceImpl implements AuthService {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 		User user = optionalUser.get();
+		validatePasswordResetAllowed(user.getEmployee());
 
 		String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
 		log.info("resetAndSharePassword: Generated new temp password for userEmail={}", user.getEmail());
@@ -577,6 +579,21 @@ public class AuthServiceImpl implements AuthService {
 
 		log.info("changePassword: changePassword: execution ended for userEmail={}", user.getEmail());
 		return new ResponseEntityDto(false, "User password changed successfully");
+	}
+
+	private void validatePasswordResetAllowed(Employee targetEmployee) {
+		AccountStatus targetStatus = targetEmployee.getAccountStatus();
+		boolean isStatusResettable = profileActivator.isEpProfile() ? targetStatus == AccountStatus.PENDING
+				: targetStatus == AccountStatus.PENDING || targetStatus == AccountStatus.ACTIVE;
+
+		if (!isStatusResettable
+				|| (isSuperAdmin(targetEmployee) && !isSuperAdmin(userService.getCurrentUser().getEmployee()))) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_PASSWORD_RESET_NOT_ALLOWED);
+		}
+	}
+
+	private boolean isSuperAdmin(Employee employee) {
+		return Optional.ofNullable(employee.getEmployeeRole()).map(EmployeeRole::getIsSuperAdmin).orElse(false);
 	}
 
 	private SharePasswordResponseDto getSharePasswordResponseDto(User savedUser, User user, String tempPassword) {
