@@ -35,10 +35,7 @@ import {
 } from "~community/common/types/AuthTypes";
 import { checkRestrictedRoutesAndRedirect } from "~community/common/utils/commonUtil";
 import { TenantStatusEnums, TierEnum } from "~enterprise/common/enums/Common";
-import {
-  isCoreOrProTier,
-  isProTier
-} from "~enterprise/common/utils/commonUtil";
+import { isCoreOrProTier } from "~enterprise/common/utils/commonUtil";
 
 // Define common routes shared by all roles
 const commonRoutes = [
@@ -381,7 +378,7 @@ const resolveInvoiceIntegrationsAccess: AccessGuard = ({
   claims
 }) =>
   currentPath.startsWith(ROUTES.INVOICE.INTEGRATIONS.BASE) &&
-  !isProTier(getClaimTiers(claims))
+  !getClaimTiers(claims).includes(TierEnum.PRO)
     ? redirectToUnauthorized(request)
     : null;
 
