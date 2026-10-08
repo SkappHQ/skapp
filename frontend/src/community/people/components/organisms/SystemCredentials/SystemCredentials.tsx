@@ -94,7 +94,7 @@ const SystemCredentials: React.FC = () => {
 
   return (
     <Box mt="1.75rem">
-      <Typography variant="h1">
+      <Typography variant="h2">
         {translateText(["systemCredentialsHeading"])}
       </Typography>
       <Stack sx={classes.dividerWrapper}>

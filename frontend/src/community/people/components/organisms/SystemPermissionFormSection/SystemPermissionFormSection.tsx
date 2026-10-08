@@ -2,7 +2,6 @@ import { Box, Stack, Typography } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useEffect, useState } from "react";
 
-import Icon from "~community/common/components/atoms/Icon/Icon";
 import SwitchRow from "~community/common/components/atoms/SwitchRow/SwitchRow";
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
 import Modal from "~community/common/components/organisms/Modal/Modal";
@@ -30,6 +29,7 @@ import { L2SystemPermissionsType } from "~community/people/types/PeopleTypes";
 import { useHandlePeopleEdit } from "~community/people/utils/peopleEditFlowUtils/useHandlePeopleEdit";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
+import { isPasswordResetTenant } from "~enterprise/common/utils/tenantUtil";
 
 import AddSectionButtonWrapper from "../../molecules/AddSectionButtonWrapper/AddSectionButtonWrapper";
 import EditSectionButtonWrapper from "../../molecules/EditSectionButtonWrapper/EditSectionButtonWrapper";
@@ -127,6 +127,15 @@ const SystemPermissionFormSection = ({
     (permissions.isSuperAdmin && !hasOtherSuperAdmins) ||
     isInputsDisabled ||
     (isReadOnly && !isPeopleAdminViewingOwnProfile && !hasOtherSuperAdmins);
+
+  const shouldShowSystemCredentials =
+    isUpdate &&
+    !isInputsDisabled &&
+    !isReadOnly &&
+    (environment === appModes.COMMUNITY ||
+      (globalLoginMethod === GlobalLoginMethod.CREDENTIALS &&
+        isPasswordResetTenant() &&
+        initialEmployee?.common?.accountStatus === AccountStatusTypes.PENDING));
 
   const onSave = () => {
     if (
@@ -415,13 +424,7 @@ const SystemPermissionFormSection = ({
             )}
           </Stack>
 
-          {isUpdate &&
-            !isInputsDisabled &&
-            !isReadOnly &&
-            (environment === appModes.COMMUNITY ||
-              globalLoginMethod === GlobalLoginMethod.CREDENTIALS) && (
-              <SystemCredentials />
-            )}
+          {shouldShowSystemCredentials && <SystemCredentials />}
 
           {!isInputsDisabled &&
             (isAddFlow ? (
