@@ -41,6 +41,7 @@ import LeaveSummary from "~community/leave/components/molecules/LeaveSummary/Lea
 import PolicyLeaveBalanceCard from "~community/leave/components/molecules/PolicyLeaveBalanceCard/PolicyLeaveBalanceCard";
 import PolicyTeamAvailabilityCard from "~community/leave/components/molecules/PolicyTeamAvailabilityCard/PolicyTeamAvailabilityCard";
 import {
+  INSUFFICIENT_BALANCE_TOAST_KEY,
   MAX_POLICY_LEAVE_COMMENT_LENGTH,
   TOTAL_PERCENTAGE
 } from "~community/leave/constants/stringConstants";
@@ -52,6 +53,7 @@ import {
 import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 import { useLeaveStore } from "~community/leave/store/store";
 import { MyLeaveRequestPayloadType } from "~community/leave/types/MyRequests";
+import { PolicyLeaveValidationFailure } from "~community/leave/types/PolicyLeaveTypes";
 import {
   getDurationInitialValue,
   getDurationSelectorDisabledOptions
@@ -82,6 +84,9 @@ const ApplyPolicyLeaveModal = () => {
   const { sendEvent } = useGoogleAnalyticsEvent();
   const dateFieldRef = useRef<HTMLFieldSetElement>(null);
   const availabilityRequestIdRef = useRef(0);
+  const previousFailureReasonRef = useRef<PolicyLeaveValidationFailure | null>(
+    null
+  );
 
   const [hasAvailabilityCheckFailed, setHasAvailabilityCheckFailed] =
     useState(false);
@@ -313,6 +318,39 @@ const ApplyPolicyLeaveModal = () => {
     setSelectedDuration
   ]);
 
+  const closeInsufficientBalanceToast = useCallback(() => {
+    setToastMessage((prev) =>
+      prev.key === INSUFFICIENT_BALANCE_TOAST_KEY
+        ? { ...prev, open: false }
+        : prev
+    );
+  }, [setToastMessage]);
+
+  const handleAvailabilityFailureReason = (
+    failureReason: PolicyLeaveValidationFailure | null
+  ) => {
+    const isInsufficientBalance =
+      failureReason === PolicyLeaveValidationFailure.INSUFFICIENT_BALANCE;
+
+    if (!isInsufficientBalance) {
+      closeInsufficientBalanceToast();
+    } else if (previousFailureReasonRef.current !== failureReason) {
+      handlePolicyLeaveToast({
+        type: PolicyLeaveToastEnums.INSUFFICIENT_BALANCE,
+        setToastMessage,
+        translateText,
+        key: INSUFFICIENT_BALANCE_TOAST_KEY
+      });
+    }
+
+    previousFailureReasonRef.current = failureReason;
+  };
+
+  useEffect(
+    () => closeInsufficientBalanceToast,
+    [closeInsufficientBalanceToast]
+  );
+
   useEffect(() => {
     const requestId = ++availabilityRequestIdRef.current;
 
@@ -324,6 +362,7 @@ const ApplyPolicyLeaveModal = () => {
       selectedDuration === LeaveStates.NONE
     ) {
       setAvailability(null);
+      handleAvailabilityFailureReason(null);
       return;
     }
 
@@ -340,6 +379,7 @@ const ApplyPolicyLeaveModal = () => {
         onSuccess: (data) => {
           if (requestId === availabilityRequestIdRef.current) {
             setAvailability(data);
+            handleAvailabilityFailureReason(data?.failureReason ?? null);
           }
         },
         onError: () => {
