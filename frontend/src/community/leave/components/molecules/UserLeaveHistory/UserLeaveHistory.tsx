@@ -120,9 +120,7 @@ const UserLeaveHistory: FC<Props> = ({
     useGetSupervisedByMe(employeeId);
 
   const isSupervisorOfEmployee = Boolean(
-    supervisedData?.isPrimaryManager ||
-    supervisedData?.isSecondaryManager ||
-    supervisedData?.isTeamSupervisor
+    supervisedData?.isPrimaryManager || supervisedData?.isSecondaryManager
   );
 
   const handleRowClick = (leaveRequest: { id: number }) => {
