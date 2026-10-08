@@ -1,7 +1,7 @@
 import { AvatarGroup, AvatarSize } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import useGetImageUrls from "~community/common/hooks/useGetImageUrls";
+import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { EmployeeAvatarData } from "~community/common/types/CommonTypes";
 
 export interface EmployeeAvatarGroupProps {
@@ -13,7 +13,7 @@ const EmployeeAvatarGroup: FC<EmployeeAvatarGroupProps> = ({
   employees,
   size = "sm"
 }) => {
-  const imageUrls = useGetImageUrls(
+  const imageUrls = useGetImageUrl(
     employees.map((employee) => employee.authPic ?? "")
   );
 
