@@ -85,6 +85,7 @@ const PeopleFormSections = ({
             isAddFlow={isAddFlow}
             isReadOnly={isSystemPermissionsReadOnly}
             isPeopleAdminViewingOwnProfile={isPeopleAdminViewingOwnProfile}
+            isUpdate
           />
         );
       case EditPeopleFormTypes.timeline:
