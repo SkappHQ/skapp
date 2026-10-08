@@ -2,7 +2,6 @@ import { Box, Stack, Typography } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useEffect, useState } from "react";
 
-import Icon from "~community/common/components/atoms/Icon/Icon";
 import SwitchRow from "~community/common/components/atoms/SwitchRow/SwitchRow";
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
 import Modal from "~community/common/components/organisms/Modal/Modal";
@@ -127,6 +126,11 @@ const SystemPermissionFormSection = ({
     (permissions.isSuperAdmin && !hasOtherSuperAdmins) ||
     isInputsDisabled ||
     (isReadOnly && !isPeopleAdminViewingOwnProfile && !hasOtherSuperAdmins);
+
+  const isCredentialResetAllowed =
+    environment === appModes.COMMUNITY ||
+    (globalLoginMethod === GlobalLoginMethod.CREDENTIALS &&
+      employee?.common?.accountStatus === AccountStatusTypes.PENDING);
 
   const onSave = () => {
     if (
@@ -418,10 +422,7 @@ const SystemPermissionFormSection = ({
           {isUpdate &&
             !isInputsDisabled &&
             !isReadOnly &&
-            (environment === appModes.COMMUNITY ||
-              globalLoginMethod === GlobalLoginMethod.CREDENTIALS) && (
-              <SystemCredentials />
-            )}
+            isCredentialResetAllowed && <SystemCredentials />}
 
           {!isInputsDisabled &&
             (isAddFlow ? (
