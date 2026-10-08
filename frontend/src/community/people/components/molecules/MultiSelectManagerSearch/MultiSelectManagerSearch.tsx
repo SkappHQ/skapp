@@ -154,9 +154,15 @@ const MultiSelectManagerSearch = ({
         break;
 
       case KeyboardKeys.ENTER:
-      case KeyboardKeys.SPACE:
         event.preventDefault();
         if (focusedIndex >= 0 && displayItems[focusedIndex]) {
+          toggleManagerSelection(displayItems[focusedIndex]);
+        }
+        break;
+
+      case KeyboardKeys.SPACE:
+        if (focusedIndex >= 0 && displayItems[focusedIndex]) {
+          event.preventDefault();
           toggleManagerSelection(displayItems[focusedIndex]);
         }
         break;
