@@ -16,6 +16,25 @@ export const useUploadImages = () => {
   });
 };
 
+const fetchUploadedImage = async (
+  type?: string,
+  file?: string | null,
+  isThumbnail?: boolean
+) => {
+  if (!type || !file) return null;
+  const response = await authFetch.get(
+    fileUploadEndpoints.DOWNLOAD_IMAGES(type, file, isThumbnail ?? false),
+    {
+      responseType: "blob"
+    }
+  );
+
+  const fileBlob = await response.data;
+  const url = URL.createObjectURL(fileBlob);
+
+  return url;
+};
+
 export const useGetUploadedImage = (
   type?: string,
   file?: string | null,
@@ -24,21 +43,26 @@ export const useGetUploadedImage = (
 ) => {
   return useQuery({
     queryKey: ["download-file", type, file, isThumbnail],
-    queryFn: async () => {
-      if (!type || !file) return null;
-      const response = await authFetch.get(
-        fileUploadEndpoints.DOWNLOAD_IMAGES(type, file, isThumbnail ?? false),
-        {
-          responseType: "blob"
-        }
-      );
-
-      const fileBlob = await response.data;
-      const url = URL.createObjectURL(fileBlob);
-
-      return url;
-    },
+    queryFn: () => fetchUploadedImage(type, file, isThumbnail),
     enabled: Boolean(type && file && enable)
+  });
+};
+
+export const useGetUploadedImages = (
+  type: string,
+  files: string[],
+  isThumbnail?: boolean,
+  enable?: boolean
+) => {
+  return useQuery({
+    queryKey: ["download-files", type, files, isThumbnail],
+    queryFn: () =>
+      Promise.all(
+        files.map((file) =>
+          fetchUploadedImage(type, file, isThumbnail).catch(() => null)
+        )
+      ),
+    enabled: Boolean(type && files.length > 0 && enable)
   });
 };
 
