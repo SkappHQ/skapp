@@ -44,6 +44,7 @@ interface HandlePolicyLeaveToastProps {
   type: PolicyLeaveToastEnums;
   setToastMessage: (value: SetStateAction<ToastProps>) => void;
   translateText: TranslateFn;
+  key?: string;
 }
 
 interface PolicyLeaveToastConfig {
@@ -184,7 +185,8 @@ export const mapApplyErrorKeyToToastType = (
 export const handlePolicyLeaveToast = ({
   type,
   setToastMessage,
-  translateText
+  translateText,
+  key
 }: HandlePolicyLeaveToastProps): void => {
   const toastConfig: Record<PolicyLeaveToastEnums, PolicyLeaveToastConfig> = {
     [PolicyLeaveToastEnums.APPLY_SUCCESS]: {
@@ -228,6 +230,7 @@ export const handlePolicyLeaveToast = ({
   const config = toastConfig[type];
 
   setToastMessage({
+    key,
     open: true,
     toastType: config.toastType,
     title: translateText(config.titleKey),
