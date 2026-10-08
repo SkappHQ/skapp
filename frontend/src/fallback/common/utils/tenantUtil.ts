@@ -17,3 +17,5 @@ export const getAppSubdomainUrl = (): string => "";
 export const getTenantHostUrl = (): string => "";
 
 export const getTenantQueryPath = (): string => "";
+
+export const isPasswordResetTenant = (): boolean => false;

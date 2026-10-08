@@ -29,6 +29,7 @@ import { L2SystemPermissionsType } from "~community/people/types/PeopleTypes";
 import { useHandlePeopleEdit } from "~community/people/utils/peopleEditFlowUtils/useHandlePeopleEdit";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
+import { isPasswordResetTenant } from "~enterprise/common/utils/tenantUtil";
 
 import AddSectionButtonWrapper from "../../molecules/AddSectionButtonWrapper/AddSectionButtonWrapper";
 import EditSectionButtonWrapper from "../../molecules/EditSectionButtonWrapper/EditSectionButtonWrapper";
@@ -130,6 +131,7 @@ const SystemPermissionFormSection = ({
   const isCredentialResetAllowed =
     environment === appModes.COMMUNITY ||
     (globalLoginMethod === GlobalLoginMethod.CREDENTIALS &&
+      isPasswordResetTenant() &&
       employee?.common?.accountStatus === AccountStatusTypes.PENDING);
 
   const onSave = () => {
