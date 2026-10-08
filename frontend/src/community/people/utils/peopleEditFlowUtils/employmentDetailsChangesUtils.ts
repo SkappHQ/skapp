@@ -91,11 +91,12 @@ export const getEmploymentChanges = (
         .map((supervisor) => supervisor.employeeId)
         .filter((id): id is number => id !== undefined)
     : [];
-  const newOtherSupervisorIds = Array.isArray(newEmployment?.otherSupervisors)
+  const newOtherSupervisors = Array.isArray(newEmployment?.otherSupervisors)
     ? newEmployment.otherSupervisors
-        .map((supervisor) => supervisor.employeeId)
-        .filter((id): id is number => id !== undefined)
     : [];
+  const newOtherSupervisorIds = newOtherSupervisors
+    .map((supervisor) => supervisor.employeeId)
+    .filter((id): id is number => id !== undefined);
 
   if (
     isArrayFieldDifferentAndValid(
@@ -103,7 +104,7 @@ export const getEmploymentChanges = (
       previousOtherSupervisorIds
     )
   ) {
-    changes.otherSupervisors = newEmployment?.otherSupervisors;
+    changes.otherSupervisors = newOtherSupervisors;
   }
 
   if (
