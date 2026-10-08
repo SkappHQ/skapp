@@ -405,6 +405,7 @@ public class AuthServiceImpl implements AuthService {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 		User user = optionalUser.get();
+		validatePasswordResetAllowed(user.getEmployee());
 
 		log.info("sharePassword: Generating new temp password for userEmail={}", user.getEmail());
 		String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
