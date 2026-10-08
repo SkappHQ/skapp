@@ -14,27 +14,29 @@ export const handleManagerSelect = async ({
 }: ManagerSelectType): Promise<void> => {
   searchTermSetter("");
   formik.setFieldError(fieldName, "");
-  await formik.setFieldValue(fieldName, user?.employeeId);
   const currentEmploymentDetails = formik.values || {};
 
   if (fieldName === "otherSupervisors") {
+    const otherSupervisors = [
+      ...(Array.isArray(currentEmploymentDetails?.otherSupervisors)
+        ? currentEmploymentDetails.otherSupervisors
+        : []),
+      {
+        employeeId: user?.employeeId,
+        firstName: user?.firstName,
+        lastName: user?.lastName,
+        authPic: user?.avatarUrl ?? ""
+      }
+    ];
+    await formik.setFieldValue(fieldName, otherSupervisors);
     setSupervisor({
       employmentDetails: {
         ...currentEmploymentDetails,
-        otherSupervisors: [
-          ...(Array.isArray(currentEmploymentDetails?.otherSupervisors)
-            ? currentEmploymentDetails.otherSupervisors
-            : []),
-          {
-            employeeId: user?.employeeId,
-            firstName: user?.firstName,
-            lastName: user?.lastName,
-            authPic: user?.avatarUrl ?? ""
-          }
-        ]
+        otherSupervisors
       }
     });
   } else {
+    await formik.setFieldValue(fieldName, user?.employeeId);
     setSupervisor({
       employmentDetails: {
         ...currentEmploymentDetails,
@@ -59,10 +61,14 @@ export const onManagerSearchChange = async ({
   isProTier
 }: ManagerSearchType): Promise<void> => {
   setManagerSearchTerm(searchTerm);
-  await formik.setFieldValue(managerType, {});
-  const currentEmploymentDetails = formik.values || {};
 
   if (!(isProTier && managerType === "otherSupervisors")) {
+    await formik.setFieldValue(
+      managerType,
+      managerType === "otherSupervisors" ? [] : {}
+    );
+    const currentEmploymentDetails = formik.values || {};
+
     setSupervisor({
       employmentDetails: {
         ...currentEmploymentDetails,
@@ -79,7 +85,10 @@ export const onManagerRemove = async ({
   setSupervisor
 }: ManagerRemoveType): Promise<void> => {
   searchTermSetter("");
-  await formik.setFieldValue(fieldName, {});
+  await formik.setFieldValue(
+    fieldName,
+    fieldName === "otherSupervisors" ? [] : {}
+  );
 
   const currentEmploymentDetails = formik.values || {};
 
