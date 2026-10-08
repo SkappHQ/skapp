@@ -128,11 +128,14 @@ const SystemPermissionFormSection = ({
     isInputsDisabled ||
     (isReadOnly && !isPeopleAdminViewingOwnProfile && !hasOtherSuperAdmins);
 
-  const isCredentialResetAllowed =
-    environment === appModes.COMMUNITY ||
-    (globalLoginMethod === GlobalLoginMethod.CREDENTIALS &&
-      isPasswordResetTenant() &&
-      employee?.common?.accountStatus === AccountStatusTypes.PENDING);
+  const shouldShowSystemCredentials =
+    isUpdate &&
+    !isInputsDisabled &&
+    !isReadOnly &&
+    (environment === appModes.COMMUNITY ||
+      (globalLoginMethod === GlobalLoginMethod.CREDENTIALS &&
+        isPasswordResetTenant() &&
+        initialEmployee?.common?.accountStatus === AccountStatusTypes.PENDING));
 
   const onSave = () => {
     if (
@@ -421,10 +424,7 @@ const SystemPermissionFormSection = ({
             )}
           </Stack>
 
-          {isUpdate &&
-            !isInputsDisabled &&
-            !isReadOnly &&
-            isCredentialResetAllowed && <SystemCredentials />}
+          {shouldShowSystemCredentials && <SystemCredentials />}
 
           {!isInputsDisabled &&
             (isAddFlow ? (
