@@ -16,7 +16,7 @@ interface Props {
 
 const TaskRowMeta: FC<Props> = ({ task, owner, isCompletedStyleApplied }) => {
   const priorityConfig = getPriorityConfig(task.priority);
-  const imageUrl = useGetImageUrl({ src: owner?.authPic ?? "" });
+  const { imageUrl } = useGetImageUrl({ src: owner?.authPic ?? "" });
 
   return (
     <div

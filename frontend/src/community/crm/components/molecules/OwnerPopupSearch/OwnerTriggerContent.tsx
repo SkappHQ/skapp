@@ -15,7 +15,9 @@ const OwnerTriggerContent: FC<OwnerTriggerContentProps> = ({
   triggerProps,
   disabled = false
 }) => {
-  const resolvedSrc = useGetImageUrl({ src: user?.authPic ?? "" });
+  const { imageUrl: resolvedSrc } = useGetImageUrl({
+    src: user?.authPic ?? ""
+  });
 
   return (
     <button
