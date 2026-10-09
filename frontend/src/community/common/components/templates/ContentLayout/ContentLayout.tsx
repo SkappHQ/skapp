@@ -15,19 +15,18 @@ import { useShallow } from "zustand/react/shallow";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { signOut } from "~community/auth/utils/authUtils";
-import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
 import { useStorageAvailability } from "~community/common/api/StorageAvailabilityApi";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import VersionUpgradeBanner from "~community/common/components/molecules/VersionUpgradeBanner/VersionUpgradeBanner";
 import { appModes } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
-import { ORGANIZATION_THEME_COLOR_KEY } from "~community/common/constants/stringConstants";
 import { contentLayoutTestId } from "~community/common/constants/testIds";
 import { Modules } from "~community/common/enums/CommonEnums";
 import {
   MediaQueries,
   useMediaQuery
 } from "~community/common/hooks/useMediaQuery";
+import { useOrganizationThemeColor } from "~community/common/hooks/useOrganizationThemeColor";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { useVersionUpgradeStore } from "~community/common/stores/versionUpgradeStore";
@@ -35,7 +34,6 @@ import { themeSelector } from "~community/common/theme/themeSelector";
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
 import { IconName } from "~community/common/types/IconTypes";
-import { getDataFromLocalStorage } from "~community/common/utils/accessLocalStorage";
 import { getBlinkClass, mergeSx } from "~community/common/utils/commonUtil";
 import { EIGHTY_PERCENT } from "~community/common/utils/getConstants";
 import QuickSetupContainer from "~enterprise/common/components/molecules/QuickSetupContainer/QuickSetupContainer";
@@ -207,13 +205,11 @@ const ContentLayout = ({
     }
   }, [user?.tenantStatus, accessToken, setAccessToken, clearAccessToken]);
 
-  const { data: organizationDetails } = useGetOrganization(!!user);
+  const organizationThemeColor = useOrganizationThemeColor(!!user);
 
   const themeColor = shouldUseDefaultTheme(asPath)
     ? ThemeTypes.BLUE_THEME
-    : organizationDetails?.results?.[0]?.themeColor ||
-      getDataFromLocalStorage(ORGANIZATION_THEME_COLOR_KEY) ||
-      ThemeTypes.BLUE_THEME;
+    : organizationThemeColor;
 
   const updatedTheme = themeSelector(themeColor);
 

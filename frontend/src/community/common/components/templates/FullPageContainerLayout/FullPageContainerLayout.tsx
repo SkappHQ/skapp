@@ -11,13 +11,11 @@ import { useRouter } from "next/navigation";
 import { JSX, ReactNode, useEffect, useMemo } from "react";
 
 import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
-import { ORGANIZATION_THEME_COLOR_KEY } from "~community/common/constants/stringConstants";
+import { useOrganizationThemeColor } from "~community/common/hooks/useOrganizationThemeColor";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { themeSelector } from "~community/common/theme/themeSelector";
-import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
 import { IconName } from "~community/common/types/IconTypes";
-import { getDataFromLocalStorage } from "~community/common/utils/accessLocalStorage";
 import { mergeSx } from "~community/common/utils/commonUtil";
 
 import Icon from "../../atoms/Icon/Icon";
@@ -78,13 +76,11 @@ const FullPageContainerLayout = ({
     }
   }, [organizationDetails, orgLoading]);
 
+  const organizationThemeColor = useOrganizationThemeColor();
+
   const updatedTheme = useMemo(() => {
-    return themeSelector(
-      organizationDetails?.results?.[0]?.themeColor ||
-        getDataFromLocalStorage(ORGANIZATION_THEME_COLOR_KEY) ||
-        ThemeTypes.BLUE_THEME
-    );
-  }, [organizationDetails]);
+    return themeSelector(organizationThemeColor);
+  }, [organizationThemeColor]);
 
   theme.palette = updatedTheme.palette;
 
