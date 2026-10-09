@@ -93,7 +93,7 @@ public class AuthController {
 
 	@Operation(summary = "Share password", description = "Share password")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PEOPLE_ADMIN')")
-	@GetMapping(value = "/share-password/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "/share-password/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> sharePassword(@PathVariable Long userId) {
 		ResponseEntityDto response = authService.sharePassword(userId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
