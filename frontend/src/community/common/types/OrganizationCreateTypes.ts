@@ -38,3 +38,7 @@ export interface OrganizationDetailsType {
   organizationLogo: string;
   themeColor: ThemeTypes;
 }
+
+export interface OrganizationQueryResponse {
+  results: OrganizationDetailsType[];
+}

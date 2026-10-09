@@ -1,6 +1,9 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 
-import { OrganizationCreateType } from "../types/OrganizationCreateTypes";
+import {
+  OrganizationCreateType,
+  OrganizationQueryResponse
+} from "../types/OrganizationCreateTypes";
 import authFetch from "../utils/axiosInterceptor";
 import { organizationCreateEndpoints } from "./utils/ApiEndpoints";
 import { organizationCreateQueryKeys } from "./utils/QueryKeys";
@@ -28,7 +31,7 @@ export const useGetOrganization = (isSessionDataAvailable: boolean = true) => {
   return useQuery({
     queryKey: [organizationCreateEndpoints.CREATE_ORGANIZATION],
     queryFn: async () => {
-      const { data } = await authFetch.get(
+      const { data } = await authFetch.get<OrganizationQueryResponse>(
         organizationCreateEndpoints.CREATE_ORGANIZATION
       );
       return data;
