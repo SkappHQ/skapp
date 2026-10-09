@@ -3,7 +3,10 @@ import {
   internalApiEndpoints
 } from "~community/common/api/utils/ApiEndpoints";
 import ROUTES from "~community/common/constants/routes";
-import { HttpMethods } from "~community/common/constants/stringConstants";
+import {
+  HttpMethods,
+  ORGANIZATION_THEME_COLOR_KEY
+} from "~community/common/constants/stringConstants";
 import { AuthTokenSliceType } from "~community/common/stores/slices/authTokenSlice";
 import {
   AdminTypes,
@@ -14,6 +17,7 @@ import {
   SenderTypes,
   SuperAdminType
 } from "~community/common/types/AuthTypes";
+import { removeDataFromLocalStorage } from "~community/common/utils/accessLocalStorage";
 import { isEnterpriseMode } from "~community/common/utils/commonUtil";
 import {
   EnterpriseSignInParams,
@@ -286,6 +290,8 @@ export const clearCookies = async (
   resetStoredTokenCheck();
 
   if (typeof window !== "undefined") {
+    removeDataFromLocalStorage(ORGANIZATION_THEME_COLOR_KEY);
+
     try {
       await fetch(internalApiEndpoints.CLEAR_COOKIES, {
         method: HttpMethods.POST,

@@ -2,7 +2,10 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { ORGANIZATION_THEME_COLOR_KEY } from "../constants/stringConstants";
 import { OrganizationCreateType } from "../types/OrganizationCreateTypes";
-import { setDataToLocalStorage } from "../utils/accessLocalStorage";
+import {
+  removeDataFromLocalStorage,
+  setDataToLocalStorage
+} from "../utils/accessLocalStorage";
 import authFetch from "../utils/axiosInterceptor";
 import { organizationCreateEndpoints } from "./utils/ApiEndpoints";
 import { organizationCreateQueryKeys } from "./utils/QueryKeys";
@@ -36,6 +39,8 @@ export const useGetOrganization = (isSessionDataAvailable: boolean = true) => {
       const themeColor = data?.results?.[0]?.themeColor;
       if (themeColor) {
         setDataToLocalStorage(ORGANIZATION_THEME_COLOR_KEY, themeColor);
+      } else {
+        removeDataFromLocalStorage(ORGANIZATION_THEME_COLOR_KEY);
       }
       return data;
     },
