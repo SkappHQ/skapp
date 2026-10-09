@@ -20,7 +20,7 @@ const fetchUploadedImage = async (
   type?: string,
   file?: string | null,
   isThumbnail?: boolean
-) => {
+): Promise<string | null> => {
   if (!type || !file) return null;
   const response = await authFetch.get(
     fileUploadEndpoints.DOWNLOAD_IMAGES(type, file, isThumbnail ?? false),
