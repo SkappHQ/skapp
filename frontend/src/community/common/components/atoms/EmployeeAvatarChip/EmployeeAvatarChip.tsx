@@ -1,4 +1,4 @@
-import { AvatarChip } from "@rootcodelabs/skapp-ui";
+import { AvatarChip, AvatarSize } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
@@ -8,13 +8,15 @@ import { getEmployeeAvatarName } from "~community/common/utils/commonUtil";
 export interface EmployeeAvatarChipProps {
   employee: EmployeeAvatarData;
   className?: string;
+  size?: AvatarSize;
 }
 
 const EmployeeAvatarChip: FC<EmployeeAvatarChipProps> = ({
   employee,
-  className
+  className,
+  size = "sm"
 }) => {
-  const imageUrl = useGetImageUrl(employee.authPic ?? "");
+  const { imageUrl } = useGetImageUrl({ src: employee.authPic ?? "" });
   const employeeName = getEmployeeAvatarName(employee);
 
   return (
@@ -26,7 +28,7 @@ const EmployeeAvatarChip: FC<EmployeeAvatarChipProps> = ({
           lastName: employee.lastName,
           src: imageUrl ?? "",
           alt: employeeName,
-          size: "sm"
+          size
         }}
         label={employeeName}
       />
