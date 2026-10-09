@@ -470,7 +470,7 @@ export const useSharePassword = (
 export const useResetSharePassword = () => {
   return useMutation({
     mutationFn: async (userId: number) => {
-      const response = await authFetch.get(
+      const response = await authFetch.post(
         authEndpoints.RESET_SHARE_PASSWORD(userId)
       );
       return response.data.results;
