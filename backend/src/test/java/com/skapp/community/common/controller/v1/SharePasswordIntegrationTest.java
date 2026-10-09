@@ -27,7 +27,7 @@ import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -65,7 +65,7 @@ class SharePasswordIntegrationTest {
 	@DisplayName("Share password generates a new temp password, stores bcrypt hash in DB, and returns plaintext")
 	void sharePassword_GeneratesNewPassword_StoresBcryptHash_ReturnsPlaintext() throws Exception {
 		MvcResult result = mvc
-			.perform(get("/v1/auth/share-password/2").accept(MediaType.APPLICATION_JSON)
+			.perform(post("/v1/auth/share-password/2").accept(MediaType.APPLICATION_JSON)
 				.with(SecurityTestUtils.bearerToken(authToken)))
 			.andDo(print())
 			.andExpect(status().isOk())
@@ -92,7 +92,7 @@ class SharePasswordIntegrationTest {
 	@Test
 	@DisplayName("Share password for non-existent user returns error")
 	void sharePassword_NonExistentUser_ReturnsError() throws Exception {
-		mvc.perform(get("/v1/auth/share-password/9999").accept(MediaType.APPLICATION_JSON)
+		mvc.perform(post("/v1/auth/share-password/9999").accept(MediaType.APPLICATION_JSON)
 			.with(SecurityTestUtils.bearerToken(authToken))).andDo(print()).andExpect(status().isBadRequest());
 	}
 

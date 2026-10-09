@@ -46,8 +46,6 @@ export const peoplesEndpoints = {
 };
 
 export const authEndpoints = {
-  SHARE_PASSWORD: (userId: number) =>
-    `${moduleAPIPath.AUTH}/share-password/${userId}`,
   RESET_SHARE_PASSWORD: (userId: number) =>
     `${moduleAPIPath.AUTH}/reset/share-password/${userId}`
 };
