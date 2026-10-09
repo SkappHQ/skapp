@@ -11,10 +11,10 @@ import { useRouter } from "next/navigation";
 import { JSX, ReactNode, useEffect, useMemo } from "react";
 
 import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
+import { useOrganizationThemeColor } from "~community/common/hooks/useOrganizationThemeColor";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { themeSelector } from "~community/common/theme/themeSelector";
-import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
 import { IconName } from "~community/common/types/IconTypes";
 import { mergeSx } from "~community/common/utils/commonUtil";
 
@@ -76,11 +76,11 @@ const FullPageContainerLayout = ({
     }
   }, [organizationDetails, orgLoading]);
 
+  const organizationThemeColor = useOrganizationThemeColor();
+
   const updatedTheme = useMemo(() => {
-    return themeSelector(
-      organizationDetails?.results?.[0]?.themeColor || ThemeTypes.BLUE_THEME
-    );
-  }, [organizationDetails]);
+    return themeSelector(organizationThemeColor);
+  }, [organizationThemeColor]);
 
   theme.palette = updatedTheme.palette;
 

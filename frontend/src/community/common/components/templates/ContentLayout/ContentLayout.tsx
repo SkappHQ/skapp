@@ -15,7 +15,6 @@ import { useShallow } from "zustand/react/shallow";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { signOut } from "~community/auth/utils/authUtils";
-import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
 import { useStorageAvailability } from "~community/common/api/StorageAvailabilityApi";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import VersionUpgradeBanner from "~community/common/components/molecules/VersionUpgradeBanner/VersionUpgradeBanner";
@@ -27,6 +26,7 @@ import {
   MediaQueries,
   useMediaQuery
 } from "~community/common/hooks/useMediaQuery";
+import { useOrganizationThemeColor } from "~community/common/hooks/useOrganizationThemeColor";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { useVersionUpgradeStore } from "~community/common/stores/versionUpgradeStore";
@@ -205,11 +205,11 @@ const ContentLayout = ({
     }
   }, [user?.tenantStatus, accessToken, setAccessToken, clearAccessToken]);
 
-  const { data: organizationDetails } = useGetOrganization(!!user);
+  const organizationThemeColor = useOrganizationThemeColor(!!user);
 
   const themeColor = shouldUseDefaultTheme(asPath)
     ? ThemeTypes.BLUE_THEME
-    : organizationDetails?.results?.[0]?.themeColor || ThemeTypes.BLUE_THEME;
+    : organizationThemeColor;
 
   const updatedTheme = themeSelector(themeColor);
 

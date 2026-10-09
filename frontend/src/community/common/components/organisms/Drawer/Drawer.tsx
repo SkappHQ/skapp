@@ -33,10 +33,10 @@ import {
   MediaQueries,
   useMediaQuery
 } from "~community/common/hooks/useMediaQuery";
+import { useOrganizationThemeColor } from "~community/common/hooks/useOrganizationThemeColor";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { themeSelector } from "~community/common/theme/themeSelector";
-import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
 import { IconName } from "~community/common/types/IconTypes";
 import { NotificationSummaryType } from "~community/common/types/notificationTypes";
 import { CommonStoreTypes } from "~community/common/types/zustand/StoreTypes";
@@ -171,9 +171,9 @@ const Drawer = (): JSX.Element => {
     ]
   );
 
-  const updatedTheme = themeSelector(
-    organizationDetails?.results?.[0]?.themeColor || ThemeTypes.BLUE_THEME
-  );
+  const organizationThemeColor = useOrganizationThemeColor();
+
+  const updatedTheme = themeSelector(organizationThemeColor);
 
   theme.palette = updatedTheme.palette;
 
