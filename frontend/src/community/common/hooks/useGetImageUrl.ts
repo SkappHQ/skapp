@@ -9,15 +9,22 @@ import useS3Download from "~enterprise/common/hooks/useS3Download";
 
 type ImageUrl = string | null;
 
-interface UseGetImageUrl {
-  (src: string, isOriginalImage?: boolean): ImageUrl;
-  (srcs: string[], isOriginalImage?: boolean): string[];
+interface UseGetImageUrlParams<
+  ImageSrc extends string | string[] = string | string[]
+> {
+  src: ImageSrc;
+  isOriginalImage?: boolean;
 }
 
-const useGetImageUrl = ((
-  srcOrSrcs: string | string[],
-  isOriginalImage: boolean = false
-): ImageUrl | string[] => {
+interface UseGetImageUrl {
+  (params: UseGetImageUrlParams<string>): ImageUrl;
+  (params: UseGetImageUrlParams<string[]>): string[];
+}
+
+const useGetImageUrl = (({
+  src: srcOrSrcs,
+  isOriginalImage = false
+}: UseGetImageUrlParams): ImageUrl | string[] => {
   const srcs = Array.isArray(srcOrSrcs) ? srcOrSrcs : [srcOrSrcs];
   const srcsKey = srcs.join(",");
 

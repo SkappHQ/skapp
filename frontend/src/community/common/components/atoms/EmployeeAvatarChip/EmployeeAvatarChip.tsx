@@ -16,7 +16,7 @@ const EmployeeAvatarChip: FC<EmployeeAvatarChipProps> = ({
   className,
   size = "sm"
 }) => {
-  const imageUrl = useGetImageUrl(employee.authPic ?? "");
+  const imageUrl = useGetImageUrl({ src: employee.authPic ?? "" });
   const employeeName = getEmployeeAvatarName(employee);
 
   return (
