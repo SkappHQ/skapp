@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQueries, useQuery } from "@tanstack/react-query";
 
 import { fileUploadEndpoints } from "~community/people/api/utils/ApiEndpoints";
 
@@ -54,15 +54,12 @@ export const useGetUploadedImages = (
   isThumbnail?: boolean,
   enable?: boolean
 ) => {
-  return useQuery({
-    queryKey: ["download-files", type, files, isThumbnail],
-    queryFn: () =>
-      Promise.all(
-        files.map((file) =>
-          fetchUploadedImage(type, file, isThumbnail).catch(() => null)
-        )
-      ),
-    enabled: Boolean(type && files.length > 0 && enable)
+  return useQueries({
+    queries: files.map((file) => ({
+      queryKey: ["download-file", type, file, isThumbnail],
+      queryFn: () => fetchUploadedImage(type, file, isThumbnail),
+      enabled: Boolean(type && file && enable)
+    }))
   });
 };
 
