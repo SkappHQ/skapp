@@ -453,24 +453,10 @@ export const useQuickAddEmployeeMutation = (onSuccess?: () => void) => {
   });
 };
 
-export const useSharePassword = (
-  userId: number
-): UseQueryResult<QuickAddEmployeeResponse> => {
-  return useQuery({
-    queryKey: [peopleQueryKeys.SHARE_PASSWORD(userId), userId],
-    queryFn: async () => {
-      const response = await authFetch.get(
-        authEndpoints.SHARE_PASSWORD(userId as number)
-      );
-      return response.data.results[0];
-    }
-  });
-};
-
 export const useResetSharePassword = () => {
   return useMutation({
     mutationFn: async (userId: number) => {
-      const response = await authFetch.get(
+      const response = await authFetch.post(
         authEndpoints.RESET_SHARE_PASSWORD(userId)
       );
       return response.data.results;

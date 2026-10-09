@@ -55,12 +55,6 @@ export const peopleQueryKeys = {
   getAnalyticEmployeeTeam: function (searchTerm?: string) {
     return ["search-employee-team", searchTerm];
   },
-  SHARE_PASSWORD: function (userId?: number) {
-    return ["share-password", userId];
-  },
-  RESET_SHARE_PASSWORD: function (userId?: number) {
-    return ["reset-share-password", userId];
-  },
   EMPLOYEE_DATA_EXIST_KEYS_QUICK_ADD: function (
     workEmail?: string,
     identificationNo?: string
