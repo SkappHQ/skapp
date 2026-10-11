@@ -150,6 +150,22 @@ class BusinessUnitControllerIntegrationTest {
 						messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_BUSINESS_UNIT_NAME_ALREADY_EXISTS)));
 		}
 
+		@Test
+		@DisplayName("Create business unit with name differing only by casing - Returns Created")
+		void createBusinessUnit_withNameDifferingByCasing_ReturnsCreated() throws Exception {
+			seedBusinessUnit("Sales");
+
+			BusinessUnitRequestDto request = new BusinessUnitRequestDto();
+			request.setName("SALES");
+
+			performRequest(post(BASE_PATH).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request))
+				.accept(MediaType.APPLICATION_JSON)).andDo(print())
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("SALES"));
+		}
+
 	}
 
 	@Nested
