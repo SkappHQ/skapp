@@ -35,7 +35,7 @@ const BirthdayModalShell: FC<Props> = ({
   showConfetti = false
 }) => {
   const translateAria = useTranslator("peopleAria", "birthdayNotifications");
-  const imageUrl = useGetImageUrl(employee.authPic ?? "", true);
+  const imageUrl = useGetImageUrl([employee.authPic ?? ""], true)[0];
   const [isConfettiVisible, setIsConfettiVisible] = useState(showConfetti);
   const [isAvatarTimedOut, setIsAvatarTimedOut] = useState(false);
 
