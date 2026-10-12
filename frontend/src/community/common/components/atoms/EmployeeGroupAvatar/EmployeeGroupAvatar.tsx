@@ -10,7 +10,7 @@ export interface EmployeeGroupAvatarProps {
 }
 
 const EmployeeGroupAvatar: FC<EmployeeGroupAvatarProps> = ({ employee }) => {
-  const { imageUrl } = useGetImageUrl({ src: employee.authPic ?? "" });
+  const imageUrl = useGetImageUrl([employee.authPic ?? ""])[0];
   const employeeName = getEmployeeAvatarName(employee);
 
   return (

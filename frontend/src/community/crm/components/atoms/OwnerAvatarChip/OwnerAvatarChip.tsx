@@ -26,7 +26,7 @@ const OwnerAvatarChip: FC<OwnerAvatarChipProps> = ({
   showActionButton,
   actionButtonAriaLabel
 }) => {
-  const { imageUrl } = useGetImageUrl({ src: owner.authPic ?? "" });
+  const imageUrl = useGetImageUrl([owner.authPic ?? ""])[0];
 
   return (
     <AvatarChip

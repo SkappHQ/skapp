@@ -16,7 +16,7 @@ import {
 const EmployeeAvatarChip: FC<{ employee: AllEmployeeDataType }> = ({
   employee
 }) => {
-  const { imageUrl } = useGetImageUrl({ src: employee.authPic ?? "" });
+  const imageUrl = useGetImageUrl([employee.authPic ?? ""])[0];
 
   return (
     <AvatarChip

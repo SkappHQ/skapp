@@ -15,7 +15,7 @@ const OwnerOptionItem: FC<OwnerOptionItemProps> = ({
   option,
   onSelect
 }) => {
-  const { imageUrl: resolvedSrc } = useGetImageUrl({ src: user.authPic ?? "" });
+  const resolvedSrc = useGetImageUrl([user.authPic ?? ""])[0];
 
   return (
     <button

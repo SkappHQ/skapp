@@ -13,9 +13,9 @@ const EmployeeAvatarGroup: FC<EmployeeAvatarGroupProps> = ({
   employees,
   size = "sm"
 }) => {
-  const { imageUrls } = useGetImageUrl({
-    src: employees.map((employee) => employee.authPic ?? "")
-  });
+  const imageUrls = useGetImageUrl(
+    employees.map((employee) => employee.authPic ?? "")
+  );
 
   return (
     <AvatarGroup
@@ -23,7 +23,7 @@ const EmployeeAvatarGroup: FC<EmployeeAvatarGroupProps> = ({
         id: String(employee.employeeId),
         firstName: employee.firstName,
         lastName: employee.lastName,
-        src: imageUrls[index],
+        src: imageUrls[index] ?? "",
         size
       }))}
     />
