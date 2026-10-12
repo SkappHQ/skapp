@@ -76,6 +76,7 @@ export const styles = ({ theme }: stylesProps) => ({
     overflowY: "auto",
     overflowX: "hidden",
     scrollbarWidth: "thin",
+    scrollbarGutter: isDrawerExpanded ? "auto" : "stable both-edges",
     gap: "1rem",
     paddingTop: "1.25rem",
     marginTop: isDrawerExpanded ? "0rem" : "4rem"
