@@ -1,0 +1,27 @@
+name: Backend Quality Check
+
+on:
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+
+    steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+          with:
+            path: skapp
+        - name: Setup Java
+          uses: actions/setup-java@v4
+          with:
+            distribution: 'temurin'
+            java-version: '21'
+            cache: maven
+            cache-dependency-path: skapp/backend/pom.xml
+        - name: Quality Check
+          run: |
+            cd skapp/backend
+            mvn -B checkstyle:check -Dcheckstyle.skip=false
