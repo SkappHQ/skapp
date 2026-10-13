@@ -8,7 +8,7 @@ type stylesProps = {
 
 export const DRAWER_ANIMATION_DURATION = "0.3s";
 export const DRAWER_TRANSFORM_DURATION = "0.05s";
-export const DRAWER_ITEM_ICON_SIZE = "16";
+export const DRAWER_ITEM_ICON_SIZE = "18";
 
 export const styles = ({ theme }: stylesProps) => ({
   iconBtn: (isDrawerExpanded: boolean, isBelow1024: boolean) => {
@@ -78,7 +78,7 @@ export const styles = ({ theme }: stylesProps) => ({
     overflowX: "hidden",
     scrollbarWidth: "thin",
     scrollbarGutter: isDrawerExpanded ? "auto" : "stable both-edges",
-    gap: "1rem",
+    gap: "0.5rem",
     paddingTop: "1.25rem",
     marginTop: isDrawerExpanded ? "0rem" : "4rem"
   }),
