@@ -144,8 +144,8 @@ describe("getJobTitlesWithJobFamilyId", () => {
     );
 
     expect(result).toEqual([
-      { jobTitleId: 1, name: "Developer" },
-      { jobTitleId: 2, name: "Tester" }
+      { value: 1, label: "Developer" },
+      { value: 2, label: "Tester" }
     ]);
   });
 
@@ -172,7 +172,7 @@ describe("getJobTitlesWithJobFamilyId", () => {
       jobTitleId
     );
 
-    expect(result).toEqual([{ jobTitleId: 2, name: "Tester" }]);
+    expect(result).toEqual([{ value: 2, label: "Tester" }]);
   });
 
   it("should return an empty array if job family is not found", () => {

@@ -244,7 +244,7 @@ describe("handleBinIconBtnClick", () => {
     };
   };
 
-  it("should not remove the job title and not set the modal type when there's only one job title with null jobTitleId", async () => {
+  it("should remove the unsaved job title without opening a modal when there's only one job title with null jobTitleId", async () => {
     const mockData = createMockData({
       jobTitlesCount: 1,
       jobTitleIdIsNull: true
@@ -260,13 +260,9 @@ describe("handleBinIconBtnClick", () => {
       mockData.setJobFamilyModalType
     );
 
-    expect(mockData.setPreviousJobTitleData).not.toHaveBeenCalledWith(
-      mockData.jobTitle
-    );
-    expect(mockData.setFieldValue).not.toHaveBeenCalledWith("jobTitles", []);
-    expect(mockData.setJobFamilyModalType).toHaveBeenCalledWith(
-      JobFamilyActionModalEnums.ADD_NEW_JOB_TITLE
-    );
+    expect(mockData.setPreviousJobTitleData).not.toHaveBeenCalled();
+    expect(mockData.setFieldValue).toHaveBeenCalledWith("jobTitles", []);
+    expect(mockData.setJobFamilyModalType).not.toHaveBeenCalled();
   });
 
   it("should set modal type to ADD_NEW_JOB_TITLE when there's only one job title with employees", async () => {

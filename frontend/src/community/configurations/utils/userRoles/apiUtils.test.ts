@@ -33,7 +33,10 @@ describe("transformRolesToDropdownFormat", () => {
         { value: "employee", label: "Employee" }
       ],
       attendance: [],
-      esign: []
+      esign: [],
+      pm: [],
+      invoice: [],
+      crm: []
     });
   });
 
@@ -46,7 +49,10 @@ describe("transformRolesToDropdownFormat", () => {
       leave: [],
       people: [],
       attendance: [],
-      esign: []
+      esign: [],
+      pm: [],
+      invoice: [],
+      crm: []
     });
   });
 
@@ -64,7 +70,10 @@ describe("transformRolesToDropdownFormat", () => {
       leave: [],
       people: [],
       attendance: [],
-      esign: []
+      esign: [],
+      pm: [],
+      invoice: [],
+      crm: []
     });
   });
 });

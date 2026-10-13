@@ -346,7 +346,7 @@ describe("handleJobTitleDeleteBackBtnClick", () => {
 describe("handleJobTitleDropDownItemClick", () => {
   it("should update the job title for the specified employee", () => {
     const employeeId = 1;
-    const item: JobTitleType = { jobTitleId: 1, name: "Developer" };
+    const item = { value: 1, label: "Developer" };
     const values: TransferMemberFormType[] = [
       {
         employeeId: 1,

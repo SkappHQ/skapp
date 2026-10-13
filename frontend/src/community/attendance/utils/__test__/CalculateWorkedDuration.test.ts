@@ -18,7 +18,7 @@ afterAll(() => {
 
 describe("calculateWorkedDuration", () => {
   test("calculates duration for START slot type", () => {
-    jest.setSystemTime(new Date("2023-11-03T10:00:00Z").getTime());
+    jest.setSystemTime(new Date("2023-11-03T10:00:00").getTime());
     const attendanceParams: attendanceStatusTypes = {
       slotType: AttendanceSlotType.START,
       slotStartTime: "2023-11-03T08:00:00",
@@ -30,7 +30,7 @@ describe("calculateWorkedDuration", () => {
   });
 
   test("calculates duration for RESUME slot type", () => {
-    jest.setSystemTime(new Date("2023-11-03T12:00:00Z").getTime());
+    jest.setSystemTime(new Date("2023-11-03T12:00:00").getTime());
     const attendanceParams: attendanceStatusTypes = {
       slotType: AttendanceSlotType.RESUME,
       slotStartTime: "2023-11-03T10:00:00",
@@ -42,7 +42,7 @@ describe("calculateWorkedDuration", () => {
   });
 
   test("calculates duration for END slot type", () => {
-    jest.setSystemTime(new Date("2023-11-03T15:00:00Z").getTime());
+    jest.setSystemTime(new Date("2023-11-03T15:00:00").getTime());
     const attendanceParams: attendanceStatusTypes = {
       slotType: AttendanceSlotType.END,
       slotStartTime: "2023-11-03T09:00:00",
