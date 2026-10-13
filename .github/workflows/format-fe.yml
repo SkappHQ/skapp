@@ -1,0 +1,49 @@
+name: Check Frontend Format
+
+on:
+  pull_request:
+    branches:
+      - '*'
+    paths:
+      - 'frontend/**'
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Configure GitHub Packages registry
+        run: |
+          echo "@rootcodelabs:registry=https://npm.pkg.github.com/" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.NPM_READ_TOKEN }}" >> .npmrc
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Check only the files changed in the PR until existing files are formatted
+      - name: Check formatting of changed files
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git diff --name-only --diff-filter=ACMR "$BASE_SHA"...HEAD -- . \
+            | sed 's|^frontend/||' > changed-files.txt || true
+          if [ ! -s changed-files.txt ]; then
+            echo "No frontend files changed"
+            exit 0
+          fi
+          xargs -a changed-files.txt npx prettier --check --ignore-unknown --no-error-on-unmatched-pattern
