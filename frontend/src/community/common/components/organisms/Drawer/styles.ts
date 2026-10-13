@@ -8,6 +8,7 @@ type stylesProps = {
 
 export const DRAWER_ANIMATION_DURATION = "0.3s";
 export const DRAWER_TRANSFORM_DURATION = "0.05s";
+export const DRAWER_ITEM_ICON_SIZE = "16";
 
 export const styles = ({ theme }: stylesProps) => ({
   iconBtn: (isDrawerExpanded: boolean, isBelow1024: boolean) => {
@@ -113,8 +114,8 @@ export const styles = ({ theme }: stylesProps) => ({
   listItemText: (color: string) => ({
     margin: "0rem",
     "& .MuiTypography-root": {
-      fontSize: "1rem",
-      lineHeight: "1.5rem",
+      fontSize: "0.875rem",
+      lineHeight: "1.25rem",
       fontWeight: "400",
       color: color
     }
@@ -164,8 +165,8 @@ export const styles = ({ theme }: stylesProps) => ({
   }),
   subListItemText: (color: string) => ({
     "& .MuiTypography-root": {
-      fontSize: "1rem",
-      lineHeight: "1.5rem",
+      fontSize: "0.875rem",
+      lineHeight: "1.25rem",
       fontWeight: "400",
       color: color
     }
