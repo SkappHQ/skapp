@@ -1,0 +1,49 @@
+name: Lint Frontend
+
+on:
+  pull_request:
+    branches:
+      - '*'
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/lint-fe.yml'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # skapp-ui comes from a private registry and isn't needed for these checks
+      - name: Install dependencies without skapp-ui
+        run: |
+          npm pkg delete dependencies.@rootcodelabs/skapp-ui
+          npm install --no-audit --no-fund --ignore-scripts
+
+      # Lint only the files changed in the PR until existing errors are cleared
+      - name: Lint changed files
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git diff --name-only --diff-filter=ACMR "$BASE_SHA"...HEAD -- . > all-changed-files.txt
+          { grep -E '\.(js|jsx|ts|tsx|mjs|cjs)$' all-changed-files.txt || test $? = 1; } \
+            | sed 's|^frontend/||' > changed-files.txt
+          if [ ! -s changed-files.txt ]; then
+            echo "No frontend source files changed"
+            exit 0
+          fi
+          xargs -d '\n' -a changed-files.txt npx eslint --no-warn-ignored

@@ -1,10 +1,7 @@
 import { ChangeEvent } from "react";
 
 import { JobFamilyActionModalEnums } from "~community/people/enums/JobFamilyEnums";
-import {
-  JobFamilyDropDownType,
-  TransferMemberFormType
-} from "~community/people/types/JobFamilyTypes";
+import { TransferMemberFormType } from "~community/people/types/JobFamilyTypes";
 
 import {
   handleJobFamilyDeleteBackBtnClick,
@@ -103,9 +100,9 @@ describe("handleJobFamilyDeleteBackBtnClick", () => {
 describe("handleJobFamilyDropDownItemClick", () => {
   it("should update the job family and reset job title for the correct employee", () => {
     const employeeId = 1;
-    const newJobFamily: JobFamilyDropDownType = {
-      jobFamilyId: 3,
-      name: "Engineering"
+    const newJobFamily = {
+      value: 3,
+      label: "Engineering"
     };
     const values: TransferMemberFormType[] = [
       {
@@ -125,7 +122,11 @@ describe("handleJobFamilyDropDownItemClick", () => {
     );
 
     expect(setValues).toHaveBeenCalledWith([
-      { employeeId: 1, jobFamily: newJobFamily, jobTitle: null },
+      {
+        employeeId: 1,
+        jobFamily: { jobFamilyId: 3, name: "Engineering" },
+        jobTitle: null
+      },
       { employeeId: 2, jobFamily: null, jobTitle: null }
     ]);
   });

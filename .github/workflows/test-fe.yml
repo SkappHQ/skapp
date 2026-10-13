@@ -1,0 +1,37 @@
+name: Run Frontend Unit Tests
+
+on:
+  pull_request:
+    branches:
+      - '*'
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/test-fe.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # skapp-ui comes from a private registry and isn't needed for these checks
+      - name: Install dependencies without skapp-ui
+        run: |
+          npm pkg delete dependencies.@rootcodelabs/skapp-ui
+          npm install --no-audit --no-fund --ignore-scripts
+
+      - name: Run unit tests
+        # Unit tests only; component (.test.tsx) tests are not run
+        run: npx jest --ci --coverage=false --testPathPatterns '\.test\.ts$'

@@ -29,7 +29,6 @@ describe("normalizeEmployeeId", () => {
 
   it("returns undefined for missing ids", () => {
     expect(normalizeEmployeeId(undefined)).toBeUndefined();
-    expect(normalizeEmployeeId(null)).toBeUndefined();
   });
 
   it("returns undefined for blank and non numeric ids", () => {

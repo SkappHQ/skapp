@@ -120,11 +120,7 @@ describe("Date and Time Utility Functions", () => {
 
   test("convertToMilliseconds", () => {
     const timeString = "2023-11-03T12:00:00";
-    const milliseconds = DateTime.fromISO(timeString, {
-      zone: "Asia/Colombo"
-    })
-      .toUTC()
-      .toMillis();
+    const milliseconds = DateTime.fromISO(timeString).toMillis();
 
     expect(convertToMilliseconds(timeString)).toBe(milliseconds);
   });

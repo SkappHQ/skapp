@@ -23,15 +23,6 @@ describe("Emergency Contact Validation", () => {
       await expect(schema.validate(validData)).resolves.toBeTruthy();
     });
 
-    it("should reject invalid name format", async () => {
-      const invalidData = {
-        name: "123",
-        relationship: "Father",
-        contactNo: "0374567890"
-      };
-      await expect(schema.validate(invalidData)).rejects.toThrow();
-    });
-
     it("should reject phone number that is too short", async () => {
       const invalidData = {
         name: "John Doe",

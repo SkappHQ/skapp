@@ -83,11 +83,11 @@ describe("refactorSupervisorAvatars", () => {
 });
 
 describe("refactorTeamListData", () => {
-  it("should return first team name and other team count", () => {
+  it("should return first team name (lowest teamId) and other team count", () => {
     const teams = [
-      { team: { teamName: "Team A" } },
-      { team: { teamName: "Team B" } },
-      { team: { teamName: "Team C" } }
+      { teamId: 2, teamName: "Team B" },
+      { teamId: 1, teamName: "Team A" },
+      { teamId: 3, teamName: "Team C" }
     ];
 
     const result = refactorTeamListData(teams);

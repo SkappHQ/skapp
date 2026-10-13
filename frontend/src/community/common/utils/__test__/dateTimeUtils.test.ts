@@ -107,9 +107,9 @@ describe("dateTimeUtils", () => {
     const years = getAdjacentYearsWithCurrent();
     const currentYear = new Date().getFullYear();
     expect(years).toEqual([
-      `${currentYear - 1}`,
-      `${currentYear}`,
-      `${currentYear + 1}`
+      { label: `${currentYear - 1}`, value: `${currentYear - 1}` },
+      { label: `${currentYear}`, value: `${currentYear}` },
+      { label: `${currentYear + 1}`, value: `${currentYear + 1}` }
     ]);
   });
 
@@ -225,7 +225,7 @@ describe("dateTimeUtils", () => {
     const dateString = "10 Oct";
     const dateTime = parseStringWithCurrentYearAndConvertToDateTime(dateString);
     const currentYear = new Date().getFullYear();
-    expect(dateTime.toISO()).toMatch(`${currentYear}-10-10T00:00:00.000+05:30`);
+    expect(dateTime.toISO()).toBe(DateTime.local(currentYear, 10, 10).toISO());
   });
 });
 
@@ -341,8 +341,14 @@ describe("getRecentYearsInStrings", () => {
     const result = getRecentYearsInStrings();
 
     expect(result).toHaveLength(2);
-    expect(result[0]).toBe(mockCurrentYear.toString());
-    expect(result[1]).toBe((mockCurrentYear + 1).toString());
+    expect(result[0]).toEqual({
+      label: mockCurrentYear.toString(),
+      value: mockCurrentYear.toString()
+    });
+    expect(result[1]).toEqual({
+      label: (mockCurrentYear + 1).toString(),
+      value: (mockCurrentYear + 1).toString()
+    });
   });
 
   it("returns correct years for end of year", () => {
@@ -356,8 +362,14 @@ describe("getRecentYearsInStrings", () => {
 
     const result = getRecentYearsInStrings();
 
-    expect(result[0]).toBe(mockCurrentYear.toString());
-    expect(result[1]).toBe((mockCurrentYear + 1).toString());
+    expect(result[0]).toEqual({
+      label: mockCurrentYear.toString(),
+      value: mockCurrentYear.toString()
+    });
+    expect(result[1]).toEqual({
+      label: (mockCurrentYear + 1).toString(),
+      value: (mockCurrentYear + 1).toString()
+    });
   });
 
   it("returns years as strings", () => {
@@ -371,8 +383,10 @@ describe("getRecentYearsInStrings", () => {
 
     const result = getRecentYearsInStrings();
 
-    expect(typeof result[0]).toBe("string");
-    expect(typeof result[1]).toBe("string");
+    expect(typeof result[0].label).toBe("string");
+    expect(typeof result[0].value).toBe("string");
+    expect(typeof result[1].label).toBe("string");
+    expect(typeof result[1].value).toBe("string");
   });
 });
 

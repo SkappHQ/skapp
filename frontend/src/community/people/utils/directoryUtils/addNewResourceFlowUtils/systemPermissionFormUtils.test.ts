@@ -158,10 +158,8 @@ describe("handleSuperAdminChangeEnterprise", () => {
     const setToastMessage = jest.fn();
     const roleLimitationText = jest.fn((keys) => keys.join(","));
 
-    const event = { target: { checked: false } } as any;
-
     await handleSuperAdminChangeEnterprise({
-      event,
+      checked: false,
       setFieldValue,
       setUserRoles,
       setToastMessage,
@@ -187,10 +185,8 @@ describe("handleSuperAdminChangeEnterprise", () => {
     const setToastMessage = jest.fn();
     const roleLimitationText = jest.fn((keys) => keys.join(","));
 
-    const event = { target: { checked: true } } as any;
-
     await handleSuperAdminChangeEnterprise({
-      event,
+      checked: true,
       setFieldValue,
       setUserRoles,
       setToastMessage,
@@ -216,10 +212,8 @@ describe("handleSuperAdminChangeEnterprise", () => {
     const setToastMessage = jest.fn();
     const roleLimitationText = jest.fn();
 
-    const event = { target: { checked: true } } as any;
-
     await handleSuperAdminChangeEnterprise({
-      event,
+      checked: true,
       setFieldValue,
       setUserRoles,
       setToastMessage,
@@ -252,10 +246,8 @@ describe("handleSuperAdminChangeEnterprise", () => {
     const setToastMessage = jest.fn();
     const roleLimitationText = jest.fn();
 
-    const event = { target: { checked: false } } as any;
-
     await handleSuperAdminChangeEnterprise({
-      event,
+      checked: false,
       setFieldValue,
       setUserRoles,
       setToastMessage,

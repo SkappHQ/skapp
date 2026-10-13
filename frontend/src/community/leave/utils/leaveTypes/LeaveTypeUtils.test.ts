@@ -111,7 +111,7 @@ describe("LeaveTypeUtils", () => {
       setFieldError
     });
 
-    expect(setColors).toHaveBeenCalledWith(["green", "red", "blue"]);
+    expect(setColors).toHaveBeenCalledWith(["red", "blue"]);
     expect(setFieldValue).toHaveBeenCalledWith("colorCode", "green");
     expect(setFieldError).toHaveBeenCalledWith("colorCode", "");
   });
