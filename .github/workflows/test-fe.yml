@@ -6,6 +6,7 @@ on:
       - '*'
     paths:
       - 'frontend/**'
+      - '.github/workflows/test-fe.yml'
 
 jobs:
   test:

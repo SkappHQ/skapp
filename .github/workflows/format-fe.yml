@@ -6,6 +6,7 @@ on:
       - '*'
     paths:
       - 'frontend/**'
+      - '.github/workflows/format-fe.yml'
 
 jobs:
   format:
