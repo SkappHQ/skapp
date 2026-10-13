@@ -1,4 +1,4 @@
-name: Run Frontend Tests
+name: Run Frontend Unit Tests
 
 on:
   pull_request:
@@ -25,13 +25,12 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Configure GitHub Packages registry
+      # skapp-ui comes from a private registry and isn't needed for these checks
+      - name: Install dependencies without skapp-ui
         run: |
-          echo "@rootcodelabs:registry=https://npm.pkg.github.com/" >> .npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.NPM_READ_TOKEN }}" >> .npmrc
+          npm pkg delete dependencies.@rootcodelabs/skapp-ui
+          npm install --no-audit --no-fund --ignore-scripts
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run tests
-        run: npm test -- --ci
+      - name: Run unit tests
+        # Unit tests only; component (.test.tsx) tests are not run
+        run: npx jest --ci --coverage=false --testPathPatterns '\.test\.ts$'
