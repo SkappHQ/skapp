@@ -1,15 +1,15 @@
 name: Build Node.js App
 
+# PR trigger disabled until an NPM_READ_TOKEN secret is added; npm install needs
+# it to fetch @rootcodelabs/skapp-ui from GitHub Packages
 on:
-  pull_request:
-    branches:
-      - '*'
+  workflow_dispatch:
+  # pull_request:
+  #   branches:
+  #     - '*'
 
 jobs:
   build:
-    # Disabled until an NPM_READ_TOKEN secret is added; npm install needs it to
-    # fetch @rootcodelabs/skapp-ui from GitHub Packages
-    if: false
     runs-on: ubuntu-latest
 
     steps:
