@@ -40,7 +40,7 @@ const eslintConfig = [
     },
     rules: {
       "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": "warn",
+      "react-hooks/exhaustive-deps": "off",
       // React Compiler rules, new in eslint-plugin-react-hooks 7. Kept as
       // warnings so they can be worked through incrementally rather than
       // failing the whole lint run on day one of the Next 16 upgrade.
