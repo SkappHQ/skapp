@@ -92,7 +92,7 @@ const Tasks: NextPage = () => {
             <TaskSidePanel taskId={selectedTaskId} />
           </SidePanelWrapper>
         )}
-        <div ref={containerRef} className="flex w-full flex-col gap-4">
+        <div ref={containerRef} className="flex flex-col w-full gap-4">
           <TaskModalController />
           {isCrmInitialDataLoading ? (
             <TaskTabSkeleton {...TASK_SKELETON_CONFIG.OPEN} />

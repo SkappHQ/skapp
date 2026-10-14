@@ -380,8 +380,8 @@ const AddEditTeamModal = ({
       )}
       {!isSelectingMembers && allSelectedUsers?.length > 0 && (
         <div>
-          <div className="mt-2 mr-5 flex flex-row justify-between">
-            <p className="text-base leading-6 font-medium">
+          <div className="flex flex-row justify-between mr-5 mt-2">
+            <p className="text-base font-medium leading-6">
               {translateText(["memberListTitle"])}
             </p>
             {isPeopleAdmin && (
@@ -394,7 +394,7 @@ const AddEditTeamModal = ({
             )}
           </div>
           <div
-            className="mt-3 flex max-h-[20vh] flex-col gap-3 overflow-auto pr-0.5"
+            className="pr-0.5 mt-3 max-h-[20vh] overflow-auto flex flex-col gap-3"
             id={values.teamMembers?.length > 0 ? "team-members-list" : ""}
           >
             {values?.teamSupervisors?.map(
@@ -440,7 +440,7 @@ const AddEditTeamModal = ({
         />
       )}
       {!isSelectingMembers && isPeopleAdmin && (
-        <div className="mt-4 flex flex-row justify-end gap-3">
+        <div className="flex flex-row justify-end gap-3 mt-4">
           <ButtonV2
             variant={"tertiary"}
             onClick={handleCancel}
@@ -465,7 +465,7 @@ const AddEditTeamModal = ({
         </div>
       )}
       {!isPeopleAdmin && (
-        <div className="mt-4 flex flex-row justify-end gap-3">
+        <div className="flex flex-row justify-end gap-3 mt-4">
           <ButtonV2
             variant={"tertiary"}
             onClick={handleCancel}

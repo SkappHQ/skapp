@@ -54,7 +54,7 @@ const UserPromptModal = ({
       <p id={ids?.description ?? "user-prompt-modal-description"}>
         {description}
       </p>
-      <div className="mt-6 flex flex-row justify-end gap-3">
+      <div className="flex flex-row justify-end gap-3 mt-6">
         {secondaryBtn && (
           <ButtonV2
             variant={getVariant(

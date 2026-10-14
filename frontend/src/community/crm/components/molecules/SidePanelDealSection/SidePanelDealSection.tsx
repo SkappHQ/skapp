@@ -115,7 +115,7 @@ const SidePanelDealSection: FC<SidePanelDealSectionProps> = ({
       });
 
       return (
-        <div className="flex w-full flex-col gap-2">
+        <div className="flex flex-col w-full gap-2">
           <AdvancedAccordion
             items={accordionItems}
             allowMultiple={true}
@@ -172,7 +172,7 @@ const SidePanelDealSection: FC<SidePanelDealSectionProps> = ({
             : undefined
         }
         className={{
-          wrapper: "h-[228px] rounded-lg bg-secondary-background"
+          wrapper: "h-[228px] bg-secondary-background rounded-lg"
         }}
       />
     );

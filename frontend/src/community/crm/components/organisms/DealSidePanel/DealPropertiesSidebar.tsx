@@ -153,7 +153,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
   };
 
   return (
-    <div className="flex w-1/3 shrink-0 flex-col gap-4">
+    <div className="w-1/3 flex flex-col gap-4 shrink-0">
       <Dropdown
         options={stageOptions}
         value={selectedStageId}
@@ -170,12 +170,12 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
         ariaLabel={translateAria(["deals", "common", "stage"])}
       />
 
-      <div className="flex w-full flex-col gap-2 rounded-lg border border-secondary-accent p-3">
+      <div className="border border-secondary-accent rounded-lg p-3 flex flex-col gap-2 w-full">
         <PropertyRow
           label={translateText(["deals", "common", "labels", "contact"])}
           required
         >
-          <div className="flex w-full flex-col">
+          <div className="flex flex-col w-full">
             <ContactPopupSearch
               contacts={contacts}
               companies={companies}
@@ -231,7 +231,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
         <PropertyRow
           label={translateText(["deals", "common", "labels", "ownedBy"])}
         >
-          <div className="flex w-full flex-col">
+          <div className="flex flex-col w-full">
             <OwnerPopupSearch
               selectedUser={selectedOwner}
               onChange={handleOwnerChange}

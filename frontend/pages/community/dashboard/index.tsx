@@ -76,7 +76,7 @@ const LeaveYearSelector: FC<{
   );
 
   return (
-    <div className="mb-2 flex">
+    <div className="flex mb-2">
       <RoundedSelect
         id="leave-allocations-year-dropdown"
         value={selectedYear}

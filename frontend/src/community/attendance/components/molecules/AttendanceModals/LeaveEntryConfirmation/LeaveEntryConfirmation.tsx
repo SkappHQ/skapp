@@ -107,7 +107,7 @@ const LeaveEntryConfirmation = ({ fromDateTime, toDateTime }: Props) => {
           isTruncated={false}
         />
       </Stack>
-      <div className="mt-4 flex flex-row justify-end gap-3">
+      <div className="flex flex-row gap-3 mt-4 justify-end">
         <ButtonV2
           variant={"primary"}
           onClick={handleSubmit}

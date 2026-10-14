@@ -12,7 +12,7 @@ export const useGetPriorityOptions = (): CrmPriorityOption[] => {
     id: option.key,
     value: option.value,
     label: (
-      <Label backgroundColor={option.backgroundColor} className="px-3 py-2">
+      <Label backgroundColor={option.backgroundColor} className="py-2 px-3">
         {createElement(option.IconComponent)}
         <span className={`body3 ${option.textColor}`}>
           {translateText(["common", "priorityOptions", option.key])}

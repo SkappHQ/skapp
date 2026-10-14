@@ -54,7 +54,7 @@ const EditableCell: FC<EditableCellProps> = ({
     <div
       role="button"
       tabIndex={0}
-      className="flex min-h-[32px] w-full min-w-0 cursor-pointer items-center rounded-lg transition-colors hover:bg-secondary-background"
+      className="w-full min-w-0 min-h-[32px] rounded-lg flex items-center cursor-pointer hover:bg-secondary-background transition-colors"
       aria-label={ariaLabel}
       onClick={onStartEditing}
       onKeyDown={handleKeyDown}

@@ -61,10 +61,10 @@ const DraggableDealStageCard = ({
     <li
       ref={setNodeRef}
       style={style}
-      className="flex w-full flex-row justify-between"
+      className="w-full flex flex-row justify-between"
     >
       {!isDraggable ? (
-        <div className="h-6 w-6 flex-shrink-0" aria-hidden="true" />
+        <div className="w-6 h-6 flex-shrink-0" aria-hidden="true" />
       ) : (
         <button
           {...listeners}
@@ -84,7 +84,7 @@ const DraggableDealStageCard = ({
         title={stageName}
         description={stage.description ?? ""}
         className={{
-          title: "body1 flex-shrink-0 md:!w-[23%]",
+          title: "body1 md:!w-[23%] flex-shrink-0",
           description: "body2 flex-1"
         }}
         iconButtons={{

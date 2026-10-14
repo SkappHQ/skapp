@@ -18,7 +18,7 @@ const FullWidthContentLayout = ({
 }: Props) => {
   return (
     <div className={`w-full py-6 ${className}`}>
-      <div className="flex w-full flex-row items-center justify-between gap-4 px-12">
+      <div className="flex flex-row items-center justify-between gap-4 w-full px-12">
         <h1 className="h1">{title}</h1>
         <div className="flex gap-2.5">
           {secondaryButtonProps && (

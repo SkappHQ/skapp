@@ -89,7 +89,7 @@ const TaskModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
     : undefined;
 
   return (
-    <div className="flex h-full max-h-[78vh] w-full flex-col justify-between gap-[0.625rem]">
+    <div className="flex flex-col w-full h-full justify-between gap-[0.625rem] max-h-[78vh]">
       <div className="flex flex-col gap-[0.625rem] overflow-y-auto pr-1">
         <InputField
           name="name"
@@ -214,7 +214,7 @@ const TaskModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
         />
       </div>
 
-      <div className="flex flex-row justify-end gap-[1rem] py-[0.85rem]">
+      <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">
         <ButtonV2
           variant="tertiary"
           type="button"

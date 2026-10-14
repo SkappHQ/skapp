@@ -72,7 +72,7 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
   };
 
   return (
-    <div className="flex h-full flex-col justify-between gap-[0.625rem]">
+    <div className="flex flex-col h-full justify-between gap-[0.625rem]">
       <InputField
         name="name"
         value={values.name}
@@ -156,7 +156,7 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
         onClear={handleIndustryClear}
       />
 
-      <div className="flex flex-row justify-end gap-[1rem] py-[0.85rem]">
+      <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">
         <ButtonV2
           variant="tertiary"
           type="button"

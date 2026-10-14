@@ -20,7 +20,7 @@ const TaskRowMeta: FC<Props> = ({ task, owner, isCompletedStyleApplied }) => {
 
   return (
     <div
-      className={`flex shrink-0 items-center gap-6 ${isCompletedStyleApplied ? "opacity-40" : ""}`}
+      className={`flex items-center gap-6 shrink-0 ${isCompletedStyleApplied ? "opacity-40" : ""}`}
     >
       <PriorityIcon
         icon={priorityConfig.icon}

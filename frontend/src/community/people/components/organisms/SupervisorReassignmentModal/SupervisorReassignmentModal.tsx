@@ -260,11 +260,11 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
   };
 
   const modalContent = (
-    <div className="flex w-full flex-col gap-6">
+    <div className="flex flex-col gap-6 w-full">
       <div className="flex flex-col gap-4">
         <p className="body1">{translateText(["subtitle"])}</p>
 
-        <div className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto pr-2">
+        <div className="flex flex-col gap-4 pr-2 overflow-y-auto max-h-[60vh]">
           {isSupervisorRolesLoading && (
             <MultipleSkeletons numOfSkeletons={3} height={41} />
           )}

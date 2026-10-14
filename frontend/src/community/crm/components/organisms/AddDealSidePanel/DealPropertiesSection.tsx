@@ -77,12 +77,12 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
   };
 
   return (
-    <div className="flex w-full flex-col gap-2 rounded-lg border border-secondary-accent p-3">
+    <div className="border border-secondary-accent rounded-lg p-3 flex flex-col gap-2 w-full">
       <PropertyRow
         label={translateText(["deals", "common", "labels", "contact"])}
         required
       >
-        <div className="flex w-full flex-col">
+        <div className="flex flex-col w-full">
           <ContactPopupSearch
             contacts={contacts}
             companies={companies}
@@ -111,7 +111,7 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
             ariaRequired
           />
           {errors.contactId && touched.contactId && (
-            <p className="body3 mt-1 text-semantic-red-accent">
+            <p className="text-semantic-red-accent body3 mt-1">
               {errors.contactId}
             </p>
           )}
@@ -141,7 +141,7 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
         label={translateText(["deals", "common", "labels", "ownedBy"])}
         required
       >
-        <div className="flex w-full flex-col">
+        <div className="flex flex-col w-full">
           <OwnerPopupSearch
             selectedUser={selectedOwner}
             onChange={handleOwnerChange}
@@ -166,7 +166,7 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
             ariaInvalid={!!errors.ownerId}
           />
           {errors.ownerId && (
-            <p className="body3 mt-1 text-semantic-red-accent">
+            <p className="text-semantic-red-accent body3 mt-1">
               {errors.ownerId}
             </p>
           )}

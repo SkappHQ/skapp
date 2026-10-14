@@ -51,7 +51,7 @@ const DemographicsSection = ({
   };
 
   return (
-    <div className="flex flex-col gap-6 overflow-y-auto">
+    <div className="overflow-y-auto flex flex-col gap-6">
       <SelectableItemList
         title={translateText(["gender"])}
         selectionMode="single"
@@ -82,7 +82,7 @@ const DemographicsSection = ({
             labelStyles={theme.typography.subtitle3}
           />
 
-          <div className="mt-4 flex max-w-[250px] flex-row flex-wrap gap-1">
+          <div className="flex flex-row mt-4 gap-1 flex-wrap max-w-[250px]">
             {employeeDataFilter?.nationality &&
               employeeDataFilter?.nationality.length > 0 &&
               employeeDataFilter?.nationality.map((nationality, index) => (

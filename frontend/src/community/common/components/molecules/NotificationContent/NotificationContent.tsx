@@ -37,15 +37,15 @@ const NotificationContent = ({
   const IconComponent = getNotificationIcon(item.notificationType);
 
   return (
-    <div className="flex w-full flex-row gap-4 border-b border-secondary-accent py-3 hover:cursor-pointer hover:bg-tertiary-background">
+    <div className="flex flex-row gap-4 w-full py-3 border-b border-secondary-accent hover:cursor-pointer hover:bg-tertiary-background">
       <div className="flex items-start gap-4">
-        <div className="flex h-9 w-2 items-center gap-4">
+        <div className="flex items-center gap-4 h-9 w-2">
           {!isViewed && (
-            <div className="size-2 rounded-full bg-primary-accent" />
+            <div className="size-2 bg-primary-accent rounded-full" />
           )}
         </div>
         {IconComponent ? (
-          <div className="flex size-9 items-center justify-center rounded-full border-[0.38px] border-tertiary-background bg-white">
+          <div className="flex items-center justify-center size-9 rounded-full border-[0.38px] border-tertiary-background bg-white">
             <IconComponent width="24" height="24" />
           </div>
         ) : (

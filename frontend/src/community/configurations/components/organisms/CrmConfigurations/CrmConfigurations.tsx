@@ -22,7 +22,7 @@ const CrmConfigurations: FC = () => {
   ];
 
   return (
-    <div className="flex w-[49rem] flex-col gap-6">
+    <div className="flex flex-col gap-6 w-[49rem]">
       {isEnterprise ? (
         <CrmCurrencyPreferences />
       ) : (
@@ -31,7 +31,7 @@ const CrmConfigurations: FC = () => {
             <h2 className="subtitle2">
               {translateText(["currencySection", "currencyPreferencesTitle"])}
             </h2>
-            <p className="body1 mt-4 text-secondary-text">
+            <p className="body1 text-secondary-text mt-4">
               {translateText([
                 "currencySection",
                 "currencyPreferencesDescription"

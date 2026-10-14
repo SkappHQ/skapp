@@ -22,10 +22,10 @@ const SelectedOwnerField: FC<SelectedOwnerFieldProps> = ({
   required = false
 }) => (
   <div className="flex w-full flex-col gap-1">
-    <span className="subtitle1 inline-flex h-6 items-center leading-normal">
+    <span className="subtitle1 leading-normal inline-flex h-6 items-center">
       {label}
       {required && (
-        <span className="ml-1 text-semantic-red-accent" aria-hidden="true">
+        <span className="text-semantic-red-accent ml-1" aria-hidden="true">
           *
         </span>
       )}

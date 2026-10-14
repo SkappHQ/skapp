@@ -20,7 +20,7 @@ const OwnerOptionItem: FC<OwnerOptionItemProps> = ({
   return (
     <button
       type="button"
-      className="body2 flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-left hover:bg-tertiary-background"
+      className="flex items-center gap-2 px-4 py-2 body2 hover:bg-tertiary-background cursor-pointer w-full text-left"
       onClick={() => onSelect(option)}
     >
       <AvatarChip

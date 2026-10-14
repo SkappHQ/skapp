@@ -16,7 +16,7 @@ const LeaveTypeChip: FC<Props> = ({
   isDisabled = false
 }) => (
   <span
-    className={`body2 inline-flex w-fit items-center gap-2 rounded-full ${isDisabled ? "text-tertiary-text grayscale" : "text-secondary-text"} ${className}`}
+    className={`body2 inline-flex w-fit items-center gap-2 rounded-full ${isDisabled ? "grayscale text-tertiary-text" : "text-secondary-text"} ${className}`}
   >
     {emojiCode && (
       <span role="img" aria-hidden="true">

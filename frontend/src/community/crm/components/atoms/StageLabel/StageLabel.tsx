@@ -9,7 +9,7 @@ interface StageLabelProps {
 }
 
 const StageLabel: FC<StageLabelProps> = ({ label, color }) => (
-  <div className="flex max-w-50 min-w-0 items-center gap-2">
+  <div className="flex min-w-0 max-w-50 items-center gap-2">
     <div
       className="size-2 shrink-0 rounded-full"
       style={{

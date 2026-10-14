@@ -25,7 +25,7 @@ const NotificationsFilter = ({
         <span className="inline-flex items-center gap-2">
           {translateText(["unreadFilterButtonText"])}
           {notifyData.unreadCount > 0 && (
-            <span className="subtitle4 inline-flex items-center justify-center rounded-full bg-primary-text px-2 text-white">
+            <span className="inline-flex items-center justify-center bg-primary-text text-white subtitle4 px-2 rounded-full">
               {notifyData.unreadCount}
             </span>
           )}

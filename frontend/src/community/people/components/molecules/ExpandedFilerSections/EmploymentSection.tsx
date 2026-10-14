@@ -93,7 +93,7 @@ const EmploymentSection = ({
   };
 
   return (
-    <div className="flex flex-col gap-6 overflow-y-auto">
+    <div className="overflow-y-auto flex flex-col gap-6">
       {filterData.map((filter) => {
         const filterKey = filter.accessibilityKey as FilterKey;
         const currentFilterValues = (employeeDataFilter[filterKey] ??

@@ -11,11 +11,11 @@ interface SidePanelMetricCardsProps {
 
 const SidePanelMetricCards: FC<SidePanelMetricCardsProps> = ({ metrics }) => {
   return (
-    <div className="flex w-full gap-4">
+    <div className="flex gap-4 w-full">
       {metrics.map((metric) => (
         <Card
           key={metric.id}
-          className="flex min-w-0 flex-1 flex-col gap-1 overflow-hidden rounded-lg border border-secondary-accent bg-white p-3"
+          className="flex flex-col gap-1 flex-1 min-w-0 p-3 overflow-hidden border border-secondary-accent rounded-lg bg-white"
         >
           <p className="body2 text-secondary-text">{metric.title}</p>
           <div className="flex items-center gap-2">

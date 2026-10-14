@@ -23,7 +23,7 @@ const SidePanelContactInfo: FC<SidePanelContactInfoProps> = ({ contact }) => {
   const companyName = contact.companyId && companies[contact.companyId]?.name;
 
   return (
-    <div className="flex w-full max-w-[629px] items-center justify-between">
+    <div className="flex items-center justify-between max-w-[629px] w-full">
       <SidePanelHeaderInfoItem
         icon={
           <EmailOutlineIcon style={{ color: "var(--color-secondary-icon)" }} />

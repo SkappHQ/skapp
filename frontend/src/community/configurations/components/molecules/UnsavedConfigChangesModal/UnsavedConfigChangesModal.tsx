@@ -24,7 +24,7 @@ const UnsavedConfigChangesModal: FC<Props> = ({ isOpen, onStay, onLeave }) => {
       content={
         <div>
           <p>{translateText(["description"])}</p>
-          <div className="mt-6 flex flex-row justify-end gap-3">
+          <div className="flex flex-row justify-end gap-3 mt-6">
             <ButtonV2
               variant="tertiary"
               onClick={onLeave}

@@ -300,13 +300,13 @@ const WorkLocationForm = ({ id }: Props) => {
 
   if (isEditMode && isLoading) {
     return (
-      <div className="flex max-w-[40rem] animate-pulse flex-col gap-6">
+      <div className="flex flex-col gap-6 max-w-[40rem] animate-pulse">
         <div>
-          <div className="mb-2 h-4 w-24 rounded bg-secondary-accent" />
+          <div className="h-4 w-24 rounded bg-secondary-accent mb-2" />
           <div className="h-10 w-full rounded bg-secondary-accent" />
         </div>
         <div>
-          <div className="mb-2 h-4 w-32 rounded bg-secondary-accent" />
+          <div className="h-4 w-32 rounded bg-secondary-accent mb-2" />
           <div className="h-10 w-full rounded bg-secondary-accent" />
         </div>
         {canSeeGeofence && (
@@ -331,7 +331,7 @@ const WorkLocationForm = ({ id }: Props) => {
     <>
       <form
         onSubmit={formik.handleSubmit}
-        className="flex max-w-[40rem] flex-col gap-6"
+        className="flex flex-col gap-6 max-w-[40rem]"
       >
         <div>
           <InputField

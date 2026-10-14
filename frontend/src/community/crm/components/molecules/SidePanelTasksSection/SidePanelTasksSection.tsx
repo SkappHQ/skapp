@@ -155,7 +155,7 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
           : undefined
       }
       className={{
-        wrapper: "h-[14.25rem] rounded-lg bg-secondary-background"
+        wrapper: "h-[14.25rem] bg-secondary-background rounded-lg"
       }}
     />
   );

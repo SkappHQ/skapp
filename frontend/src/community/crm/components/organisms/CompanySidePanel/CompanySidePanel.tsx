@@ -333,7 +333,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
         )
       }
     >
-      <div className="flex flex-col gap-4 pb-4">
+      <div className="flex flex-col pb-4 gap-4">
         {isLoading || !company ? (
           <CompanySidePanelSkeleton />
         ) : (
@@ -348,7 +348,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
             <SidePanelMetricCards
               metrics={getCompanyMetricItems(company, translateText)}
             />
-            <div className="flex w-full flex-col pt-2">
+            <div className="flex flex-col pt-2 w-full">
               <Tabs
                 tabs={tabs}
                 activeTabId={activeTab}

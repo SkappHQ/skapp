@@ -112,13 +112,13 @@ const SupervisorReassignmentModalSection: FC<
           return (
             <div
               key={id}
-              className="flex min-h-10.25 flex-row items-center justify-between gap-3"
+              className="flex flex-row items-center justify-between gap-3 min-h-10.25"
             >
               <div
                 className={
                   showAvatar
-                    ? "min-w-0 flex-1 overflow-hidden"
-                    : "w-31.25 shrink-0 overflow-hidden"
+                    ? "flex-1 min-w-0 overflow-hidden"
+                    : "w-31.25 overflow-hidden shrink-0"
                 }
               >
                 {nameRow}
@@ -149,9 +149,9 @@ const SupervisorReassignmentModalSection: FC<
                         type="button"
                         onClick={() => onRemove(id)}
                         aria-label={removeButtonAriaLabel}
-                        className="flex cursor-pointer items-center justify-center"
+                        className="flex items-center justify-center cursor-pointer"
                       >
-                        <CloseIcon className="h-4 w-4" />
+                        <CloseIcon className="w-4 h-4" />
                       </button>
                     }
                   />

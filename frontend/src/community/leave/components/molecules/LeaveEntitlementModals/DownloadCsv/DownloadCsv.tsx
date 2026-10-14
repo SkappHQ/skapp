@@ -48,7 +48,7 @@ const DownloadCsv = () => {
       <p className="py-2" id="upload-csv-modal-title">
         {translateText(["downloadCsvModalDes"])}
       </p>
-      <div className="flex flex-row justify-end gap-4">
+      <div className="flex flex-row gap-4 justify-end">
         <ButtonV2
           variant={"secondary"}
           onClick={handleDownloadBtnClick}

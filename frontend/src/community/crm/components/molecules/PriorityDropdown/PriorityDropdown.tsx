@@ -27,7 +27,7 @@ const PriorityDropdown: FC<PriorityDropdownProps> = ({ value, onChange }) => {
       width="100%"
       hideArrowIcon
       padding="py-2 px-1"
-      className="w-full rounded-lg border-none bg-transparent"
+      className="w-full bg-transparent border-none rounded-lg"
     />
   );
 };

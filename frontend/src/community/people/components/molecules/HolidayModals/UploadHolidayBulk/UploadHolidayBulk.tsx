@@ -165,7 +165,7 @@ const UploadHolidayBulk: FC<Props> = ({ setBulkUploadData }) => {
 
   return (
     <div>
-      <p className="mb-2 font-normal">{translateText(["addCsvTitle"])}</p>
+      <p className="font-normal mb-2">{translateText(["addCsvTitle"])}</p>
       <DragAndDropField
         setAttachments={async (acceptedFiles: FileUploadType[]) =>
           await setAttachment({
@@ -189,7 +189,7 @@ const UploadHolidayBulk: FC<Props> = ({ setBulkUploadData }) => {
           componentName: translateAria(["holidays"])
         }}
       />
-      <div className="mt-4 flex flex-row justify-end gap-3">
+      <div className="flex flex-row justify-end gap-3 mt-4">
         <ButtonV2
           variant={"tertiary"}
           onClick={onCloseClick}

@@ -10,7 +10,7 @@ const TasksTable: FC = () => {
   const [activeTab, setActiveTab] = useState<CrmTaskTabEnum>(tabs[0]?.id);
 
   return (
-    <div className="flex h-full flex-col gap-4 overflow-hidden">
+    <div className="flex flex-col gap-4 h-full overflow-hidden">
       <div className="shrink-0">
         <Tabs
           tabs={tabs}
@@ -19,7 +19,7 @@ const TasksTable: FC = () => {
         />
         <hr className="border-secondary-accent" />
       </div>
-      <div className="min-h-0 flex-1 overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-hidden">
         <TaskTabContent tab={activeTab} />
       </div>
     </div>

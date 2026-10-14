@@ -28,7 +28,7 @@ const EmployeeTableFilterButton: FC<Props> = ({
 
   return (
     <div className="flex flex-row">
-      <div className="flex flex-row items-center gap-1">
+      <div className="flex flex-row gap-1 items-center">
         <FilterIconButton
           filterCount={filterCount}
           aria-label={translateText(["filter"])}

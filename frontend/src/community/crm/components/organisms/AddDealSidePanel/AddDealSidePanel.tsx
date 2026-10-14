@@ -243,7 +243,7 @@ const AddDealSidePanel: FC = () => {
         isOpen={isOpen}
         onClose={handleClose}
         header={
-          <span className="h1 pl-2 text-black">
+          <span className="pl-2 h1 text-black">
             {translateText(["deals", "addPanel", "title"])}
           </span>
         }
@@ -266,13 +266,13 @@ const AddDealSidePanel: FC = () => {
           </div>
         }
       >
-        <div className="flex h-full flex-col gap-6">
+        <div className="flex flex-col gap-6 h-full">
           <DealNameStageSection
             formik={formik}
             isDuplicateName={dealNameData?.isExists ?? false}
           />
 
-          <div className="flex flex-1 items-start gap-6">
+          <div className="flex gap-6 items-start flex-1">
             <div className="w-2/3">
               <TextArea
                 name="description"
@@ -291,7 +291,7 @@ const AddDealSidePanel: FC = () => {
                 value={values.description}
                 onChange={handleDescriptionChange}
                 onBlur={formik.handleBlur}
-                className="min-h-[23.6vh] w-full"
+                className="w-full min-h-[23.6vh]"
                 state={
                   formik.touched.description && formik.errors.description
                     ? "error"
@@ -306,7 +306,7 @@ const AddDealSidePanel: FC = () => {
               />
             </div>
 
-            <div className="flex w-1/3 min-w-0 flex-col gap-4">
+            <div className="w-1/3 min-w-0 flex flex-col gap-4">
               <DealPropertiesSection
                 formik={formik}
                 contacts={contacts}

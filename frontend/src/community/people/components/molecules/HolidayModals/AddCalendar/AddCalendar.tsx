@@ -53,7 +53,7 @@ const AddCalendar: FC = () => {
     <div>
       <div>
         <p id="download-csv-description">{translateText(["downloadCsvDes"])}</p>
-        <div className="mt-4 flex flex-row justify-end gap-3">
+        <div className="flex flex-row justify-end gap-3 mt-4">
           <ButtonV2
             variant={"secondary"}
             onClick={downloadTemplateHandler}

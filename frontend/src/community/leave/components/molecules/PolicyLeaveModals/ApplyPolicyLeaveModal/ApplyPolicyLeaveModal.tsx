@@ -526,7 +526,7 @@ const ApplyPolicyLeaveModal = () => {
   return (
     <div className="flex h-full flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="flex flex-col gap-3 md:flex-row md:gap-7">
+        <div className="flex flex-col md:flex-row gap-3 md:gap-7">
           <div className="flex flex-col gap-3">
             <fieldset
               ref={dateFieldRef}
@@ -555,7 +555,7 @@ const ApplyPolicyLeaveModal = () => {
               <PolicyLeaveBalanceCard policyBalance={selectedPolicyBalance} />
             </div>
           </div>
-          <div className="flex w-full flex-col gap-3">
+          <div className="flex flex-col gap-3 w-full">
             {selectedDates.length && myTeams?.length ? (
               <PolicyTeamAvailabilityCard
                 teams={myTeams}

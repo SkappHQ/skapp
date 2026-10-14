@@ -99,7 +99,7 @@ const DeleteDealStageModalContent: FC = () => {
             )
           })}
       </div>
-      <div className="flex flex-row justify-end gap-[1rem] py-[0.85rem]">
+      <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">
         <ButtonV2
           variant="tertiary"
           type="button"

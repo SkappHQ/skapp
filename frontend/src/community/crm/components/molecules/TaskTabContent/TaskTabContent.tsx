@@ -222,7 +222,7 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
   };
 
   const renderOpenTasksContent = () => (
-    <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-2 pb-4">
+    <div className="flex flex-col flex-1 min-h-0 px-2 pb-4 gap-4 overflow-y-auto">
       {overdue.length > 0 && (
         <TaskGroup
           label={translateText(["tasks", "table", "groupLabels", "overdue"])}
@@ -264,7 +264,7 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
   );
 
   const renderCompletedTasksContent = () => (
-    <div className="flex h-full flex-col gap-4 overflow-y-auto px-2 pb-4">
+    <div className="flex flex-col h-full px-2 pb-4 gap-4 overflow-y-auto">
       <TaskGroup
         tasks={completedTasksInView}
         isCheckTaskVisible={false}
@@ -342,7 +342,7 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
   };
 
   return (
-    <div className="flex h-full flex-col gap-4 overflow-hidden">
+    <div className="flex flex-col h-full gap-4 overflow-hidden">
       <div className="p-1">
         <InputField
           ariaLabelClearButton={translateAria([
@@ -350,7 +350,7 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
             "table",
             "clearSearch"
           ])}
-          className="h-[3rem] w-[25.75rem]"
+          className="w-[25.75rem] h-[3rem]"
           placeholder={translateText(["tasks", "table", "search"])}
           rightIcon={<SearchIcon />}
           value={searchTerm}
@@ -360,7 +360,7 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
           state="default"
         />
       </div>
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-col flex-1 overflow-hidden">
         {renderContent()}
       </div>
     </div>

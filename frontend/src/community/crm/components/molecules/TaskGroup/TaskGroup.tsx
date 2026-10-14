@@ -22,9 +22,9 @@ const TaskGroup: FC<Props> = ({
 }) => (
   <div className="flex flex-col">
     {label && (
-      <div className="subtitle2 sticky top-0 z-10 mb-2 bg-white">{label}</div>
+      <div className="subtitle2 mb-2 sticky top-0 bg-white z-10">{label}</div>
     )}
-    <div className="divide-y divide-secondary-accent overflow-hidden rounded-lg border border-secondary-accent">
+    <div className="border border-secondary-accent rounded-lg overflow-hidden divide-y divide-secondary-accent">
       {tasks.map(
         (task) =>
           task?.id && (

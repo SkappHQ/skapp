@@ -82,7 +82,7 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({
   );
 
   return (
-    <div className="flex items-start gap-6">
+    <div className="flex gap-6 items-start">
       <div className="w-2/3">
         <InputField
           label={translateText(["deals", "common", "labels", "dealName"])}

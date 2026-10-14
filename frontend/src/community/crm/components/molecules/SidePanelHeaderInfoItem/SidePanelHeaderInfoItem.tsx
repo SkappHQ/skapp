@@ -20,14 +20,14 @@ const SidePanelHeaderInfoItem: FC<SidePanelHeaderInfoItemProps> = ({
 
   return (
     <div className="flex items-center gap-[12px]">
-      <span className="flex shrink-0 items-center">{icon}</span>
+      <span className="shrink-0 flex items-center">{icon}</span>
       {isInteractive ? (
         <button
           type="button"
           onClick={onClick}
-          className="inline-flex cursor-pointer items-center gap-[4px] border-0 bg-transparent p-0 transition-opacity hover:opacity-80"
+          className="inline-flex items-center gap-[4px] bg-transparent border-0 p-0 cursor-pointer transition-opacity hover:opacity-80"
         >
-          <span className="body2 leading-6 tracking-[0.5px] text-primary-text underline">
+          <span className="body2 leading-6 tracking-[0.5px] underline text-primary-text">
             {value}
           </span>
           {endIcon && (

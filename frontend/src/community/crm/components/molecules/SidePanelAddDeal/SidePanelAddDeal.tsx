@@ -195,7 +195,7 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
 
   return (
     <div
-      className={`relative ${isFormDisabled ? "pointer-events-none opacity-50" : ""}`}
+      className={`relative ${isFormDisabled ? "opacity-50 pointer-events-none" : ""}`}
     >
       <SubTaskInput
         prefixNode={

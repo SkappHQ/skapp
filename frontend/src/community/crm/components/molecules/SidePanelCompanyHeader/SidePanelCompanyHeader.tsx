@@ -23,7 +23,7 @@ const SidePanelCompanyHeader: FC<SidePanelCompanyHeaderProps> = ({
   const { website, contactNumber, address } = company;
 
   return (
-    <div className="flex flex-wrap items-center gap-12">
+    <div className="flex items-center gap-12 flex-wrap">
       {website && (
         <SidePanelHeaderInfoItem
           icon={

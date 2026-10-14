@@ -136,7 +136,7 @@ const UploadCsv = ({ leaveTypes, setLeaveTypes, setErrorLog }: Props) => {
   };
 
   return (
-    <div className="mb-4 flex flex-col gap-3">
+    <div className="flex flex-col gap-3 mb-4">
       <p className="pb-4" id="upload-csv-modal-description">
         {translateText(["uploadCsvModalDes"])}
       </p>
@@ -166,7 +166,7 @@ const UploadCsv = ({ leaveTypes, setLeaveTypes, setErrorLog }: Props) => {
         maxFileSize={1}
         customError={customError}
       />
-      <div className="flex flex-row justify-end gap-4">
+      <div className="flex flex-row gap-4 justify-end">
         <ButtonV2
           variant={"tertiary"}
           onClick={handleBackBtnClick}

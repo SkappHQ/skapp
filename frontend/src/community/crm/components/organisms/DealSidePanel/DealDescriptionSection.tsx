@@ -48,13 +48,13 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
           <TextArea
             value={editedDescription}
             onChange={(e) => changeValue(e.target.value)}
-            className="body2 w-full"
+            className="w-full body2"
             rows={4}
             state={error ? "error" : "default"}
             errorMessage={error}
             autoFocus
           />
-          <div className="flex justify-end gap-2">
+          <div className="flex gap-2 justify-end">
             <ButtonV2
               onClick={discard}
               size="md"
@@ -72,13 +72,13 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
         <div
           role="button"
           tabIndex={0}
-          className="body2 w-full cursor-pointer rounded border-none bg-transparent text-left hover:bg-secondary-background"
+          className="body2 text-left w-full cursor-pointer hover:bg-secondary-background rounded bg-transparent border-none"
           aria-label={translateAria(["deals", "sidePanel", "editDescription"])}
           onClick={startEditing}
           onKeyDown={handleKeyDown}
         >
           {!description ? (
-            <span className="body2 text-secondary-text">
+            <span className="text-secondary-text body2">
               {translateText([
                 "deals",
                 "sidePanel",

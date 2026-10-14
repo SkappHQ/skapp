@@ -158,7 +158,7 @@ const DealStagesSection: FC = () => {
   return (
     <>
       <div className="flex flex-col gap-4">
-        <div className="mb-4 flex flex-row items-center justify-between">
+        <div className="flex flex-row items-center justify-between mb-4">
           <h2 className="subtitle2">
             {translateText(["dealsSection", "dealPipelineStatusesTitle"])}
           </h2>

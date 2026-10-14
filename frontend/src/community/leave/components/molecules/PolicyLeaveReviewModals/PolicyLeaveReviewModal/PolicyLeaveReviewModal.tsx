@@ -93,7 +93,7 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
 
   return (
     <div>
-      <div className="mb-3 flex flex-row justify-between">
+      <div className="flex flex-row justify-between mb-3">
         <fieldset
           className="flex flex-row items-center gap-3"
           aria-label={translateAria(["employeeName"], {
@@ -135,7 +135,7 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
 
       <div className="max-h-[50vh] overflow-auto">
         <div className="pt-3 pb-4">
-          <div className="flex flex-row items-center justify-between pb-4">
+          <div className="flex flex-row justify-between items-center pb-4">
             <span className="text-base">{translateText(["duration"])}:</span>
             <div className="flex flex-row gap-2">
               <ReadOnlyChip
@@ -164,7 +164,7 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
             tabIndex={0}
           />
           {request.attachments && request.attachments.length > 0 && (
-            <div className="flex flex-col gap-2 pt-4">
+            <div className="pt-4 flex flex-col gap-2">
               <p className="text-base">{translateText(["attachments"])}</p>
 
               <div>
@@ -192,7 +192,7 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
         </div>
       </div>
 
-      <div className="mt-4 flex flex-row justify-end gap-4">
+      <div className="flex flex-row gap-4 mt-4 justify-end">
         <ButtonV2
           variant={"error"}
           onClick={handleDeclineModel}

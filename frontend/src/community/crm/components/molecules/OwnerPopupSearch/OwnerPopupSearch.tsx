@@ -140,7 +140,7 @@ const OwnerPopupSearch: FC<Props> = ({
         handleRenderOption(option as DropdownOption, onSelect)
       }
       renderNoResults={() => (
-        <div className="body2 px-4 py-2 text-tertiary-text">
+        <div className="px-4 py-2 body2 text-tertiary-text">
           {noResultsText}
         </div>
       )}

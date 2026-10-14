@@ -15,13 +15,13 @@ const getTabRoundedClass = (i: number, tabCount: number): string => {
 const SidePanelTabsSkeleton: FC<SidePanelTabsSkeletonProps> = ({
   tabCount
 }) => (
-  <div className="flex w-full flex-col gap-3" aria-hidden="true">
+  <div className="flex flex-col gap-3 w-full" aria-hidden="true">
     <div className="flex flex-col">
       <div className="flex">
         {Array.from({ length: tabCount }).map((_, i) => (
           <div
             key={`tab-skeleton-${i}`}
-            className={`border-b-2 px-5 py-2 ${getTabRoundedClass(i, tabCount)} ${
+            className={`px-5 py-2 border-b-2 ${getTabRoundedClass(i, tabCount)} ${
               i === 0
                 ? "border-primary-text bg-primary-background"
                 : "border-transparent bg-secondary-background"
@@ -34,7 +34,7 @@ const SidePanelTabsSkeleton: FC<SidePanelTabsSkeletonProps> = ({
       <hr className="border-secondary-accent" />
     </div>
 
-    <div className="w-full divide-y divide-secondary-accent overflow-hidden rounded-lg border border-secondary-accent">
+    <div className="border border-secondary-accent rounded-lg divide-y divide-secondary-accent w-full overflow-hidden">
       <div className="flex items-center justify-between px-3 py-3">
         <div className="flex items-center gap-4">
           <SkeletonShape circle className="h-6 w-6 shrink-0" />

@@ -57,7 +57,7 @@ const NotificationsPopup = ({
       <div
         className={`${
           isSmallPhoneScreen ? "max-h-[44vh]" : "max-h-[calc(100vh-30rem)]"
-        } mt-6 overflow-y-auto`}
+        } overflow-y-auto mt-6`}
       >
         {notifications?.length === 0 ? (
           <EmptyDataView

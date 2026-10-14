@@ -46,7 +46,7 @@ const BulkUploadSummary: FC<Props> = ({ setPopupType, data, flow }) => {
 
   return (
     <div>
-      <p id="bulk-upload-summary-description" className="my-2 text-sm">
+      <p id="bulk-upload-summary-description" className="text-sm my-2">
         {totalEntries === 1 && data?.bulkStatusSummary?.failedCount === 1
           ? translateText(["oneEntryOneFailSummary"])
           : totalEntries === data?.bulkStatusSummary?.failedCount
@@ -71,7 +71,7 @@ const BulkUploadSummary: FC<Props> = ({ setPopupType, data, flow }) => {
             : ""}
         {translateText(["commonUploadSummary"])}
       </p>
-      <div className="my-2 flex justify-end">
+      <div className="flex justify-end  my-2">
         <ButtonV2
           variant={"primary"}
           onClick={handleDownloadErrorLogCSV}

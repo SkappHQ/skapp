@@ -5,11 +5,11 @@ import TaskRowSkeleton from "~community/crm/components/molecules/TaskRow/TaskRow
 
 const DealSidePanelSkeleton: FC = () => (
   <div role="status" aria-busy={true} aria-live="polite" className="w-full">
-    <div className="flex w-full flex-col gap-6" aria-hidden="true">
+    <div className="flex flex-col gap-6 w-full" aria-hidden="true">
       <SkeletonShape className="h-5 w-48" />
 
-      <div className="flex items-start gap-6">
-        <div className="flex min-w-0 flex-1 flex-col gap-6">
+      <div className="flex gap-6 items-start">
+        <div className="flex-1 flex flex-col gap-6 min-w-0">
           <div className="flex flex-col gap-1">
             <SkeletonShape className="h-2.5 w-20" />
             <SkeletonShape className="h-px w-full" />
@@ -19,7 +19,7 @@ const DealSidePanelSkeleton: FC = () => (
           <div className="flex flex-col gap-3">
             <SkeletonShape className="h-2.5 w-10" />
             <hr className="border-secondary-accent" />
-            <div className="divide-y divide-secondary-accent overflow-hidden rounded-lg border border-secondary-accent">
+            <div className="border border-secondary-accent rounded-lg divide-y divide-secondary-accent overflow-hidden">
               {Array.from({ length: 4 }).map((_, index) => (
                 <TaskRowSkeleton key={index} />
               ))}
@@ -31,8 +31,8 @@ const DealSidePanelSkeleton: FC = () => (
           </div>
         </div>
 
-        <div className="flex w-1/3 shrink-0 flex-col gap-4">
-          <div className="flex w-full max-w-[13.688rem] items-center justify-between rounded-lg border border-secondary-accent px-3 py-2">
+        <div className="w-1/3 flex flex-col gap-4 shrink-0">
+          <div className="w-full max-w-[13.688rem] border border-secondary-accent rounded-lg px-3 py-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <SkeletonShape circle className="h-2 w-2 shrink-0" />
               <SkeletonShape className="h-2.5 w-20" />
@@ -40,7 +40,7 @@ const DealSidePanelSkeleton: FC = () => (
             <SkeletonShape className="h-4 w-4" />
           </div>
 
-          <div className="flex flex-col gap-3 rounded-lg border border-secondary-accent p-3">
+          <div className="border border-secondary-accent rounded-lg p-3 flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <SkeletonShape className="h-2.5 w-10" />
               <SkeletonShape className="h-2.5 w-16" />
