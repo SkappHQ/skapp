@@ -56,7 +56,11 @@ import { getTenantId } from "~enterprise/common/utils/tenantUtil";
 
 import FullScreenLoader from "../../molecules/FullScreenLoader/FullScreenLoader";
 import { StyledDrawer } from "./StyledDrawer";
-import { getSelectedDrawerItemColor, styles } from "./styles";
+import {
+  DRAWER_ITEM_ICON_SIZE,
+  getSelectedDrawerItemColor,
+  styles
+} from "./styles";
 
 const Drawer = (): JSX.Element => {
   const theme: Theme = useTheme();
@@ -313,6 +317,8 @@ const Drawer = (): JSX.Element => {
                         <Box sx={{ position: "relative", display: "flex" }}>
                           <Icon
                             name={route.icon}
+                            width={DRAWER_ITEM_ICON_SIZE}
+                            height={DRAWER_ITEM_ICON_SIZE}
                             fill={getSelectedDrawerItemColor(
                               theme,
                               router.pathname,

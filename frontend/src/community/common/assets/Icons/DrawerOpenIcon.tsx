@@ -5,6 +5,7 @@ import { IconProps } from "~community/common/types/IconTypes";
 const DrawerOpenIcon = ({
   width = "24",
   height = "24",
+  fill = "currentColor",
   id,
   svgProps,
   onClick
@@ -22,16 +23,16 @@ const DrawerOpenIcon = ({
     >
       <path
         d="M19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3Z"
-        stroke="#71717A"
-        style={{ stroke: "#71717A", strokeOpacity: 1 }}
+        stroke={fill}
+        style={{ stroke: fill, strokeOpacity: 1 }}
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
       <path
         d="M9 3V21M14 9L17 12L14 15"
-        stroke="#71717A"
-        style={{ stroke: "#71717A", strokeOpacity: 1 }}
+        stroke={fill}
+        style={{ stroke: fill, strokeOpacity: 1 }}
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
