@@ -313,6 +313,7 @@ public class TimeServiceImpl implements TimeService {
 			Long employeeId) {
 		log.info("getEmployeeDailyTimeRecordsByEmployeeId: execution started");
 
+		validateEmployeeDataAccess(employeeId);
 		PageDto pageDto = getEmployeeTimeRecord(timeRecordFilterDto, employeeId);
 		log.info("getEmployeeDailyTimeRecordsByEmployeeId: execution ended");
 		return new ResponseEntityDto(false, pageDto);
@@ -331,6 +332,25 @@ public class TimeServiceImpl implements TimeService {
 
 		log.info("getPendingTimeRequestsCount: execution ended");
 		return new ResponseEntityDto(false, pendingTimeRequestsCountDto);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public void validateEmployeeDataAccess(Long employeeId) {
+		Employee currentEmployee = userService.getCurrentUser().getEmployee();
+		EmployeeRole employeeRole = currentEmployee.getEmployeeRole();
+
+		boolean isOwnData = currentEmployee.getEmployeeId().equals(employeeId);
+		boolean isAdmin = Boolean.TRUE.equals(employeeRole.getIsSuperAdmin())
+				|| Role.ATTENDANCE_ADMIN.equals(employeeRole.getAttendanceRole());
+		if (isOwnData || isAdmin) {
+			return;
+		}
+
+		if (!employeeManagerDao.existsByManagerEmployeeIdAndEmployeeEmployeeId(currentEmployee.getEmployeeId(),
+				employeeId)) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_MANAGER_CANNOT_VIEW_EMPLOYEE_DATA);
+		}
 	}
 
 	private PageDto getEmployeeTimeRecord(TimeRecordFilterDto timeRecordFilterDto, Long employeeId) {
@@ -1138,6 +1158,8 @@ public class TimeServiceImpl implements TimeService {
 			throw new EntityNotFoundException(
 					messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND));
 		}
+
+		validateEmployeeDataAccess(individualWorkHourFilterDto.getEmployeeId());
 
 		IndividualWorkHoursResponseDto response = getEmployeeWorkHourGraphResponseDto(individualWorkHourFilterDto);
 

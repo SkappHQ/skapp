@@ -239,6 +239,8 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 			throw new ModuleException(TimeMessageConstant.TIME_ERROR_MANAGER_OR_ABOVE_PERMISSIONS_REQUIRED);
 		}
 
+		timeService.validateEmployeeDataAccess(id);
+
 		Optional<Employee> employeeOpt = employeeDao.findById(id);
 		if (employeeOpt.isEmpty()) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
@@ -263,6 +265,8 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		if (averageHoursWorkedTrendFilterDto.getMonth() == null) {
 			throw new ModuleException(TimeMessageConstant.TIME_ERROR_MONTH_REQUIRED);
 		}
+
+		timeService.validateEmployeeDataAccess(employeeId);
 
 		List<TimeRecord> timeRecords = timeRecordDao.getTimeRecordsByEmployeeAndMonth(employeeId,
 				averageHoursWorkedTrendFilterDto.getMonth());
