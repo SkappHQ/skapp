@@ -163,7 +163,7 @@ const HolidayBulkDelete: FC<Props> = ({ setIsPopupOpen, type }) => {
             {translateText(["singleHolidayDeleteModalDes"])}
           </p>
         )}
-        <div className="flex flex-row justify-end gap-3 mt-4">
+        <div className="mt-4 flex flex-row justify-end gap-3">
           <ButtonV2
             variant={"tertiary"}
             onClick={() => setIsPopupOpen(false)}

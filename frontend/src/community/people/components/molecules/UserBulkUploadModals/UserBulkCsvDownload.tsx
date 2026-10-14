@@ -47,8 +47,8 @@ const UserBulkCsvDownload = () => {
   return (
     <div>
       <div>
-        <p className=" font-normal pb-6">{translateText(["downloadCsvDes"])}</p>
-        <div className="flex flex-row justify-end gap-3 mb-4">
+        <p className="pb-6 font-normal">{translateText(["downloadCsvDes"])}</p>
+        <div className="mb-4 flex flex-row justify-end gap-3">
           <a
             href={userBulkTemplate.url}
             download={userBulkTemplate.fileName}

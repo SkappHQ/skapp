@@ -69,7 +69,7 @@ const DealCard: FC<DealCardProps> = ({
         <div
           role="button"
           tabIndex={0}
-          className="body2 line-clamp-2 cursor-pointer wrap-break-word text-left hover:text-primary-text hover:underline"
+          className="body2 line-clamp-2 cursor-pointer text-left wrap-break-word hover:text-primary-text hover:underline"
           title={title}
           onClick={onClick}
           onKeyDown={(e) => {

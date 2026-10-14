@@ -25,8 +25,8 @@ const SidePanelDealCard: FC<Props> = ({ deal, owner, stage }) => {
   ]);
 
   return (
-    <div className="border-secondary-accent flex w-full items-center justify-between rounded-lg border bg-white px-4 py-3">
-      <div className="flex flex-col gap-[2px] min-w-0">
+    <div className="flex w-full items-center justify-between rounded-lg border border-secondary-accent bg-white px-4 py-3">
+      <div className="flex min-w-0 flex-col gap-[2px]">
         <span className="body2 truncate" title={deal.name ?? ""}>
           {deal.name}
         </span>

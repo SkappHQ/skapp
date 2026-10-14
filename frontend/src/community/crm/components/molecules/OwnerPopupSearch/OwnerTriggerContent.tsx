@@ -19,7 +19,7 @@ const OwnerTriggerContent: FC<OwnerTriggerContentProps> = ({
 
   return (
     <button
-      className="flex items-center w-full min-h-8 cursor-pointer rounded-lg"
+      className="flex min-h-8 w-full cursor-pointer items-center rounded-lg"
       {...triggerProps}
       ref={triggerProps?.ref as RefObject<HTMLButtonElement> | undefined}
       onClick={disabled ? undefined : triggerProps?.onClick}

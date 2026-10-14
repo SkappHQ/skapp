@@ -42,7 +42,7 @@ const DealValueCell: FC<Props> = ({ amount, onSave }) => {
       onStartEditing={startEditing}
       onClickOutside={save}
       display={
-        <span className="body2 w-full block text-right">
+        <span className="body2 block w-full text-right">
           {formatMonetaryValueWithDecimals(amount)}
         </span>
       }

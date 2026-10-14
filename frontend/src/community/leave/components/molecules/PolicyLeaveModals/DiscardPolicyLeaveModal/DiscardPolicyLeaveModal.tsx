@@ -18,7 +18,7 @@ const DiscardPolicyLeaveModal = () => {
   return (
     <div className="flex flex-col gap-4">
       <p>{translateText(["description"])}</p>
-      <div className="flex flex-row gap-3 justify-end">
+      <div className="flex flex-row justify-end gap-3">
         <ButtonV2
           variant={"tertiary"}
           onClick={() => setModalType(PolicyLeaveModalEnums.APPLY_POLICY_LEAVE)}

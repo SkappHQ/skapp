@@ -52,7 +52,7 @@ const DealsHeader: FC<Props> = ({
         rightIcon={<SearchIcon />}
         ariaLabelClearButton={translateAria(["deals", "header", "clearSearch"])}
         customStyles={{ borderRadius: "rounded-[1.5rem]" }}
-        className="w-103 h-12"
+        className="h-12 w-103"
       />
       <ViewToggle
         options={viewOptions}

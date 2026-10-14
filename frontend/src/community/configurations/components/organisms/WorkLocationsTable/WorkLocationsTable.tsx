@@ -135,9 +135,9 @@ const WorkLocationsTable = () => {
   }));
 
   return (
-    <div className="flex flex-col gap-6 w-full">
+    <div className="flex w-full flex-col gap-6">
       <h2 className="h2">{translateText(["pageTitle"])}</h2>
-      <div className="flex gap-2 items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <InputField
           className="w-[412px]"
           placeholder={translateText(["table.searchPlaceholder"])}

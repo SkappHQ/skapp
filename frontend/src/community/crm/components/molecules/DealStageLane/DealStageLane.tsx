@@ -153,13 +153,13 @@ const DealStageLane: FC<DealStageLaneProps> = ({
       ref={setNodeRef}
       className={`flex h-full w-75 shrink-0 flex-col rounded-lg bg-tertiary-background outline-1 transition-shadow ${
         isOver
-          ? "outline-primary-accent ring-2 ring-primary-background"
+          ? "ring-2 ring-primary-background outline-primary-accent"
           : "outline-secondary-accent"
       }`}
       aria-labelledby={`crm-stage-${stageId}`}
     >
       <div
-        className="h-1.75 rounded-lg m-2"
+        className="m-2 h-1.75 rounded-lg"
         style={{ backgroundColor: stageColor }}
       />
 
@@ -180,12 +180,12 @@ const DealStageLane: FC<DealStageLaneProps> = ({
             {formatMonetaryValueWithDecimals(totalValue)}
           </p>
         </div>
-        <span className="flex h-8 min-w-8 shrink-0 items-center justify-center rounded-full body3 bg-white px-1.5 text-secondary-text">
+        <span className="body3 flex h-8 min-w-8 shrink-0 items-center justify-center rounded-full bg-white px-1.5 text-secondary-text">
           {totalCount}
         </span>
       </div>
 
-      <div className="mt-3 flex min-h-0 flex-1 flex-col gap-3 h-full overflow-y-auto overflow-x-hidden px-3 pb-3">
+      <div className="mt-3 flex h-full min-h-0 flex-1 flex-col gap-3 overflow-x-hidden overflow-y-auto px-3 pb-3">
         {isLoading ? (
           <DealCardSkeleton count={3} />
         ) : (

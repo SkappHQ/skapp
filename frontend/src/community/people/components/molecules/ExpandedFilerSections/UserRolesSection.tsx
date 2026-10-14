@@ -110,7 +110,7 @@ const UserRolesSection = ({
   };
 
   return (
-    <div className="overflow-y-auto flex flex-col gap-6">
+    <div className="flex flex-col gap-6 overflow-y-auto">
       {filterData.map((filter) => {
         const currentFilterValues = (employeeDataFilter[
           filter.filterKey as keyof EmployeeDataFilterTypes

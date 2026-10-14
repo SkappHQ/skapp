@@ -141,7 +141,7 @@ const UserBulkCsvUpload: FC<Props> = ({ setBulkUploadData, setPopupType }) => {
 
   return (
     <div>
-      <p className="text-sm font-normal pb-4">
+      <p className="pb-4 text-sm font-normal">
         {translateText(["uploadCsvDes"])}
       </p>
       <DragAndDropField
@@ -165,10 +165,10 @@ const UserBulkCsvUpload: FC<Props> = ({ setBulkUploadData, setPopupType }) => {
       />
       {bulkUserAttachment?.[0]?.file && !!fileError && (
         <div role="alert">
-          <p className="text-sm text-red-500 mt-1">{fileError}</p>
+          <p className="mt-1 text-sm text-red-500">{fileError}</p>
         </div>
       )}
-      <div className="flex flex-row justify-end gap-3 mt-4">
+      <div className="mt-4 flex flex-row justify-end gap-3">
         <ButtonV2
           variant={"tertiary"}
           onClick={() => handleCancelBtn()}

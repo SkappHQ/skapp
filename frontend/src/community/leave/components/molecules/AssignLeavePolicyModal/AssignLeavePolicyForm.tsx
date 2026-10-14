@@ -97,7 +97,7 @@ const AssignLeavePolicyForm: FC<Props> = ({
         width="100%"
       />
 
-      <div className="flex flex-col gap-4 max-h-[50vh] overflow-y-auto pr-2">
+      <div className="flex max-h-[50vh] flex-col gap-4 overflow-y-auto pr-2">
         {conflictWarning && (
           <InfoTipBanner status="warning" description={conflictWarning} />
         )}

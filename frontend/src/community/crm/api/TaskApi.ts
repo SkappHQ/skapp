@@ -110,10 +110,9 @@ const fetchRelatedTasks = async (
   id: number,
   filter: CrmRelatedTasksFilter
 ): Promise<CrmTaskListResponse> => {
-  const response = await authFetch.get(
-    crmTaskEndpoints.GET_RELATED_TASKS(id),
-    { params: filter }
-  );
+  const response = await authFetch.get(crmTaskEndpoints.GET_RELATED_TASKS(id), {
+    params: filter
+  });
   return response?.data?.results?.[0];
 };
 

@@ -7,18 +7,18 @@ interface Props {
 }
 
 const PropertyRow: FC<Props> = ({ label, required = false, children }) => (
-  <div className="flex w-full items-center gap-4 min-h-11">
-    <div className="w-30 shrink-0 flex items-center">
-      <span className="subtitle3 text-black whitespace-nowrap">
+  <div className="flex min-h-11 w-full items-center gap-4">
+    <div className="flex w-30 shrink-0 items-center">
+      <span className="subtitle3 whitespace-nowrap text-black">
         {label}
         {required && (
-          <span className="text-semantic-red-accent ml-1" aria-hidden="true">
+          <span className="ml-1 text-semantic-red-accent" aria-hidden="true">
             *
           </span>
         )}
       </span>
     </div>
-    <div className="flex-1 min-w-0 flex items-center">{children}</div>
+    <div className="flex min-w-0 flex-1 items-center">{children}</div>
   </div>
 );
 

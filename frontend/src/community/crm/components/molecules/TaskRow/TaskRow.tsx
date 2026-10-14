@@ -39,7 +39,7 @@ const TaskRow: FC<Props> = ({
       aria-label={translateAria(["tasks", "row", "openTaskDetails"], {
         name: task.name
       })}
-      className="relative flex items-center gap-4 p-3 min-w-0 min-h-[63px] bg-white hover:bg-secondary-background overflow-hidden cursor-pointer"
+      className="relative flex min-h-[63px] min-w-0 cursor-pointer items-center gap-4 overflow-hidden bg-white p-3 hover:bg-secondary-background"
       onClick={() => onRowClick?.(taskId)}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") onRowClick?.(taskId);

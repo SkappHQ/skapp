@@ -33,16 +33,16 @@ const TaskRowContent: FC<Props> = ({
   const contact = task.contactId != null ? contacts[task.contactId] : undefined;
 
   return (
-    <div className="flex-1 min-w-0 flex items-center gap-4">
+    <div className="flex min-w-0 flex-1 items-center gap-4">
       <div
-        className={`shrink-0 flex items-center justify-center ${isCompletedStyleApplied ? "opacity-40" : ""}`}
+        className={`flex shrink-0 items-center justify-center ${isCompletedStyleApplied ? "opacity-40" : ""}`}
       >
         {typeName && <TaskTypeIcon typeName={typeName} size={20} />}
       </div>
 
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0 flex-1">
         <p
-          className={`body2 leading-snug truncate ${isCompletedStyleApplied ? "line-through text-secondary-icon" : "text-black"}`}
+          className={`body2 truncate leading-snug ${isCompletedStyleApplied ? "text-secondary-icon line-through" : "text-black"}`}
           title={task.name}
         >
           {task.name}

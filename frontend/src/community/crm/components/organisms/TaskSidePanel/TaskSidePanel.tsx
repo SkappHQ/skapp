@@ -285,7 +285,7 @@ const TaskSidePanel: FC<Props> = ({ taskId }) => {
             }}
             className={{
               anchorElement:
-                "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
+                "h-9 w-9 bg-tertiary-background hover:bg-secondary-accent"
             }}
           />
         )
@@ -295,7 +295,7 @@ const TaskSidePanel: FC<Props> = ({ taskId }) => {
         <TaskSidePanelSkeleton />
       ) : (
         <div className="flex gap-6 pb-4">
-          <div className="flex flex-col flex-1 gap-6 min-w-0">
+          <div className="flex min-w-0 flex-1 flex-col gap-6">
             <div className="flex flex-col gap-1">
               <p className="subtitle1">
                 {translateText(["tasks", "sidePanel", "notes"])}

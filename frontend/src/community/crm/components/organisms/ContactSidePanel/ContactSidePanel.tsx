@@ -306,14 +306,14 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
               }}
               className={{
                 anchorElement:
-                  "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
+                  "h-9 w-9 bg-tertiary-background hover:bg-secondary-accent"
               }}
             />
           )
         )
       }
     >
-      <div className="flex flex-col pb-4 gap-4">
+      <div className="flex flex-col gap-4 pb-4">
         {isLoading || !contact ? (
           <ContactSidePanelSkeleton />
         ) : (
@@ -324,7 +324,7 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
               metrics={getContactMetricItems(contact, translateText)}
             />
 
-            <div className="flex flex-col pt-2 w-full">
+            <div className="flex w-full flex-col pt-2">
               <Tabs
                 tabs={tabs}
                 activeTabId={activeTab}

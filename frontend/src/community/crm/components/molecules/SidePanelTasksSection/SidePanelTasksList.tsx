@@ -23,7 +23,7 @@ const SidePanelTasksList: FC<SidePanelTasksListProps> = ({
 }) => {
   return (
     <>
-      <div className="border border-secondary-accent rounded-lg divide-y divide-secondary-accent w-full overflow-hidden">
+      <div className="w-full divide-y divide-secondary-accent overflow-hidden rounded-lg border border-secondary-accent">
         {tasks.map((task) =>
           task.id ? (
             <TaskRow

@@ -172,7 +172,7 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
   }, [s3FileUrls, environment]);
   return (
     <div>
-      <div className="flex flex-row justify-between mb-3">
+      <div className="mb-3 flex flex-row justify-between">
         <div
           className="flex flex-row items-center gap-3"
           tabIndex={0}
@@ -219,7 +219,7 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
       <div className="max-h-[50vh] overflow-auto">
         <div className="pt-3 pb-4">
           <div
-            className="flex flex-row justify-between items-center pb-4"
+            className="flex flex-row items-center justify-between pb-4"
             tabIndex={0}
           >
             <span className="text-base">{translateText(["duration"])}:</span>
@@ -250,7 +250,7 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
           />
           {leaveRequestData.attachments &&
             leaveRequestData.attachments.length > 0 && (
-              <div className="pt-4 flex flex-col gap-2" tabIndex={0}>
+              <div className="flex flex-col gap-2 pt-4" tabIndex={0}>
                 <p className="text-base">{translateText(["attachments"])}</p>
 
                 <div>
@@ -290,7 +290,7 @@ const ManagerApproveLeaveModal = ({ setPopupType }: Props): JSX.Element => {
         </div>
       </div>
 
-      <div className="flex flex-row gap-4 mt-4 justify-end">
+      <div className="mt-4 flex flex-row justify-end gap-4">
         <ButtonV2
           variant={"error"}
           onClick={handleDeclineModel}

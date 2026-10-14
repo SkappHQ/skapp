@@ -75,7 +75,7 @@ const DealDetailActions: FC<DealDetailActionsProps> = ({
         side="bottom"
         open={isLinkCopied}
         content={translateText(["deals", "sidePanel", "linkCopied"])}
-        className="body3 text-secondary-text rounded-lg px-3 py-2 shadow-lg"
+        className="body3 rounded-lg px-3 py-2 text-secondary-text shadow-lg"
       >
         <IconButton
           icon={
@@ -104,7 +104,7 @@ const DealDetailActions: FC<DealDetailActionsProps> = ({
           }}
           className={{
             anchorElement:
-              "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
+              "h-9 w-9 bg-tertiary-background hover:bg-secondary-accent"
           }}
         />
       )}

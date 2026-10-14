@@ -109,9 +109,9 @@ const SidePanelContactsSection: FC<SidePanelContactsSectionProps> = ({
         id: contactId,
         ariaLabel: contactName,
         name: (
-          <div className="flex flex-col gap-1 min-w-0">
+          <div className="flex min-w-0 flex-col gap-1">
             <div className="truncate">{contactName}</div>
-            <div className="body2 text-secondary-text truncate">
+            <div className="body2 truncate text-secondary-text">
               {contact.companyId && companies[contact.companyId]?.name}
             </div>
           </div>

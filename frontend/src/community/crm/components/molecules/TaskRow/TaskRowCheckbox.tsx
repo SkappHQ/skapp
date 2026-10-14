@@ -18,7 +18,7 @@ const TaskRowCheckbox: FC<Props> = ({
   const translateAria = useTranslator("crmAria");
 
   return (
-    <div className="shrink-0 flex items-center justify-center pr-1">
+    <div className="flex shrink-0 items-center justify-center pr-1">
       <CheckTask
         checked={isCompleted}
         onChange={onToggleComplete}

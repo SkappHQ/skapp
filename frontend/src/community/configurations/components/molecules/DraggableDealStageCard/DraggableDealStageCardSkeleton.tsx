@@ -1,13 +1,13 @@
 const DraggableDealStageCardSkeleton = () => {
   return (
-    <div className="animate-pulse flex flex-col gap-[18px] w-full">
+    <div className="flex w-full animate-pulse flex-col gap-[18px]">
       {Array.from({ length: 3 }).map((_, index) => (
         <div
           key={index}
-          className="h-[60px] flex flex-row gap-[18px] w-full items-center"
+          className="flex h-[60px] w-full flex-row items-center gap-[18px]"
         >
-          <div className="h-[24px] w-[24px] bg-secondary-accent rounded-[8px]"></div>
-          <div className="h-[60px] w-full bg-secondary-accent rounded-[8px]"></div>
+          <div className="h-[24px] w-[24px] rounded-[8px] bg-secondary-accent"></div>
+          <div className="h-[60px] w-full rounded-[8px] bg-secondary-accent"></div>
         </div>
       ))}
     </div>

@@ -33,11 +33,11 @@ const EmployeeFilterSection = ({
   const isSmallScreen = queryMatches(`(max-width: 1150px)`);
 
   return (
-    <div className="flex flex-col gap-2 mb-3">
+    <div className="mb-3 flex flex-col gap-2">
       <p className={`font-semibold ${isSmallScreen ? "text-xs" : "text-sm"}`}>
         {title}
       </p>
-      <div className="flex flex-row space-x-1 gap-2 flex-wrap">
+      <div className="flex flex-row flex-wrap gap-2 space-x-1">
         {data.map((item, index) => (
           <div key={index}>
             <IconChip

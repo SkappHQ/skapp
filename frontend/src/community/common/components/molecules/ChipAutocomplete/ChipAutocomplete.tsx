@@ -191,8 +191,8 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
         {label && <label className="subtitle1">{label}</label>}
         <div
           ref={inputBoxRef}
-          className={`flex items-center gap-2 min-h-12 w-full rounded-lg bg-tertiary-background px-3 py-1 ${
-            isDisabled ? "opacity-50 cursor-not-allowed" : "cursor-text"
+          className={`flex min-h-12 w-full items-center gap-2 rounded-lg bg-tertiary-background px-3 py-1 ${
+            isDisabled ? "cursor-not-allowed opacity-50" : "cursor-text"
           }`}
           onClick={() => {
             if (!isDisabled && !readOnly) {
@@ -200,7 +200,7 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
             }
           }}
         >
-          <div className="flex flex-wrap gap-1 items-center flex-1">
+          <div className="flex flex-1 flex-wrap items-center gap-1">
             {value.map((item) => (
               <Chip
                 key={item}
@@ -213,7 +213,7 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
                     ? () => handleDelete(item)
                     : undefined
                 }
-                className="bg-white border border-none text-secondary-text"
+                className="border border-none bg-white text-secondary-text"
               />
             ))}
             {!readOnly && (
@@ -225,7 +225,7 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
                 onKeyDown={handleKeyDown}
                 disabled={isDisabled}
                 placeholder={value.length === 0 ? placeholder : ""}
-                className="outline-none body1 flex-1 min-w-20 w-full"
+                className="body1 w-full min-w-20 flex-1 outline-none"
                 role="combobox"
                 aria-expanded={isOpen && filteredOptions.length > 0}
                 aria-controls={`${id}-list`}
@@ -263,7 +263,7 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
           aria-label={label || placeholder}
         >
           {helperText && inputValue === "" ? (
-            <li className="px-4 py-2 body2 text-secondary-text select-none cursor-default">
+            <li className="body2 cursor-default px-4 py-2 text-secondary-text select-none">
               {helperText}
             </li>
           ) : (
@@ -281,9 +281,9 @@ const ChipAutocomplete: FC<ChipAutocompleteProps> = ({
                   }
                 }}
                 onMouseEnter={() => setActiveIndex(index)}
-                className={`px-4 py-2 cursor-pointer outline-none transition-all duration-150 truncate ${
+                className={`cursor-pointer truncate px-4 py-2 transition-all duration-150 outline-none ${
                   index === activeIndex
-                    ? "bg-tertiary-background rounded"
+                    ? "rounded bg-tertiary-background"
                     : "hover:bg-tertiary-background"
                 }`}
               >

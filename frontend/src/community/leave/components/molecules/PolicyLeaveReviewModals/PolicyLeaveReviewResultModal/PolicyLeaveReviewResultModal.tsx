@@ -175,7 +175,7 @@ const PolicyLeaveReviewResultModal: FC<Props> = ({
           icon={<Icon name={RESULT_STATUS_ICON_NAMES[resolvedStatus]} />}
         />
       </div>
-      <div className="flex flex-row gap-4 justify-end">
+      <div className="flex flex-row justify-end gap-4">
         {isApproved && (
           <ButtonV2
             variant={"tertiary"}

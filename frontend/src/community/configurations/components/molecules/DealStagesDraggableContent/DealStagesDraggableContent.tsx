@@ -76,7 +76,7 @@ const DealStagesDraggableContent = ({
   };
 
   return (
-    <div className="w-full flex flex-col gap-8">
+    <div className="flex w-full flex-col gap-8">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -107,7 +107,7 @@ const DealStagesDraggableContent = ({
       </DndContext>
       <hr className="w-full border-t border-secondary-accent" />
       <div className="flex flex-col gap-2">
-        <p className="body1 text-secondary-text mb-3">
+        <p className="body1 mb-3 text-secondary-text">
           {translateText(["dealsSection", "dealCompleteStateNote"])}
         </p>
         <ul className="flex flex-col gap-4">

@@ -172,7 +172,7 @@ const DealsTable: FC<Props> = ({
             <div
               role="button"
               tabIndex={0}
-              className="flex items-center gap-2 bg-transparent border-none p-0 cursor-pointer group"
+              className="group flex cursor-pointer items-center gap-2 border-none bg-transparent p-0"
               aria-label={translateAria(["deals", "table", "openDealDetails"], {
                 name: deal.name
               })}
@@ -184,7 +184,7 @@ const DealsTable: FC<Props> = ({
                 }
               }}
             >
-              <div className="flex items-center justify-center size-6 rounded-full shrink-0 bg-status-pink">
+              <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-status-pink">
                 <HandshakeIcon
                   width="14"
                   height="14"
@@ -193,7 +193,7 @@ const DealsTable: FC<Props> = ({
               </div>
               <span className="body2 group-hover:underline">#{deal.id}</span>
               <span
-                className="body2 group-hover:underline block w-full truncate"
+                className="body2 block w-full truncate group-hover:underline"
                 title={deal.name}
               >
                 {deal.name}
@@ -253,14 +253,14 @@ const DealsTable: FC<Props> = ({
 
   if (isLoading || isConfigLoading) {
     return (
-      <div className="w-fit h-full rounded-lg overflow-hidden">
+      <div className="h-full w-fit overflow-hidden rounded-lg">
         <ProjectTableSkeletonLoader rowCount={8} />
       </div>
     );
   }
 
   return (
-    <div className="rounded-lg h-full overflow-auto">
+    <div className="h-full overflow-auto rounded-lg">
       <ListTable<DealRow>
         columnHeaders={columnHeaders}
         data={tableData}

@@ -85,8 +85,8 @@ const AddTeamSelectMembers: FC<Props> = ({
   return (
     <>
       <div>
-        <div className="flex flex-row justify-between mr-5 mt-2">
-          <p className="text-base font-medium leading-6">
+        <div className="mt-2 mr-5 flex flex-row justify-between">
+          <p className="text-base leading-6 font-medium">
             {translateText(["memberListTitle"])}
           </p>
           <KebabMenu
@@ -98,12 +98,12 @@ const AddTeamSelectMembers: FC<Props> = ({
         </div>
 
         {allUsers?.length && (
-          <div className="mr-5 mt-3 flex flex-col gap-3 max-h-[20vh] overflow-auto items-start">
+          <div className="mt-3 mr-5 flex max-h-[20vh] flex-col items-start gap-3 overflow-auto">
             {allUsers?.map((user: EmployeeDataType) => {
               return (
                 <div
                   key={user?.employeeId}
-                  className="w-full flex flex-row items-center py-0.5"
+                  className="flex w-full flex-row items-center py-0.5"
                 >
                   <Checkbox
                     checked={usersChecked?.includes(user)}
@@ -129,7 +129,7 @@ const AddTeamSelectMembers: FC<Props> = ({
           </div>
         )}
       </div>
-      <div className="flex flex-row justify-end gap-3 mt-4">
+      <div className="mt-4 flex flex-row justify-end gap-3">
         <ButtonV2
           variant={"tertiary"}
           onClick={() => {

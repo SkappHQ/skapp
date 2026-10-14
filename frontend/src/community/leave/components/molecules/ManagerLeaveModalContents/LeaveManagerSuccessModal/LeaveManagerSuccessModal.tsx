@@ -126,7 +126,7 @@ const LeaveManagerSuccessModal = ({
           }
         />
       </div>
-      <div className="flex flex-row gap-4 justify-end">
+      <div className="flex flex-row justify-end gap-4">
         {(popupType === LeaveStatusTypes.APPROVED ||
           LeaveExtraPopupTypes.APPROVED_STATUS === popupType) && (
           <ButtonV2

@@ -64,7 +64,7 @@ const LeavePolicyCard: FC<Props> = ({
             )}
             {policy.leaveTypeName}
           </span>
-          <span className="body3 truncate text-secondary-text pl-1">
+          <span className="body3 truncate pl-1 text-secondary-text">
             {policy.policyName}
           </span>
         </div>

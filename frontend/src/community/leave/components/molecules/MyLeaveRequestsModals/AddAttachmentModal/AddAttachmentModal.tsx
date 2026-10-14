@@ -51,7 +51,7 @@ const AddAttachmentModal = () => {
         maxFileSize={MAX_ALLOWED_UPLOADS}
         supportedFiles={".jpg, .pdf, .png, .jpeg"}
       />
-      <div className="flex flex-row gap-3 mt-4 justify-end">
+      <div className="mt-4 flex flex-row justify-end gap-3">
         <ButtonV2
           variant={"tertiary"}
           onClick={onCancelBtnClick}

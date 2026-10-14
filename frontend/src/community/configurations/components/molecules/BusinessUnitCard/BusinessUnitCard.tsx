@@ -40,7 +40,7 @@ const BusinessUnitCard: FC<BusinessUnitCardProps> = ({
   ];
 
   return (
-    <Card className="flex w-full h-[84px] mb-0 items-center gap-8 bg-white border-secondary-accent">
+    <Card className="mb-0 flex h-[84px] w-full items-center gap-8 border-secondary-accent bg-white">
       <span className="flex size-16 shrink-0 items-center justify-center rounded-full bg-tertiary-background text-secondary-icon">
         <UsersIcon />
       </span>

@@ -27,7 +27,7 @@ const CompanySidePanelHeaderActions: FC<CompanySidePanelHeaderActionsProps> = ({
       }}
       className={{
         anchorElement:
-          "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
+          "h-9 w-9 bg-tertiary-background hover:bg-secondary-accent"
       }}
     />
   );

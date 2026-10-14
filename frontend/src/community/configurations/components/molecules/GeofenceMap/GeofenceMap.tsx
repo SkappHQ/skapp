@@ -55,7 +55,7 @@ const GeofenceMap = ({ formik }: Props) => {
       </div>
 
       {hasGeofence ? (
-        <div className="flex flex-col border border-secondary-accent rounded-lg overflow-hidden">
+        <div className="flex flex-col overflow-hidden rounded-lg border border-secondary-accent">
           {/* Read-only map preview */}
           <GeofenceMapView
             center={{ lat: geofence.latitude, lng: geofence.longitude }}
@@ -66,7 +66,7 @@ const GeofenceMap = ({ formik }: Props) => {
           />
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center bg-tertiary-background rounded-lg border-2 border-dashed border-secondary-accent gap-2 h-[410px]">
+        <div className="flex h-[410px] flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-secondary-accent bg-tertiary-background">
           <p className="subtitle1">
             {translateText(["form.geofenceEmptyState"])}
           </p>

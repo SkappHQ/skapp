@@ -23,7 +23,7 @@ const OverrideConfirmation = () => {
         </p>
         <p className="mb-4">{translateText(["overrideConfirmationTxt"])}</p>
       </div>
-      <div className="flex flex-row justify-end gap-3 mt-4">
+      <div className="mt-4 flex flex-row justify-end gap-3">
         <ButtonV2
           variant={"tertiary"}
           onClick={() =>

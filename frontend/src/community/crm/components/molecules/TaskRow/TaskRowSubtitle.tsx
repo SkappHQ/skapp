@@ -34,12 +34,12 @@ const TaskRowSubtitle: FC<Props> = ({
   const contactName = getContactDisplayName(contact);
 
   return (
-    <div className="body3 leading-none mt-0.5 flex items-center gap-2">
+    <div className="body3 mt-0.5 flex items-center gap-2 leading-none">
       {dueDateStatus && (
         <span
           className={
             isCompletedStyleApplied
-              ? "line-through text-secondary-icon"
+              ? "text-secondary-icon line-through"
               : dueDateStatus.textColorClass
           }
         >
@@ -56,7 +56,7 @@ const TaskRowSubtitle: FC<Props> = ({
       {dueDateStatus && isContactVisible && (
         <span
           aria-hidden="true"
-          className="w-1 h-1 rounded-full bg-secondary-accent shrink-0"
+          className="h-1 w-1 shrink-0 rounded-full bg-secondary-accent"
         />
       )}
 
@@ -64,7 +64,7 @@ const TaskRowSubtitle: FC<Props> = ({
         <span
           className={`min-w-0 truncate ${
             isCompletedStyleApplied
-              ? "line-through text-secondary-icon"
+              ? "text-secondary-icon line-through"
               : "text-secondary-text"
           }`}
           title={contactName}

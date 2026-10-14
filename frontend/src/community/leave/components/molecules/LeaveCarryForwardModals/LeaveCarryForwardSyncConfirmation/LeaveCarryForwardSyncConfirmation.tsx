@@ -67,12 +67,12 @@ const LeaveCarryForwardSyncConfirmation = ({
   return (
     <div className="min-w-[31.25rem]">
       <p
-        className="mb-4 text-gray-900 w-full"
+        className="mb-4 w-full text-gray-900"
         id="leave-carry-forward-confirm-synchronization-modal-description"
       >
         {translateTexts(["leaveCarryForwardModalDescription"]) ?? ""}
       </p>
-      <div className="flex flex-row justify-end gap-3 mt-4">
+      <div className="mt-4 flex flex-row justify-end gap-3">
         <ButtonV2
           variant={"tertiary"}
           type={"button"}

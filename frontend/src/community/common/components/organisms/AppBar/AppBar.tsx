@@ -183,7 +183,7 @@ const AppBar = ({ isDrawerAvailable = true }: Props) => {
 
             {isDrawerAvailable && isBelow1024 && !isDrawerExpanded && (
               <button
-                className="flex cursor-pointer items-center justify-center w-10 h-10"
+                className="flex h-10 w-10 cursor-pointer items-center justify-center"
                 onClick={handleDrawer}
                 aria-label={translateAria(["menuIcon"])}
               >

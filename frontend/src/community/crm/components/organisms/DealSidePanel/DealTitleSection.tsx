@@ -76,8 +76,8 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name, onSave }) => {
 
   if (isEditing) {
     return (
-      <div className="flex gap-6 items-center min-w-0">
-        <div className="flex-1 min-w-0 p-1">
+      <div className="flex min-w-0 items-center gap-6">
+        <div className="min-w-0 flex-1 p-1">
           <InputField
             value={editedTitle}
             onChange={(e) => changeValue(e.target.value)}
@@ -88,7 +88,7 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name, onSave }) => {
             autoFocus
           />
         </div>
-        <div className="w-1/3 shrink-0 flex justify-start items-center">
+        <div className="flex w-1/3 shrink-0 items-center justify-start">
           <div className="flex gap-2">
             <IconButton
               aria-label={translateAria(["deals", "sidePanel", "saveTitle"])}
@@ -110,12 +110,12 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name, onSave }) => {
   }
 
   return (
-    <div className="flex gap-6 items-center min-w-0">
-      <div className="flex-1 min-w-0">
+    <div className="flex min-w-0 items-center gap-6">
+      <div className="min-w-0 flex-1">
         <div
           role="button"
           tabIndex={0}
-          className="h2 text-left w-full cursor-pointer hover:bg-secondary-background py-1 rounded bg-transparent border-none"
+          className="h2 w-full cursor-pointer rounded border-none bg-transparent py-1 text-left hover:bg-secondary-background"
           aria-label={translateAria(["deals", "sidePanel", "editTitle"])}
           onClick={startEditing}
           onKeyDown={handleTitleKeyDown}

@@ -228,14 +228,14 @@ const DealsSection: FC = () => {
   }, [activeView]);
 
   return (
-    <div className="flex flex-col gap-6 w-full">
+    <div className="flex w-full flex-col gap-6">
       <DealsHeader
         inputValue={inputValue}
         onSearchChange={setInputValue}
         activeView={activeView}
         onViewChange={setActiveView}
       />
-      <div ref={containerRef} className="flex flex-col w-full gap-4">
+      <div ref={containerRef} className="flex w-full flex-col gap-4">
         {activeView === DealViewEnum.LIST ? (
           <DealsTable
             searchKeyword={debouncedSearch}

@@ -101,7 +101,7 @@ const ClockOutModal: FC<Props> = ({ closeModal }) => {
           <Typography variant="body2" sx={classes.messageText}>
             {translateText(["clockOutConfirmationMessage"])}
           </Typography>
-          <div className="flex justify-end gap-2 mt-4">
+          <div className="mt-4 flex justify-end gap-2">
             <ButtonV2
               variant={"tertiary"}
               onClick={handleUndoClockOut}

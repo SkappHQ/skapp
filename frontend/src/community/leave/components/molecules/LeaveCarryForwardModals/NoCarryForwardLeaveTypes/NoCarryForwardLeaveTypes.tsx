@@ -14,14 +14,14 @@ const NoCarryForwardLeaveTypes = ({ handleClose }: Props): JSX.Element => {
   return (
     <div>
       <p
-        className="mb-4 text-gray-900 w-full"
+        className="mb-4 w-full text-gray-900"
         id="no-carry-forward-leave-types-modal-description"
       >
         {translateTexts([
           "leaveCarryForwardLeaveTypesNotAvailableModalDescription"
         ]) ?? ""}
       </p>
-      <div className="flex justify-end mt-4">
+      <div className="mt-4 flex justify-end">
         <ButtonV2
           type={"submit"}
           onClick={() => {

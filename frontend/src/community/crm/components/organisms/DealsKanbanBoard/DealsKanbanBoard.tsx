@@ -132,7 +132,7 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex h-full flex-col overflow-hidden">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
@@ -142,7 +142,7 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
       >
         <div className="flex h-full overflow-x-auto overflow-y-hidden rounded-lg border border-secondary-accent p-2">
           {stageIds.map((stageId) => (
-            <div key={stageId} className="shrink-0 m-2">
+            <div key={stageId} className="m-2 shrink-0">
               <DealStageLane
                 stageId={stageId}
                 isLoading={isLoading}

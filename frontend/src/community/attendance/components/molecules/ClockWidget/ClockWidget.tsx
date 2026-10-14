@@ -136,7 +136,7 @@ const ClockWidget = (): JSX.Element => {
   if (showTimer) {
     return (
       <div
-        className="flex flex-row items-center w-fit"
+        className="flex w-fit flex-row items-center"
         aria-label={translateAria(["widget"])}
       >
         <Timer disabled={isDisabled} />
@@ -150,8 +150,8 @@ const ClockWidget = (): JSX.Element => {
         <button
           className={`flex h-9 w-9 items-center justify-center rounded-full border ${
             isDisabled
-              ? " cursor-default opacity-50 grayscale border-secondary-accent bg-tertiary-background"
-              : " cursor-pointer border-primary-accent bg-primary-background hover:opacity-85"
+              ? "cursor-default border-secondary-accent bg-tertiary-background opacity-50 grayscale"
+              : "cursor-pointer border-primary-accent bg-primary-background hover:opacity-85"
           }`}
           onClick={handleClockIn}
           disabled={isDisabled}

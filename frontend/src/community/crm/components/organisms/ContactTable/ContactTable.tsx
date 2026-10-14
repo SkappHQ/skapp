@@ -224,12 +224,12 @@ export const ContactTable: FC<ContactTableProps> = ({ isCrmDataLoading }) => {
         id,
         ariaLabel: contactName,
         name: (
-          <div className="flex flex-col gap-1 min-w-0">
+          <div className="flex min-w-0 flex-col gap-1">
             <div className="w-full truncate" title={contactName}>
               {formatTableValue(contactName)}
             </div>
             <div
-              className="subtitle4 text-secondary-text w-full truncate"
+              className="subtitle4 w-full truncate text-secondary-text"
               title={companyName}
             >
               {formatTableValue(companyName)}

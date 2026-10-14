@@ -288,7 +288,7 @@ const WorkLocationEmployeeSelector = ({
     const allEmployeesLabel = translateText(["form.allEmployees"]).trim();
 
     return (
-      <div className="w-fit min-w-0 max-w-full">
+      <div className="w-fit max-w-full min-w-0">
         <AvatarChip
           avatarProps={{
             id: `${idPrefix}-all-employees`,
@@ -322,7 +322,7 @@ const WorkLocationEmployeeSelector = ({
             <EmployeeAvatarChip
               key={emp.employeeId}
               employee={emp}
-              className="w-fit min-w-0 max-w-full"
+              className="w-fit max-w-full min-w-0"
             />
           ))}
         </div>
@@ -331,7 +331,7 @@ const WorkLocationEmployeeSelector = ({
 
     return (
       <div
-        className="flex min-w-0 max-w-full -space-x-3"
+        className="flex max-w-full min-w-0 -space-x-3"
         role="group"
         aria-label={selectedEmployeesLabel}
       >
@@ -362,7 +362,7 @@ const WorkLocationEmployeeSelector = ({
         aria-expanded={popperOpen}
         aria-haspopup="listbox"
         aria-label={translateText(["form.assignEmployeesLabel"])}
-        className="bg-tertiary-background h-12 rounded-lg flex items-center w-full min-w-0 overflow-hidden cursor-pointer px-3 focus:outline-1 focus:outline-primary-accent focus:-outline-offset-[2px]"
+        className="flex h-12 w-full min-w-0 cursor-pointer items-center overflow-hidden rounded-lg bg-tertiary-background px-3 focus:outline-1 focus:-outline-offset-[2px] focus:outline-primary-accent"
         onClick={handleTriggerClick}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {
@@ -417,7 +417,7 @@ const WorkLocationEmployeeSelector = ({
                     role="option"
                     tabIndex={0}
                     aria-selected={true}
-                    className="flex items-center gap-3 px-3 py-1 cursor-pointer hover:bg-secondary-background"
+                    className="flex cursor-pointer items-center gap-3 px-3 py-1 hover:bg-secondary-background"
                     onClick={() => toggleEmployee(empId)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
@@ -431,7 +431,7 @@ const WorkLocationEmployeeSelector = ({
                   </div>
                 );
               })}
-              <hr className="border-secondary-accent my-2 mx-3" />
+              <hr className="mx-3 my-2 border-secondary-accent" />
             </>
           )}
 
@@ -440,7 +440,7 @@ const WorkLocationEmployeeSelector = ({
               role="option"
               tabIndex={0}
               aria-selected={isAllSelected}
-              className="flex items-center gap-3 px-3 py-1 cursor-pointer hover:bg-secondary-background"
+              className="flex cursor-pointer items-center gap-3 px-3 py-1 hover:bg-secondary-background"
               onClick={toggleAllEmployees}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
@@ -465,7 +465,7 @@ const WorkLocationEmployeeSelector = ({
                     role="option"
                     tabIndex={0}
                     aria-selected={false}
-                    className="flex items-center gap-3 px-3 py-1 cursor-pointer hover:bg-secondary-background"
+                    className="flex cursor-pointer items-center gap-3 px-3 py-1 hover:bg-secondary-background"
                     onClick={() => toggleEmployee(empId)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
@@ -490,7 +490,7 @@ const WorkLocationEmployeeSelector = ({
             !isSearchPending &&
             displayEmployees.length === 0 &&
             filteredSelectedEmployees.length === 0 && (
-              <p className="text-center text-secondary-text body2 py-4">
+              <p className="body2 py-4 text-center text-secondary-text">
                 {translateText(["form.noSearchResults"])}
               </p>
             )}

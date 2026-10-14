@@ -133,14 +133,14 @@ const LeaveCarryForwardTypeContent = ({ handleClose }: Props): JSX.Element => {
   return (
     <div className="px-1 pb-4">
       <p
-        className="text-gray-900 w-full"
+        className="w-full text-gray-900"
         id="leave-carry-forward-modal-description"
       >
         {translateTexts(["leaveCarryForwardTypeSelectionModalDescription"]) ??
           ""}
       </p>
 
-      <div className="grid grid-cols-3 w-full max-h-[13.125rem] overflow-y-auto mt-2">
+      <div className="mt-2 grid max-h-[13.125rem] w-full grid-cols-3 overflow-y-auto">
         {leaveTypess?.length >= 2 && (
           <div>
             <Checkbox
@@ -170,7 +170,7 @@ const LeaveCarryForwardTypeContent = ({ handleClose }: Props): JSX.Element => {
         ))}
       </div>
 
-      <div className="flex flex-row justify-end gap-3 mt-4">
+      <div className="mt-4 flex flex-row justify-end gap-3">
         <ButtonV2
           variant={"tertiary"}
           disabled={loading}

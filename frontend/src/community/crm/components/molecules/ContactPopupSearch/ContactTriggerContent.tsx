@@ -16,7 +16,7 @@ const ContactTriggerContent: FC<ContactTriggerContentProps> = ({
 }) => (
   <button
     type="button"
-    className="flex flex-col items-start justify-center w-full min-h-8 cursor-pointer rounded-lg"
+    className="flex min-h-8 w-full cursor-pointer flex-col items-start justify-center rounded-lg"
     {...triggerProps}
     ref={triggerProps?.ref as RefObject<HTMLButtonElement> | undefined}
   >

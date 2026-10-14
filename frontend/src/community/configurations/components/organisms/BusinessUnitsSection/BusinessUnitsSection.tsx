@@ -49,7 +49,7 @@ const BusinessUnitsSection: FC = () => {
             onClick: handleAddUnit
           }}
           className={{
-            wrapper: "bg-secondary-background rounded-lg"
+            wrapper: "rounded-lg bg-secondary-background"
           }}
         />
       );

@@ -168,7 +168,7 @@ const SearchableDropdown: FC<SearchableDropdownProps> = ({
 
   return (
     <div
-      className="w-full relative input-plain-text"
+      className="input-plain-text relative w-full"
       ref={inputWrapperRef}
       onFocus={() => {
         if (value.trim().length > 0 || (isOpenOnFocus && items.length > 0)) {
@@ -226,7 +226,7 @@ const SearchableDropdown: FC<SearchableDropdownProps> = ({
             {items.length === 0 ? (
               emptyMessage && (
                 <div>
-                  <p className="px-4 py-2 body2">{emptyMessage}</p>
+                  <p className="body2 px-4 py-2">{emptyMessage}</p>
                 </div>
               )
             ) : (
@@ -244,14 +244,11 @@ const SearchableDropdown: FC<SearchableDropdownProps> = ({
                     aria-selected={activeIndex === index}
                     onClick={() => handleSelect(item)}
                     onMouseEnter={() => setActiveIndex(index)}
-                    className={`
-                      px-4 py-2 cursor-pointer outline-none transition-all duration-150 relative
-                      ${
-                        index === activeIndex
-                          ? "bg-tertiary-background rounded"
-                          : "hover:bg-gray-100"
-                      }
-                    `}
+                    className={`relative cursor-pointer px-4 py-2 transition-all duration-150 outline-none ${
+                      index === activeIndex
+                        ? "rounded bg-tertiary-background"
+                        : "hover:bg-gray-100"
+                    } `}
                   >
                     {item.content}
                   </li>

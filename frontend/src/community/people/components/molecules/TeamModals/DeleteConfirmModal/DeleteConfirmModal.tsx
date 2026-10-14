@@ -104,7 +104,7 @@ const DeleteConfirmModal: FC<Props> = ({ onReassign }) => {
         ])}
       </Typography>
       <Box>
-        <div className="flex flex-row gap-3 mt-4 justify-end">
+        <div className="mt-4 flex flex-row justify-end gap-3">
           {showReassignOption && (
             <ButtonV2
               variant={"primary"}

@@ -118,7 +118,7 @@ const SkillsDetailsSection = forwardRef<FormMethods, Props>((props, ref) => {
             isDisabled={isInputsDisabled}
             readOnly={isReadOnly}
             endIcon={
-              <SearchIcon className="size-6 text-secondary-text shrink-0" />
+              <SearchIcon className="size-6 shrink-0 text-secondary-text" />
             }
           />
         </Grid>

@@ -22,7 +22,7 @@ const ContactOptionItem: FC<ContactOptionItemProps> = ({
   return (
     <button
       type="button"
-      className="flex flex-col gap-1 px-4 py-2 body2 hover:bg-tertiary-background cursor-pointer w-full text-left"
+      className="body2 flex w-full cursor-pointer flex-col gap-1 px-4 py-2 text-left hover:bg-tertiary-background"
       onClick={() => onSelect(option)}
     >
       <span className="body2 w-full truncate" title={contactName}>

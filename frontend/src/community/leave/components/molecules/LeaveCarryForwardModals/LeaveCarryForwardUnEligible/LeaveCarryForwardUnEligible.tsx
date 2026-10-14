@@ -15,12 +15,12 @@ const LeaveCarryForwardUnEligible = (): JSX.Element => {
   return (
     <div>
       <p
-        className="mb-4 text-gray-900 w-full"
+        className="mb-4 w-full text-gray-900"
         id="leave-carry-forward-ineligible-modal-description"
       >
         {translateTexts(["leaveCarryForwardUnEligibleModalDescription"]) ?? ""}
       </p>
-      <div className="flex flex-row justify-end mt-4">
+      <div className="mt-4 flex flex-row justify-end">
         <ButtonV2
           type={"submit"}
           onClick={() => {

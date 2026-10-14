@@ -57,7 +57,7 @@ const SidePanelTaskInfo: FC<Props> = ({
           : translateText(["tasks", "sidePanel", "info", "markAsDone"])}
       </ButtonV2>
 
-      <div className="flex flex-col border border-secondary-accent rounded-xl p-3 mt-4">
+      <div className="mt-4 flex flex-col rounded-xl border border-secondary-accent p-3">
         <PropertyRow
           label={translateText(["tasks", "sidePanel", "info", "assignedTo"])}
         >

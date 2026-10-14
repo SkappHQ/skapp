@@ -25,7 +25,7 @@ const TableFilterButton: FC<Props> = ({
 
   return (
     <div className="flex flex-row">
-      <div className="flex flex-row gap-1 items-center">
+      <div className="flex flex-row items-center gap-1">
         <FilterIconButton
           filterCount={filterCount}
           aria-label={translateText(["filter"])}

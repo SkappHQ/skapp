@@ -53,7 +53,7 @@ const Notifications = ({ data, isLoading }: Props): JSX.Element => {
   );
 
   return (
-    <div className="px-12 flex gap-4 flex-col">
+    <div className="flex flex-col gap-4 px-12">
       <NotificationsFilter
         filterButton={notifyData.notificationFilterType}
         setFilterButton={(value) =>
@@ -87,7 +87,7 @@ const Notifications = ({ data, isLoading }: Props): JSX.Element => {
         ) : (
           groupedNotifications.map((group) => (
             <div key={group.period} className="flex flex-col gap-3 pb-5">
-              <h2 className="text-secondary-icon uppercase body1">
+              <h2 className="body1 text-secondary-icon uppercase">
                 {translateText([group.period])}
               </h2>
               <div>

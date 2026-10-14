@@ -86,12 +86,12 @@ const PropertyField: FC<PropertyFieldProps> = ({
   const displayValue = editedValue || resolvedPlaceholder;
 
   return (
-    <div className="self-stretch h-9 flex justify-start items-center">
-      <div className="w-28 flex justify-start items-center gap-2 flex-shrink-0">
-        <div className="text-black subtitle3">{label}</div>
+    <div className="flex h-9 items-center justify-start self-stretch">
+      <div className="flex w-28 flex-shrink-0 items-center justify-start gap-2">
+        <div className="subtitle3 text-black">{label}</div>
       </div>
 
-      <div className="flex-1 pl-4 min-h-[40px] min-w-0 flex items-center">
+      <div className="flex min-h-[40px] min-w-0 flex-1 items-center pl-4">
         {isEditing ? (
           <div ref={inputRef} className="w-full">
             <InputField
@@ -114,13 +114,13 @@ const PropertyField: FC<PropertyFieldProps> = ({
           <div
             role="button"
             tabIndex={0}
-            className="w-full min-w-0 min-h-[32px] px-3 rounded-lg flex items-center cursor-pointer hover:bg-secondary-background transition-colors"
+            className="flex min-h-[32px] w-full min-w-0 cursor-pointer items-center rounded-lg px-3 transition-colors hover:bg-secondary-background"
             onClick={startEditing}
             onKeyDown={handleDisplayKeyDown}
             aria-label={ariaLabel}
           >
             <div
-              className={`body2 tracking-wide truncate ${
+              className={`body2 truncate tracking-wide ${
                 editedValue ? "text-black" : "text-secondary-icon"
               }`}
               title={displayValue}

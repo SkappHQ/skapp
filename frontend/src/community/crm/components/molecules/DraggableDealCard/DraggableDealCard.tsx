@@ -61,7 +61,7 @@ const DraggableDealCard: FC<DraggableDealCardProps> = ({
         transform: CSS.Transform.toString(transform),
         transition
       }}
-      className={`cursor-grab active:cursor-grabbing transform-gpu ${
+      className={`transform-gpu cursor-grab active:cursor-grabbing ${
         isDragging ? `z-[${ZIndexEnums.CRM_SIDE_PANEL}] shadow-lg` : ""
       }`}
     >

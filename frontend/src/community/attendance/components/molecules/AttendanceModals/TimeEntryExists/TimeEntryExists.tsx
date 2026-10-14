@@ -60,7 +60,7 @@ const TimeEntryExists = ({ fromDateTime, toDateTime }: Props) => {
       <Typography variant="body1" sx={{ pt: "1rem" }}>
         {translateText(["entryExistModalDes"])}
       </Typography>
-      <div className="flex flex-row justify-end gap-3 mt-4">
+      <div className="mt-4 flex flex-row justify-end gap-3">
         <ButtonV2
           variant={"tertiary"}
           onClick={() => {

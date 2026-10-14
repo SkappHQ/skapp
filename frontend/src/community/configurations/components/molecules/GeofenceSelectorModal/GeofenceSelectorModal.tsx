@@ -133,9 +133,9 @@ const GeofenceSelectorModal = ({ formik }: Props) => {
       : null;
 
   const modalContent = (
-    <div className="absolute inset-0 flex flex-col gap-4 mt-[4.5rem] mb-[5rem] px-6 overflow-hidden">
+    <div className="absolute inset-0 mt-[4.5rem] mb-[5rem] flex flex-col gap-4 overflow-hidden px-6">
       {/* Radius slider */}
-      <div className="flex flex-col gap-2 flex-shrink-0">
+      <div className="flex flex-shrink-0 flex-col gap-2">
         <div className="flex items-center justify-between">
           <span className="subtitle2">
             {translateText(["form.radiusLabel"])}
@@ -151,7 +151,7 @@ const GeofenceSelectorModal = ({ formik }: Props) => {
           step={10}
           value={tempRadius}
           onChange={(e) => handleRadiusChange(Number(e.target.value))}
-          className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary-accent bg-secondary-accent"
+          className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-secondary-accent accent-primary-accent"
         />
         <div className="flex justify-between">
           <span className="body3 text-secondary-icon">
@@ -164,7 +164,7 @@ const GeofenceSelectorModal = ({ formik }: Props) => {
       </div>
 
       {/* Map with search overlay */}
-      <div className="flex-1 min-h-0 relative mb-4">
+      <div className="relative mb-4 min-h-0 flex-1">
         <GeofenceMapView
           center={tempMarkerPosition}
           radius={tempRadius}
@@ -182,7 +182,7 @@ const GeofenceSelectorModal = ({ formik }: Props) => {
               ])}
             />
             {tempGeofence?.address && (
-              <span className="body3 block mt-2 text-secondary-text">
+              <span className="body3 mt-2 block text-secondary-text">
                 {tempGeofence.address}
               </span>
             )}

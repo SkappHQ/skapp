@@ -89,7 +89,7 @@ const PolicyLeaveDeclineModal: FC<Props> = ({
           required
         />
       </div>
-      <div className="flex flex-row gap-4 justify-end">
+      <div className="flex flex-row justify-end gap-4">
         <ButtonV2
           variant={"tertiary"}
           onClick={closeModal}

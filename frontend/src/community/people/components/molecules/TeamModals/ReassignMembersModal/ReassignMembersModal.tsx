@@ -106,7 +106,7 @@ const ReassignMembersModal: FC<ReassignMembersModalProps> = ({
   return (
     <div>
       <p className="my-4">{translateText(["reassignModalDes"])}</p>
-      <div className="flex flex-col gap-2 max-h-56 overflow-auto">
+      <div className="flex max-h-56 flex-col gap-2 overflow-auto">
         {displayedMembers.map(({ member, transferableTeams }) => (
           <ReassignMemberRow
             key={member.employeeId}
@@ -116,7 +116,7 @@ const ReassignMembersModal: FC<ReassignMembersModalProps> = ({
           />
         ))}
       </div>
-      <div className="flex flex-row justify-end gap-3 mt-4">
+      <div className="mt-4 flex flex-row justify-end gap-3">
         <ButtonV2
           variant={"tertiary"}
           onClick={cancelClick}
