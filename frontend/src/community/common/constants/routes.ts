@@ -167,6 +167,7 @@ const ROUTES = {
     },
     CREATE: {
       BASE: "/invoice/create",
+      TAX_INVOICE: "/invoice/create/tax-invoice",
       ID: (id: any) => `/invoice/create/${id}`
     },
     VIEW: {
