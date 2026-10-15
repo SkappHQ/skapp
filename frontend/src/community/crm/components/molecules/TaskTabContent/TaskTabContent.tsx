@@ -34,10 +34,7 @@ import {
   CrmSidePanelTypes,
   CrmTaskFilterRequest
 } from "~community/crm/types/CrmTypes";
-import {
-  getMissingDealIds,
-  mergeDeals
-} from "~community/crm/utils/dealUtil";
+import { getMissingDealIds, mergeDeals } from "~community/crm/utils/dealUtil";
 import {
   addMissingTasks,
   getCompletedTasks,

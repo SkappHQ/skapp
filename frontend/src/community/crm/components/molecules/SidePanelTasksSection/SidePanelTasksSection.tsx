@@ -41,15 +41,14 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
 
   const { setToastMessage } = useToast();
 
-  const { tasks, setTasks, setIsTaskModalOpen, setTaskModalType } =
-    useCrmStore(
-      useShallow((state) => ({
-        tasks: state.tasks,
-        setTasks: state.setTasks,
-        setIsTaskModalOpen: state.setIsTaskModalOpen,
-        setTaskModalType: state.setTaskModalType
-      }))
-    );
+  const { tasks, setTasks, setIsTaskModalOpen, setTaskModalType } = useCrmStore(
+    useShallow((state) => ({
+      tasks: state.tasks,
+      setTasks: state.setTasks,
+      setIsTaskModalOpen: state.setIsTaskModalOpen,
+      setTaskModalType: state.setTaskModalType
+    }))
+  );
 
   const [optimisticTasks, setOptimisticTasks] = useOptimistic(tasks);
 

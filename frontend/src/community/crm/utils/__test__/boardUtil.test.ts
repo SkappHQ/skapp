@@ -1,8 +1,12 @@
 import type { ClientRect } from "@dnd-kit/core";
 
 import { CrmPriorityEnum } from "~community/crm/enums/common";
-import { CrmDealEntity, CrmDealRecord } from "~community/crm/types/CrmCommonTypes";
+import {
+  CrmDealEntity,
+  CrmDealRecord
+} from "~community/crm/types/CrmCommonTypes";
 import { CrmDealsByStagesResponse } from "~community/crm/types/CrmTypes";
+
 import {
   computeInsertIndex,
   computeMoveNeighbors,
