@@ -129,10 +129,7 @@ export const useGetDealById = (
   });
 
 const createDeal = async (payload: CrmDealEntity): Promise<CrmDealEntity> => {
-  const response = await authFetch.post(
-    crmDealEndpoints.CREATE_DEAL,
-    payload
-  );
+  const response = await authFetch.post(crmDealEndpoints.CREATE_DEAL, payload);
   return response?.data?.results?.[0];
 };
 

@@ -72,10 +72,7 @@ const TaskDealField: FC<Props> = ({ formik }) => {
     [debouncedSearch, values.contactId, lookupCompanyId]
   );
 
-  const { data: lookupData } = useGetDealLookup(
-    lookupFilter,
-    isSearchEnabled
-  );
+  const { data: lookupData } = useGetDealLookup(lookupFilter, isSearchEnabled);
 
   const lookupItems = useMemo(
     () => lookupData?.items ?? [],
