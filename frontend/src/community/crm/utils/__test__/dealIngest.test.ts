@@ -1,6 +1,7 @@
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 import { CrmDealEntity } from "~community/crm/types/CrmCommonTypes";
 import { CrmDealsByStagesResponse } from "~community/crm/types/CrmTypes";
+
 import {
   ingestBoardStageDeals,
   ingestCreatedDeal,

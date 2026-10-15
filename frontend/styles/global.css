@@ -17,7 +17,6 @@
   --color-primary-background: var(--color-blue-light);
   --color-primary-background-dark: var(--color-blue-dark);
 
-
   --color-label-bg-seafoam: #a4d1c9;
   --color-label-bg-sand: #ffcecf;
   --color-label-bg-lemon: #fff085;
@@ -83,15 +82,15 @@
   --color-semantic-green-accent: #62b774;
 
   --color-chart-blue: #2b7fff;
-  --color-purple-nebula: #AD46FF;
-  --color-indigo-twilight: #7C86FF;
-  --color-sky-meridian: #00A6F4;
-  --color-mint-lagoon: #00BC7D;
-  --color-lemon-solstice: #F0B100;
-  --color-orange-ember: #FF6900;
-  --color-sand-dusk: #D26768;
-  --color-pink-aurora: #F6339A;
-  --color-bluegray-overcast: #64748B;
+  --color-purple-nebula: #ad46ff;
+  --color-indigo-twilight: #7c86ff;
+  --color-sky-meridian: #00a6f4;
+  --color-mint-lagoon: #00bc7d;
+  --color-lemon-solstice: #f0b100;
+  --color-orange-ember: #ff6900;
+  --color-sand-dusk: #d26768;
+  --color-pink-aurora: #f6339a;
+  --color-bluegray-overcast: #64748b;
 
   --color-ai-gradient-start: var(--color-blue-dark);
   --color-ai-gradient-end: var(--color-blue-mid);

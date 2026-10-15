@@ -24,8 +24,7 @@ export const useOrganizationThemeColor = (
       ? setDataToLocalStorage(ORGANIZATION_THEME_COLOR_KEY, themeColor)
       : removeDataFromLocalStorage(ORGANIZATION_THEME_COLOR_KEY);
 
-    persist.catch(() => {
-    });
+    persist.catch(() => {});
   }, [organizationDetails, themeColor]);
 
   if (organizationDetails) return themeColor || ThemeTypes.BLUE_THEME;
