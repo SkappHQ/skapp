@@ -302,3 +302,7 @@ export enum EmployeeRemoveAction {
   TERMINATE = "TERMINATE",
   DELETE = "DELETE"
 }
+
+export interface EmployeeJoinedDateType {
+  joinedDate: string;
+}

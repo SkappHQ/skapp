@@ -81,6 +81,7 @@ import { EmployeeTimelineType } from "~enterprise/people/types/PeopleTypes";
 
 import {
   AllEmployeeDataResponse,
+  EmployeeJoinedDateType,
   L1EmployeeType,
   ReassignSupervisorsAndTerminateOrDeleteEmployeePayload,
   SkillResponseDto,
@@ -1067,6 +1068,38 @@ export const useUpdateBirthdayNotificationConfig = (
       });
       onSuccess(config);
     },
+    onError
+  });
+};
+
+const editEmployeeJoinedDate = async (
+  employeeId: number,
+  payload: EmployeeJoinedDateType
+): Promise<void> => {
+  await authFetch.patch(
+    peoplesEndpoints.EDIT_EMPLOYEE_JOINED_DATE(employeeId),
+    payload
+  );
+};
+
+export const useEditEmployeeJoinedDate = (
+  employeeId: number,
+  onSuccess: () => void,
+  onError: () => void
+): UseMutationResult<void, ErrorResponse, EmployeeJoinedDateType, void> => {
+  const queryClient = useQueryClient();
+
+  const handleSuccess = async (): Promise<void> => {
+    await queryClient.invalidateQueries({
+      queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(employeeId)
+    });
+    onSuccess();
+  };
+
+  return useMutation({
+    mutationFn: (payload: EmployeeJoinedDateType) =>
+      editEmployeeJoinedDate(employeeId, payload),
+    onSuccess: handleSuccess,
     onError
   });
 };
