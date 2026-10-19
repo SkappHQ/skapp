@@ -30,4 +30,6 @@ public class ValidationConstant {
 	 */
 	public static final String JOB_FAMILY_NAME_TITLE_REGEX = "[a-zA-Z\\d\\s-_&/|\\[\\]]+";
 
+	public static final Pattern STORED_FILE_NAME_PATTERN = Pattern.compile("^[A-Za-z0-9_-][A-Za-z0-9._-]{0,254}$");
+
 }

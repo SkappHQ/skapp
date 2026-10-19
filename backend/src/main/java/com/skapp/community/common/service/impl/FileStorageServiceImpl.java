@@ -426,9 +426,11 @@ public class FileStorageServiceImpl implements FileStorageService {
 
 	private void deleteStoredFile(Path targetDir, String fileName) throws IOException {
 		Path filePath = FileUtil.resolveFileInDirectory(targetDir, fileName);
-		if (filePath != null) {
-			deleteAllFiles(filePath);
+		if (filePath == null) {
+			log.error("deleteStoredFile: stored file name for {} rejected", targetDir.getFileName());
+			return;
 		}
+		deleteAllFiles(filePath);
 	}
 
 }

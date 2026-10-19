@@ -1,6 +1,7 @@
 package com.skapp.community.common.util;
 
 import com.skapp.community.common.constant.FileConfigConstants;
+import com.skapp.community.common.constant.ValidationConstant;
 import lombok.experimental.UtilityClass;
 
 import java.nio.file.Path;
@@ -32,7 +33,7 @@ public class FileUtil {
 	}
 
 	public static Path resolveFileInDirectory(Path directory, String fileName) {
-		if (fileName == null || !FileConfigConstants.STORED_FILE_NAME_PATTERN.matcher(fileName).matches()) {
+		if (fileName == null || !ValidationConstant.STORED_FILE_NAME_PATTERN.matcher(fileName).matches()) {
 			return null;
 		}
 

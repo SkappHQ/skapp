@@ -206,9 +206,11 @@ class FileStorageControllerIntegrationTest {
 		MockMultipartFile file = new MockMultipartFile("file", "avatar.png", MediaType.IMAGE_PNG_VALUE,
 				createPngBytes());
 
-		performUpdateUserImage(file, traversalName).andExpect(status().isOk());
+		performUpdateUserImage(file, traversalName).andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
 
 		assertThat(storageDir.resolve(PLANTED_FILE_NAME)).exists();
+		assertThat(listUserImages()).hasSizeGreaterThan(existingUserImages.size());
 	}
 
 	@Test
@@ -233,6 +235,19 @@ class FileStorageControllerIntegrationTest {
 
 		assertThat(userImageDir.resolve(previousName)).doesNotExist();
 		assertThat(userImageDir.resolve(FileUtil.getThumbnailName(previousName))).doesNotExist();
+	}
+
+	@Test
+	@DisplayName("Upload a file whose extension has characters outside the stored name pattern - Returns upload error")
+	void uploadFile_UnreadableExtension_ReturnsUploadError() throws Exception {
+		MockMultipartFile file = new MockMultipartFile("file", "avatar.pn g", MediaType.IMAGE_PNG_VALUE,
+				createPngBytes());
+
+		performUpload(file, FileType.USER_IMAGE).andExpect(status().isBadRequest())
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_KEY_PATH)
+				.value(CommonMessageConstant.COMMON_ERROR_FILE_UPLOAD.name()));
+
+		assertThat(listUserImages()).isEqualTo(existingUserImages);
 	}
 
 }
