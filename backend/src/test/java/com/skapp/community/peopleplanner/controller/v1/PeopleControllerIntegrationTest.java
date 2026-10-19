@@ -2,12 +2,14 @@ package com.skapp.community.peopleplanner.controller.v1;
 
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.security.AuthorityService;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.repository.UserDao;
+import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeContactNumberRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeJoinedDateRequestDto;
@@ -61,7 +63,9 @@ import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -371,7 +375,14 @@ class PeopleControllerIntegrationTest {
 			employeeRole.setPeopleRole(Role.PEOPLE_EMPLOYEE);
 			employeeRole.setLeaveRole(Role.LEAVE_EMPLOYEE);
 			employeeRole.setIsSuperAdmin(false);
-			employeeDao.findById(MANAGER_ID).orElseThrow().getEmployeeRole().setPeopleRole(Role.PEOPLE_MANAGER);
+			EmployeeRole managerRole = employeeDao.findById(MANAGER_ID).orElseThrow().getEmployeeRole();
+			managerRole.setPeopleRole(Role.PEOPLE_MANAGER);
+			managerRole.setLeaveRole(Role.LEAVE_EMPLOYEE);
+			managerRole.setAttendanceRole(Role.ATTENDANCE_EMPLOYEE);
+			managerRole.setIsSuperAdmin(false);
+			EmployeeRole peopleAdminRole = employeeDao.findById(PEOPLE_ADMIN_ID).orElseThrow().getEmployeeRole();
+			peopleAdminRole.setPeopleRole(Role.PEOPLE_ADMIN);
+			peopleAdminRole.setIsSuperAdmin(false);
 			employeeRoleDao.flush();
 
 			employeeToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"),
@@ -569,7 +580,7 @@ class PeopleControllerIntegrationTest {
 
 			expectForbidden(patchEmployee(employeeToken, "/v1/people/employee/" + EMPLOYEE_ID, request));
 
-			assertEquals("Lastname Two", lastNameOf(EMPLOYEE_ID));
+			assertNull(employeeDao.findById(EMPLOYEE_ID).orElseThrow().getPayrollId());
 		}
 
 		@Test
@@ -588,12 +599,15 @@ class PeopleControllerIntegrationTest {
 		@Test
 		@DisplayName("Employee changes own career progression - Returns Forbidden")
 		void updateEmployee_ByEmployeeChangingOwnCareerProgression_ReturnsForbidden() throws Exception {
+			int progressionCount = progressionCountOf(EMPLOYEE_ID);
 			EmployeeEmploymentDetailsDto employment = new EmployeeEmploymentDetailsDto();
 			employment.setCareerProgression(List.of(new EmployeeEmploymentCareerProgressionDetailsDto()));
 			CreateEmployeeRequestDto request = new CreateEmployeeRequestDto();
 			request.setEmployment(employment);
 
 			expectForbidden(patchEmployee(employeeToken, "/v1/people/employee/" + EMPLOYEE_ID, request));
+
+			assertEquals(progressionCount, progressionCountOf(EMPLOYEE_ID));
 		}
 
 		@Test
@@ -663,6 +677,109 @@ class PeopleControllerIntegrationTest {
 
 			assertEquals(PeopleMessageConstant.PEOPLE_ERROR_CONTACT_NUMBER_ALREADY_SET, exception.getMessageKey());
 			assertEquals(existingPhone, employeeDao.findById(EMPLOYEE_ID).orElseThrow().getPhone());
+		}
+
+		@Test
+		@DisplayName("Leave admin sets a future joined date - Returns Unprocessable")
+		void updateEmployeeJoinedDate_WithFutureDate_IsRefused() throws Exception {
+			employeeDao.findById(EMPLOYEE_ID).orElseThrow().setJoinDate(null);
+			employeeDao.flush();
+
+			patchEmployee(authToken, "/v1/people/employee/" + EMPLOYEE_ID + "/joined-date",
+					joinedDateRequest(DateTimeUtils.currentDateAt(ZoneOffset.UTC).plusYears(1)))
+				.andDo(print())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH).value(messageUtil
+					.getMessage(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_EMPLOYMENT_JOINED_DATE_FUTURE_DATE)));
+
+			assertNull(joinDateOf(EMPLOYEE_ID));
+		}
+
+		@Test
+		@DisplayName("Leave admin sets no joined date - Returns the required error")
+		void updateEmployeeJoinedDate_WithoutDate_IsRefused() throws Exception {
+			patchEmployee(authToken, "/v1/people/employee/" + EMPLOYEE_ID + "/joined-date", joinedDateRequest(null))
+				.andDo(print())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+					.value(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_JOINED_DATE_REQUIRED)));
+		}
+
+		@Test
+		@DisplayName("Leave admin sets a joined date for an unknown employee - Returns Not Found")
+		void updateEmployeeJoinedDate_ForUnknownEmployee_ReturnsNotFound() throws Exception {
+			patchEmployee(authToken, "/v1/people/employee/99999/joined-date",
+					joinedDateRequest(LocalDate.of(2020, 1, 15)))
+				.andDo(print())
+				.andExpect(status().isNotFound());
+		}
+
+		@Test
+		@DisplayName("People admin edits a super admin's name - Returns OK")
+		void updateEmployee_ByPeopleAdminEditingSuperAdminName_ReturnsOk() throws Exception {
+			expectOk(patchEmployee(peopleAdminToken, "/v1/people/employee/1", lastNameRequest("Owner Renamed")));
+
+			assertEquals("Owner Renamed", lastNameOf(1L));
+		}
+
+		@Test
+		@DisplayName("People admin revokes super admin - Returns Forbidden")
+		void updateEmployee_ByPeopleAdminRevokingSuperAdmin_ReturnsForbidden() throws Exception {
+			EmployeeSystemPermissionsDto systemPermissions = new EmployeeSystemPermissionsDto();
+			systemPermissions.setIsSuperAdmin(false);
+			CreateEmployeeRequestDto request = new CreateEmployeeRequestDto();
+			request.setSystemPermissions(systemPermissions);
+
+			expectForbidden(patchEmployee(peopleAdminToken, "/v1/people/employee/1", request));
+
+			assertEquals(Boolean.TRUE, isSuperAdmin(1L));
+		}
+
+		@Test
+		@DisplayName("People admin creates a super admin - Returns Forbidden")
+		void createEmployee_ByPeopleAdminAsSuperAdmin_ReturnsForbidden() throws Exception {
+			CreateEmployeeRequestDto request = createEmployeeDetails();
+			request.getEmployment().getEmploymentDetails().setEmail("new-super-admin@gmail.com");
+			request.getSystemPermissions().setIsSuperAdmin(true);
+
+			expectForbidden(mvc.perform(post("/v1/people/employee").contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request))
+				.accept(MediaType.APPLICATION_JSON)
+				.with(SecurityTestUtils.bearerToken(peopleAdminToken))));
+
+			assertTrue(userDao.findByEmail("new-super-admin@gmail.com").isEmpty());
+		}
+
+		@Test
+		@DisplayName("E-sign contact number with no number - Throws the required error")
+		void updateEmployeeContactNumber_WithBlankNumber_Throws() {
+			EmployeeContactNumberRequestDto request = contactNumberRequest(" ");
+
+			ValidationException exception = assertThrows(ValidationException.class,
+					() -> peopleService.updateEmployeeContactNumber(EMPLOYEE_ID, request));
+
+			assertEquals(PeopleMessageConstant.PEOPLE_ERROR_CONTACT_NUMBER_REQUIRED, exception.getMessageKey());
+		}
+
+		@Test
+		@DisplayName("E-sign contact number for a deactivated employee - Throws and saves nothing")
+		void updateEmployeeContactNumber_ForDeactivatedEmployee_Throws() {
+			Employee employee = employeeDao.findById(EMPLOYEE_ID).orElseThrow();
+			employee.setPhone(null);
+			employee.setAccountStatus(AccountStatus.DEACTIVATED);
+			employeeDao.flush();
+			EmployeeContactNumberRequestDto request = contactNumberRequest(ESIGN_PHONE);
+
+			ModuleException exception = assertThrows(ModuleException.class,
+					() -> peopleService.updateEmployeeContactNumber(EMPLOYEE_ID, request));
+
+			assertEquals(PeopleMessageConstant.PEOPLE_ERROR_CONTACT_NUMBER_TARGET_NOT_ACTIVE,
+					exception.getMessageKey());
+			assertNull(employeeDao.findById(EMPLOYEE_ID).orElseThrow().getPhone());
+		}
+
+		private int progressionCountOf(Long employeeId) {
+			return employeeDao.findById(employeeId).orElseThrow().getEmployeeProgressions().size();
 		}
 
 		private EmployeeContactNumberRequestDto contactNumberRequest(String contactNo) {

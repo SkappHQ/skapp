@@ -356,6 +356,11 @@ public class PeopleServiceImpl implements PeopleService {
 			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_JOINED_DATE_REQUIRED);
 		}
 
+		if (joinedDateRequestDto.getJoinedDate().isAfter(timeZoneService.currentOrganizationDate())) {
+			throw new ValidationException(
+					PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_EMPLOYMENT_JOINED_DATE_FUTURE_DATE);
+		}
+
 		User user = findUserById(employeeId);
 		if (user.getEmployee().getJoinDate() != null) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_JOINED_DATE_ALREADY_SET);
@@ -367,8 +372,9 @@ public class PeopleServiceImpl implements PeopleService {
 		employmentDetails.setEmploymentDetails(employmentBasicDetails);
 		CreateEmployeeRequestDto requestDto = new CreateEmployeeRequestDto();
 		requestDto.setEmployment(employmentDetails);
+		applyEmployeeUpdate(user, requestDto);
 
-		return applyEmployeeUpdate(user, requestDto);
+		return new ResponseEntityDto(false, joinedDateRequestDto);
 	}
 
 	@Override
@@ -380,6 +386,10 @@ public class PeopleServiceImpl implements PeopleService {
 		}
 
 		User user = findUserById(employeeId);
+		if (!isActiveNonGuestEmployee(user)) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_CONTACT_NUMBER_TARGET_NOT_ACTIVE);
+		}
+
 		if (StringUtils.isNotBlank(user.getEmployee().getPhone())) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_CONTACT_NUMBER_ALREADY_SET);
 		}
@@ -390,8 +400,15 @@ public class PeopleServiceImpl implements PeopleService {
 		personalDetails.setContact(contactDetails);
 		CreateEmployeeRequestDto requestDto = new CreateEmployeeRequestDto();
 		requestDto.setPersonal(personalDetails);
+		applyEmployeeUpdate(user, requestDto);
 
-		return applyEmployeeUpdate(user, requestDto);
+		return new ResponseEntityDto(false, contactNumberRequestDto);
+	}
+
+	private boolean isActiveNonGuestEmployee(User user) {
+		Employee employee = user.getEmployee();
+		return Boolean.TRUE.equals(user.getIsActive()) && employee != null
+				&& employee.getAccountStatus() == AccountStatus.ACTIVE && !CommonModuleUtils.isGuestEmployee(employee);
 	}
 
 	private User findUserById(Long employeeId) {
