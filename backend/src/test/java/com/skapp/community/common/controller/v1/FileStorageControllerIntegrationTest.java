@@ -196,6 +196,7 @@ class FileStorageControllerIntegrationTest {
 	@DisplayName("Get thumbnail by absolute path to an existing file - Returns file not exist")
 	void getThumbnail_AbsolutePathToExistingFile_ReturnsFileNotExist() throws Exception {
 		expectFileNotExist(performGetFile(storageDir.resolve(PLANTED_FILE_NAME).toString(), true));
+		expectFileNotExist(performGetFile(".png", true));
 	}
 
 	@Test

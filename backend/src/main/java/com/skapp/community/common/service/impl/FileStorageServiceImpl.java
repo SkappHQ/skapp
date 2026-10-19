@@ -148,8 +148,10 @@ public class FileStorageServiceImpl implements FileStorageService {
 		}
 
 		log.info("Reading file started from the path : {}", targetDir);
-		Path filePath = FileUtil.resolveFileInDirectory(targetDir,
-				isThumbnail ? FileUtil.getThumbnailName(filename) : filename);
+		Path filePath = FileUtil.resolveFileInDirectory(targetDir, filename);
+		if (filePath != null && isThumbnail) {
+			filePath = FileUtil.resolveFileInDirectory(targetDir, FileUtil.getThumbnailName(filename));
+		}
 
 		if (filePath == null || !Files.isRegularFile(filePath)) {
 			log.error("getFile: file of type {} does not exist", type);
@@ -427,7 +429,7 @@ public class FileStorageServiceImpl implements FileStorageService {
 	private void deleteStoredFile(Path targetDir, String fileName) throws IOException {
 		Path filePath = FileUtil.resolveFileInDirectory(targetDir, fileName);
 		if (filePath != null) {
-			deleteAllFiles(filePath);
+			Files.deleteIfExists(filePath);
 		}
 	}
 
