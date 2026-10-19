@@ -525,6 +525,8 @@ export const config = {
   matcher: [
     // All community routes
     "/community/:path*",
+    // All enterprise routes
+    "/enterprise/:path*",
     // Super admin routes
     "/setup-organization/:path*",
     "/module-selection",
