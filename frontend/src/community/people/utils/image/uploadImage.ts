@@ -48,7 +48,7 @@ const uploadImage = async ({
           }
         });
       } else {
-        await uploadFileToS3ByUrl(
+        const originalURL = await uploadFileToS3ByUrl(
           authPic[0] as File,
           FileCategories.PROFILE_PICTURES_ORIGINAL
         );
@@ -60,7 +60,9 @@ const uploadImage = async ({
         ) {
           const thumbnailURL = await uploadFileToS3ByUrl(
             thumbnail[0],
-            FileCategories.PROFILE_PICTURES_THUMBNAIL
+            FileCategories.PROFILE_PICTURES_THUMBNAIL,
+            undefined,
+            originalURL
           );
 
           newAuthPicURL = thumbnailURL.split("/").slice(2).join("/");

@@ -3,7 +3,8 @@ import { FileCategories } from "../types/s3Types";
 export const uploadFileToS3ByUrl = async (
   file: File,
   fileCategory: FileCategories,
-  setFileUploadProgress?: (value: number) => void
+  setFileUploadProgress?: (value: number) => void,
+  pairedFilePath?: string
 ) => {
   const filePath = "";
   return filePath;
