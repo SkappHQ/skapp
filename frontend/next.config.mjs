@@ -460,6 +460,10 @@ const nextConfig = {
         destination: "/enterprise/report/attendance-overview"
       },
       {
+        source: "/report/clock-in-overview",
+        destination: "/enterprise/report/clock-in-overview"
+      },
+      {
         source: "/crm",
         destination: "/community/crm/contacts"
       },
