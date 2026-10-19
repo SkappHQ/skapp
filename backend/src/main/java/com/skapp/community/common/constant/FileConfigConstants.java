@@ -3,6 +3,7 @@ package com.skapp.community.common.constant;
 import lombok.experimental.UtilityClass;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 @UtilityClass
 public class FileConfigConstants {
@@ -24,5 +25,7 @@ public class FileConfigConstants {
 	public static final long FILE_UPLOAD_LIMIT_IN_PERCENTAGE = 10L;
 
 	public static final List<String> SUPPORTED_FORMATS = List.of("jpg", "jpeg", "png", "gif", "bmp");
+
+	public static final Pattern STORED_FILE_NAME_PATTERN = Pattern.compile("^[A-Za-z0-9_-][A-Za-z0-9._-]{0,254}$");
 
 }

@@ -31,6 +31,14 @@ public class FileUtil {
 		}
 	}
 
+	public static Path resolveFileInDirectory(Path directory, String fileName) {
+		if (fileName == null || !FileConfigConstants.STORED_FILE_NAME_PATTERN.matcher(fileName).matches()) {
+			return null;
+		}
+
+		return directory.resolve(fileName);
+	}
+
 	public static String getThumbnailName(String originalFileName) {
 		int dotIndex = originalFileName.lastIndexOf('.');
 		return (dotIndex == -1) ? "" : originalFileName.substring(0, originalFileName.indexOf("."))
