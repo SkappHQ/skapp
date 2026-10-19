@@ -25,7 +25,6 @@ const SetJoinDateModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
     "setJoinDateModal"
   );
 
-  const translateToast = useTranslator("peopleModule", "addResource");
   const { setToastMessage } = useToast();
 
   const [joinDate, setJoinDate] = useState<string>("");
@@ -39,8 +38,9 @@ const SetJoinDateModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateToast(["editToastTitle"]),
-      description: translateToast(["editToastDescription"])
+      title: translateText(["successToastTitle"]),
+      description: translateText(["successToastDescription"]),
+      isIcon: true
     });
     handleClose();
   };
@@ -49,8 +49,9 @@ const SetJoinDateModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateToast(["editErrorToastTitle"]),
-      description: translateToast(["editErrorToastDescription"])
+      title: translateText(["errorToastTitle"]),
+      description: translateText(["errorToastDescription"]),
+      isIcon: true
     });
   };
 
@@ -87,6 +88,7 @@ const SetJoinDateModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
               joinDate ? DateTime.fromISO(joinDate).toJSDate() : undefined
             }
             onSelect={handleDateSelect}
+            disabled={{ after: DateTime.now().toJSDate() }}
             popperProps={{ position: "bottom-start" }}
           >
             <div>

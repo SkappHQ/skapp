@@ -303,6 +303,6 @@ export enum EmployeeRemoveAction {
   DELETE = "DELETE"
 }
 
-export interface EmployeeJoinedDateType {
+export interface UpdateEmployeeJoinedDatePayload {
   joinedDate: string;
 }
