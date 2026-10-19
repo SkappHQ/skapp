@@ -76,7 +76,9 @@ import com.skapp.community.peopleplanner.payload.request.ProbationPeriodDto;
 import com.skapp.community.peopleplanner.payload.request.ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.TeamSupervisorTransferDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
+import com.skapp.community.peopleplanner.payload.request.employee.EmployeeContactNumberRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeEmploymentDetailsDto;
+import com.skapp.community.peopleplanner.payload.request.employee.EmployeeJoinedDateRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeePersonalDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeSystemPermissionsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.emergency.EmployeeEmergencyContactDetailsDto;
@@ -85,6 +87,7 @@ import com.skapp.community.peopleplanner.payload.request.employee.employment.Emp
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBasicDetailsManagerDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentCareerProgressionDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentVisaDetailsDto;
+import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalContactDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeeExtraInfoDto;
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalEducationalDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalFamilyDetailsDto;
@@ -136,6 +139,7 @@ import com.skapp.community.peopleplanner.util.Validations;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -339,12 +343,63 @@ public class PeopleServiceImpl implements PeopleService {
 	@Override
 	@Transactional
 	public ResponseEntityDto updateEmployee(Long employeeId, CreateEmployeeRequestDto requestDto) {
-		Optional<User> optionalUser = userDao.findById(employeeId);
-		if (optionalUser.isEmpty()) {
-			throw new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND);
+		User user = findUserById(employeeId);
+		employeeValidationService.validateEmployeeUpdateAccess(userService.getCurrentUser(), user, requestDto);
+		return applyEmployeeUpdate(user, requestDto);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto updateEmployeeJoinedDate(Long employeeId,
+			EmployeeJoinedDateRequestDto joinedDateRequestDto) {
+		if (joinedDateRequestDto.getJoinedDate() == null) {
+			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_JOINED_DATE_REQUIRED);
 		}
 
-		User user = optionalUser.get();
+		User user = findUserById(employeeId);
+		if (user.getEmployee().getJoinDate() != null) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_JOINED_DATE_ALREADY_SET);
+		}
+
+		EmployeeEmploymentBasicDetailsDto employmentBasicDetails = new EmployeeEmploymentBasicDetailsDto();
+		employmentBasicDetails.setJoinedDate(joinedDateRequestDto.getJoinedDate());
+		EmployeeEmploymentDetailsDto employmentDetails = new EmployeeEmploymentDetailsDto();
+		employmentDetails.setEmploymentDetails(employmentBasicDetails);
+		CreateEmployeeRequestDto requestDto = new CreateEmployeeRequestDto();
+		requestDto.setEmployment(employmentDetails);
+
+		return applyEmployeeUpdate(user, requestDto);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto updateEmployeeContactNumber(Long employeeId,
+			EmployeeContactNumberRequestDto contactNumberRequestDto) {
+		if (StringUtils.isBlank(contactNumberRequestDto.getContactNo())) {
+			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_CONTACT_NUMBER_REQUIRED);
+		}
+
+		User user = findUserById(employeeId);
+		if (StringUtils.isNotBlank(user.getEmployee().getPhone())) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_CONTACT_NUMBER_ALREADY_SET);
+		}
+
+		EmployeePersonalContactDetailsDto contactDetails = new EmployeePersonalContactDetailsDto();
+		contactDetails.setContactNo(contactNumberRequestDto.getContactNo());
+		EmployeePersonalDetailsDto personalDetails = new EmployeePersonalDetailsDto();
+		personalDetails.setContact(contactDetails);
+		CreateEmployeeRequestDto requestDto = new CreateEmployeeRequestDto();
+		requestDto.setPersonal(personalDetails);
+
+		return applyEmployeeUpdate(user, requestDto);
+	}
+
+	private User findUserById(Long employeeId) {
+		return userDao.findById(employeeId)
+			.orElseThrow(() -> new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND));
+	}
+
+	private ResponseEntityDto applyEmployeeUpdate(User user, CreateEmployeeRequestDto requestDto) {
 		Employee employee = user.getEmployee();
 		CurrentEmployeeDto currentEmployeeDto = getEmployeeDeepCopy(employee);
 
