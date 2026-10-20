@@ -85,7 +85,8 @@ import {
   ReassignSupervisorsAndTerminateOrDeleteEmployeePayload,
   SkillResponseDto,
   SkillType,
-  SupervisorRolesData
+  SupervisorRolesData,
+  UpdateEmployeeJoinedDatePayload
 } from "../types/PeopleTypes";
 
 const getBannerData = async (): Promise<number> => {
@@ -1067,6 +1068,46 @@ export const useUpdateBirthdayNotificationConfig = (
       });
       onSuccess(config);
     },
+    onError
+  });
+};
+
+const editEmployeeJoinedDate = async (
+  employeeId: number,
+  payload: UpdateEmployeeJoinedDatePayload
+): Promise<void> => {
+  await authFetch.patch(
+    peoplesEndpoints.EDIT_EMPLOYEE_JOINED_DATE(employeeId),
+    payload
+  );
+};
+
+export const useEditEmployeeJoinedDate = (
+  employeeId: number,
+  onSuccess: () => void,
+  onError: () => void
+): UseMutationResult<
+  void,
+  ErrorResponse,
+  UpdateEmployeeJoinedDatePayload,
+  void
+> => {
+  const queryClient = useQueryClient();
+
+  const handleSuccess = async (): Promise<void> => {
+    await queryClient.invalidateQueries({
+      queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(employeeId)
+    });
+    await queryClient.invalidateQueries({
+      queryKey: peopleQueryKeys.EMPLOYEE_DATA_TABLE()
+    });
+    onSuccess();
+  };
+
+  return useMutation({
+    mutationFn: (payload: UpdateEmployeeJoinedDatePayload) =>
+      editEmployeeJoinedDate(employeeId, payload),
+    onSuccess: handleSuccess,
     onError
   });
 };

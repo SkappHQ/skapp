@@ -42,7 +42,9 @@ export const peoplesEndpoints = {
   GET_SKILLS: `${moduleAPIPath.PEOPLE}/skills`,
   CREATE_CUSTOM_SKILLS: `${moduleAPIPath.PEOPLE}/skills/custom`,
   GET_TODAYS_BIRTHDAY_NOTIFICATIONS: `${moduleAPIPath.PEOPLE}/birthday-notifications/today`,
-  MARK_BIRTHDAY_NOTIFICATIONS_VIEWED_TODAY: `${moduleAPIPath.PEOPLE}/birthday-notifications/mark-viewed-today`
+  MARK_BIRTHDAY_NOTIFICATIONS_VIEWED_TODAY: `${moduleAPIPath.PEOPLE}/birthday-notifications/mark-viewed-today`,
+  EDIT_EMPLOYEE_JOINED_DATE: (employeeId: number) =>
+    `${moduleAPIPath.PEOPLE}/employee/${employeeId}/joined-date`
 };
 
 export const authEndpoints = {

@@ -1,5 +1,6 @@
 package com.skapp.community.peopleplanner.service.impl;
 
+import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
@@ -8,14 +9,17 @@ import com.skapp.community.common.repository.BusinessUnitDao;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.type.Role;
+import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.JobFamily;
 import com.skapp.community.peopleplanner.model.JobTitle;
 import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
+import com.skapp.community.peopleplanner.payload.request.employee.EmployeeCommonDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeEmploymentDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeePersonalDetailsDto;
+import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBasicDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBasicDetailsManagerDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentCareerProgressionDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentIdentificationAndDiversityDetailsDto;
@@ -27,7 +31,9 @@ import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.util.Validations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -55,6 +61,8 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 	private final WorkLocationDao workLocationDao;
 
 	private final BusinessUnitDao businessUnitDao;
+
+	private final JsonMapper jsonMapper;
 
 	@Override
 	public void validateCreateEmployeeRequestEmploymentDetails(EmployeeEmploymentDetailsDto employmentDetailsDto,
@@ -476,6 +484,98 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 						PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_CAREER_PROGRESSION_JOB_TITLE_NOT_EXIST);
 			}
 		}
+	}
+
+	@Override
+	public void validateEmployeeUpdateAccess(User currentUser, User user, CreateEmployeeRequestDto requestDto) {
+		Employee currentEmployee = currentUser.getEmployee();
+		if (CommonModuleUtils.isSuperAdmin(currentEmployee)) {
+			return;
+		}
+
+		if (isPeopleAdmin(currentEmployee)) {
+			if (CommonModuleUtils.isSuperAdmin(user.getEmployee()) && hasWorkEmail(requestDto)) {
+				throw new AccessDeniedException(CommonMessageConstant.COMMON_ERROR_ACCESS_DENIED.name());
+			}
+			return;
+		}
+
+		boolean isOwnRecord = Objects.equals(currentUser.getUserId(), user.getUserId());
+		if (!isOwnRecord || !isSelfEditable(requestDto)) {
+			throw new AccessDeniedException(CommonMessageConstant.COMMON_ERROR_ACCESS_DENIED.name());
+		}
+	}
+
+	private boolean isPeopleAdmin(Employee employee) {
+		return employee != null && employee.getEmployeeRole() != null
+				&& employee.getEmployeeRole().getPeopleRole() == Role.PEOPLE_ADMIN;
+	}
+
+	private boolean hasWorkEmail(CreateEmployeeRequestDto requestDto) {
+		return requestDto.getEmployment() != null && requestDto.getEmployment().getEmploymentDetails() != null
+				&& requestDto.getEmployment().getEmploymentDetails().getEmail() != null;
+	}
+
+	private boolean isSelfEditable(CreateEmployeeRequestDto requestDto) {
+		return jsonMapper.valueToTree(requestDto).equals(jsonMapper.valueToTree(toSelfServiceRequest(requestDto)));
+	}
+
+	private CreateEmployeeRequestDto toSelfServiceRequest(CreateEmployeeRequestDto requestDto) {
+		CreateEmployeeRequestDto selfServiceRequest = new CreateEmployeeRequestDto();
+		selfServiceRequest.setPersonal(requestDto.getPersonal());
+		selfServiceRequest.setEmergency(requestDto.getEmergency());
+		selfServiceRequest.setCommon(toSelfServiceCommon(requestDto.getCommon()));
+		selfServiceRequest.setEmployment(toSelfServiceEmployment(requestDto.getEmployment()));
+		return selfServiceRequest;
+	}
+
+	private EmployeeCommonDetailsDto toSelfServiceCommon(EmployeeCommonDetailsDto commonDetailsDto) {
+		if (commonDetailsDto == null) {
+			return null;
+		}
+
+		EmployeeCommonDetailsDto selfServiceCommon = new EmployeeCommonDetailsDto();
+		selfServiceCommon.setAuthPic(commonDetailsDto.getAuthPic());
+		return selfServiceCommon;
+	}
+
+	private EmployeeEmploymentDetailsDto toSelfServiceEmployment(EmployeeEmploymentDetailsDto employmentDetailsDto) {
+		if (employmentDetailsDto == null) {
+			return null;
+		}
+
+		EmployeeEmploymentDetailsDto selfServiceEmployment = new EmployeeEmploymentDetailsDto();
+		selfServiceEmployment
+			.setEmploymentDetails(toSelfServiceBasicDetails(employmentDetailsDto.getEmploymentDetails()));
+		selfServiceEmployment.setIdentificationAndDiversityDetails(
+				toSelfServiceIdentification(employmentDetailsDto.getIdentificationAndDiversityDetails()));
+		selfServiceEmployment.setPreviousEmployment(employmentDetailsDto.getPreviousEmployment());
+		selfServiceEmployment.setVisaDetails(employmentDetailsDto.getVisaDetails());
+		return selfServiceEmployment;
+	}
+
+	private EmployeeEmploymentBasicDetailsDto toSelfServiceBasicDetails(
+			EmployeeEmploymentBasicDetailsDto basicDetailsDto) {
+		if (basicDetailsDto == null) {
+			return null;
+		}
+
+		EmployeeEmploymentBasicDetailsDto selfServiceBasicDetails = new EmployeeEmploymentBasicDetailsDto();
+		selfServiceBasicDetails.setWorkTimeZone(basicDetailsDto.getWorkTimeZone());
+		return selfServiceBasicDetails;
+	}
+
+	private EmployeeEmploymentIdentificationAndDiversityDetailsDto toSelfServiceIdentification(
+			EmployeeEmploymentIdentificationAndDiversityDetailsDto identificationDetailsDto) {
+		if (identificationDetailsDto == null) {
+			return null;
+		}
+
+		EmployeeEmploymentIdentificationAndDiversityDetailsDto selfServiceIdentification = new EmployeeEmploymentIdentificationAndDiversityDetailsDto();
+		selfServiceIdentification.setSsn(identificationDetailsDto.getSsn());
+		selfServiceIdentification.setEthnicity(identificationDetailsDto.getEthnicity());
+		selfServiceIdentification.setEeoJobCategory(identificationDetailsDto.getEeoJobCategory());
+		return selfServiceIdentification;
 	}
 
 }
