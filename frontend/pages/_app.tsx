@@ -28,7 +28,6 @@ import {
 } from "~enterprise/common/constants/dbKeys";
 import { AnnouncementProvider } from "~enterprise/common/providers/AnnouncementProvider";
 import { database } from "~enterprise/common/utils/firebase";
-import { initializeHotjar } from "~enterprise/common/utils/monitoring";
 import i18n from "~i18n";
 
 import "../styles/global.css";
@@ -92,10 +91,6 @@ function MyApp({
       setNewTheme(selectedTheme);
     } else {
       setNewTheme(theme);
-    }
-
-    if (process.env.NEXT_PUBLIC_MODE === appModes.ENTERPRISE) {
-      initializeHotjar();
     }
   }, []);
 

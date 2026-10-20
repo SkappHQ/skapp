@@ -1,6 +1,12 @@
-import { Head, Html, Main, NextScript } from "next/document";
+import { DocumentProps, Head, Html, Main, NextScript } from "next/document";
 
-export default function Document() {
+import { TRACKING_EXCLUDED_PAGE_PREFIXES } from "~enterprise/common/constants/configs";
+
+export default function Document({ __NEXT_DATA__ }: DocumentProps) {
+  const isTrackingEnabled = !TRACKING_EXCLUDED_PAGE_PREFIXES.some((prefix) =>
+    __NEXT_DATA__.page.startsWith(prefix)
+  );
+
   return (
     <Html lang="en">
       <Head>
@@ -38,9 +44,11 @@ export default function Document() {
           href="https://fonts.googleapis.com/css2?family=Dancing+Script&family=Great+Vibes&family=Pacifico&family=Satisfy&family=Tangerine&display=swap"
           rel="stylesheet"
         />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
+        {isTrackingEnabled && (
+          <>
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
     (function (c, s, q, u, a, r, e) {
         c.hj=c.hj||function(){(c.hj.q=c.hj.q||[]).push(arguments)};
         c._hjSettings = { hjid: a };
@@ -50,11 +58,11 @@ export default function Document() {
         e.src = q + c._hjSettings.hjid + u;
         r.appendChild(e);
     })(window, document, 'https://static.hj.contentsquare.net/c/csq-', '.js', '${process.env.HOTJAR_ID}');           `
-          }}
-        />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
+              }}
+            />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
               (function(w,d,s,l,i){
                 w[l]=w[l]||[];
                 w[l].push({'gtm.start': new Date().getTime(), event: 'gtm.js'});
@@ -65,12 +73,12 @@ export default function Document() {
                 f.parentNode.insertBefore(j,f);
               })(window,document,'script','dataLayer', '${process.env.GOOGLE_ANALYTICS_GTM_ID}');
             `
-          }}
-        />
-        {/* Meta Pixel Code */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
+              }}
+            />
+            {/* Meta Pixel Code */}
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
               !function(f,b,e,v,n,t,s)
               {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
               n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -82,28 +90,34 @@ export default function Document() {
               fbq('init', '${process.env.FACEBOOK_PIXEL_ID}');
               fbq('track', 'PageView');
             `
-          }}
-        />
+              }}
+            />
+          </>
+        )}
       </Head>
       <body>
-        <noscript>
-          <iframe
-            src={`https://www.googletagmanager.com/ns.html?id=${process.env.GOOGLE_ANALYTICS_GTM_ID}`}
-            height="0"
-            width="0"
-            style={{ display: "none", visibility: "hidden" }}
-          ></iframe>
-        </noscript>
-        {/* Meta Pixel noscript fallback */}
-        <noscript>
-          <img
-            height="1"
-            width="1"
-            style={{ display: "none" }}
-            src={`https://www.facebook.com/tr?id=${process.env.FACEBOOK_PIXEL_ID}&ev=PageView&noscript=1`}
-            alt=""
-          />
-        </noscript>
+        {isTrackingEnabled && (
+          <>
+            <noscript>
+              <iframe
+                src={`https://www.googletagmanager.com/ns.html?id=${process.env.GOOGLE_ANALYTICS_GTM_ID}`}
+                height="0"
+                width="0"
+                style={{ display: "none", visibility: "hidden" }}
+              ></iframe>
+            </noscript>
+            {/* Meta Pixel noscript fallback */}
+            <noscript>
+              <img
+                height="1"
+                width="1"
+                style={{ display: "none" }}
+                src={`https://www.facebook.com/tr?id=${process.env.FACEBOOK_PIXEL_ID}&ev=PageView&noscript=1`}
+                alt=""
+              />
+            </noscript>
+          </>
+        )}
         <Main />
         <NextScript />
       </body>
