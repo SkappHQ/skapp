@@ -1,0 +1,86 @@
+package com.skapp.community.crmplanner.model;
+
+import com.skapp.community.common.model.Auditable;
+import com.skapp.community.crmplanner.type.CrmActivityCalendarProvider;
+import com.skapp.community.crmplanner.type.CrmActivityMeetingVenue;
+import com.skapp.community.crmplanner.type.CrmActivitySyncStatus;
+import com.skapp.community.peopleplanner.model.Employee;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@Table(name = "crm_activity_meeting")
+public class CrmActivityMeeting extends Auditable<String> {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id", nullable = false, updatable = false)
+	private Long id;
+
+	@Column(name = "name", nullable = false)
+	private String name;
+
+	@Column(name = "is_scheduled", nullable = false)
+	private Boolean isScheduled = false;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "meeting_venue")
+	private CrmActivityMeetingVenue meetingVenue;
+
+	@Column(name = "location")
+	private String location;
+
+	@Column(name = "meeting_date", nullable = false)
+	private LocalDate meetingDate;
+
+	@Column(name = "start_time", nullable = false)
+	private LocalTime startTime;
+
+	@Column(name = "end_time", nullable = false)
+	private LocalTime endTime;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "sync_status")
+	private CrmActivitySyncStatus syncStatus;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "calendar_provider")
+	private CrmActivityCalendarProvider calendarProvider;
+
+	@Column(name = "comments")
+	private String comments;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "owner_id", nullable = false)
+	private Employee owner;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "deal_id")
+	private CrmDeal deal;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "company_id")
+	private CrmCompany company;
+
+	@Column(name = "is_deleted", nullable = false)
+	private Boolean isDeleted = false;
+
+}
