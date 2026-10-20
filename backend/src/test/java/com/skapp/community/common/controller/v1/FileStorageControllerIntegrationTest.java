@@ -13,6 +13,7 @@ import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.support.MockUserFactory;
 import com.skapp.support.SecurityTestUtils;
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,11 +24,14 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.FileSystemUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -68,11 +72,15 @@ class FileStorageControllerIntegrationTest {
 
 	private static final String PLANTED_THUMBNAIL_NAME = "planted-thumbnail.png";
 
+	private static final String AVATAR_FILE_NAME = "avatar.png";
+
 	private static final String MISSING_FILE_NAME = "a1b2c3d4-0000-0000-0000-000000000000.png";
 
 	private static final int IMAGE_SIZE = 200;
 
 	private static final Long EMPLOYEE_ID = 2L;
+
+	private static final Path STORAGE_BASE = createStorageBase();
 
 	private final AuthorityService authorityService;
 
@@ -92,7 +100,24 @@ class FileStorageControllerIntegrationTest {
 
 	private Path userImageDir;
 
-	private Set<Path> existingUserImages;
+	private static Path createStorageBase() {
+		try {
+			return Files.createTempDirectory("file-storage-test");
+		}
+		catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	@DynamicPropertySource
+	static void fileStorageProperties(DynamicPropertyRegistry registry) {
+		registry.add("file.storage.base", STORAGE_BASE::toString);
+	}
+
+	@AfterAll
+	static void deleteStorageBase() throws IOException {
+		FileSystemUtils.deleteRecursively(STORAGE_BASE);
+	}
 
 	@BeforeEach
 	void setup() throws IOException {
@@ -104,20 +129,13 @@ class FileStorageControllerIntegrationTest {
 			.normalize();
 		userImageDir = storageDir.resolve(FileType.USER_IMAGE.label);
 		Files.createDirectories(userImageDir);
-		existingUserImages = listUserImages();
 		Files.writeString(storageDir.resolve(PLANTED_FILE_NAME), "not an encrypted file", StandardCharsets.UTF_8);
 		Files.writeString(storageDir.resolve(PLANTED_THUMBNAIL_NAME), "not an encrypted file", StandardCharsets.UTF_8);
 	}
 
 	@AfterEach
 	void cleanup() throws IOException {
-		Files.deleteIfExists(storageDir.resolve(PLANTED_FILE_NAME));
-		Files.deleteIfExists(storageDir.resolve(PLANTED_THUMBNAIL_NAME));
-		for (Path createdImage : listUserImages()) {
-			if (!existingUserImages.contains(createdImage)) {
-				Files.deleteIfExists(createdImage);
-			}
-		}
+		FileSystemUtils.deleteRecursively(storageDir);
 	}
 
 	private Set<Path> listUserImages() throws IOException {
@@ -149,8 +167,8 @@ class FileStorageControllerIntegrationTest {
 			.with(SecurityTestUtils.bearerToken(authToken)));
 	}
 
-	private String uploadUserImage() throws Exception {
-		MockMultipartFile file = new MockMultipartFile("file", "avatar.png", MediaType.IMAGE_PNG_VALUE,
+	private String uploadUserImage(String originalFilename) throws Exception {
+		MockMultipartFile file = new MockMultipartFile("file", originalFilename, MediaType.IMAGE_PNG_VALUE,
 				createPngBytes());
 		MvcResult uploadResult = performUpload(file, FileType.USER_IMAGE).andExpect(status().isCreated())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
@@ -196,7 +214,7 @@ class FileStorageControllerIntegrationTest {
 	@DisplayName("Get thumbnail by absolute path to an existing file - Returns file not exist")
 	void getThumbnail_AbsolutePathToExistingFile_ReturnsFileNotExist() throws Exception {
 		expectFileNotExist(performGetFile(storageDir.resolve(PLANTED_FILE_NAME).toString(), true));
-		expectFileNotExist(performGetFile(".png", true));
+		expectFileNotExist(performGetFile("abc", true));
 	}
 
 	@Test
@@ -204,20 +222,20 @@ class FileStorageControllerIntegrationTest {
 	void updateFile_StoredNameTraversal_DoesNotDeleteOutsideFile() throws Exception {
 		String traversalName = "../" + PLANTED_FILE_NAME;
 		setEmployeeAuthPic(traversalName);
-		MockMultipartFile file = new MockMultipartFile("file", "avatar.png", MediaType.IMAGE_PNG_VALUE,
+		MockMultipartFile file = new MockMultipartFile("file", AVATAR_FILE_NAME, MediaType.IMAGE_PNG_VALUE,
 				createPngBytes());
 
 		performUpdateUserImage(file, traversalName).andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
 
 		assertThat(storageDir.resolve(PLANTED_FILE_NAME)).exists();
-		assertThat(listUserImages()).hasSizeGreaterThan(existingUserImages.size());
+		assertThat(listUserImages()).isNotEmpty();
 	}
 
 	@Test
 	@DisplayName("Upload a user image then download it and its thumbnail - Returns OK")
 	void uploadFile_UserImage_DownloadsFileAndThumbnail() throws Exception {
-		String storedName = uploadUserImage();
+		String storedName = uploadUserImage(AVATAR_FILE_NAME);
 
 		performGetFile(storedName, false).andExpect(status().isOk());
 		performGetFile(storedName, true).andExpect(status().isOk());
@@ -226,10 +244,10 @@ class FileStorageControllerIntegrationTest {
 	@Test
 	@DisplayName("Update user image whose stored name is a plain file name - Deletes the previous image and thumbnail")
 	void updateFile_PlainStoredName_DeletesPreviousImageAndThumbnail() throws Exception {
-		String previousName = uploadUserImage();
+		String previousName = uploadUserImage(AVATAR_FILE_NAME);
 		setEmployeeAuthPic(previousName);
 		assertThat(userImageDir.resolve(FileUtil.getThumbnailName(previousName))).exists();
-		MockMultipartFile file = new MockMultipartFile("file", "avatar.png", MediaType.IMAGE_PNG_VALUE,
+		MockMultipartFile file = new MockMultipartFile("file", AVATAR_FILE_NAME, MediaType.IMAGE_PNG_VALUE,
 				createPngBytes());
 
 		performUpdateUserImage(file, previousName).andExpect(status().isOk());
@@ -239,16 +257,12 @@ class FileStorageControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Upload a file whose extension has characters outside the stored name pattern - Returns upload error")
-	void uploadFile_UnreadableExtension_ReturnsUploadError() throws Exception {
-		MockMultipartFile file = new MockMultipartFile("file", "avatar.pn g", MediaType.IMAGE_PNG_VALUE,
-				createPngBytes());
+	@DisplayName("Upload a file whose extension has characters outside the stored extension pattern - Stores it without an extension")
+	void uploadFile_UnreadableExtension_StoresWithoutExtension() throws Exception {
+		String storedName = uploadUserImage("Dr. Smith note");
 
-		performUpload(file, FileType.USER_IMAGE).andExpect(status().isBadRequest())
-			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_KEY_PATH)
-				.value(CommonMessageConstant.COMMON_ERROR_FILE_UPLOAD.name()));
-
-		assertThat(listUserImages()).isEqualTo(existingUserImages);
+		assertThat(storedName).doesNotContain(".");
+		performGetFile(storedName, false).andExpect(status().isOk());
 	}
 
 }

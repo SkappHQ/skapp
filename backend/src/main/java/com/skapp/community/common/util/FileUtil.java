@@ -7,6 +7,7 @@ import lombok.experimental.UtilityClass;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
 @UtilityClass
 public class FileUtil {
@@ -38,6 +39,15 @@ public class FileUtil {
 		}
 
 		return directory.resolve(fileName);
+	}
+
+	public static String buildStoredFileName(String originalFileName) {
+		String extension = getFileExtension(originalFileName);
+		if (!ValidationConstant.STORED_FILE_EXTENSION_PATTERN.matcher(extension).matches()) {
+			return UUID.randomUUID().toString();
+		}
+
+		return UUID.randomUUID() + "." + extension;
 	}
 
 	public static String getThumbnailName(String originalFileName) {

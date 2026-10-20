@@ -51,7 +51,6 @@ import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Stream;
 
 @Service
@@ -95,7 +94,8 @@ public class FileStorageServiceImpl implements FileStorageService {
 
 		assert targetDir != null;
 		log.info("uploadFileSingle: File uploading started to the path : {}", targetDir);
-		Path targetFilePath = resolveUploadTargetPath(targetDir, file);
+		Path targetFilePath = targetDir
+			.resolve(FileUtil.buildStoredFileName(Objects.requireNonNull(file.getOriginalFilename())));
 		File targetFile = targetFilePath.toFile();
 
 		if (checkIfTotalStorageExceeds()) {
@@ -153,7 +153,12 @@ public class FileStorageServiceImpl implements FileStorageService {
 			filePath = FileUtil.resolveFileInDirectory(targetDir, FileUtil.getThumbnailName(filename));
 		}
 
-		if (filePath == null || !Files.isRegularFile(filePath)) {
+		if (filePath == null) {
+			log.error("getFile: refused a file name of type {}", type);
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_FILE_NOT_EXIST, new String[] { filename });
+		}
+
+		if (!Files.isRegularFile(filePath)) {
 			log.error("getFile: file of type {} does not exist", type);
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_FILE_NOT_EXIST, new String[] { filename });
 		}
@@ -193,7 +198,8 @@ public class FileStorageServiceImpl implements FileStorageService {
 
 		assert targetDir != null;
 		log.info("updateFile: File uploading started to the path : {}", targetDir);
-		Path targetFilePath = resolveUploadTargetPath(targetDir, file);
+		Path targetFilePath = targetDir
+			.resolve(FileUtil.buildStoredFileName(Objects.requireNonNull(file.getOriginalFilename())));
 		File targetFile = targetFilePath.toFile();
 
 		try {
@@ -413,17 +419,6 @@ public class FileStorageServiceImpl implements FileStorageService {
 
 	private boolean deleteAllFiles(Path filePath) throws IOException {
 		return Files.deleteIfExists(filePath);
-	}
-
-	private Path resolveUploadTargetPath(Path targetDir, MultipartFile file) {
-		String originalFilename = Objects.requireNonNull(file.getOriginalFilename());
-		Path targetFilePath = FileUtil.resolveFileInDirectory(targetDir,
-				UUID.randomUUID() + "." + FileUtil.getFileExtension(originalFilename));
-		if (targetFilePath == null) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_FILE_UPLOAD,
-					new String[] { originalFilename });
-		}
-		return targetFilePath;
 	}
 
 	private void deleteStoredFile(Path targetDir, String fileName) throws IOException {
