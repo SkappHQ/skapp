@@ -1,5 +1,6 @@
 package com.skapp.community.peopleplanner.service.impl;
 
+import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
@@ -37,6 +38,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -354,13 +356,11 @@ public class RolesServiceImpl implements RolesService {
 			if (!(isCurrentUserSuperAdmin && superAdminCount > 1) && !isCurrentUserPeopleAdmin) {
 				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_CANNOT_CHANGE_OWN_PERMISSIONS);
 			}
+		}
 
-			// Prevent non-super-admin users (including People Admins) from granting
-			// themselves super admin
-			if (!isCurrentUserSuperAdmin && userRoles.getIsSuperAdmin() != null
-					&& Boolean.TRUE.equals(userRoles.getIsSuperAdmin())) {
-				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_CANNOT_CHANGE_OWN_PERMISSIONS);
-			}
+		if (isSuperAdminChanged(userRoles, user.getEmployee())
+				&& !CommonModuleUtils.isSuperAdmin(currentUser.getEmployee())) {
+			throw new AccessDeniedException(CommonMessageConstant.COMMON_ERROR_ACCESS_DENIED.name());
 		}
 
 		if (userRoles != null && user.getEmployee() != null
@@ -683,6 +683,11 @@ public class RolesServiceImpl implements RolesService {
 		roles.add(RoleLevel.MANAGER.getDisplayName());
 		roles.add(RoleLevel.EMPLOYEE.getDisplayName());
 		return roles;
+	}
+
+	private boolean isSuperAdminChanged(EmployeeSystemPermissionsDto userRoles, Employee employee) {
+		return userRoles != null && userRoles.getIsSuperAdmin() != null
+				&& !Objects.equals(userRoles.getIsSuperAdmin(), CommonModuleUtils.isSuperAdmin(employee));
 	}
 
 	private boolean isUserRoleDowngraded(EmployeeSystemPermissionsDto roleRequestDto) {

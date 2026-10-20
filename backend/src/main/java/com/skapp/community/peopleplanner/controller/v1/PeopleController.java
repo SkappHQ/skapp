@@ -14,6 +14,7 @@ import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
 import com.skapp.community.peopleplanner.payload.request.ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.TinExistsCheckDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
+import com.skapp.community.peopleplanner.payload.request.employee.EmployeeJoinedDateRequestDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeManagerResponseDto;
 import com.skapp.community.peopleplanner.service.PeopleReadService;
 import com.skapp.community.peopleplanner.service.PeopleService;
@@ -74,6 +75,14 @@ public class PeopleController {
 			@PathVariable @Schema(description = "ID of the employee to update", example = "1") Long id,
 			@Valid @RequestBody CreateEmployeeRequestDto createEmployeeRequestDto) {
 		ResponseEntityDto response = peopleService.updateEmployee(id, createEmployeeRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PatchMapping(value = "/employee/{id}/joined-date", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasRole('ROLE_LEAVE_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> updateEmployeeJoinedDate(@PathVariable Long id,
+			@RequestBody EmployeeJoinedDateRequestDto joinedDateRequestDto) {
+		ResponseEntityDto response = peopleService.updateEmployeeJoinedDate(id, joinedDateRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

@@ -13,4 +13,6 @@ public interface EmployeeValidationService {
 
 	void validateCreateEmployeeRequestRequiredFields(CreateEmployeeRequestDto createEmployeeRequestDto, User user);
 
+	void validateEmployeeUpdateAccess(User currentUser, User user, CreateEmployeeRequestDto requestDto);
+
 }

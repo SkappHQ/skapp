@@ -595,7 +595,7 @@ public class AuthServiceImpl implements AuthService {
 		}
 
 		Employee currentEmployee = userService.getCurrentUser().getEmployee();
-		boolean canResetPrivilegedAccount = isSuperAdmin(currentEmployee)
+		boolean canResetPrivilegedAccount = CommonModuleUtils.isSuperAdmin(currentEmployee)
 				|| Objects.equals(targetEmployee.getEmployeeId(), currentEmployee.getEmployeeId());
 		if (!canResetPrivilegedAccount) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_PASSWORD_RESET_NOT_ALLOWED);
@@ -603,7 +603,7 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	private boolean isPeopleAdminOrAbove(Employee employee) {
-		return isSuperAdmin(employee) || Optional.ofNullable(employee.getEmployeeRole())
+		return CommonModuleUtils.isSuperAdmin(employee) || Optional.ofNullable(employee.getEmployeeRole())
 			.map(EmployeeRole::getPeopleRole)
 			.filter(Role.PEOPLE_ADMIN::equals)
 			.isPresent();
@@ -611,10 +611,6 @@ public class AuthServiceImpl implements AuthService {
 
 	protected boolean isPasswordResetAllowed(AccountStatus accountStatus) {
 		return accountStatus == AccountStatus.PENDING || accountStatus == AccountStatus.ACTIVE;
-	}
-
-	private boolean isSuperAdmin(Employee employee) {
-		return Optional.ofNullable(employee.getEmployeeRole()).map(EmployeeRole::getIsSuperAdmin).orElse(false);
 	}
 
 	private SharePasswordResponseDto getSharePasswordResponseDto(User savedUser, User user, String tempPassword) {
