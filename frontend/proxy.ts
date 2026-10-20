@@ -224,18 +224,18 @@ const allowedRoutes: Record<UserRole, string[]> = {
   ...commonRoutes
 };
 
-const UNGUARDED_INTERNAL_PATHS: readonly string[] = [
+const UNGUARDED_INTERNAL_PATHS: ReadonlySet<string> = new Set([
   ...(isEnterpriseMode()
     ? []
     : [ROUTES.AUTH.SIGNIN, ROUTES.AUTH.SIGNUP].map(
         (route) => `${COMMUNITY_PAGES_BASE_PATH}${route}`
       )),
   ...ENTERPRISE_UNGUARDED_PAGE_PATHS
-];
+]);
 
 const isUnguardedPath = (currentPath: string): boolean =>
   currentPath === ROUTES.SIGN.DOCUMENT_ACCESS ||
-  UNGUARDED_INTERNAL_PATHS.includes(currentPath);
+  UNGUARDED_INTERNAL_PATHS.has(currentPath);
 
 const isPrefetchRequest = (request: NextRequest): boolean =>
   request.headers.get("next-router-prefetch") !== null ||
