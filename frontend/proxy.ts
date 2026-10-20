@@ -34,8 +34,11 @@ import {
   SenderTypes,
   SuperAdminType
 } from "~community/common/types/AuthTypes";
-import { checkRestrictedRoutesAndRedirect } from "~community/common/utils/commonUtil";
-import { ENTERPRISE_PUBLIC_PAGE_PATHS } from "~enterprise/common/constants/routeConstants";
+import {
+  checkRestrictedRoutesAndRedirect,
+  isEnterpriseMode
+} from "~community/common/utils/commonUtil";
+import { ENTERPRISE_UNGUARDED_PAGE_PATHS } from "~enterprise/common/constants/routeConstants";
 import { TenantStatusEnums, TierEnum } from "~enterprise/common/enums/Common";
 import { isCoreOrProTier } from "~enterprise/common/utils/commonUtil";
 
@@ -221,21 +224,18 @@ const allowedRoutes: Record<UserRole, string[]> = {
   ...commonRoutes
 };
 
-const PUBLIC_INTERNAL_PATHS = [
-  ...[ROUTES.AUTH.SIGNIN, ROUTES.AUTH.SIGNUP].map(
-    (route) => `${COMMUNITY_PAGES_BASE_PATH}${route}`
-  ),
-  ...ENTERPRISE_PUBLIC_PAGE_PATHS
+const UNGUARDED_INTERNAL_PATHS: readonly string[] = [
+  ...(isEnterpriseMode()
+    ? []
+    : [ROUTES.AUTH.SIGNIN, ROUTES.AUTH.SIGNUP].map(
+        (route) => `${COMMUNITY_PAGES_BASE_PATH}${route}`
+      )),
+  ...ENTERPRISE_UNGUARDED_PAGE_PATHS
 ];
-
-const isPublicInternalPath = (currentPath: string): boolean =>
-  PUBLIC_INTERNAL_PATHS.some(
-    (path) => currentPath === path || currentPath.startsWith(`${path}/`)
-  );
 
 const isUnguardedPath = (currentPath: string): boolean =>
   currentPath === ROUTES.SIGN.DOCUMENT_ACCESS ||
-  isPublicInternalPath(currentPath);
+  UNGUARDED_INTERNAL_PATHS.includes(currentPath);
 
 const isPrefetchRequest = (request: NextRequest): boolean =>
   request.headers.get("next-router-prefetch") !== null ||

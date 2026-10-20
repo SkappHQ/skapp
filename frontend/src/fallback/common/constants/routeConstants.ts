@@ -1,1 +1,1 @@
-export const ENTERPRISE_PUBLIC_PAGE_PATHS: string[] = [];
+export const ENTERPRISE_UNGUARDED_PAGE_PATHS: readonly string[] = [];
