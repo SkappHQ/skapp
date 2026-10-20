@@ -15,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
-import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MissingRequestCookieException;
@@ -73,17 +72,6 @@ public class GlobalExceptionHandler {
 				new ResponseEntityDto(true,
 						new ErrorResponse(status, message, CommonMessageConstant.COMMON_ERROR_UNAUTHORIZED_ACCESS)),
 				status);
-	}
-
-	@ExceptionHandler(InternalAuthenticationServiceException.class)
-	public ResponseEntity<ResponseEntityDto> handleInternalAuthenticationServiceException(
-			InternalAuthenticationServiceException e) {
-		HttpStatus status = HttpStatus.UNAUTHORIZED;
-		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
-		handleException(e, CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND.name(), status);
-
-		return new ResponseEntity<>(new ResponseEntityDto(true,
-				new ErrorResponse(status, message, CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND)), status);
 	}
 
 	@ExceptionHandler(BadCredentialsException.class)
