@@ -4,7 +4,7 @@
 CREATE TABLE IF NOT EXISTS `crm_activity_call`
 (
     `id`                 bigint      NOT NULL AUTO_INCREMENT,
-    `name`               TEXT        NOT NULL,
+    `subject`            TEXT        NOT NULL,
     `duration`           int                  DEFAULT NULL,
     `logged_at`          datetime(6) NOT NULL,
     `comments`           TEXT                 DEFAULT NULL,

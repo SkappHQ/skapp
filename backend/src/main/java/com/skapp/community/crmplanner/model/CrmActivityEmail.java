@@ -29,8 +29,8 @@ public class CrmActivityEmail extends Auditable<String> {
 	@Column(name = "id", nullable = false, updatable = false)
 	private Long id;
 
-	@Column(name = "name", nullable = false)
-	private String name;
+	@Column(name = "subject", nullable = false)
+	private String subject;
 
 	@Column(name = "logged_time", nullable = false)
 	private Instant loggedTime;

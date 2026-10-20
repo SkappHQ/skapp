@@ -4,7 +4,7 @@
 CREATE TABLE IF NOT EXISTS `crm_activity_email`
 (
     `id`                 bigint      NOT NULL AUTO_INCREMENT,
-    `name`               TEXT        NOT NULL,
+    `subject`            TEXT        NOT NULL,
     `logged_time`        datetime(6) NOT NULL,
     `description`        TEXT                 DEFAULT NULL,
     `owner_id`           bigint      NOT NULL,
