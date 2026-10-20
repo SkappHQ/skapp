@@ -211,6 +211,8 @@ export const nonSuperAdminRestrictedRoutes = [
 
 export const managerRestrictedRoutes = [ROUTES.PEOPLE.ADD];
 
+export const COMMUNITY_PAGES_BASE_PATH = "/community";
+
 export const leavePolicyManagementRestrictedRoutes = [
   ROUTES.LEAVE.CREATE_LEAVE_POLICY
 ];
