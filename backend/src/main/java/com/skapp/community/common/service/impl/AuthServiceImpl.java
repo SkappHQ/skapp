@@ -33,6 +33,7 @@ import com.skapp.community.common.type.BulkItemStatus;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.common.type.NotificationSettingsType;
 import com.skapp.community.common.type.OrganizationConfigType;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.CookieUtil;
 import com.skapp.community.common.util.DateTimeUtils;
@@ -40,6 +41,7 @@ import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.Validation;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
+import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.payload.response.EmployeeCredentialsResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
@@ -395,6 +397,7 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	@Override
+	@Transactional
 	public ResponseEntityDto sharePassword(Long userId) {
 		log.info("sharePassword: execution started");
 
@@ -420,6 +423,7 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	@Override
+	@Transactional
 	public ResponseEntityDto resetAndSharePassword(Long userId) {
 		log.info("resetAndSharePassword: execution started");
 
@@ -582,11 +586,27 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	private void validatePasswordResetAllowed(Employee targetEmployee) {
-		if (!isPasswordResetAllowed(targetEmployee.getAccountStatus())
-				|| (CommonModuleUtils.isSuperAdmin(targetEmployee)
-						&& !CommonModuleUtils.isSuperAdmin(userService.getCurrentUser().getEmployee()))) {
+		if (!isPasswordResetAllowed(targetEmployee.getAccountStatus())) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_PASSWORD_RESET_NOT_ALLOWED);
 		}
+
+		if (!isPeopleAdminOrAbove(targetEmployee)) {
+			return;
+		}
+
+		Employee currentEmployee = userService.getCurrentUser().getEmployee();
+		boolean canResetPrivilegedAccount = CommonModuleUtils.isSuperAdmin(currentEmployee)
+				|| Objects.equals(targetEmployee.getEmployeeId(), currentEmployee.getEmployeeId());
+		if (!canResetPrivilegedAccount) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_PASSWORD_RESET_NOT_ALLOWED);
+		}
+	}
+
+	private boolean isPeopleAdminOrAbove(Employee employee) {
+		return CommonModuleUtils.isSuperAdmin(employee) || Optional.ofNullable(employee.getEmployeeRole())
+			.map(EmployeeRole::getPeopleRole)
+			.filter(Role.PEOPLE_ADMIN::equals)
+			.isPresent();
 	}
 
 	protected boolean isPasswordResetAllowed(AccountStatus accountStatus) {
