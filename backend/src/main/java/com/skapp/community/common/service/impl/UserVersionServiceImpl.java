@@ -11,6 +11,7 @@ import com.skapp.community.common.util.VersionUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -55,6 +56,27 @@ public class UserVersionServiceImpl implements UserVersionService {
 		cacheService.invalidate(cacheKey.format(userId));
 
 		log.info("Cache invalidated user ID: {} after upgrading version to {}", userId, newVersion);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public long getSessionVersion(Long userId) {
+		UserVersion userVersion = userVersionDao.findByUserId(userId);
+		if (userVersion == null || userVersion.getSessionVersion() == null) {
+			return AuthConstants.DEFAULT_SESSION_VERSION;
+		}
+		return userVersion.getSessionVersion();
+	}
+
+	@Override
+	@Transactional
+	public void revokeSessions(Long userId) {
+		long nextSessionVersion = getSessionVersion(userId) + 1;
+		upgradeUserVersion(userId, VersionType.MAJOR);
+
+		UserVersion userVersion = userVersionDao.findByUserId(userId);
+		userVersion.setSessionVersion(nextSessionVersion);
+		userVersionDao.save(userVersion);
 	}
 
 }

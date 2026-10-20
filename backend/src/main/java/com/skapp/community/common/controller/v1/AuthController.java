@@ -52,8 +52,9 @@ public class AuthController {
 
 	@Operation(summary = "Sign Out with Session", description = "Sign out and clear HTTP-only cookies")
 	@PostMapping(value = "/session/sign-out", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ResponseEntityDto> signOutWithCookie(HttpServletResponse response) {
-		ResponseEntityDto authResponse = authService.signOutWithCookie(response);
+	public ResponseEntity<ResponseEntityDto> signOutWithCookie(HttpServletRequest request,
+			HttpServletResponse response) {
+		ResponseEntityDto authResponse = authService.signOutWithCookie(request, response);
 		return new ResponseEntity<>(authResponse, HttpStatus.OK);
 	}
 

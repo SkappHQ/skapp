@@ -14,7 +14,7 @@ public interface JwtService {
 
 	String generateAccessToken(UserDetails userDetails, Long userId);
 
-	String generateRefreshToken(UserDetails userDetails);
+	String generateRefreshToken(UserDetails userDetails, Long userId);
 
 	boolean isTokenValid(String token, UserDetails userDetails);
 
@@ -31,5 +31,7 @@ public interface JwtService {
 	void checkVersionMismatch(Long userId, String accessToken);
 
 	long getRefreshTokenMaxAge(UserDetails userDetails);
+
+	boolean isSessionActive(Long userId, String refreshToken);
 
 }

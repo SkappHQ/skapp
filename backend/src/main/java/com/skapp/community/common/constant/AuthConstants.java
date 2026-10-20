@@ -27,4 +27,8 @@ public class AuthConstants {
 
 	public static final String DEFAULT_USER_VERSION = "1.0.0";
 
+	public static final String SESSION_VERSION = "session_version";
+
+	public static final long DEFAULT_SESSION_VERSION = 0L;
+
 }
