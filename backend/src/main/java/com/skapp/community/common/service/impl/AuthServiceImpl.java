@@ -158,16 +158,16 @@ public class AuthServiceImpl implements AuthService {
 	public ResponseEntityDto signOutWithCookie(HttpServletRequest request, HttpServletResponse response) {
 		log.info("signOutWithCookie: execution started");
 
-		String refreshToken = cookieUtil.getRefreshTokenFromCookies(request, getTenantId());
-		if (refreshToken != null) {
-			revokeLiveSession(refreshToken);
-		}
-
 		Cookie refreshCookie = cookieUtil.clearRefreshTokenCookie(getTenantId());
 		response.addCookie(refreshCookie);
 		log.info("signOutWithCookie: Cleared refresh token cookie");
 
 		clearTenantCookie(response);
+
+		String refreshToken = cookieUtil.getRefreshTokenFromCookies(request, getTenantId());
+		if (refreshToken != null) {
+			revokeLiveSession(refreshToken);
+		}
 
 		log.info("signOutWithCookie: execution ended");
 		return new ResponseEntityDto(false, messageUtil.getMessage(CommonMessageConstant.COMMON_SUCCESS_SIGN_OUT));
@@ -175,7 +175,7 @@ public class AuthServiceImpl implements AuthService {
 
 	private void revokeLiveSession(String refreshToken) {
 		String userEmail = jwtService.extractUserEmail(refreshToken);
-		if (userEmail.isEmpty()) {
+		if (userEmail.isEmpty() || !jwtService.isRefreshToken(refreshToken)) {
 			return;
 		}
 
