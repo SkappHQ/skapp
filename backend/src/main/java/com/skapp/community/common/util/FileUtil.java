@@ -1,11 +1,13 @@
 package com.skapp.community.common.util;
 
 import com.skapp.community.common.constant.FileConfigConstants;
+import com.skapp.community.common.constant.ValidationConstant;
 import lombok.experimental.UtilityClass;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
 @UtilityClass
 public class FileUtil {
@@ -29,6 +31,23 @@ public class FileUtil {
 		else {
 			return null;
 		}
+	}
+
+	public static Path resolveFileInDirectory(Path directory, String fileName) {
+		if (fileName == null || !ValidationConstant.STORED_FILE_NAME_PATTERN.matcher(fileName).matches()) {
+			return null;
+		}
+
+		return directory.resolve(fileName);
+	}
+
+	public static String buildStoredFileName(String originalFileName) {
+		String extension = getFileExtension(originalFileName);
+		if (!ValidationConstant.STORED_FILE_EXTENSION_PATTERN.matcher(extension).matches()) {
+			return UUID.randomUUID().toString();
+		}
+
+		return UUID.randomUUID() + "." + extension;
 	}
 
 	public static String getThumbnailName(String originalFileName) {
