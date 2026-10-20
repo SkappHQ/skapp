@@ -93,6 +93,7 @@ const SystemPermissionForm = ({
     isPmModuleEnabled,
     isCrmModuleEnabled,
     isSuperAdmin,
+    isPeopleAdmin,
     userId
   } = useSessionData();
 
@@ -102,7 +103,7 @@ const SystemPermissionForm = ({
 
   const canResetPassword =
     isSuperAdmin ||
-    userId === Number(employee?.employeeId) ||
+    (isPeopleAdmin && userId === Number(employee?.employeeId)) ||
     !isTargetPeopleAdminOrAbove;
 
   const { setToastMessage } = useToast();
