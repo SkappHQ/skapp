@@ -7,9 +7,10 @@ import {
 import { DateTime } from "luxon";
 import { FC, useState } from "react";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useEditEmployee } from "~community/people/api/PeopleApi";
-import { L1EmployeeType } from "~community/people/types/PeopleTypes";
+import { useToast } from "~community/common/providers/ToastProvider";
+import { useEditEmployeeJoinedDate } from "~community/people/api/PeopleApi";
 
 interface Props {
   employeeId: number;
@@ -24,16 +25,41 @@ const SetJoinDateModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
     "setJoinDateModal"
   );
 
-  const [joinDate, setJoinDate] = useState<string>("");
+  const { setToastMessage } = useToast();
 
-  const { mutate: editEmployee, isPending } = useEditEmployee(
-    String(employeeId)
-  );
+  const [joinDate, setJoinDate] = useState<string>("");
 
   const handleClose = (): void => {
     setJoinDate("");
     onClose();
   };
+
+  const handleSaveSuccess = (): void => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateText(["successToastTitle"]),
+      description: translateText(["successToastDescription"]),
+      isIcon: true
+    });
+    handleClose();
+  };
+
+  const handleSaveError = (): void => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["errorToastTitle"]),
+      description: translateText(["errorToastDescription"]),
+      isIcon: true
+    });
+  };
+
+  const { mutate: editJoinedDate, isPending } = useEditEmployeeJoinedDate(
+    employeeId,
+    handleSaveSuccess,
+    handleSaveError
+  );
 
   const handleDateSelect = (date?: Date): void => {
     setJoinDate(date ? (DateTime.fromJSDate(date).toISODate() ?? "") : "");
@@ -43,10 +69,7 @@ const SetJoinDateModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
     if (!joinDate) {
       return;
     }
-    const payload: L1EmployeeType = {
-      employment: { employmentDetails: { joinedDate: joinDate } }
-    };
-    editEmployee(payload, { onSuccess: () => handleClose() });
+    editJoinedDate({ joinedDate: joinDate });
   };
 
   return (
@@ -65,6 +88,7 @@ const SetJoinDateModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
               joinDate ? DateTime.fromISO(joinDate).toJSDate() : undefined
             }
             onSelect={handleDateSelect}
+            disabled={{ after: DateTime.now().toJSDate() }}
             popperProps={{ position: "bottom-start" }}
           >
             <div>

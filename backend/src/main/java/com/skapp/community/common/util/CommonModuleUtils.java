@@ -341,6 +341,11 @@ public class CommonModuleUtils {
 		return mapper.treeToValue(node, valueType);
 	}
 
+	public static boolean isSuperAdmin(Employee employee) {
+		return employee != null && employee.getEmployeeRole() != null
+				&& Boolean.TRUE.equals(employee.getEmployeeRole().getIsSuperAdmin());
+	}
+
 	public static boolean isGuestEmployee(Employee employee) {
 		return employee != null && employee.getEmployeeRole() != null
 				&& Role.PM_GUEST_EMPLOYEE == employee.getEmployeeRole().getPmRole();

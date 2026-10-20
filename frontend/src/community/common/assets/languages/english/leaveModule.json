@@ -541,7 +541,11 @@
       "dateLabel": "Join date",
       "datePlaceholder": "Select a date",
       "saveBtnTxt": "Save",
-      "cancelBtnTxt": "Cancel"
+      "cancelBtnTxt": "Cancel",
+      "successToastTitle": "Join date saved",
+      "successToastDescription": "The employee's join date has been set.",
+      "errorToastTitle": "Join date not saved",
+      "errorToastDescription": "The join date could not be set. Please try again."
     },
     "unassignModal": {
       "title": "Are you sure?",

@@ -40,7 +40,6 @@ import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.Validation;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
-import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.payload.response.EmployeeCredentialsResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
@@ -584,17 +583,14 @@ public class AuthServiceImpl implements AuthService {
 
 	private void validatePasswordResetAllowed(Employee targetEmployee) {
 		if (!isPasswordResetAllowed(targetEmployee.getAccountStatus())
-				|| (isSuperAdmin(targetEmployee) && !isSuperAdmin(userService.getCurrentUser().getEmployee()))) {
+				|| (CommonModuleUtils.isSuperAdmin(targetEmployee)
+						&& !CommonModuleUtils.isSuperAdmin(userService.getCurrentUser().getEmployee()))) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_PASSWORD_RESET_NOT_ALLOWED);
 		}
 	}
 
 	protected boolean isPasswordResetAllowed(AccountStatus accountStatus) {
 		return accountStatus == AccountStatus.PENDING || accountStatus == AccountStatus.ACTIVE;
-	}
-
-	private boolean isSuperAdmin(Employee employee) {
-		return Optional.ofNullable(employee.getEmployeeRole()).map(EmployeeRole::getIsSuperAdmin).orElse(false);
 	}
 
 	private SharePasswordResponseDto getSharePasswordResponseDto(User savedUser, User user, String tempPassword) {

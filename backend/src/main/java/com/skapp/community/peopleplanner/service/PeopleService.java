@@ -13,6 +13,8 @@ import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
 import com.skapp.community.peopleplanner.payload.request.ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.TinExistsCheckDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
+import com.skapp.community.peopleplanner.payload.request.employee.EmployeeContactNumberRequestDto;
+import com.skapp.community.peopleplanner.payload.request.employee.EmployeeJoinedDateRequestDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeManagerResponseDto;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 
@@ -81,5 +83,10 @@ public interface PeopleService {
 	ResponseEntityDto getTodayBirthdayNotifications();
 
 	ResponseEntityDto markTodayBirthdayNotificationsAsViewed();
+
+	ResponseEntityDto updateEmployeeJoinedDate(Long employeeId, EmployeeJoinedDateRequestDto joinedDateRequestDto);
+
+	ResponseEntityDto updateEmployeeContactNumber(Long employeeId,
+			EmployeeContactNumberRequestDto contactNumberRequestDto);
 
 }
