@@ -128,10 +128,17 @@ const SystemPermissionFormSection = ({
     isInputsDisabled ||
     (isReadOnly && !isPeopleAdminViewingOwnProfile && !hasOtherSuperAdmins);
 
+  const isTargetPeopleAdminOrAbove =
+    initialEmployee?.systemPermissions?.isSuperAdmin === true ||
+    initialEmployee?.systemPermissions?.peopleRole === Role.PEOPLE_ADMIN;
+
   const shouldShowSystemCredentials =
     isUpdate &&
     !isInputsDisabled &&
     !isReadOnly &&
+    (isSuperAdmin ||
+      isPeopleAdminViewingOwnProfile ||
+      !isTargetPeopleAdminOrAbove) &&
     (environment === appModes.COMMUNITY ||
       (globalLoginMethod === GlobalLoginMethod.CREDENTIALS &&
         isPasswordResetTenant() &&

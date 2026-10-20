@@ -92,8 +92,19 @@ const SystemPermissionForm = ({
     isEsignatureModuleEnabled,
     isPmModuleEnabled,
     isCrmModuleEnabled,
-    isSuperAdmin
+    isSuperAdmin,
+    isPeopleAdmin,
+    userId
   } = useSessionData();
+
+  const isTargetPeopleAdminOrAbove =
+    employee?.userRoles?.isSuperAdmin === true ||
+    employee?.userRoles?.peopleRole === Role.PEOPLE_ADMIN;
+
+  const canResetPassword =
+    isSuperAdmin ||
+    (isPeopleAdmin && userId === Number(employee?.employeeId)) ||
+    !isTargetPeopleAdminOrAbove;
 
   const { setToastMessage } = useToast();
 
@@ -398,6 +409,7 @@ const SystemPermissionForm = ({
 
         {isUpdate &&
           !isInputsDisabled &&
+          canResetPassword &&
           environment === appModes.COMMUNITY && <SystemCredentials />}
 
         {!isInputsDisabled && (
