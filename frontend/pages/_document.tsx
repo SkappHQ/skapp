@@ -60,6 +60,7 @@ export default function Document({ __NEXT_DATA__ }: DocumentProps) {
     })(window, document, 'https://static.hj.contentsquare.net/c/csq-', '.js', '${process.env.HOTJAR_ID}');           `
               }}
             />
+            {/* eslint-disable-next-line @next/next/next-script-for-ga */}
             <script
               dangerouslySetInnerHTML={{
                 __html: `
@@ -108,6 +109,8 @@ export default function Document({ __NEXT_DATA__ }: DocumentProps) {
             </noscript>
             {/* Meta Pixel noscript fallback */}
             <noscript>
+              {/* Tracking beacon, must hit facebook.com directly rather than the image optimizer */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 height="1"
                 width="1"
