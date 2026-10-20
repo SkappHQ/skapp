@@ -91,7 +91,8 @@ const SystemPermissionForm = ({
     isLeaveModuleEnabled,
     isEsignatureModuleEnabled,
     isPmModuleEnabled,
-    isCrmModuleEnabled
+    isCrmModuleEnabled,
+    isSuperAdmin
   } = useSessionData();
 
   const { setToastMessage } = useToast();
@@ -268,7 +269,7 @@ const SystemPermissionForm = ({
         <SwitchRow
           labelId="super-admin"
           label={systemPermissionsText(["superAdmin"])}
-          disabled={isProfileView || isInputsDisabled}
+          disabled={isProfileView || isInputsDisabled || !isSuperAdmin}
           checked={values.isSuperAdmin}
           onChange={(checked: boolean) => handleSuperAdminChange(checked)}
           wrapperStyles={classes.switchRowWrapper}
