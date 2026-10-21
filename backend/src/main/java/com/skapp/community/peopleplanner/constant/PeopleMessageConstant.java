@@ -240,7 +240,12 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_ERROR_VALIDATION_PAYROLL_ID_LENGTH("api.error.people.validation.payroll-id-length"),
 	PEOPLE_ERROR_VALIDATION_TIN_LENGTH("api.error.people.validation.tin-length"),
 	PEOPLE_ERROR_PAYROLL_ID_ALREADY_EXIST("api.error.people.employee.payroll-id.exist"),
-	PEOPLE_ERROR_TIN_ALREADY_EXIST("api.error.people.employee.tin.exist");
+	PEOPLE_ERROR_TIN_ALREADY_EXIST("api.error.people.employee.tin.exist"),
+	PEOPLE_ERROR_JOINED_DATE_REQUIRED("api.error.people.joined-date-required"),
+	PEOPLE_ERROR_CONTACT_NUMBER_REQUIRED("api.error.people.contact-number-required"),
+	PEOPLE_ERROR_CONTACT_NUMBER_ALREADY_SET("api.error.people.contact-number-already-set"),
+	PEOPLE_ERROR_JOINED_DATE_ALREADY_SET("api.error.people.joined-date-already-set"),
+	PEOPLE_ERROR_CONTACT_NUMBER_TARGET_NOT_ACTIVE("api.error.people.contact-number-target-not-active");
 
 	private final String messageKey;
 

@@ -91,8 +91,20 @@ const SystemPermissionForm = ({
     isLeaveModuleEnabled,
     isEsignatureModuleEnabled,
     isPmModuleEnabled,
-    isCrmModuleEnabled
+    isCrmModuleEnabled,
+    isSuperAdmin,
+    isPeopleAdmin,
+    userId
   } = useSessionData();
+
+  const isTargetPeopleAdminOrAbove =
+    employee?.userRoles?.isSuperAdmin === true ||
+    employee?.userRoles?.peopleRole === Role.PEOPLE_ADMIN;
+
+  const canResetPassword =
+    isSuperAdmin ||
+    (isPeopleAdmin && userId === Number(employee?.employeeId)) ||
+    !isTargetPeopleAdminOrAbove;
 
   const { setToastMessage } = useToast();
 
@@ -268,7 +280,7 @@ const SystemPermissionForm = ({
         <SwitchRow
           labelId="super-admin"
           label={systemPermissionsText(["superAdmin"])}
-          disabled={isProfileView || isInputsDisabled}
+          disabled={isProfileView || isInputsDisabled || !isSuperAdmin}
           checked={values.isSuperAdmin}
           onChange={(checked: boolean) => handleSuperAdminChange(checked)}
           wrapperStyles={classes.switchRowWrapper}
@@ -397,6 +409,7 @@ const SystemPermissionForm = ({
 
         {isUpdate &&
           !isInputsDisabled &&
+          canResetPassword &&
           environment === appModes.COMMUNITY && <SystemCredentials />}
 
         {!isInputsDisabled && (

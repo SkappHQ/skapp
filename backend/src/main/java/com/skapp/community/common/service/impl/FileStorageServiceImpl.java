@@ -51,7 +51,6 @@ import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Stream;
 
 @Service
@@ -95,8 +94,8 @@ public class FileStorageServiceImpl implements FileStorageService {
 
 		assert targetDir != null;
 		log.info("uploadFileSingle: File uploading started to the path : {}", targetDir);
-		Path targetFilePath = targetDir.resolve(UUID.randomUUID() + "."
-				+ FileUtil.getFileExtension(Objects.requireNonNull(file.getOriginalFilename())));
+		Path targetFilePath = targetDir
+			.resolve(FileUtil.buildStoredFileName(Objects.requireNonNull(file.getOriginalFilename())));
 		File targetFile = targetFilePath.toFile();
 
 		if (checkIfTotalStorageExceeds()) {
@@ -149,16 +148,23 @@ public class FileStorageServiceImpl implements FileStorageService {
 		}
 
 		log.info("Reading file started from the path : {}", targetDir);
-		Path filePath = targetDir.resolve(isThumbnail ? FileUtil.getThumbnailName(filename) : filename);
-		File encryptedFile = filePath.toFile();
+		Path filePath = FileUtil.resolveFileInDirectory(targetDir, filename);
+		if (filePath != null && isThumbnail) {
+			filePath = FileUtil.resolveFileInDirectory(targetDir, FileUtil.getThumbnailName(filename));
+		}
 
-		if (!encryptedFile.exists() || !encryptedFile.isFile()) {
-			log.error("File does not exist at path: {}", filePath);
+		if (filePath == null) {
+			log.error("getFile: refused a file name of type {}", type);
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_FILE_NOT_EXIST, new String[] { filename });
+		}
+
+		if (!Files.isRegularFile(filePath)) {
+			log.error("getFile: file of type {} does not exist", type);
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_FILE_NOT_EXIST, new String[] { filename });
 		}
 
 		try {
-			byte[] decryptedBytes = decryptFile(encryptedFile);
+			byte[] decryptedBytes = decryptFile(filePath.toFile());
 
 			Resource resource = new ByteArrayResource(decryptedBytes);
 
@@ -192,8 +198,8 @@ public class FileStorageServiceImpl implements FileStorageService {
 
 		assert targetDir != null;
 		log.info("updateFile: File uploading started to the path : {}", targetDir);
-		Path targetFilePath = targetDir.resolve(UUID.randomUUID() + "."
-				+ FileUtil.getFileExtension(Objects.requireNonNull(file.getOriginalFilename())));
+		Path targetFilePath = targetDir
+			.resolve(FileUtil.buildStoredFileName(Objects.requireNonNull(file.getOriginalFilename())));
 		File targetFile = targetFilePath.toFile();
 
 		try {
@@ -380,12 +386,8 @@ public class FileStorageServiceImpl implements FileStorageService {
 					fileStorageConfig.getBase());
 
 			if (targetDir != null) {
-				Path image = targetDir.resolve(fileName);
-				deleteAllFiles(image);
-				Path imageThumbnail = targetDir.resolve(FileUtil.getFileNameWithoutExtension(employee.getAuthPic())
-						+ FileConfigConstants.THUMBNAIL_SUFFIX + "."
-						+ FileUtil.getFileExtension(employee.getAuthPic()));
-				deleteAllFiles(imageThumbnail);
+				deleteStoredFile(targetDir, fileName);
+				deleteStoredFile(targetDir, FileUtil.getThumbnailName(fileName));
 			}
 		}
 	}
@@ -396,8 +398,7 @@ public class FileStorageServiceImpl implements FileStorageService {
 			Path targetDir = FileUtil.getTargetDirectory(fileType.label, fileStorageConfig.getFolders(),
 					fileStorageConfig.getBase());
 			assert targetDir != null;
-			Path path = targetDir.resolve(fileName);
-			deleteAllFiles(path);
+			deleteStoredFile(targetDir, fileName);
 		}
 	}
 
@@ -409,8 +410,7 @@ public class FileStorageServiceImpl implements FileStorageService {
 					Path targetDir = FileUtil.getTargetDirectory(fileType.label, fileStorageConfig.getFolders(),
 							fileStorageConfig.getBase());
 					assert targetDir != null;
-					Path path = targetDir.resolve(fileName);
-					deleteAllFiles(path);
+					deleteStoredFile(targetDir, fileName);
 				}
 			}
 
@@ -419,6 +419,13 @@ public class FileStorageServiceImpl implements FileStorageService {
 
 	private boolean deleteAllFiles(Path filePath) throws IOException {
 		return Files.deleteIfExists(filePath);
+	}
+
+	private void deleteStoredFile(Path targetDir, String fileName) throws IOException {
+		Path filePath = FileUtil.resolveFileInDirectory(targetDir, fileName);
+		if (filePath != null) {
+			Files.deleteIfExists(filePath);
+		}
 	}
 
 }

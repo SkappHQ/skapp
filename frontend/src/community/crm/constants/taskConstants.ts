@@ -9,10 +9,7 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { ComponentType, FC, SVGProps } from "react";
 
-import {
-  CrmPriorityEnum,
-  CrmTaskTabEnum
-} from "~community/crm/enums/common";
+import { CrmPriorityEnum, CrmTaskTabEnum } from "~community/crm/enums/common";
 
 export const TASK_PAGE_SIZE = 12;
 

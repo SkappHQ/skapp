@@ -33,6 +33,7 @@ import com.skapp.community.common.type.BulkItemStatus;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.common.type.NotificationSettingsType;
 import com.skapp.community.common.type.OrganizationConfigType;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.CookieUtil;
 import com.skapp.community.common.util.DateTimeUtils;
@@ -396,6 +397,7 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	@Override
+	@Transactional
 	public ResponseEntityDto sharePassword(Long userId) {
 		log.info("sharePassword: execution started");
 
@@ -421,6 +423,7 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	@Override
+	@Transactional
 	public ResponseEntityDto resetAndSharePassword(Long userId) {
 		log.info("resetAndSharePassword: execution started");
 
@@ -583,18 +586,31 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	private void validatePasswordResetAllowed(Employee targetEmployee) {
-		if (!isPasswordResetAllowed(targetEmployee.getAccountStatus())
-				|| (isSuperAdmin(targetEmployee) && !isSuperAdmin(userService.getCurrentUser().getEmployee()))) {
+		if (!isPasswordResetAllowed(targetEmployee.getAccountStatus())) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_PASSWORD_RESET_NOT_ALLOWED);
+		}
+
+		if (!isPeopleAdminOrAbove(targetEmployee)) {
+			return;
+		}
+
+		Employee currentEmployee = userService.getCurrentUser().getEmployee();
+		boolean canResetPrivilegedAccount = CommonModuleUtils.isSuperAdmin(currentEmployee)
+				|| Objects.equals(targetEmployee.getEmployeeId(), currentEmployee.getEmployeeId());
+		if (!canResetPrivilegedAccount) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_PASSWORD_RESET_NOT_ALLOWED);
 		}
 	}
 
-	protected boolean isPasswordResetAllowed(AccountStatus accountStatus) {
-		return accountStatus == AccountStatus.PENDING || accountStatus == AccountStatus.ACTIVE;
+	private boolean isPeopleAdminOrAbove(Employee employee) {
+		return CommonModuleUtils.isSuperAdmin(employee) || Optional.ofNullable(employee.getEmployeeRole())
+			.map(EmployeeRole::getPeopleRole)
+			.filter(Role.PEOPLE_ADMIN::equals)
+			.isPresent();
 	}
 
-	private boolean isSuperAdmin(Employee employee) {
-		return Optional.ofNullable(employee.getEmployeeRole()).map(EmployeeRole::getIsSuperAdmin).orElse(false);
+	protected boolean isPasswordResetAllowed(AccountStatus accountStatus) {
+		return accountStatus == AccountStatus.PENDING || accountStatus == AccountStatus.ACTIVE;
 	}
 
 	private SharePasswordResponseDto getSharePasswordResponseDto(User savedUser, User user, String tempPassword) {
