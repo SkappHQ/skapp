@@ -12,7 +12,6 @@ CREATE TABLE IF NOT EXISTS `crm_activity_meeting`
     `end_at`             datetime(6) NOT NULL,
     `sync_status`        TEXT,
     `calendar_provider`  TEXT,
-    `external_event_id`  TEXT,
     `comments`           TEXT,
     `owner_id`           bigint      NOT NULL,
     `deal_id`            bigint,
