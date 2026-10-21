@@ -134,6 +134,7 @@ const ROUTES = {
   },
   REMOVE_PEOPLE: "/remove-people",
   CHANGE_SUPERVISORS: "/change-supervisors",
+  APP_LINK: "/app-link",
   REPORT: {
     BASE: "/report",
     HEADCOUNT_SUMMARY: "/report/headcount-summary",
@@ -182,6 +183,8 @@ const ROUTES = {
 };
 
 export default ROUTES;
+
+export const COMMUNITY_PAGES_BASE_PATH = "/community";
 
 const RESCRITED_DYNAMIC_ROUTES = {
   PEOPLE: {

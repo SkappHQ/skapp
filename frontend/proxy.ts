@@ -17,6 +17,7 @@ import {
   isTokenExpired
 } from "~community/auth/utils/tokenUtils";
 import ROUTES, {
+  COMMUNITY_PAGES_BASE_PATH,
   employeeRestrictedRoutes,
   invoiceEmployeeRestrictedRoutes,
   leavePolicyManagementRestrictedRoutes,
@@ -33,7 +34,11 @@ import {
   SenderTypes,
   SuperAdminType
 } from "~community/common/types/AuthTypes";
-import { checkRestrictedRoutesAndRedirect } from "~community/common/utils/commonUtil";
+import {
+  checkRestrictedRoutesAndRedirect,
+  isEnterpriseMode
+} from "~community/common/utils/commonUtil";
+import { ENTERPRISE_UNGUARDED_PAGE_PATHS } from "~enterprise/common/constants/routeConstants";
 import { TenantStatusEnums, TierEnum } from "~enterprise/common/enums/Common";
 import { isCoreOrProTier } from "~enterprise/common/utils/commonUtil";
 
@@ -219,8 +224,18 @@ const allowedRoutes: Record<UserRole, string[]> = {
   ...commonRoutes
 };
 
+const UNGUARDED_INTERNAL_PATHS: ReadonlySet<string> = new Set([
+  ...(isEnterpriseMode()
+    ? []
+    : [ROUTES.AUTH.SIGNIN, ROUTES.AUTH.SIGNUP].map(
+        (route) => `${COMMUNITY_PAGES_BASE_PATH}${route}`
+      )),
+  ...ENTERPRISE_UNGUARDED_PAGE_PATHS
+]);
+
 const isUnguardedPath = (currentPath: string): boolean =>
-  currentPath === ROUTES.SIGN.DOCUMENT_ACCESS;
+  currentPath === ROUTES.SIGN.DOCUMENT_ACCESS ||
+  UNGUARDED_INTERNAL_PATHS.has(currentPath);
 
 const isPrefetchRequest = (request: NextRequest): boolean =>
   request.headers.get("next-router-prefetch") !== null ||
