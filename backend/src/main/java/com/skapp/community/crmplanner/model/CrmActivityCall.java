@@ -32,8 +32,8 @@ public class CrmActivityCall extends Auditable<String> {
 	@Column(name = "subject", nullable = false)
 	private String subject;
 
-	@Column(name = "duration")
-	private Integer duration;
+	@Column(name = "duration_minutes")
+	private Integer durationMinutes;
 
 	@Column(name = "logged_at", nullable = false)
 	private Instant loggedAt;

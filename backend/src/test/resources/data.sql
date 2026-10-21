@@ -325,3 +325,21 @@ VALUES (default, YEAR(CURRENT_TIMESTAMP) || '-01-05', YEAR(CURRENT_TIMESTAMP) ||
         WHERE email = 'user4@gmail.com'),
         (SELECT type_id FROM leave_type WHERE name = 'Casual'), 2,
         false, false);
+
+INSERT INTO crm_activity_task (id, name, due_at, priority, is_completed, comments, owner_id, is_deleted)
+VALUES (default, 'Prepare proposal', TIMESTAMP WITH TIME ZONE '2026-01-15 09:00:00+00', 'HIGH', false,
+        'Share pricing options', 1, false),
+       (default, 'Send follow-up', TIMESTAMP WITH TIME ZONE '2026-01-20 14:30:00+00', 'MEDIUM', true, null, 1,
+        false);
+
+INSERT INTO crm_activity_email (id, subject, logged_at, description, owner_id, is_deleted)
+VALUES (default, 'Intro email', TIMESTAMP WITH TIME ZONE '2026-01-10 08:15:00+00', 'Shared product overview', 1,
+        false);
+
+INSERT INTO crm_activity_meeting (id, name, is_scheduled, meeting_venue, location, meeting_date, start_at, end_at,
+                                  sync_status, calendar_provider, comments, owner_id, is_deleted)
+VALUES (default, 'Discovery call', true, 'ONLINE', null, '2026-01-12', TIMESTAMP WITH TIME ZONE '2026-01-12 10:00:00+00',
+        TIMESTAMP WITH TIME ZONE '2026-01-12 11:00:00+00', 'SYNCED', 'GOOGLE', null, 1, false),
+       (default, 'Site visit', false, 'IN_PERSON', 'Colombo office', '2026-01-18',
+        TIMESTAMP WITH TIME ZONE '2026-01-18 04:30:00+00',
+        TIMESTAMP WITH TIME ZONE '2026-01-18 06:00:00+00', null, null, 'Bring signed NDA', 1, false);

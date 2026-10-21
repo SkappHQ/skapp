@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS `crm_activity_meeting`
     `is_scheduled`       boolean     NOT NULL,
     `meeting_venue`      TEXT,
     `location`           TEXT,
+    `meeting_date`       date        NOT NULL,
     `start_at`           datetime(6) NOT NULL,
     `end_at`             datetime(6) NOT NULL,
     `sync_status`        TEXT,
