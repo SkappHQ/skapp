@@ -77,9 +77,18 @@ public class GlobalExceptionHandler {
 				status);
 	}
 
-	@ExceptionHandler({ BadCredentialsException.class, InternalAuthenticationServiceException.class })
-	public ResponseEntity<ResponseEntityDto> handleAuthenticationFailure(
-			org.springframework.security.core.AuthenticationException e) {
+	@ExceptionHandler(BadCredentialsException.class)
+	public ResponseEntity<ResponseEntityDto> handleBadCredentialsException(BadCredentialsException e) {
+		return invalidCredentialsResponse(e);
+	}
+
+	@ExceptionHandler(InternalAuthenticationServiceException.class)
+	public ResponseEntity<ResponseEntityDto> handleInternalAuthenticationServiceException(
+			InternalAuthenticationServiceException e) {
+		return invalidCredentialsResponse(e);
+	}
+
+	private ResponseEntity<ResponseEntityDto> invalidCredentialsResponse(Exception e) {
 		HttpStatus status = HttpStatus.UNAUTHORIZED;
 		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_INVALID_CREDENTIALS);
 		handleException(e, CommonMessageConstant.COMMON_ERROR_INVALID_CREDENTIALS.name(), status);
