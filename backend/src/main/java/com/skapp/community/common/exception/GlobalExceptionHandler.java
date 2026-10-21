@@ -14,8 +14,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MissingRequestCookieException;
@@ -75,19 +77,18 @@ public class GlobalExceptionHandler {
 				status);
 	}
 
+	@ExceptionHandler(BadCredentialsException.class)
+	public ResponseEntity<ResponseEntityDto> handleBadCredentialsException(BadCredentialsException e) {
+		return invalidCredentialsResponse(e);
+	}
+
 	@ExceptionHandler(InternalAuthenticationServiceException.class)
 	public ResponseEntity<ResponseEntityDto> handleInternalAuthenticationServiceException(
 			InternalAuthenticationServiceException e) {
-		HttpStatus status = HttpStatus.UNAUTHORIZED;
-		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
-		handleException(e, CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND.name(), status);
-
-		return new ResponseEntity<>(new ResponseEntityDto(true,
-				new ErrorResponse(status, message, CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND)), status);
+		return invalidCredentialsResponse(e);
 	}
 
-	@ExceptionHandler(BadCredentialsException.class)
-	public ResponseEntity<ResponseEntityDto> handleBadCredentialsException(BadCredentialsException e) {
+	private ResponseEntity<ResponseEntityDto> invalidCredentialsResponse(Exception e) {
 		HttpStatus status = HttpStatus.UNAUTHORIZED;
 		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_INVALID_CREDENTIALS);
 		handleException(e, CommonMessageConstant.COMMON_ERROR_INVALID_CREDENTIALS.name(), status);
@@ -96,6 +97,27 @@ public class GlobalExceptionHandler {
 				new ResponseEntityDto(true,
 						new ErrorResponse(status, message, CommonMessageConstant.COMMON_ERROR_INVALID_CREDENTIALS)),
 				status);
+	}
+
+	@ExceptionHandler(DisabledException.class)
+	public ResponseEntity<ResponseEntityDto> handleDisabledException(DisabledException e) {
+		HttpStatus status = HttpStatus.BAD_REQUEST;
+		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_USER_ACCOUNT_DEACTIVATED);
+		handleException(e, CommonMessageConstant.COMMON_ERROR_USER_ACCOUNT_DEACTIVATED.name(), status);
+
+		return new ResponseEntity<>(new ResponseEntityDto(true,
+				new ErrorResponse(status, message, CommonMessageConstant.COMMON_ERROR_USER_ACCOUNT_DEACTIVATED)),
+				status);
+	}
+
+	@ExceptionHandler(UsernameNotFoundException.class)
+	public ResponseEntity<ResponseEntityDto> handleUsernameNotFoundException(UsernameNotFoundException e) {
+		HttpStatus status = HttpStatus.BAD_REQUEST;
+		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+		handleException(e, CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND.name(), status);
+
+		return new ResponseEntity<>(new ResponseEntityDto(true,
+				new ErrorResponse(status, message, CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND)), status);
 	}
 
 	@ExceptionHandler(ModuleException.class)

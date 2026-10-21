@@ -189,11 +189,6 @@ public class AuthServiceImpl implements AuthService {
 		validateTenantStatus(user);
 		log.info("performSignIn: Tenant status validated for userEmail={}", user.getEmail());
 
-		if (Boolean.FALSE.equals(user.getIsActive())) {
-			log.warn("performSignIn: User account deactivated: userEmail={}", user.getEmail());
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_ACCOUNT_DEACTIVATED);
-		}
-
 		Optional<Employee> employee = employeeDao.findById(user.getUserId());
 		if (employee.isEmpty()) {
 			log.warn("performSignIn: Employee not found for userEmail={}", user.getEmail());

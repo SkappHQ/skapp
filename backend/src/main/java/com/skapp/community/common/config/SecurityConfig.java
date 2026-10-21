@@ -8,13 +8,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AccountStatusUserDetailsChecker;
+import org.springframework.security.authentication.AuthenticationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -43,9 +46,20 @@ public class SecurityConfig {
 
 	private final ExceptionLoggingFilter exceptionLoggingFilter;
 
+	private final AuthenticationEventPublisher authenticationEventPublisher;
+
 	@Bean
-	public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) {
-		return authenticationConfiguration.getAuthenticationManager();
+	public AuthenticationManager authenticationManager() {
+		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
+		authProvider.setPasswordEncoder(passwordEncoder());
+		authProvider.setPreAuthenticationChecks(SecurityConfig::skipStatusChecksBeforePassword);
+		authProvider.setPostAuthenticationChecks(new AccountStatusUserDetailsChecker());
+		ProviderManager providerManager = new ProviderManager(authProvider);
+		providerManager.setAuthenticationEventPublisher(authenticationEventPublisher);
+		return providerManager;
+	}
+
+	private static void skipStatusChecksBeforePassword(UserDetails user) {
 	}
 
 	@Bean
@@ -55,9 +69,6 @@ public class SecurityConfig {
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) {
-		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
-		authProvider.setPasswordEncoder(passwordEncoder());
-
 		http.cors(Customizer.withDefaults());
 		http.csrf(AbstractHttpConfigurer::disable)
 			.sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
@@ -72,7 +83,7 @@ public class SecurityConfig {
 
 		http.addFilterBefore(exceptionLoggingFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-		http.authenticationProvider(authProvider);
+		http.authenticationManager(authenticationManager());
 
 		return http.build();
 	}

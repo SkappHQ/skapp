@@ -1,9 +1,9 @@
 package com.skapp.community.common.security;
 
 import com.skapp.community.common.constant.CommonMessageConstant;
-import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.repository.UserDao;
+import com.skapp.community.common.util.MessageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,11 +18,14 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
 	private final AuthorityService authorityService;
 
+	private final MessageUtil messageUtil;
+
 	@Override
 	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 		return userDao.findByEmail(email)
 			.map(this::createUserDetails)
-			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND));
+			.orElseThrow(() -> new UsernameNotFoundException(
+					messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND)));
 	}
 
 	private UserDetails createUserDetails(User user) {
