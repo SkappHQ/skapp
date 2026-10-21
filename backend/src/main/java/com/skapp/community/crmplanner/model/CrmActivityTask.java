@@ -45,6 +45,9 @@ public class CrmActivityTask extends Auditable<String> {
 	@Column(name = "is_completed", nullable = false)
 	private Boolean isCompleted = false;
 
+	@Column(name = "completed_at")
+	private Instant completedAt;
+
 	@Column(name = "notes")
 	private String notes;
 

@@ -326,11 +326,11 @@ VALUES (default, YEAR(CURRENT_TIMESTAMP) || '-01-05', YEAR(CURRENT_TIMESTAMP) ||
         (SELECT type_id FROM leave_type WHERE name = 'Casual'), 2,
         false, false);
 
-INSERT INTO crm_activity_task (id, name, due_at, priority, is_completed, notes, owner_id, is_deleted)
-VALUES (default, 'Prepare proposal', TIMESTAMP WITH TIME ZONE '2026-01-15 09:00:00+00', 'HIGH', false,
+INSERT INTO crm_activity_task (id, name, due_at, priority, is_completed, completed_at, notes, owner_id, is_deleted)
+VALUES (default, 'Prepare proposal', TIMESTAMP WITH TIME ZONE '2026-01-15 09:00:00+00', 'HIGH', false, null,
         'Share pricing options', 1, false),
-       (default, 'Send follow-up', TIMESTAMP WITH TIME ZONE '2026-01-20 14:30:00+00', 'MEDIUM', true, null, 1,
-        false);
+       (default, 'Send follow-up', TIMESTAMP WITH TIME ZONE '2026-01-20 14:30:00+00', 'MEDIUM', true,
+        TIMESTAMP WITH TIME ZONE '2026-01-19 16:00:00+00', null, 1, false);
 
 INSERT INTO crm_activity_email (id, subject, logged_at, description, owner_id, is_deleted)
 VALUES (default, 'Intro email', TIMESTAMP WITH TIME ZONE '2026-01-10 08:15:00+00', 'Shared product overview', 1,
