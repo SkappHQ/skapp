@@ -90,3 +90,5 @@ databaseChangeLog:
       file: classpath:community/db/changelog/ddl-script/crm-ddl-script-v1-create-table-crm-activity-meeting.sql
   - include:
       file: classpath:community/db/changelog/ddl-script/crm-ddl-script-v1-create-table-crm-activity-meeting-contact.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/crm-dml-script-v1-migrate-crm-task-to-crm-activity-task.sql
