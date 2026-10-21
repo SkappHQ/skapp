@@ -36,6 +36,7 @@ import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.payload.request.EmployeeTimeRequestFilterDto;
 import com.skapp.community.peopleplanner.payload.request.ManagerEmployeeLogFilterDto;
 import com.skapp.community.peopleplanner.payload.response.HolidayResponseDto;
+import com.skapp.community.peopleplanner.payload.response.PrimarySecondaryOrTeamSupervisorResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeManagerDao;
 import com.skapp.community.peopleplanner.repository.HolidayDao;
@@ -336,6 +337,10 @@ public class TimeServiceImpl implements TimeService {
 
 	@Override
 	public void validateEmployeeDataAccess(Long employeeId) {
+		if (employeeId == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+		}
+
 		Employee currentEmployee = userService.getCurrentUser().getEmployee();
 		EmployeeRole employeeRole = currentEmployee.getEmployeeRole();
 		Long currentEmployeeId = currentEmployee.getEmployeeId();
@@ -347,13 +352,18 @@ public class TimeServiceImpl implements TimeService {
 			return;
 		}
 
-		boolean isSupervisor = employeeManagerDao.existsByManagerEmployeeIdAndEmployeeEmployeeId(currentEmployeeId,
-				employeeId)
-				|| Boolean.TRUE.equals(employeeDao.isPrimarySecondaryOrTeamSupervisor(employeeId, currentEmployeeId)
-					.getIsTeamSupervisor());
-		if (!isSupervisor) {
+		boolean isAttendanceManager = Role.ATTENDANCE_MANAGER.equals(employeeRole.getAttendanceRole());
+		if (!isAttendanceManager || !isSupervisorOf(employeeId, currentEmployeeId)) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_MANAGER_CANNOT_VIEW_EMPLOYEE_DATA);
 		}
+	}
+
+	private boolean isSupervisorOf(Long employeeId, Long supervisorId) {
+		PrimarySecondaryOrTeamSupervisorResponseDto supervision = employeeDao
+			.isPrimarySecondaryOrTeamSupervisor(employeeId, supervisorId);
+		return Boolean.TRUE.equals(supervision.getIsPrimaryManager())
+				|| Boolean.TRUE.equals(supervision.getIsSecondaryManager())
+				|| Boolean.TRUE.equals(supervision.getIsTeamSupervisor());
 	}
 
 	private PageDto getEmployeeTimeRecord(TimeRecordFilterDto timeRecordFilterDto, Long employeeId) {
@@ -1078,7 +1088,7 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	@Override
-	@Transactional
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getManagerEmployeeDailyLog(ManagerEmployeeLogFilterDto managerEmployeeLogFilterDto) {
 		log.info("getManagerEmployeeDailyLog: execution started");
 
