@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS `crm_activity_task`
     `due_at`             datetime(6) NOT NULL,
     `priority`           TEXT        NOT NULL,
     `is_completed`       boolean     NOT NULL,
-    `comments`           TEXT,
+    `notes`              TEXT,
     `owner_id`           bigint      NOT NULL,
     `contact_id`         bigint,
     `deal_id`            bigint,

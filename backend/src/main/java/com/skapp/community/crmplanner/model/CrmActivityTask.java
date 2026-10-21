@@ -45,8 +45,8 @@ public class CrmActivityTask extends Auditable<String> {
 	@Column(name = "is_completed", nullable = false)
 	private Boolean isCompleted = false;
 
-	@Column(name = "comments")
-	private String comments;
+	@Column(name = "notes")
+	private String notes;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "owner_id", nullable = false)
