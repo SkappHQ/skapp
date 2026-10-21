@@ -29,20 +29,20 @@ public class CrmActivityTask extends Auditable<String> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id", nullable = false, updatable = false)
+	@Column(name = "id", updatable = false)
 	private Long id;
 
-	@Column(name = "name", nullable = false)
+	@Column(name = "name")
 	private String name;
 
-	@Column(name = "due_at", nullable = false)
+	@Column(name = "due_at")
 	private Instant dueAt;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "priority", nullable = false)
+	@Column(name = "priority")
 	private CrmActivityTaskPriority priority;
 
-	@Column(name = "is_completed", nullable = false)
+	@Column(name = "is_completed")
 	private Boolean isCompleted = false;
 
 	@Column(name = "completed_at")
@@ -52,7 +52,7 @@ public class CrmActivityTask extends Auditable<String> {
 	private String notes;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "owner_id", nullable = false)
+	@JoinColumn(name = "owner_id")
 	private Employee owner;
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -67,7 +67,7 @@ public class CrmActivityTask extends Auditable<String> {
 	@JoinColumn(name = "company_id")
 	private CrmCompany company;
 
-	@Column(name = "is_deleted", nullable = false)
+	@Column(name = "is_deleted")
 	private Boolean isDeleted = false;
 
 }

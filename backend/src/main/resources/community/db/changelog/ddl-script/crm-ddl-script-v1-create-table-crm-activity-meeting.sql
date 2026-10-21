@@ -3,7 +3,7 @@
 -- changeset UmeshaLiyanage:crm-ddl-script-v1-create-table-crm-activity-meeting
 CREATE TABLE IF NOT EXISTS `crm_activity_meeting`
 (
-    `id`                 bigint      NOT NULL AUTO_INCREMENT,
+    `id`                 bigint      AUTO_INCREMENT,
     `name`               TEXT,
     `is_scheduled`       boolean,
     `meeting_venue`      TEXT,

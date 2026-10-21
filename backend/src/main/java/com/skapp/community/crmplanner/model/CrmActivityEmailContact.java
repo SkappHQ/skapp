@@ -27,16 +27,16 @@ public class CrmActivityEmailContact {
 
 	@MapsId("emailId")
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "email_id", nullable = false)
+	@JoinColumn(name = "email_id")
 	private CrmActivityEmail email;
 
 	@MapsId("contactId")
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "contact_id", nullable = false)
+	@JoinColumn(name = "contact_id")
 	private CrmContact contact;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "role", nullable = false)
+	@Column(name = "role")
 	private CrmActivityEmailContactRole role;
 
 }

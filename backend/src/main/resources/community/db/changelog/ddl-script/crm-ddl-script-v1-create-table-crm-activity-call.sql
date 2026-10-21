@@ -3,7 +3,7 @@
 -- changeset UmeshaLiyanage:crm-ddl-script-v1-create-table-crm-activity-call
 CREATE TABLE IF NOT EXISTS `crm_activity_call`
 (
-    `id`                 bigint      NOT NULL AUTO_INCREMENT,
+    `id`                 bigint      AUTO_INCREMENT,
     `subject`            TEXT,
     `duration_minutes`   int,
     `logged_at`          datetime(6),

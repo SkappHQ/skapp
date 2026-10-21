@@ -23,12 +23,12 @@ public class CrmActivityMeetingContact {
 
 	@MapsId("meetingId")
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "meeting_id", nullable = false)
+	@JoinColumn(name = "meeting_id")
 	private CrmActivityMeeting meeting;
 
 	@MapsId("contactId")
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "contact_id", nullable = false)
+	@JoinColumn(name = "contact_id")
 	private CrmContact contact;
 
 }

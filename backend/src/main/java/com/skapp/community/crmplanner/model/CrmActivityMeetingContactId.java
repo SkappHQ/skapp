@@ -18,10 +18,10 @@ import java.io.Serializable;
 @EqualsAndHashCode
 public class CrmActivityMeetingContactId implements Serializable {
 
-	@Column(name = "meeting_id", nullable = false)
+	@Column(name = "meeting_id")
 	private Long meetingId;
 
-	@Column(name = "contact_id", nullable = false)
+	@Column(name = "contact_id")
 	private Long contactId;
 
 }

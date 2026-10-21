@@ -26,27 +26,27 @@ public class CrmActivityCall extends Auditable<String> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id", nullable = false, updatable = false)
+	@Column(name = "id", updatable = false)
 	private Long id;
 
-	@Column(name = "subject", nullable = false)
+	@Column(name = "subject")
 	private String subject;
 
 	@Column(name = "duration_minutes")
 	private Integer durationMinutes;
 
-	@Column(name = "logged_at", nullable = false)
+	@Column(name = "logged_at")
 	private Instant loggedAt;
 
 	@Column(name = "comments")
 	private String comments;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "owner_id", nullable = false)
+	@JoinColumn(name = "owner_id")
 	private Employee owner;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "contact_id", nullable = false)
+	@JoinColumn(name = "contact_id")
 	private CrmContact contact;
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -57,7 +57,7 @@ public class CrmActivityCall extends Auditable<String> {
 	@JoinColumn(name = "company_id")
 	private CrmCompany company;
 
-	@Column(name = "is_deleted", nullable = false)
+	@Column(name = "is_deleted")
 	private Boolean isDeleted = false;
 
 }

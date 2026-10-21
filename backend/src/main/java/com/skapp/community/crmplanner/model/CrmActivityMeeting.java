@@ -32,13 +32,13 @@ public class CrmActivityMeeting extends Auditable<String> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id", nullable = false, updatable = false)
+	@Column(name = "id", updatable = false)
 	private Long id;
 
-	@Column(name = "name", nullable = false)
+	@Column(name = "name")
 	private String name;
 
-	@Column(name = "is_scheduled", nullable = false)
+	@Column(name = "is_scheduled")
 	private Boolean isScheduled = false;
 
 	@Enumerated(EnumType.STRING)
@@ -48,13 +48,13 @@ public class CrmActivityMeeting extends Auditable<String> {
 	@Column(name = "location")
 	private String location;
 
-	@Column(name = "meeting_date", nullable = false)
+	@Column(name = "meeting_date")
 	private LocalDate meetingDate;
 
-	@Column(name = "start_at", nullable = false)
+	@Column(name = "start_at")
 	private Instant startAt;
 
-	@Column(name = "end_at", nullable = false)
+	@Column(name = "end_at")
 	private Instant endAt;
 
 	@Enumerated(EnumType.STRING)
@@ -69,7 +69,7 @@ public class CrmActivityMeeting extends Auditable<String> {
 	private String comments;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "owner_id", nullable = false)
+	@JoinColumn(name = "owner_id")
 	private Employee owner;
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -80,7 +80,7 @@ public class CrmActivityMeeting extends Auditable<String> {
 	@JoinColumn(name = "company_id")
 	private CrmCompany company;
 
-	@Column(name = "is_deleted", nullable = false)
+	@Column(name = "is_deleted")
 	private Boolean isDeleted = false;
 
 }

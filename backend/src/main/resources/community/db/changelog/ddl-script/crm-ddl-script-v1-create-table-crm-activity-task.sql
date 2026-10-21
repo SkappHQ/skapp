@@ -3,7 +3,7 @@
 -- changeset UmeshaLiyanage:crm-ddl-script-v1-create-table-crm-activity-task
 CREATE TABLE IF NOT EXISTS `crm_activity_task`
 (
-    `id`                 bigint      NOT NULL AUTO_INCREMENT,
+    `id`                 bigint      AUTO_INCREMENT,
     `name`               TEXT,
     `due_at`             datetime(6),
     `priority`           TEXT,
