@@ -78,3 +78,15 @@ databaseChangeLog:
       file: classpath:community/db/changelog/ddl-script/leave-ddl-script-v1-alter-leave-policy-rename-carryover-date.sql
   - include:
       file: classpath:community/db/changelog/ddl-script/time-ddl-script-v1-alter-table-time_request-add-auditable-columns.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/crm-ddl-script-v1-create-table-crm-activity-call.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/crm-ddl-script-v1-create-table-crm-activity-task.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/crm-ddl-script-v1-create-table-crm-activity-email.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/crm-ddl-script-v1-create-table-crm-activity-email-contact.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/crm-ddl-script-v1-create-table-crm-activity-meeting.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/crm-ddl-script-v1-create-table-crm-activity-meeting-contact.sql
