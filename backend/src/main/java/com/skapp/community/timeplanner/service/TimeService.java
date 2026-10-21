@@ -87,4 +87,6 @@ public interface TimeService {
 
 	ResponseEntityDto getPendingTimeRequestsCount();
 
+	void validateEmployeeDataAccess(Long employeeId);
+
 }

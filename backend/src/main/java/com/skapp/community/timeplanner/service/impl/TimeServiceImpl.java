@@ -36,6 +36,7 @@ import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.payload.request.EmployeeTimeRequestFilterDto;
 import com.skapp.community.peopleplanner.payload.request.ManagerEmployeeLogFilterDto;
 import com.skapp.community.peopleplanner.payload.response.HolidayResponseDto;
+import com.skapp.community.peopleplanner.payload.response.PrimarySecondaryOrTeamSupervisorResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeManagerDao;
 import com.skapp.community.peopleplanner.repository.HolidayDao;
@@ -313,6 +314,7 @@ public class TimeServiceImpl implements TimeService {
 			Long employeeId) {
 		log.info("getEmployeeDailyTimeRecordsByEmployeeId: execution started");
 
+		validateEmployeeDataAccess(employeeId);
 		PageDto pageDto = getEmployeeTimeRecord(timeRecordFilterDto, employeeId);
 		log.info("getEmployeeDailyTimeRecordsByEmployeeId: execution ended");
 		return new ResponseEntityDto(false, pageDto);
@@ -331,6 +333,37 @@ public class TimeServiceImpl implements TimeService {
 
 		log.info("getPendingTimeRequestsCount: execution ended");
 		return new ResponseEntityDto(false, pendingTimeRequestsCountDto);
+	}
+
+	@Override
+	public void validateEmployeeDataAccess(Long employeeId) {
+		if (employeeId == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
+		}
+
+		Employee currentEmployee = userService.getCurrentUser().getEmployee();
+		EmployeeRole employeeRole = currentEmployee.getEmployeeRole();
+		Long currentEmployeeId = currentEmployee.getEmployeeId();
+
+		boolean isOwnData = currentEmployeeId.equals(employeeId);
+		boolean isAdmin = Boolean.TRUE.equals(employeeRole.getIsSuperAdmin())
+				|| Role.ATTENDANCE_ADMIN.equals(employeeRole.getAttendanceRole());
+		if (isOwnData || isAdmin) {
+			return;
+		}
+
+		boolean isAttendanceManager = Role.ATTENDANCE_MANAGER.equals(employeeRole.getAttendanceRole());
+		if (!isAttendanceManager || !isSupervisorOf(employeeId, currentEmployeeId)) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_MANAGER_CANNOT_VIEW_EMPLOYEE_DATA);
+		}
+	}
+
+	private boolean isSupervisorOf(Long employeeId, Long supervisorId) {
+		PrimarySecondaryOrTeamSupervisorResponseDto supervision = employeeDao
+			.isPrimarySecondaryOrTeamSupervisor(employeeId, supervisorId);
+		return Boolean.TRUE.equals(supervision.getIsPrimaryManager())
+				|| Boolean.TRUE.equals(supervision.getIsSecondaryManager())
+				|| Boolean.TRUE.equals(supervision.getIsTeamSupervisor());
 	}
 
 	private PageDto getEmployeeTimeRecord(TimeRecordFilterDto timeRecordFilterDto, Long employeeId) {
@@ -1055,9 +1088,8 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	@Override
-	@Transactional
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getManagerEmployeeDailyLog(ManagerEmployeeLogFilterDto managerEmployeeLogFilterDto) {
-		User currentUser = userService.getCurrentUser();
 		log.info("getManagerEmployeeDailyLog: execution started");
 
 		LocalDate startDate = managerEmployeeLogFilterDto.getStartDate();
@@ -1066,17 +1098,14 @@ public class TimeServiceImpl implements TimeService {
 		int pageSize = managerEmployeeLogFilterDto.getSize();
 		boolean isExport = managerEmployeeLogFilterDto.getIsExport();
 
+		validateEmployeeDataAccess(managerEmployeeLogFilterDto.getEmployeeId());
+
 		Optional<Employee> employeeOptional = employeeDao
 			.findEmployeeByEmployeeIdAndUserActiveNot(managerEmployeeLogFilterDto.getEmployeeId(), false);
 		if (employeeOptional.isEmpty()) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 		Employee employee = employeeOptional.get();
-
-		if (!employeeManagerDao.existsByManagerEmployeeIdAndEmployeeEmployeeId(
-				currentUser.getEmployee().getEmployeeId(), managerEmployeeLogFilterDto.getEmployeeId())) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_MANAGER_CANNOT_VIEW_EMPLOYEE_DATA);
-		}
 
 		List<Long> employees = List.of(employee.getEmployeeId());
 		Long totalItemCount = timeRecordDao.getTotalEmployeesTimeRecordCount(employees, startDate, endDate);
@@ -1133,6 +1162,8 @@ public class TimeServiceImpl implements TimeService {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_MANAGER_PERMISSION_NOT_FOUND);
 		}
 
+		validateEmployeeDataAccess(individualWorkHourFilterDto.getEmployeeId());
+
 		Optional<Employee> employeeOpt = employeeDao.findById(individualWorkHourFilterDto.getEmployeeId());
 		if (employeeOpt.isEmpty()) {
 			throw new EntityNotFoundException(
@@ -1155,17 +1186,12 @@ public class TimeServiceImpl implements TimeService {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_MANAGER_PERMISSION_NOT_FOUND);
 		}
 
+		validateEmployeeDataAccess(id);
+
 		Optional<Employee> employeeOpt = employeeDao.findById(id);
 		if (employeeOpt.isEmpty()) {
 			throw new EntityNotFoundException(
 					messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND));
-		}
-
-		if (employeeOpt.get()
-			.getEmployeeManagers()
-			.stream()
-			.noneMatch(em -> em.getManager().getEmployeeId().equals(currentUser.getEmployee().getEmployeeId()))) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_MANAGER_CANNOT_VIEW_EMPLOYEE_DATA);
 		}
 
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
