@@ -4,13 +4,13 @@
 CREATE TABLE IF NOT EXISTS `crm_activity_email`
 (
     `id`                 bigint      NOT NULL AUTO_INCREMENT,
-    `subject`            TEXT        NOT NULL,
-    `logged_at`          datetime(6) NOT NULL,
+    `subject`            TEXT,
+    `logged_at`          datetime(6),
     `description`        TEXT,
-    `owner_id`           bigint      NOT NULL,
+    `owner_id`           bigint,
     `deal_id`            bigint,
     `company_id`         bigint,
-    `is_deleted`         boolean     NOT NULL,
+    `is_deleted`         boolean,
     `created_by`         TEXT,
     `created_date`       datetime(6),
     `last_modified_by`   TEXT,
