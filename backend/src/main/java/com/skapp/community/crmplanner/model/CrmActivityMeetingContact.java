@@ -31,10 +31,4 @@ public class CrmActivityMeetingContact {
 	@JoinColumn(name = "contact_id", nullable = false)
 	private CrmContact contact;
 
-	public CrmActivityMeetingContact(CrmActivityMeeting meeting, CrmContact contact) {
-		this.id = new CrmActivityMeetingContactId(meeting.getId(), contact.getId());
-		this.meeting = meeting;
-		this.contact = contact;
-	}
-
 }

@@ -39,11 +39,4 @@ public class CrmActivityEmailContact {
 	@Column(name = "role", nullable = false)
 	private CrmActivityEmailContactRole role;
 
-	public CrmActivityEmailContact(CrmActivityEmail email, CrmContact contact, CrmActivityEmailContactRole role) {
-		this.id = new CrmActivityEmailContactId(email.getId(), contact.getId());
-		this.email = email;
-		this.contact = contact;
-		this.role = role;
-	}
-
 }
