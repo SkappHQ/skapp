@@ -78,7 +78,8 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler({ BadCredentialsException.class, InternalAuthenticationServiceException.class })
-	public ResponseEntity<ResponseEntityDto> handleBadCredentialsException(RuntimeException e) {
+	public ResponseEntity<ResponseEntityDto> handleAuthenticationFailure(
+			org.springframework.security.core.AuthenticationException e) {
 		HttpStatus status = HttpStatus.UNAUTHORIZED;
 		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_INVALID_CREDENTIALS);
 		handleException(e, CommonMessageConstant.COMMON_ERROR_INVALID_CREDENTIALS.name(), status);
@@ -103,12 +104,11 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(UsernameNotFoundException.class)
 	public ResponseEntity<ResponseEntityDto> handleUsernameNotFoundException(UsernameNotFoundException e) {
 		HttpStatus status = HttpStatus.BAD_REQUEST;
+		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		handleException(e, CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND.name(), status);
 
-		return new ResponseEntity<>(
-				new ResponseEntityDto(true,
-						new ErrorResponse(status, e.getMessage(), CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND)),
-				status);
+		return new ResponseEntity<>(new ResponseEntityDto(true,
+				new ErrorResponse(status, message, CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND)), status);
 	}
 
 	@ExceptionHandler(ModuleException.class)

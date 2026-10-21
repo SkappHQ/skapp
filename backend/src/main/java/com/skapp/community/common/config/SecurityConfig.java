@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AccountStatusUserDetailsChecker;
+import org.springframework.security.authentication.AuthenticationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -45,13 +46,17 @@ public class SecurityConfig {
 
 	private final ExceptionLoggingFilter exceptionLoggingFilter;
 
+	private final AuthenticationEventPublisher authenticationEventPublisher;
+
 	@Bean
 	public AuthenticationManager authenticationManager() {
 		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
 		authProvider.setPasswordEncoder(passwordEncoder());
 		authProvider.setPreAuthenticationChecks(SecurityConfig::skipStatusChecksBeforePassword);
 		authProvider.setPostAuthenticationChecks(new AccountStatusUserDetailsChecker());
-		return new ProviderManager(authProvider);
+		ProviderManager providerManager = new ProviderManager(authProvider);
+		providerManager.setAuthenticationEventPublisher(authenticationEventPublisher);
+		return providerManager;
 	}
 
 	private static void skipStatusChecksBeforePassword(UserDetails user) {
