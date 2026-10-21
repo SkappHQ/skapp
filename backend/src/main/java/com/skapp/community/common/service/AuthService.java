@@ -17,7 +17,7 @@ public interface AuthService {
 
 	ResponseEntityDto signInWithCookie(SignInRequestDto signInRequestDto, HttpServletResponse response);
 
-	ResponseEntityDto signOutWithCookie(HttpServletResponse response);
+	ResponseEntityDto signOutWithCookie(HttpServletRequest request, HttpServletResponse response);
 
 	ResponseEntityDto superAdminSignUp(SuperAdminSignUpRequestDto superAdminSignUpRequestDto);
 

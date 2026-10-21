@@ -20,4 +20,7 @@ public class UserVersion extends Auditable<String> {
 	@Column(name = "version")
 	private String version;
 
+	@Column(name = "session_version")
+	private Long sessionVersion;
+
 }

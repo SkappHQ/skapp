@@ -8,4 +8,8 @@ public interface UserVersionService {
 
 	String getUserVersion(Long userId);
 
+	long getSessionVersion(Long userId);
+
+	void revokeSessions(Long userId);
+
 }

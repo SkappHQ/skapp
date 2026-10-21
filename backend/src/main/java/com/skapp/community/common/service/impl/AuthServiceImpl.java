@@ -29,6 +29,7 @@ import com.skapp.community.common.service.AuthService;
 import com.skapp.community.common.service.BulkContextService;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.service.UserVersionService;
 import com.skapp.community.common.type.BulkItemStatus;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.common.type.NotificationSettingsType;
@@ -128,6 +129,8 @@ public class AuthServiceImpl implements AuthService {
 
 	protected final CookieUtil cookieUtil;
 
+	protected final UserVersionService userVersionService;
+
 	@Override
 	@Transactional
 	public ResponseEntityDto signIn(SignInRequestDto signInRequestDto) {
@@ -152,7 +155,7 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	@Override
-	public ResponseEntityDto signOutWithCookie(HttpServletResponse response) {
+	public ResponseEntityDto signOutWithCookie(HttpServletRequest request, HttpServletResponse response) {
 		log.info("signOutWithCookie: execution started");
 
 		Cookie refreshCookie = cookieUtil.clearRefreshTokenCookie(getTenantId());
@@ -161,8 +164,24 @@ public class AuthServiceImpl implements AuthService {
 
 		clearTenantCookie(response);
 
+		String refreshToken = cookieUtil.getRefreshTokenFromCookies(request, getTenantId());
+		if (refreshToken != null) {
+			revokeLiveSession(refreshToken);
+		}
+
 		log.info("signOutWithCookie: execution ended");
 		return new ResponseEntityDto(false, messageUtil.getMessage(CommonMessageConstant.COMMON_SUCCESS_SIGN_OUT));
+	}
+
+	private void revokeLiveSession(String refreshToken) {
+		String userEmail = jwtService.extractUserEmail(refreshToken);
+		if (userEmail.isEmpty() || !jwtService.isRefreshToken(refreshToken)) {
+			return;
+		}
+
+		userDao.findByEmail(userEmail)
+			.filter(user -> jwtService.isSessionActive(user.getUserId(), refreshToken))
+			.ifPresent(user -> userVersionService.revokeSessions(user.getUserId()));
 	}
 
 	private SignInResponseDto performSignIn(SignInRequestDto signInRequestDto, HttpServletResponse response) {
@@ -209,7 +228,7 @@ public class AuthServiceImpl implements AuthService {
 		log.info("performSignIn: Loaded UserDetails for email={}", user.getEmail());
 
 		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
-		String refreshToken = jwtService.generateRefreshToken(userDetails);
+		String refreshToken = jwtService.generateRefreshToken(userDetails, user.getUserId());
 		log.info("performSignIn: Generated access and refresh tokens for userEmail={}", user.getEmail());
 
 		if (response != null) {
@@ -298,7 +317,7 @@ public class AuthServiceImpl implements AuthService {
 
 		UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
 		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
-		String refreshToken = jwtService.generateRefreshToken(userDetails);
+		String refreshToken = jwtService.generateRefreshToken(userDetails, user.getUserId());
 
 		log.info("superAdminSignUp: Generated access and refresh tokens for userEmail={}", user.getEmail());
 
@@ -358,6 +377,10 @@ public class AuthServiceImpl implements AuthService {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_TERMINATED_OR_DELETED);
 		}
 
+		if (!jwtService.isSessionActive(user.getUserId(), refreshToken)) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_INVALID_REFRESH_TOKEN);
+		}
+
 		String accessToken = jwtService.generateAccessToken(userDetails, user.getUserId());
 		log.info("refreshAccessToken: Generated new access token for email={}", user.getEmail());
 
@@ -415,6 +438,7 @@ public class AuthServiceImpl implements AuthService {
 		user.setPassword(passwordEncoder.encode(tempPassword));
 		user.setIsPasswordChangedForTheFirstTime(false);
 		userDao.save(user);
+		userVersionService.revokeSessions(user.getUserId());
 
 		SharePasswordResponseDto sharePasswordResponseDto = getSharePasswordResponseDto(user, user, tempPassword);
 
@@ -441,6 +465,7 @@ public class AuthServiceImpl implements AuthService {
 		user.setPassword(passwordEncoder.encode(tempPassword));
 		user.setIsPasswordChangedForTheFirstTime(false);
 		User savedUser = userDao.save(user);
+		userVersionService.revokeSessions(savedUser.getUserId());
 
 		log.info("resetAndSharePassword: User password reset and saved for  userEmail={}", user.getEmail());
 		SharePasswordResponseDto sharePasswordResponseDto = getSharePasswordResponseDto(savedUser, user, tempPassword);

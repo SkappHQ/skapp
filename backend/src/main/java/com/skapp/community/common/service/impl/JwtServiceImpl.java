@@ -73,9 +73,10 @@ public class JwtServiceImpl implements JwtService {
 	}
 
 	@Override
-	public String generateRefreshToken(UserDetails userDetails) {
+	public String generateRefreshToken(UserDetails userDetails, Long userId) {
 		Map<String, Object> claims = new HashMap<>();
 		claims.put(AuthConstants.TOKEN_TYPE, TokenType.REFRESH);
+		claims.put(AuthConstants.SESSION_VERSION, userVersionService.getSessionVersion(userId));
 
 		return generateToken(claims, userDetails, getRefreshTokenMaxAge(userDetails));
 	}
@@ -123,6 +124,15 @@ public class JwtServiceImpl implements JwtService {
 
 		return hasShortDurationRole ? jwtShortDurationRefreshTokenExpirationMs
 				: jwtLongDurationRefreshTokenExpirationMs;
+	}
+
+	@Override
+	public boolean isSessionActive(Long userId, String refreshToken) {
+		Long tokenSessionVersion = extractClaim(refreshToken,
+				claims -> claims.get(AuthConstants.SESSION_VERSION, Long.class));
+		long issuedSessionVersion = tokenSessionVersion != null ? tokenSessionVersion
+				: AuthConstants.DEFAULT_SESSION_VERSION;
+		return issuedSessionVersion == userVersionService.getSessionVersion(userId);
 	}
 
 	private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails, Long expirationTime) {
