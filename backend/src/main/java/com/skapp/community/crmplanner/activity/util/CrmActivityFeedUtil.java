@@ -43,40 +43,40 @@ public class CrmActivityFeedUtil {
 	public CrmActivityFeedRowResponseDto toRow(CrmActivityFeedRecord activity, CrmActivityScope scope,
 			List<CrmActivityLinkResponseDto> linkedContacts) {
 		CrmActivityFeedRowResponseDto row = new CrmActivityFeedRowResponseDto();
-		row.setId(activity.id());
-		row.setType(activity.type());
-		row.setSubject(activity.subject());
+		row.setId(activity.getId());
+		row.setType(activity.getType());
+		row.setSubject(activity.getSubject());
 
-		if (activity.type() == CrmActivityType.TASK) {
-			boolean completed = Boolean.TRUE.equals(activity.isCompleted());
-			row.setDueAt(activity.dueAt());
-			row.setCompletedAt(activity.completedAt());
+		if (activity.getType() == CrmActivityType.TASK) {
+			boolean completed = Boolean.TRUE.equals(activity.getIsCompleted());
+			row.setDueAt(activity.getDueAt());
+			row.setCompletedAt(activity.getCompletedAt());
 			row.setIsCompleted(completed);
-			row.setPriority(activity.priority());
-			row.setOccurredAt(!completed && activity.dueAt() == null ? activity.createdDate() : null);
+			row.setPriority(activity.getPriority());
+			row.setOccurredAt(!completed && activity.getDueAt() == null ? activity.getCreatedDate() : null);
 		}
 		else {
-			row.setOccurredAt(activity.occurredAt() != null ? activity.occurredAt() : activity.createdDate());
+			row.setOccurredAt(activity.getOccurredAt() != null ? activity.getOccurredAt() : activity.getCreatedDate());
 			row.setIsCompleted(false);
 		}
 
-		row.setOwner(activity.ownerId() == null ? null : new CrmActivityPersonResponseDto(activity.ownerId(),
-				activity.ownerFirstName(), activity.ownerLastName(), activity.ownerAuthPic()));
+		row.setOwner(activity.getOwnerId() == null ? null : new CrmActivityPersonResponseDto(activity.getOwnerId(),
+				activity.getOwnerFirstName(), activity.getOwnerLastName(), activity.getOwnerAuthPic()));
 		row.setContacts(resolveContacts(activity, linkedContacts));
-		row.setDeal(scope.canViewDeal(activity.dealOwnerId())
-				? toLink(activity.dealId(), activity.dealName(), activity.dealDeleted()) : null);
-		row.setCompany(toLink(activity.companyId(), activity.companyName(), activity.companyDeleted()));
+		row.setDeal(scope.canViewDeal(activity.getDealOwnerId())
+				? toLink(activity.getDealId(), activity.getDealName(), activity.getDealDeleted()) : null);
+		row.setCompany(toLink(activity.getCompanyId(), activity.getCompanyName(), activity.getCompanyDeleted()));
 		return row;
 	}
 
 	private List<CrmActivityLinkResponseDto> resolveContacts(CrmActivityFeedRecord activity,
 			List<CrmActivityLinkResponseDto> linkedContacts) {
-		if (activity.type() == CrmActivityType.MEETING || activity.type() == CrmActivityType.EMAIL) {
+		if (activity.getType() == CrmActivityType.MEETING || activity.getType() == CrmActivityType.EMAIL) {
 			return linkedContacts;
 		}
 
-		return activity.contactId() == null ? List.of()
-				: List.of(toLink(activity.contactId(), activity.contactName(), activity.contactDeleted()));
+		return activity.getContactId() == null ? List.of()
+				: List.of(toLink(activity.getContactId(), activity.getContactName(), activity.getContactDeleted()));
 	}
 
 	private CrmActivityLinkResponseDto toLink(Long id, String name, Boolean deleted) {

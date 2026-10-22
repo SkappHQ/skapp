@@ -91,8 +91,8 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 				CrmActivityType.class);
 		for (CrmActivityType type : List.of(CrmActivityType.MEETING, CrmActivityType.EMAIL)) {
 			List<Long> ids = allRecords.stream()
-				.filter(activity -> activity.type() == type)
-				.map(CrmActivityFeedRecord::id)
+				.filter(activity -> activity.getType() == type)
+				.map(CrmActivityFeedRecord::getId)
 				.distinct()
 				.toList();
 			linkedContacts.put(type, groupContacts(crmActivityFeedRepository.findLinkedContacts(type, ids)));
@@ -100,7 +100,7 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 
 		Function<CrmActivityFeedRecord, CrmActivityFeedRowResponseDto> toRow = activity -> CrmActivityFeedUtil.toRow(
 				activity, scope,
-				linkedContacts.getOrDefault(activity.type(), Map.of()).getOrDefault(activity.id(), List.of()));
+				linkedContacts.getOrDefault(activity.getType(), Map.of()).getOrDefault(activity.getId(), List.of()));
 		Map<CrmActivityBucket, List<CrmActivityFeedRowResponseDto>> dueRows = dueRecords.stream()
 			.collect(Collectors.groupingBy(activity -> CrmActivityBucketUtil.resolveBucket(activity, now, zone),
 					() -> new EnumMap<>(CrmActivityBucket.class), Collectors.mapping(toRow, Collectors.toList())));
@@ -115,11 +115,11 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 
 	private Set<Long> resolveOwnerIds(CrmActivityScope scope, Long requestedOwnerId) {
 		if (!scope.canFilter()) {
-			return Set.of(scope.viewerId());
+			return Set.of(scope.getViewerId());
 		}
 
 		if (requestedOwnerId == null) {
-			return scope.orgWide() ? null : scope.ownerIds();
+			return scope.isOrgWide() ? null : scope.getOwnerIds();
 		}
 
 		return scope.includesOwner(requestedOwnerId) ? Set.of(requestedOwnerId) : Set.of();
@@ -127,11 +127,10 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 
 	private Map<Long, List<CrmActivityLinkResponseDto>> groupContacts(List<CrmActivityLinkedContact> links) {
 		return links.stream()
-			.collect(
-					Collectors.groupingBy(CrmActivityLinkedContact::activityId,
-							Collectors.mapping(link -> new CrmActivityLinkResponseDto(link.contactId(),
-									link.contactName(), Boolean.TRUE.equals(link.contactDeleted())),
-									Collectors.toList())));
+			.collect(Collectors.groupingBy(CrmActivityLinkedContact::getActivityId,
+					Collectors.mapping(link -> new CrmActivityLinkResponseDto(link.getContactId(),
+							link.getContactName(), Boolean.TRUE.equals(link.getContactDeleted())),
+							Collectors.toList())));
 	}
 
 }

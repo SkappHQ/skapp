@@ -1,7 +1,18 @@
 package com.skapp.community.crmplanner.activity.payload.response;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
 import java.util.List;
 
-public record CrmActivityFeedPageResponseDto(List<CrmActivityFeedRowResponseDto> items, int page, boolean hasMore) {
+@Getter
+@AllArgsConstructor
+public class CrmActivityFeedPageResponseDto {
+
+	private final List<CrmActivityFeedRowResponseDto> items;
+
+	private final int page;
+
+	private final Boolean hasMore;
 
 }

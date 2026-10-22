@@ -1,13 +1,59 @@
 package com.skapp.community.crmplanner.activity.type;
 
 import com.skapp.community.crmplanner.type.CrmActivityTaskPriority;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 import java.time.Instant;
 
-public record CrmActivityFeedRecord(CrmActivityType type, Long id, String subject, Long ownerId, String ownerFirstName,
-		String ownerLastName, String ownerAuthPic, Long contactId, String contactName, Boolean contactDeleted,
-		Long dealId, String dealName, Boolean dealDeleted, Long dealOwnerId, Long companyId, String companyName,
-		Boolean companyDeleted, CrmActivityTaskPriority priority, Boolean isCompleted, Boolean isScheduled,
-		Instant dueAt, Instant completedAt, Instant occurredAt, Instant createdDate) {
+@Getter
+@AllArgsConstructor
+public class CrmActivityFeedRecord {
+
+	private final CrmActivityType type;
+
+	private final Long id;
+
+	private final String subject;
+
+	private final Long ownerId;
+
+	private final String ownerFirstName;
+
+	private final String ownerLastName;
+
+	private final String ownerAuthPic;
+
+	private final Long contactId;
+
+	private final String contactName;
+
+	private final Boolean contactDeleted;
+
+	private final Long dealId;
+
+	private final String dealName;
+
+	private final Boolean dealDeleted;
+
+	private final Long dealOwnerId;
+
+	private final Long companyId;
+
+	private final String companyName;
+
+	private final Boolean companyDeleted;
+
+	private final CrmActivityTaskPriority priority;
+
+	private final Boolean isCompleted;
+
+	private final Instant dueAt;
+
+	private final Instant completedAt;
+
+	private final Instant occurredAt;
+
+	private final Instant createdDate;
 
 }

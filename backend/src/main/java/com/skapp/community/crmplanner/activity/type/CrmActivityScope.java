@@ -1,10 +1,22 @@
 package com.skapp.community.crmplanner.activity.type;
 
 import com.skapp.community.common.type.Role;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 import java.util.Set;
 
-public record CrmActivityScope(Long viewerId, Role role, boolean orgWide, Set<Long> ownerIds) {
+@Getter
+@AllArgsConstructor
+public class CrmActivityScope {
+
+	private final Long viewerId;
+
+	private final Role role;
+
+	private final boolean orgWide;
+
+	private final Set<Long> ownerIds;
 
 	public boolean canFilter() {
 		return role != Role.CRM_SALES_REPRESENTATIVE;

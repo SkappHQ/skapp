@@ -1,11 +1,21 @@
 package com.skapp.community.crmplanner.activity.payload.response;
 
 import com.skapp.community.crmplanner.activity.util.CrmActivityFeedUtil;
+import lombok.Getter;
 
-public record CrmActivityPersonResponseDto(Long id, String name, String avatar) {
+@Getter
+public class CrmActivityPersonResponseDto {
+
+	private final Long id;
+
+	private final String name;
+
+	private final String avatar;
 
 	public CrmActivityPersonResponseDto(Long id, String firstName, String lastName, String avatar) {
-		this(id, CrmActivityFeedUtil.toFullName(firstName, lastName), avatar);
+		this.id = id;
+		this.name = CrmActivityFeedUtil.toFullName(firstName, lastName);
+		this.avatar = avatar;
 	}
 
 }

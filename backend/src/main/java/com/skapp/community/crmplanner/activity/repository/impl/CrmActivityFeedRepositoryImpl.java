@@ -131,36 +131,35 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 				deal.get(CrmDeal_.isDeleted), deal.get(CrmDeal_.owner).get(Employee_.employeeId),
 				company.get(CrmCompany_.id), company.get(CrmCompany_.name), company.get(CrmCompany_.isDeleted),
 				task.get(CrmActivityTask_.priority), item.get(CrmActivityFeedItem_.isCompleted),
-				item.get(CrmActivityFeedItem_.isScheduled), item.get(CrmActivityFeedItem_.dueAt),
-				item.get(CrmActivityFeedItem_.completedAt), item.get(CrmActivityFeedItem_.occurredAt),
-				item.get(CrmActivityFeedItem_.createdDate)));
+				item.get(CrmActivityFeedItem_.dueAt), item.get(CrmActivityFeedItem_.completedAt),
+				item.get(CrmActivityFeedItem_.occurredAt), item.get(CrmActivityFeedItem_.createdDate)));
 
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.isFalse(item.get(CrmActivityFeedItem_.isDeleted)));
 
 		Predicate passedScheduledMeeting = cb.and(cb.equal(activityType(item), CrmActivityType.MEETING),
-				cb.lessThan(item.get(CrmActivityFeedItem_.feedAt), criteria.now()));
+				cb.lessThan(item.get(CrmActivityFeedItem_.feedAt), criteria.getNow()));
 		Predicate dueKind = cb.isTrue(item.get(CrmActivityFeedItem_.isDueKind));
 		predicates.add(
 				due ? cb.and(dueKind, cb.not(passedScheduledMeeting)) : cb.or(cb.not(dueKind), passedScheduledMeeting));
 
-		if (criteria.type() != null) {
-			predicates.add(cb.equal(activityType(item), criteria.type()));
+		if (criteria.getType() != null) {
+			predicates.add(cb.equal(activityType(item), criteria.getType()));
 		}
 
-		if (criteria.ownerIds() != null) {
-			predicates.add(item.get(CrmActivityFeedItem_.ownerId).in(criteria.ownerIds()));
+		if (criteria.getOwnerIds() != null) {
+			predicates.add(item.get(CrmActivityFeedItem_.ownerId).in(criteria.getOwnerIds()));
 		}
 
-		if (criteria.rangeStart() != null) {
-			predicates.add(cb.greaterThanOrEqualTo(item.get(CrmActivityFeedItem_.feedAt), criteria.rangeStart()));
+		if (criteria.getRangeStart() != null) {
+			predicates.add(cb.greaterThanOrEqualTo(item.get(CrmActivityFeedItem_.feedAt), criteria.getRangeStart()));
 		}
 
-		if (criteria.rangeEnd() != null) {
-			predicates.add(cb.lessThan(item.get(CrmActivityFeedItem_.feedAt), criteria.rangeEnd()));
+		if (criteria.getRangeEnd() != null) {
+			predicates.add(cb.lessThan(item.get(CrmActivityFeedItem_.feedAt), criteria.getRangeEnd()));
 		}
 
-		if (criteria.searchPattern() != null) {
+		if (criteria.getSearchPattern() != null) {
 			predicates.add(buildSearchPredicate(cb, query, item, contact, subject, criteria));
 		}
 
@@ -178,21 +177,21 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 	private Predicate buildSearchPredicate(CriteriaBuilder cb, CriteriaQuery<?> query, Root<CrmActivityFeedItem> item,
 			Join<CrmActivityFeedItem, CrmContact> contact, Expression<String> subject,
 			CrmActivityFeedCriteria criteria) {
-		String pattern = criteria.searchPattern();
+		String pattern = criteria.getSearchPattern();
 		Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
 
 		List<Predicate> matches = new ArrayList<>();
 		matches.add(cb.like(cb.lower(subject), pattern, LIKE_ESCAPE));
 		matches.add(buildContactMatch(cb, contact, contactCompany, pattern));
 
-		if (criteria.type() == null || criteria.type() == CrmActivityType.MEETING) {
+		if (criteria.getType() == null || criteria.getType() == CrmActivityType.MEETING) {
 			matches.add(cb
 				.and(cb.equal(activityType(item), CrmActivityType.MEETING), cb.exists(buildLinkedContactSubquery(cb,
 						query, item, pattern, CrmActivityMeetingContact.class, CrmActivityMeetingContact_.contact,
 						link -> link.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId)))));
 		}
 
-		if (criteria.type() == null || criteria.type() == CrmActivityType.EMAIL) {
+		if (criteria.getType() == null || criteria.getType() == CrmActivityType.EMAIL) {
 			matches.add(cb.and(cb.equal(activityType(item), CrmActivityType.EMAIL),
 					cb.exists(buildLinkedContactSubquery(cb, query, item, pattern, CrmActivityEmailContact.class,
 							CrmActivityEmailContact_.contact,

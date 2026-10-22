@@ -25,7 +25,7 @@ public class CrmActivityFeedItem {
 			select 'TASK' as activity_type, t.id as activity_id, t.owner_id as owner_id, t.contact_id as contact_id,
 			t.deal_id as deal_id, t.company_id as company_id, t.id as task_id,
 			case when 1 = 0 then t.id end as call_id, case when 1 = 0 then t.id end as meeting_id,
-			case when 1 = 0 then t.id end as email_id, t.is_completed as is_completed, false as is_scheduled,
+			case when 1 = 0 then t.id end as email_id, t.is_completed as is_completed,
 			t.is_deleted as is_deleted, t.due_at as due_at, t.completed_at as completed_at,
 			t.created_date as occurred_at, t.created_date as created_date,
 			case when t.is_completed = true then coalesce(t.completed_at, t.created_date)
@@ -35,16 +35,16 @@ public class CrmActivityFeedItem {
 			from crm_activity_task t
 			union all
 			select 'CALL', c.id, c.owner_id, c.contact_id, c.deal_id, c.company_id, null, c.id, null, null, false,
-			false, c.is_deleted, null, null, c.logged_at, c.created_date, coalesce(c.logged_at, c.created_date), false
+			c.is_deleted, null, null, c.logged_at, c.created_date, coalesce(c.logged_at, c.created_date), false
 			from crm_activity_call c
 			union all
 			select 'MEETING', m.id, m.owner_id, null, m.deal_id, m.company_id, null, null, m.id, null, false,
-			coalesce(m.is_scheduled, false), m.is_deleted, null, null, m.start_at, m.created_date,
+			m.is_deleted, null, null, m.start_at, m.created_date,
 			coalesce(m.start_at, m.created_date),
 			case when m.is_scheduled = true and m.start_at is not null then true else false end
 			from crm_activity_meeting m
 			union all
-			select 'EMAIL', e.id, e.owner_id, null, e.deal_id, e.company_id, null, null, null, e.id, false, false,
+			select 'EMAIL', e.id, e.owner_id, null, e.deal_id, e.company_id, null, null, null, e.id, false,
 			e.is_deleted, null, null, e.logged_at, e.created_date, coalesce(e.logged_at, e.created_date), false
 			from crm_activity_email e
 			""";
@@ -89,9 +89,6 @@ public class CrmActivityFeedItem {
 
 	@Column(name = "is_completed")
 	private Boolean isCompleted;
-
-	@Column(name = "is_scheduled")
-	private Boolean isScheduled;
 
 	@Column(name = "is_deleted")
 	private Boolean isDeleted;

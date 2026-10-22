@@ -13,7 +13,7 @@ import java.time.ZoneId;
 public class CrmActivityBucketUtil {
 
 	public CrmActivityBucket resolveBucket(CrmActivityFeedRecord activity, Instant now, ZoneId zone) {
-		Instant dueAt = activity.type() == CrmActivityType.TASK ? activity.dueAt() : activity.occurredAt();
+		Instant dueAt = activity.getType() == CrmActivityType.TASK ? activity.getDueAt() : activity.getOccurredAt();
 		LocalDate dueDate = dueAt.atZone(zone).toLocalDate();
 		LocalDate today = now.atZone(zone).toLocalDate();
 
