@@ -56,12 +56,10 @@ public class CrmActivityFeedUtil {
 			row.setIsCompleted(completed);
 			row.setPriority(activity.priority());
 			row.setOccurredAt(!completed && activity.dueAt() == null ? activity.createdDate() : null);
-			row.setCanComplete(scope.includesOwner(activity.ownerId()));
 		}
 		else {
 			row.setOccurredAt(activity.occurredAt() != null ? activity.occurredAt() : activity.createdDate());
 			row.setIsCompleted(false);
-			row.setCanComplete(false);
 		}
 
 		row.setOwner(activity.ownerId() == null ? null : new CrmActivityPersonResponseDto(activity.ownerId(),

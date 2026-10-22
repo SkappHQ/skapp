@@ -1,11 +1,8 @@
 package com.skapp.community.crmplanner.activity.service.impl;
 
 import com.skapp.community.common.model.User;
-import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
-import com.skapp.community.crmplanner.activity.payload.response.CrmActivityPersonResponseDto;
-import com.skapp.community.crmplanner.activity.repository.CrmActivityTeamMemberRepository;
 import com.skapp.community.crmplanner.activity.service.CrmActivityScopeService;
 import com.skapp.community.crmplanner.activity.type.CrmActivityScope;
 import com.skapp.community.leaveplanner.type.ManagerType;
@@ -16,7 +13,6 @@ import com.skapp.community.peopleplanner.repository.EmployeeManagerDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +21,6 @@ import java.util.List;
 import java.util.Set;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class CrmActivityScopeServiceImpl implements CrmActivityScopeService {
 
@@ -37,8 +32,6 @@ public class CrmActivityScopeServiceImpl implements CrmActivityScopeService {
 	private final EmployeeManagerDao employeeManagerDao;
 
 	private final TeamDao teamDao;
-
-	private final CrmActivityTeamMemberRepository crmActivityTeamMemberRepository;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -56,19 +49,6 @@ public class CrmActivityScopeServiceImpl implements CrmActivityScopeService {
 		}
 
 		return new CrmActivityScope(viewerId, Role.CRM_SALES_REPRESENTATIVE, false, Set.of(viewerId));
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public ResponseEntityDto getTeamMembers() {
-		log.info("getTeamMembers: execution started");
-
-		CrmActivityScope scope = resolveScope(userService.getCurrentUser());
-		List<CrmActivityPersonResponseDto> members = crmActivityTeamMemberRepository
-			.findCrmMembers(scope.orgWide() ? null : scope.ownerIds());
-
-		log.info("getTeamMembers: execution ended");
-		return new ResponseEntityDto(false, members);
 	}
 
 	private Set<Long> findTeamOwnerIds(Employee manager) {

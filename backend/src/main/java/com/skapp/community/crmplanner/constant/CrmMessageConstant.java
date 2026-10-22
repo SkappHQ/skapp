@@ -91,10 +91,7 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_CANNOT_DELETE_TERMINAL_STAGE("api.error.crm.deal-stage.cannot-delete-terminal-stage"),
 	CRM_ERROR_CANNOT_DELETE_STAGE_WITH_DEALS("api.error.crm.deal-stage.cannot-delete-with-deals"),
 	CRM_SUCCESS_DEAL_DELETED("api.success.crm.deal-deleted"),
-	CRM_ERROR_ACTIVITY_INVALID_DATE_RANGE("api.error.crm.activity.invalid-date-range"),
-	CRM_ERROR_ACTIVITY_TASK_NOT_FOUND("api.error.crm.activity.task-not-found"),
-	CRM_ERROR_ACTIVITY_TASK_EDIT_DENIED("api.error.crm.activity.task-edit-denied"),
-	CRM_ERROR_ACTIVITY_TASK_STATUS_REQUIRED("api.error.crm.activity.task-status-required");
+	CRM_ERROR_ACTIVITY_INVALID_DATE_RANGE("api.error.crm.activity.invalid-date-range");
 
 	private final String messageKey;
 

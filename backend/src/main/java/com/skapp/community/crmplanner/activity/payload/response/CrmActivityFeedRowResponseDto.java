@@ -36,6 +36,4 @@ public class CrmActivityFeedRowResponseDto {
 
 	private CrmActivityLinkResponseDto company;
 
-	private Boolean canComplete;
-
 }

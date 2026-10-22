@@ -15,10 +15,4 @@ public class CrmActivityValidations {
 		}
 	}
 
-	public void validateTaskCompletion(Boolean isCompleted) {
-		if (isCompleted == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_TASK_STATUS_REQUIRED);
-		}
-	}
-
 }

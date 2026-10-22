@@ -3,7 +3,6 @@ package com.skapp.community.crmplanner.activity.controller.v1;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.activity.payload.request.CrmActivityFeedFilterDto;
 import com.skapp.community.crmplanner.activity.service.CrmActivityFeedService;
-import com.skapp.community.crmplanner.activity.service.CrmActivityScopeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +21,6 @@ public class CrmActivityController {
 
 	private final CrmActivityFeedService crmActivityFeedService;
 
-	private final CrmActivityScopeService crmActivityScopeService;
-
 	@Operation(summary = "Get the activity feed",
 			description = "Returns tasks, calls, meetings and emails visible to the caller, grouped into overdue, "
 					+ "today and upcoming (returned in full on page 0) and a by-month history paged 25 at a time. "
@@ -32,16 +29,6 @@ public class CrmActivityController {
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getActivityFeed(CrmActivityFeedFilterDto filterDto) {
 		ResponseEntityDto response = crmActivityFeedService.getActivityFeed(filterDto);
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
-	@Operation(summary = "Get team members for the activity feed filter",
-			description = "Returns the CRM users whose activities the caller can filter by: the caller's team for a "
-					+ "sales manager and every CRM user for an admin.")
-	@GetMapping("/team-members")
-	@PreAuthorize("hasRole('ROLE_CRM_SALES_MANAGER')")
-	public ResponseEntity<ResponseEntityDto> getTeamMembers() {
-		ResponseEntityDto response = crmActivityScopeService.getTeamMembers();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
