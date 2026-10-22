@@ -8,6 +8,7 @@ import {
   ActivityType,
   DateRange
 } from "~community/crm/activities/types/activityTypes";
+import { CrmPriorityEnum } from "~community/crm/enums/common";
 
 export const ACTIVITY_PAGE_SIZE = 25;
 
@@ -107,3 +108,37 @@ export const EMPTY_ACTIVITY_FILTERS: ActivityFilterValues = {
   ownerId: null,
   dateRange: EMPTY_ACTIVITY_DATE_RANGE
 };
+
+export const ACTIVITY_PRIORITY_KEYS: Record<CrmPriorityEnum, string> = {
+  [CrmPriorityEnum.HIGH]: "high",
+  [CrmPriorityEnum.MEDIUM]: "medium",
+  [CrmPriorityEnum.LOW]: "low"
+};
+
+export const ACTIVITY_PRIORITY_ORDER: CrmPriorityEnum[] = [
+  CrmPriorityEnum.HIGH,
+  CrmPriorityEnum.MEDIUM,
+  CrmPriorityEnum.LOW
+];
+
+export const ACTIVITY_PRIORITY_STYLES: Record<
+  CrmPriorityEnum,
+  { backgroundColor: string; textColor: string }
+> = {
+  [CrmPriorityEnum.HIGH]: {
+    backgroundColor: "bg-semantic-red-background",
+    textColor: "text-semantic-red-text"
+  },
+  [CrmPriorityEnum.MEDIUM]: {
+    backgroundColor: "bg-semantic-amber-background",
+    textColor: "text-semantic-amber-text"
+  },
+  [CrmPriorityEnum.LOW]: {
+    backgroundColor: "bg-semantic-green-background",
+    textColor: "text-semantic-green-text"
+  }
+};
+
+export const ACTIVITY_TASK_DETAIL_ICON_SIZE = 24;
+
+export const ACTIVITY_TASK_PANEL_ID = "crm-activity-task-panel";
