@@ -127,20 +127,20 @@ export const getRowSubtitle = (
 ): string => {
   if (row.type === ActivityType.TASK) {
     if (row.isCompleted && row.completedAt) {
-      return translate(["row", "subtitle", "completedOn"], {
+      return translate(["activities", "row", "subtitle", "completedOn"], {
         date: formatActivityDate(instantInZone(row.completedAt, zone))
       });
     }
 
     if (!row.dueAt) return "";
 
-    return translate(["row", "subtitle", "dueOn"], {
+    return translate(["activities", "row", "subtitle", "dueOn"], {
       date: formatActivityDate(instantInZone(row.dueAt, zone))
     });
   }
 
   if (row.type === ActivityType.MEETING && row.dueAt && isInFuture(row.dueAt)) {
-    return translate(["row", "subtitle", "scheduledOn"], {
+    return translate(["activities", "row", "subtitle", "scheduledOn"], {
       date: formatActivityDate(instantInZone(row.dueAt, zone))
     });
   }
@@ -151,7 +151,7 @@ export const getRowSubtitle = (
 
   const zoned = instantInZone(happenedAt, zone);
 
-  return translate(["row", "subtitle", "occurredAt"], {
+  return translate(["activities", "row", "subtitle", "occurredAt"], {
     date: formatActivityDate(zoned),
     time: zoned.toFormat(ACTIVITY_TIME_FORMAT)
   });
@@ -162,7 +162,7 @@ export const getLinkLabel = (
   translate: TranslatorFunctionType
 ): string =>
   link.deleted
-    ? translate(["row", "deletedLink"], { name: link.name })
+    ? translate(["activities", "row", "deletedLink"], { name: link.name })
     : link.name;
 
 const parseDateValue = (value: string): DateTime =>
@@ -188,13 +188,12 @@ export const toPickerDateRange = (range: DateRange): PickerDateRange => {
   return pickerRange as PickerDateRange;
 };
 
+export const toDateValue = (date?: Date): string | null =>
+  date ? DateTime.fromJSDate(date).toFormat(ACTIVITY_DATE_FORMAT) : null;
+
 export const fromPickerDateRange = (range?: PickerDateRange): DateRange => ({
-  from: range?.from
-    ? DateTime.fromJSDate(range.from).toFormat(ACTIVITY_DATE_FORMAT)
-    : null,
-  to: range?.to
-    ? DateTime.fromJSDate(range.to).toFormat(ACTIVITY_DATE_FORMAT)
-    : null
+  from: toDateValue(range?.from),
+  to: toDateValue(range?.to)
 });
 
 export const isDateRangeEmpty = (range: DateRange): boolean =>

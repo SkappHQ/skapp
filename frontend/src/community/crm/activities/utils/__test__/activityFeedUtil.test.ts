@@ -19,6 +19,7 @@ import {
   getVisibleBuckets,
   groupByMonth,
   isDateRangeEmpty,
+  toDateValue,
   toPickerDateRange,
   validateDateRange
 } from "../activityFeedUtil";
@@ -28,7 +29,7 @@ type TranslationNode = string | { [key: string]: TranslationNode };
 const translate = (keys: string[], values: Record<string, string> = {}) => {
   const template = keys.reduce<TranslationNode>(
     (node, key) => (typeof node === "string" ? node : node[key]),
-    crmModule.activities as TranslationNode
+    crmModule as TranslationNode
   );
 
   return String(template).replace(
@@ -70,12 +71,12 @@ const buildPage = (
 
 describe("getActivityRowKey", () => {
   it("combines type and id so ids from different tables do not clash", () => {
-    expect(getActivityRowKey(buildRow({ id: 7, type: ActivityType.TASK }))).toBe(
-      "TASK-7"
-    );
-    expect(getActivityRowKey(buildRow({ id: 7, type: ActivityType.CALL }))).toBe(
-      "CALL-7"
-    );
+    expect(
+      getActivityRowKey(buildRow({ id: 7, type: ActivityType.TASK }))
+    ).toBe("TASK-7");
+    expect(
+      getActivityRowKey(buildRow({ id: 7, type: ActivityType.CALL }))
+    ).toBe("CALL-7");
   });
 });
 
@@ -215,15 +216,15 @@ describe("getVisibleBuckets", () => {
   it("takes the fixed buckets from the first page only", () => {
     const groups = getVisibleBuckets([secondPage, firstPage], "UTC");
 
-    expect(groups.some((group) => group.bucket === ActivityBucket.OVERDUE)).toBe(
-      false
-    );
+    expect(
+      groups.some((group) => group.bucket === ActivityBucket.OVERDUE)
+    ).toBe(false);
   });
 
   it("counts rows across visible buckets", () => {
-    expect(countBucketRows(getVisibleBuckets([firstPage, secondPage], "UTC"))).toBe(
-      13
-    );
+    expect(
+      countBucketRows(getVisibleBuckets([firstPage, secondPage], "UTC"))
+    ).toBe(13);
   });
 });
 
@@ -372,6 +373,11 @@ describe("date range conversion", () => {
   it("leaves out missing dates", () => {
     expect(toPickerDateRange({ from: null, to: null })).toEqual({});
     expect(fromPickerDateRange()).toEqual({ from: null, to: null });
+  });
+
+  it("formats a picked day as a date value", () => {
+    expect(toDateValue(new Date(2026, 9, 5))).toBe("2026-10-05");
+    expect(toDateValue()).toBeNull();
   });
 
   it("detects an empty range", () => {

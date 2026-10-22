@@ -7,6 +7,7 @@ import {
 
 import {
   areFilterValuesEqual,
+  countActiveFilters,
   filterTeamMembers,
   getMatchingPreset,
   getPresetDateRange,
@@ -47,20 +48,18 @@ describe("getPresetDateRange", () => {
   });
 
   it("covers the last 30 days including today", () => {
-    expect(getPresetDateRange(ActivityDatePreset.LAST_30_DAYS, "UTC")).toEqual(
-      {
-        from: "2026-09-23",
-        to: "2026-10-22"
-      }
-    );
+    expect(getPresetDateRange(ActivityDatePreset.LAST_30_DAYS, "UTC")).toEqual({
+      from: "2026-09-23",
+      to: "2026-10-22"
+    });
   });
 
   it("uses the viewer's timezone to decide what today is", () => {
     jest.setSystemTime(new Date("2026-10-22T20:00:00Z"));
 
-    expect(getPresetDateRange(ActivityDatePreset.TODAY, "Asia/Colombo")).toEqual(
-      { from: "2026-10-23", to: "2026-10-23" }
-    );
+    expect(
+      getPresetDateRange(ActivityDatePreset.TODAY, "Asia/Colombo")
+    ).toEqual({ from: "2026-10-23", to: "2026-10-23" });
   });
 });
 
@@ -86,7 +85,9 @@ describe("getMatchingPreset", () => {
     expect(
       getMatchingPreset({ from: "2026-10-02", to: "2026-10-03" }, "UTC")
     ).toBeNull();
-    expect(getMatchingPreset({ from: "2026-10-22", to: null }, "UTC")).toBeNull();
+    expect(
+      getMatchingPreset({ from: "2026-10-22", to: null }, "UTC")
+    ).toBeNull();
   });
 });
 
@@ -145,6 +146,18 @@ describe("hasActiveFilters", () => {
         dateRange: { from: null, to: "2026-10-01" }
       })
     ).toBe(true);
+  });
+});
+
+describe("countActiveFilters", () => {
+  it("counts the owner and the date range once each", () => {
+    expect(countActiveFilters(EMPTY_ACTIVITY_FILTERS)).toBe(0);
+    expect(
+      countActiveFilters({
+        ownerId: 2,
+        dateRange: { from: "2026-10-01", to: "2026-10-31" }
+      })
+    ).toBe(2);
   });
 });
 

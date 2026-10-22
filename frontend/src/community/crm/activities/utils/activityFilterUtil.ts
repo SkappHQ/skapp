@@ -13,12 +13,12 @@ import {
   DateRange
 } from "~community/crm/activities/types/activityTypes";
 
-const toDateValue = (dateTime: DateTime): string =>
+const formatDateValue = (dateTime: DateTime): string =>
   dateTime.toFormat(ACTIVITY_DATE_FORMAT);
 
 const toRange = (from: DateTime, to: DateTime): DateRange => ({
-  from: toDateValue(from),
-  to: toDateValue(to)
+  from: formatDateValue(from),
+  to: formatDateValue(to)
 });
 
 export const getPresetDateRange = (
@@ -65,10 +65,16 @@ export const areFilterValuesEqual = (
   first.ownerId === second.ownerId &&
   isSameDateRange(first.dateRange, second.dateRange);
 
+export const countActiveFilters = (filters: ActivityFilterValues): number => {
+  const isOwnerActive = filters.ownerId !== null;
+  const isDateRangeActive =
+    filters.dateRange.from !== null || filters.dateRange.to !== null;
+
+  return Number(isOwnerActive) + Number(isDateRangeActive);
+};
+
 export const hasActiveFilters = (filters: ActivityFilterValues): boolean =>
-  filters.ownerId !== null ||
-  filters.dateRange.from !== null ||
-  filters.dateRange.to !== null;
+  countActiveFilters(filters) > 0;
 
 export const filterTeamMembers = (
   members: ActivityTeamMember[],
