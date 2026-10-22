@@ -67,7 +67,7 @@ const uploadImage = async ({
       }
 
       setHasUploadStarted?.(false);
-    } catch (error) {
+    } catch {
       onError();
     }
   } else if (isAnExistingResource) {
