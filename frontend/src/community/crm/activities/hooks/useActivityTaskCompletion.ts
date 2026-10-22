@@ -17,7 +17,7 @@ import {
   ActivityType
 } from "~community/crm/activities/types/activityTypes";
 
-export const ACTIVITY_COMPLETE_DEBOUNCE_DELAY = 400;
+const ACTIVITY_COMPLETE_DEBOUNCE_DELAY = 400;
 
 interface PendingCompletion {
   confirmed: boolean;

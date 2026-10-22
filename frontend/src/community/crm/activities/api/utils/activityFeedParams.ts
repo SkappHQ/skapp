@@ -15,7 +15,7 @@ export interface ActivityFeedQuery {
   to: string | null;
 }
 
-export const getActivityTypeForTab = (tab: ActivityTab): ActivityType | null =>
+const getActivityTypeForTab = (tab: ActivityTab): ActivityType | null =>
   ACTIVITY_TABS.find((tabConfig) => tabConfig.id === tab)?.type ?? null;
 
 export const buildActivityFeedParams = (

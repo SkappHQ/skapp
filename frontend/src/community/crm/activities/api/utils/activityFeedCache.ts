@@ -11,7 +11,7 @@ import {
 } from "~community/crm/activities/types/activityTypes";
 import { getMonthAnchor } from "~community/crm/activities/utils/activityFeedUtil";
 
-export type ActivityFeedCacheData = InfiniteData<ActivityFeedResponse, number>;
+type ActivityFeedCacheData = InfiniteData<ActivityFeedResponse, number>;
 
 type ActivityRowPatch =
   Partial<ActivityRow> | ((row: ActivityRow) => Partial<ActivityRow>);
@@ -48,7 +48,7 @@ const patchPage = (
   }
 });
 
-export const patchTaskInFeedData = (
+const patchTaskInFeedData = (
   data: ActivityFeedCacheData | null,
   taskId: number,
   patch: ActivityRowPatch

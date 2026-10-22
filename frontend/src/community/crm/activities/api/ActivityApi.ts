@@ -22,7 +22,7 @@ import {
   ActivityTeamMember
 } from "~community/crm/activities/types/activityTypes";
 
-export const fetchActivityFeed = async (
+const fetchActivityFeed = async (
   query: ActivityFeedQuery,
   page: number,
   signal?: AbortSignal
@@ -52,9 +52,7 @@ export const useGetActivityFeedInfinite = (
     refetchOnWindowFocus: false
   });
 
-export const fetchActivityTeamMembers = async (): Promise<
-  ActivityTeamMember[]
-> => {
+const fetchActivityTeamMembers = async (): Promise<ActivityTeamMember[]> => {
   const response = await authFetch.get(crmActivityEndpoints.GET_TEAM_MEMBERS);
   return response?.data?.results ?? [];
 };

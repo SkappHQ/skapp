@@ -10,7 +10,7 @@ import {
   ActivityStore
 } from "~community/crm/activities/store/activityStoreTypes";
 
-export const initialActivityFeedState: ActivityFeedSliceState = {
+const initialActivityFeedState: ActivityFeedSliceState = {
   activeTab: DEFAULT_ACTIVITY_TAB,
   search: "",
   appliedFilters: EMPTY_ACTIVITY_FILTERS
