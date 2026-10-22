@@ -74,4 +74,4 @@ export const shouldShowActivityControls = ({
   isError: boolean;
   isLoading: boolean;
   isEmpty: boolean;
-}): boolean => hasActiveFilters || isError || (!isLoading && !isEmpty);
+}): boolean => isLoading || hasActiveFilters || isError || !isEmpty;
