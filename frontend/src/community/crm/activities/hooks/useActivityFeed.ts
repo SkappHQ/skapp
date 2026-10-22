@@ -3,6 +3,7 @@ import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import {
@@ -26,11 +27,8 @@ import {
 } from "~community/crm/activities/types/activityTypes";
 import { SEARCH_DEBOUNCE_DELAY } from "~community/crm/constants/commonConstants";
 
-interface UseActivityFeedParams {
-  isManager: boolean;
-}
-
 export interface UseActivityFeedResult {
+  isManager: boolean;
   activeTab: ActivityTab;
   search: string;
   appliedSearch: string;
@@ -59,11 +57,12 @@ export interface UseActivityFeedResult {
 const NO_PAGES: ActivityFeedResponse[] = [];
 const NO_TEAM_MEMBERS: ActivityTeamMember[] = [];
 
-export const useActivityFeed = ({
-  isManager
-}: UseActivityFeedParams): UseActivityFeedResult => {
+export const useActivityFeed = (): UseActivityFeedResult => {
   const translateText = useTranslator("crmModule");
   const { setToastMessage } = useToast();
+  const { isCrmSalesManager, isCrmAdmin, isSuperAdmin } = useSessionData();
+
+  const isManager = Boolean(isCrmSalesManager || isCrmAdmin || isSuperAdmin);
 
   const {
     activeTab,
@@ -160,6 +159,7 @@ export const useActivityFeed = ({
   const onToggleComplete = useCallback(() => {}, []);
 
   return {
+    isManager,
     activeTab,
     search,
     appliedSearch,

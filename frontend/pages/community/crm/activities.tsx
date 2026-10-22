@@ -2,19 +2,16 @@ import { NextPage } from "next";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { Modules } from "~community/common/enums/CommonEnums";
-import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useActivityFeed } from "~community/crm/activities/hooks/useActivityFeed";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
 
 const Activities: NextPage = () => {
   const translateText = useTranslator("crmModule");
-  const { isCrmSalesManager } = useSessionData();
-  const isManager = isCrmSalesManager ?? false;
 
   useInitializeCrmData();
 
-  const { isLoading } = useActivityFeed({ isManager });
+  const { isLoading } = useActivityFeed();
 
   return (
     <ContentLayout

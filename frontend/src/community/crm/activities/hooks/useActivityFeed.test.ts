@@ -29,6 +29,13 @@ jest.mock("~community/common/providers/ToastProvider", () => ({
   useToast: () => ({ setToastMessage: mockSetToastMessage })
 }));
 
+const mockUseSessionData = jest.fn();
+
+jest.mock("~community/common/hooks/useSessionData", () => ({
+  __esModule: true,
+  default: () => mockUseSessionData()
+}));
+
 jest.mock("~community/crm/activities/api/ActivityApi", () => ({
   useGetActivityFeedInfinite: jest.fn(),
   useGetActivityTeamMembers: jest.fn()
@@ -49,6 +56,27 @@ const emptyPage: ActivityFeedResponse = {
 
 const OCTOBER_FILTERS = { ownerId: 2, from: "2026-10-01", to: "2026-10-31" };
 const NO_FILTERS = { ownerId: null, from: null, to: null };
+
+const REP_SESSION = {
+  isCrmSalesRepresentative: true,
+  isCrmSalesManager: false,
+  isCrmAdmin: false,
+  isSuperAdmin: false
+};
+
+const ROLE_SESSIONS = {
+  rep: REP_SESSION,
+  manager: { ...REP_SESSION, isCrmSalesManager: true },
+  crmAdmin: { ...REP_SESSION, isCrmAdmin: true },
+  superAdmin: { ...REP_SESSION, isSuperAdmin: true }
+};
+
+type Role = keyof typeof ROLE_SESSIONS;
+
+const renderFeedAs = (role: Role) => {
+  mockUseSessionData.mockReturnValue(ROLE_SESSIONS[role]);
+  return renderHook(() => useActivityFeed());
+};
 
 const feedResult = (overrides: Record<string, unknown> = {}) => ({
   data: { pages: [firstPage], pageParams: [0] },
@@ -83,8 +111,52 @@ describe("useActivityFeed", () => {
     jest.useRealTimers();
   });
 
+  describe("role access", () => {
+    it("gives a sales rep no filters and no team members call", () => {
+      const { result } = renderFeedAs("rep");
+
+      act(() => result.current.applyFilters(OCTOBER_FILTERS));
+
+      expect(result.current.isManager).toBe(false);
+      expect(mockUseTeamMembers).toHaveBeenCalled();
+      expect(
+        mockUseTeamMembers.mock.calls.every(([enabled]) => enabled === false)
+      ).toBe(true);
+      expect(lastQuery()).toMatchObject(NO_FILTERS);
+      expect(result.current.hasAppliedFilters).toBe(false);
+      expect(result.current.hasActiveFilters).toBe(false);
+    });
+
+    it.each<Role>(["manager", "crmAdmin", "superAdmin"])(
+      "gives a %s the filters and the team members list",
+      (role) => {
+        const { result } = renderFeedAs(role);
+
+        act(() => result.current.applyFilters(OCTOBER_FILTERS));
+
+        expect(result.current.isManager).toBe(true);
+        expect(mockUseTeamMembers).toHaveBeenLastCalledWith(true);
+        expect(result.current.teamMembers).toEqual(activityTeamMembersMock);
+        expect(lastQuery()).toEqual({
+          tab: ActivityTab.ALL,
+          search: "",
+          ...OCTOBER_FILTERS
+        });
+        expect(result.current.hasAppliedFilters).toBe(true);
+      }
+    );
+
+    it("treats a missing session as a sales rep", () => {
+      mockUseSessionData.mockReturnValue({});
+      const { result } = renderHook(() => useActivityFeed());
+
+      expect(result.current.isManager).toBe(false);
+      expect(mockUseTeamMembers).toHaveBeenLastCalledWith(false);
+    });
+  });
+
   it("queries the All tab with no filters by default", () => {
-    const { result } = renderHook(() => useActivityFeed({ isManager: true }));
+    const { result } = renderFeedAs("manager");
 
     expect(lastQuery()).toEqual({
       tab: ActivityTab.ALL,
@@ -95,7 +167,7 @@ describe("useActivityFeed", () => {
   });
 
   it("sends the search only after the debounce delay", () => {
-    const { result } = renderHook(() => useActivityFeed({ isManager: false }));
+    const { result } = renderFeedAs("rep");
 
     act(() => result.current.setSearch("  acme "));
     expect(result.current.search).toBe("  acme ");
@@ -111,8 +183,8 @@ describe("useActivityFeed", () => {
     expect(result.current.hasAppliedFilters).toBe(false);
   });
 
-  it("changes the query only when manager filters are applied", () => {
-    const { result } = renderHook(() => useActivityFeed({ isManager: true }));
+  it("changes the query only when filters are applied", () => {
+    const { result } = renderFeedAs("manager");
     const callsBefore = mockUseFeed.mock.calls.length;
 
     expect(lastQuery()).toMatchObject(NO_FILTERS);
@@ -120,17 +192,12 @@ describe("useActivityFeed", () => {
     act(() => result.current.applyFilters(OCTOBER_FILTERS));
 
     expect(mockUseFeed.mock.calls.length).toBeGreaterThan(callsBefore);
-    expect(lastQuery()).toEqual({
-      tab: ActivityTab.ALL,
-      search: "",
-      ...OCTOBER_FILTERS
-    });
+    expect(lastQuery()).toMatchObject(OCTOBER_FILTERS);
     expect(result.current.appliedFilters).toEqual(OCTOBER_FILTERS);
-    expect(result.current.hasAppliedFilters).toBe(true);
   });
 
-  it("clears the manager filters on reset", () => {
-    const { result } = renderHook(() => useActivityFeed({ isManager: true }));
+  it("clears the filters on reset", () => {
+    const { result } = renderFeedAs("crmAdmin");
 
     act(() => result.current.applyFilters(OCTOBER_FILTERS));
     act(() => result.current.resetFilters());
@@ -139,17 +206,8 @@ describe("useActivityFeed", () => {
     expect(result.current.hasAppliedFilters).toBe(false);
   });
 
-  it("never sends the owner or date range for reps", () => {
-    const { result } = renderHook(() => useActivityFeed({ isManager: false }));
-
-    act(() => result.current.applyFilters(OCTOBER_FILTERS));
-
-    expect(lastQuery()).toMatchObject(NO_FILTERS);
-    expect(result.current.hasActiveFilters).toBe(false);
-  });
-
   it("keeps the search and filters when the tab changes", () => {
-    const { result } = renderHook(() => useActivityFeed({ isManager: true }));
+    const { result } = renderFeedAs("manager");
 
     act(() => {
       result.current.setSearch("acme");
@@ -169,7 +227,7 @@ describe("useActivityFeed", () => {
   });
 
   it("keeps the tab and filters when the page is opened again in the session", () => {
-    const first = renderHook(() => useActivityFeed({ isManager: true }));
+    const first = renderFeedAs("superAdmin");
 
     act(() => {
       first.result.current.setActiveTab(ActivityTab.EMAILS);
@@ -177,19 +235,10 @@ describe("useActivityFeed", () => {
     });
     first.unmount();
 
-    const second = renderHook(() => useActivityFeed({ isManager: true }));
+    const second = renderFeedAs("superAdmin");
 
     expect(second.result.current.activeTab).toBe(ActivityTab.EMAILS);
     expect(second.result.current.appliedFilters).toEqual(OCTOBER_FILTERS);
-  });
-
-  it("only loads team members for managers", () => {
-    renderHook(() => useActivityFeed({ isManager: false }));
-    expect(mockUseTeamMembers).toHaveBeenLastCalledWith(false);
-
-    const { result } = renderHook(() => useActivityFeed({ isManager: true }));
-    expect(mockUseTeamMembers).toHaveBeenLastCalledWith(true);
-    expect(result.current.teamMembers).toEqual(activityTeamMembersMock);
   });
 
   it("keeps the feed working when team members fail", () => {
@@ -199,7 +248,7 @@ describe("useActivityFeed", () => {
       isError: true
     });
 
-    const { result } = renderHook(() => useActivityFeed({ isManager: true }));
+    const { result } = renderFeedAs("manager");
 
     expect(result.current.teamMembers).toEqual([]);
     expect(result.current.isTeamMembersError).toBe(true);
@@ -213,7 +262,7 @@ describe("useActivityFeed", () => {
       feedResult({ data: { pages: [firstPage, lastPage], pageParams: [0, 1] } })
     );
 
-    const { result } = renderHook(() => useActivityFeed({ isManager: false }));
+    const { result } = renderFeedAs("rep");
 
     expect(result.current.pages).toEqual([firstPage, lastPage]);
     expect(result.current.isEmpty).toBe(false);
@@ -224,7 +273,7 @@ describe("useActivityFeed", () => {
       feedResult({ data: { pages: [emptyPage], pageParams: [0] } })
     );
 
-    const { result } = renderHook(() => useActivityFeed({ isManager: false }));
+    const { result } = renderFeedAs("rep");
 
     expect(result.current.isEmpty).toBe(true);
   });
@@ -232,7 +281,7 @@ describe("useActivityFeed", () => {
   it("does not report empty while loading", () => {
     mockUseFeed.mockReturnValue(feedResult({ data: null, isLoading: true }));
 
-    const { result } = renderHook(() => useActivityFeed({ isManager: false }));
+    const { result } = renderFeedAs("rep");
 
     expect(result.current.isLoading).toBe(true);
     expect(result.current.pages).toEqual([]);
@@ -240,9 +289,7 @@ describe("useActivityFeed", () => {
   });
 
   it("loads the next By month page only when there is one", () => {
-    const { result, rerender } = renderHook(() =>
-      useActivityFeed({ isManager: false })
-    );
+    const { result, rerender } = renderFeedAs("rep");
 
     act(() => result.current.loadMore());
     expect(mockFetchNextPage).not.toHaveBeenCalled();
@@ -265,7 +312,7 @@ describe("useActivityFeed", () => {
       feedResult({ data: null, isError: true, errorUpdatedAt: 1 })
     );
 
-    const { result } = renderHook(() => useActivityFeed({ isManager: false }));
+    const { result } = renderFeedAs("rep");
 
     expect(result.current.isError).toBe(true);
     expect(result.current.isEmpty).toBe(false);
@@ -284,9 +331,7 @@ describe("useActivityFeed", () => {
       feedResult({ data: null, isError: true, errorUpdatedAt: 1 })
     );
 
-    const { rerender } = renderHook(() =>
-      useActivityFeed({ isManager: false })
-    );
+    const { rerender } = renderFeedAs("rep");
     rerender();
     expect(mockSetToastMessage).toHaveBeenCalledTimes(1);
 
@@ -298,13 +343,13 @@ describe("useActivityFeed", () => {
   });
 
   it("does not show the toast when the feed loads", () => {
-    renderHook(() => useActivityFeed({ isManager: false }));
+    renderFeedAs("rep");
 
     expect(mockSetToastMessage).not.toHaveBeenCalled();
   });
 
   it("stores the clicked row as the selected activity", () => {
-    const { result } = renderHook(() => useActivityFeed({ isManager: false }));
+    const { result } = renderFeedAs("rep");
     const row = firstRow();
 
     act(() => result.current.onRowClick(row));
@@ -316,7 +361,7 @@ describe("useActivityFeed", () => {
   });
 
   it("leaves the store alone when a task is toggled", () => {
-    const { result } = renderHook(() => useActivityFeed({ isManager: false }));
+    const { result } = renderFeedAs("rep");
 
     act(() =>
       result.current.onToggleComplete({
