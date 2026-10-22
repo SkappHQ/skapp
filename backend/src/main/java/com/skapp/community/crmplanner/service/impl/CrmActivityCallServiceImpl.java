@@ -53,7 +53,9 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 		params.setOwnerId(filterDto.getOwnerId());
 		params.setSearchKeyword(filterDto.getSearchKeyword());
 		params.setSortKey(filterDto.getSortKey() != null ? filterDto.getSortKey() : CrmActivityCallSort.LOGGED_AT);
-		params.setSortOrder(filterDto.getSortOrder() != null ? filterDto.getSortOrder() : Sort.Direction.DESC);
+		Sort.Direction defaultSortOrder = params.getSortKey() == CrmActivityCallSort.OWNER ? Sort.Direction.ASC
+				: Sort.Direction.DESC;
+		params.setSortOrder(filterDto.getSortOrder() != null ? filterDto.getSortOrder() : defaultSortOrder);
 
 		if (hasDateRange) {
 			ZoneId requestZone = timeZoneService.requestTimezone();

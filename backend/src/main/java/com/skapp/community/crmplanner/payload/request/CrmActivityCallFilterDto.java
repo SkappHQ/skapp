@@ -19,8 +19,8 @@ public class CrmActivityCallFilterDto {
 
 	private LocalDate endDate;
 
-	private CrmActivityCallSort sortKey = CrmActivityCallSort.LOGGED_AT;
+	private CrmActivityCallSort sortKey;
 
-	private Sort.Direction sortOrder = Sort.Direction.DESC;
+	private Sort.Direction sortOrder;
 
 }

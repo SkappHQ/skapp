@@ -24,9 +24,9 @@ import com.skapp.community.peopleplanner.model.Team_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -48,7 +48,8 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmActivityCallResponseDto> query = cb.createQuery(CrmActivityCallResponseDto.class);
 		Root<CrmActivityCall> call = query.from(CrmActivityCall.class);
-		Path<Long> ownerId = call.get(CrmActivityCall_.owner).get(Employee_.employeeId);
+		Join<CrmActivityCall, Employee> owner = call.join(CrmActivityCall_.owner, JoinType.LEFT);
+		Path<Long> ownerId = owner.get(Employee_.employeeId);
 
 		Join<CrmActivityCall, CrmCompany> company = call.join(CrmActivityCall_.company, JoinType.LEFT);
 		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
@@ -62,8 +63,7 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 		if (!isOrganizationWide && params.getCrmRole() != Role.CRM_SALES_MANAGER) {
 			predicates.add(cb.equal(ownerId, params.getCurrentEmployeeId()));
 		}
-
-		if (!isOrganizationWide && params.getCrmRole() == Role.CRM_SALES_MANAGER) {
+		else if (!isOrganizationWide) {
 			Subquery<Long> directReports = query.subquery(Long.class);
 			Root<EmployeeManager> employeeManager = directReports.from(EmployeeManager.class);
 			directReports.select(employeeManager.get(EmployeeManager_.employee).get(Employee_.employeeId))
@@ -112,23 +112,26 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 					cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), pattern)));
 		}
 
-		List<Expression<?>> sortExpressions = new ArrayList<>();
+		boolean isAscending = params.getSortOrder().isAscending();
+		List<Order> orders = new ArrayList<>();
 		if (params.getSortKey() == CrmActivityCallSort.OWNER) {
-			Join<CrmActivityCall, Employee> owner = call.join(CrmActivityCall_.owner, JoinType.LEFT);
-			sortExpressions.add(owner.get(Employee_.firstName));
-			sortExpressions.add(owner.get(Employee_.lastName));
+			orders.add(isAscending ? cb.asc(owner.get(Employee_.firstName)) : cb.desc(owner.get(Employee_.firstName)));
+			orders.add(isAscending ? cb.asc(owner.get(Employee_.lastName)) : cb.desc(owner.get(Employee_.lastName)));
+			orders.add(cb.desc(call.get(CrmActivityCall_.loggedAt)));
+			orders.add(cb.desc(call.get(CrmActivityCall_.id)));
 		}
-		sortExpressions.add(call.get(CrmActivityCall_.loggedAt));
-		sortExpressions.add(call.get(CrmActivityCall_.id));
+		else {
+			orders.add(isAscending ? cb.asc(call.get(CrmActivityCall_.loggedAt))
+					: cb.desc(call.get(CrmActivityCall_.loggedAt)));
+			orders.add(isAscending ? cb.asc(call.get(CrmActivityCall_.id)) : cb.desc(call.get(CrmActivityCall_.id)));
+		}
 
 		query.select(cb.construct(CrmActivityCallResponseDto.class, call.get(CrmActivityCall_.id),
 				call.get(CrmActivityCall_.subject), call.get(CrmActivityCall_.durationMinutes),
 				call.get(CrmActivityCall_.loggedAt), ownerId, call.get(CrmActivityCall_.contact).get(CrmContact_.id),
 				call.get(CrmActivityCall_.deal).get(CrmDeal_.id), company.get(CrmCompany_.id)))
 			.where(predicates.toArray(new Predicate[0]))
-			.orderBy(sortExpressions.stream()
-				.map(expression -> params.getSortOrder().isAscending() ? cb.asc(expression) : cb.desc(expression))
-				.toList());
+			.orderBy(orders);
 
 		return entityManager.createQuery(query).getResultList();
 	}
