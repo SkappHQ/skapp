@@ -67,6 +67,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 
 		List<Predicate> predicates = buildFeedPredicates(cb, query, item, joins, criteria);
 		predicates.add(cb.isTrue(item.get(CrmActivityFeedItem_.isDueKind)));
+		predicates.add(cb.not(passedScheduledMeetingPredicate(cb, item, criteria)));
 		query.where(predicates.toArray(new Predicate[0])).orderBy(newestFirst(cb, item));
 
 		return entityManager.createQuery(query).getResultList();
@@ -80,7 +81,8 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		FeedJoins joins = selectFeedRecord(cb, query, item);
 
 		List<Predicate> predicates = buildFeedPredicates(cb, query, item, joins, criteria);
-		predicates.add(cb.isFalse(item.get(CrmActivityFeedItem_.isDueKind)));
+		predicates.add(cb.or(cb.isFalse(item.get(CrmActivityFeedItem_.isDueKind)),
+				passedScheduledMeetingPredicate(cb, item, criteria)));
 		query.where(predicates.toArray(new Predicate[0])).orderBy(newestFirst(cb, item));
 
 		return entityManager.createQuery(query).setFirstResult(offset).setMaxResults(limit).getResultList();
@@ -200,6 +202,12 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		}
 
 		return predicates;
+	}
+
+	private Predicate passedScheduledMeetingPredicate(CriteriaBuilder cb, Root<CrmActivityFeedItem> item,
+			CrmActivityFeedCriteria criteria) {
+		return cb.and(cb.equal(activityType(item), CrmActivityType.MEETING),
+				cb.lessThan(item.get(CrmActivityFeedItem_.feedAt), criteria.now()));
 	}
 
 	private List<Order> newestFirst(CriteriaBuilder cb, Root<CrmActivityFeedItem> item) {

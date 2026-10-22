@@ -579,12 +579,12 @@ class CrmActivityControllerIntegrationTest {
 		savedCall("Bucket call", 1L, now.minus(3, ChronoUnit.DAYS));
 
 		performFeedRequest("bucket").andExpect(status().isOk())
-			.andExpect(jsonPath(OVERDUE + "[*]['subject']",
-					contains("Bucket overdue recent", "Bucket passed meeting", "Bucket overdue oldest")))
+			.andExpect(jsonPath(OVERDUE + "[*]['subject']", contains("Bucket overdue recent", "Bucket overdue oldest")))
 			.andExpect(jsonPath(TODAY + "[*]['subject']", contains("Bucket today")))
 			.andExpect(
-					jsonPath(UPCOMING + "[*]['subject']", contains("Bucket upcoming later", "Bucket upcoming meeting")))
-			.andExpect(jsonPath(BY_MONTH_ITEMS + "[*]['subject']", contains("Bucket completed early", "Bucket call")))
+					jsonPath(UPCOMING + "[*]['subject']", contains("Bucket upcoming meeting", "Bucket upcoming later")))
+			.andExpect(jsonPath(BY_MONTH_ITEMS + "[*]['subject']",
+					contains("Bucket completed early", "Bucket call", "Bucket passed meeting")))
 			.andExpect(jsonPath(BY_MONTH_ITEMS + "[0]['isCompleted']").value(true))
 			.andExpect(jsonPath(BY_MONTH_ITEMS + "[0]['canComplete']").value(true))
 			.andExpect(jsonPath(BY_MONTH_ITEMS + "[1]['canComplete']").value(false))

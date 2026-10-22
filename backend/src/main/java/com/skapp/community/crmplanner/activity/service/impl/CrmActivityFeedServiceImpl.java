@@ -93,7 +93,7 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 		Instant now = Instant.now();
 		CrmActivityFeedCriteria criteria = new CrmActivityFeedCriteria(toActivityType(filterDto.getType()), ownerIds,
 				CrmActivityFeedUtil.toSearchPattern(filterDto.getSearch()),
-				CrmActivityFeedUtil.toRangeStart(from, zone), CrmActivityFeedUtil.toRangeEndExclusive(to, zone));
+				CrmActivityFeedUtil.toRangeStart(from, zone), CrmActivityFeedUtil.toRangeEndExclusive(to, zone), now);
 
 		List<CrmActivityFeedRecord> dueRecords = page == 0 ? crmActivityFeedRepository.findDueActivities(criteria)
 				: Collections.emptyList();
@@ -151,7 +151,7 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 			FeedContext context) {
 		return dueBuckets.getOrDefault(bucket, List.of())
 			.stream()
-			.sorted(CrmActivityBucketUtil.newestFirst())
+			.sorted(CrmActivityBucketUtil.comparatorFor(bucket))
 			.map(context::toRow)
 			.toList();
 	}

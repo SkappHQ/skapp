@@ -18,15 +18,32 @@ public class CrmActivityBucketUtil {
 		.thenComparing(activity -> activity.type().name())
 		.thenComparing(CrmActivityFeedRecord::id, Comparator.reverseOrder());
 
+	private static final Comparator<CrmActivityFeedRecord> SOONEST_FIRST = Comparator
+		.comparing(CrmActivityBucketUtil::resolveFeedAt, Comparator.nullsLast(Comparator.naturalOrder()))
+		.thenComparing(activity -> activity.type().name())
+		.thenComparing(CrmActivityFeedRecord::id);
+
 	public CrmActivityBucket resolveBucket(CrmActivityFeedRecord activity, Instant now, ZoneId zone) {
 		if (isOpenTaskWithDueDate(activity)) {
 			return resolveDueBucket(activity.dueAt(), now, zone);
 		}
 
 		if (isScheduledMeeting(activity)) {
-			return resolveDueBucket(activity.occurredAt(), now, zone);
+			return resolveScheduledMeetingBucket(activity, now, zone);
 		}
 
+		return CrmActivityBucket.BY_MONTH;
+	}
+
+	private CrmActivityBucket resolveScheduledMeetingBucket(CrmActivityFeedRecord meeting, Instant now, ZoneId zone) {
+		if (meeting.occurredAt().isBefore(now)) {
+			return passedScheduledMeetingBucket();
+		}
+
+		return resolveDueBucket(meeting.occurredAt(), now, zone);
+	}
+
+	private CrmActivityBucket passedScheduledMeetingBucket() {
 		return CrmActivityBucket.BY_MONTH;
 	}
 
@@ -40,8 +57,8 @@ public class CrmActivityBucketUtil {
 		return activity.occurredAt() != null ? activity.occurredAt() : activity.createdDate();
 	}
 
-	public Comparator<CrmActivityFeedRecord> newestFirst() {
-		return NEWEST_FIRST;
+	public Comparator<CrmActivityFeedRecord> comparatorFor(CrmActivityBucket bucket) {
+		return bucket == CrmActivityBucket.TODAY || bucket == CrmActivityBucket.UPCOMING ? SOONEST_FIRST : NEWEST_FIRST;
 	}
 
 	private CrmActivityBucket resolveDueBucket(Instant dueAt, Instant now, ZoneId zone) {

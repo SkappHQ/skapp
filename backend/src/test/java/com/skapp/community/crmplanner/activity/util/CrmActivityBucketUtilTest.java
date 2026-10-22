@@ -112,26 +112,26 @@ class CrmActivityBucketUtilTest {
 	}
 
 	@Test
-	@DisplayName("Scheduled meeting uses the open task day rule: Overdue before today, Today even if passed, Upcoming after")
-	void resolveBucket_ScheduledMeeting_UsesDayBasedDueRule() {
+	@DisplayName("Scheduled meeting still ahead uses the day rule, a passed one goes to By month")
+	void resolveBucket_ScheduledMeeting_ReturnsBucketByDayOrByMonthWhenPassed() {
 		assertEquals(CrmActivityBucket.TODAY,
 				CrmActivityBucketUtil.resolveBucket(meeting(1L, true, NOW.plusSeconds(3600)), NOW, UTC));
-		assertEquals(CrmActivityBucket.TODAY,
-				CrmActivityBucketUtil.resolveBucket(meeting(2L, true, NOW.minusSeconds(3600)), NOW, UTC));
 		assertEquals(CrmActivityBucket.UPCOMING,
-				CrmActivityBucketUtil.resolveBucket(meeting(3L, true, NOW.plusSeconds(86_400 * 2L)), NOW, UTC));
-		assertEquals(CrmActivityBucket.OVERDUE,
-				CrmActivityBucketUtil.resolveBucket(meeting(4L, true, NOW.minusSeconds(86_400)), NOW, UTC));
+				CrmActivityBucketUtil.resolveBucket(meeting(2L, true, NOW.plusSeconds(86_400 * 2L)), NOW, UTC));
+		assertEquals(CrmActivityBucket.BY_MONTH,
+				CrmActivityBucketUtil.resolveBucket(meeting(3L, true, NOW.minusSeconds(3600)), NOW, UTC));
+		assertEquals(CrmActivityBucket.BY_MONTH,
+				CrmActivityBucketUtil.resolveBucket(meeting(4L, true, NOW.minusSeconds(86_400 * 3L)), NOW, UTC));
 	}
 
 	@Test
-	@DisplayName("Scheduled meeting midnight edge: earlier today in UTC is already yesterday in Los Angeles")
+	@DisplayName("Scheduled meeting midnight edge: after UTC midnight is Upcoming in UTC but Today in Los Angeles")
 	void resolveBucket_ScheduledMeetingTimezoneEdge_UsesViewerTimezone() {
 		Instant now = Instant.parse("2026-10-22T09:00:00Z");
-		CrmActivityFeedRecord earlyMeeting = meeting(1L, true, Instant.parse("2026-10-22T02:00:00Z"));
+		CrmActivityFeedRecord lateMeeting = meeting(1L, true, Instant.parse("2026-10-23T02:00:00Z"));
 
-		assertEquals(CrmActivityBucket.TODAY, CrmActivityBucketUtil.resolveBucket(earlyMeeting, now, UTC));
-		assertEquals(CrmActivityBucket.OVERDUE, CrmActivityBucketUtil.resolveBucket(earlyMeeting, now, LOS_ANGELES));
+		assertEquals(CrmActivityBucket.UPCOMING, CrmActivityBucketUtil.resolveBucket(lateMeeting, now, UTC));
+		assertEquals(CrmActivityBucket.TODAY, CrmActivityBucketUtil.resolveBucket(lateMeeting, now, LOS_ANGELES));
 	}
 
 	@Test
@@ -151,8 +151,8 @@ class CrmActivityBucketUtilTest {
 	}
 
 	@Test
-	@DisplayName("Every bucket is ordered newest first by its bucket date with stable tie-breakers")
-	void newestFirst_OrdersByBucketDateDescending() {
+	@DisplayName("Overdue and By month are newest first, Today and Upcoming are soonest first, with stable tie-breakers")
+	void comparatorFor_OrdersEachBucketAsSpecified() {
 		CrmActivityFeedRecord fiveDaysAgo = task(1L, NOW.minusSeconds(86_400 * 5L), false, null);
 		CrmActivityFeedRecord oneDayAgo = task(2L, NOW.minusSeconds(86_400), false, null);
 		CrmActivityFeedRecord later = task(3L, NOW.plusSeconds(7200), false, null);
@@ -162,13 +162,20 @@ class CrmActivityBucketUtilTest {
 		CrmActivityFeedRecord tiedEmailLow = logged(CrmActivityType.EMAIL, 7L, NOW);
 		CrmActivityFeedRecord tiedEmailHigh = logged(CrmActivityType.EMAIL, 8L, NOW);
 
-		assertEquals(List.of(2L, 1L), sortedIds(fiveDaysAgo, oneDayAgo));
-		assertEquals(List.of(3L, 4L), sortedIds(sooner, later));
-		assertEquals(List.of(6L, 8L, 7L, 5L), sortedIds(completedRecently, tiedEmailLow, tiedEmailHigh, tiedCall));
+		assertEquals(List.of(2L, 1L), sortedIds(CrmActivityBucket.OVERDUE, fiveDaysAgo, oneDayAgo));
+		assertEquals(List.of(4L, 3L), sortedIds(CrmActivityBucket.TODAY, later, sooner));
+		assertEquals(List.of(4L, 3L), sortedIds(CrmActivityBucket.UPCOMING, later, sooner));
+		assertEquals(List.of(6L, 8L, 7L, 5L),
+				sortedIds(CrmActivityBucket.BY_MONTH, completedRecently, tiedEmailLow, tiedEmailHigh, tiedCall));
+		assertEquals(List.of(1L, 2L),
+				sortedIds(CrmActivityBucket.TODAY, task(2L, NOW, false, null), task(1L, NOW, false, null)));
 	}
 
-	private static List<Long> sortedIds(CrmActivityFeedRecord... records) {
-		return Stream.of(records).sorted(CrmActivityBucketUtil.newestFirst()).map(CrmActivityFeedRecord::id).toList();
+	private static List<Long> sortedIds(CrmActivityBucket bucket, CrmActivityFeedRecord... records) {
+		return Stream.of(records)
+			.sorted(CrmActivityBucketUtil.comparatorFor(bucket))
+			.map(CrmActivityFeedRecord::id)
+			.toList();
 	}
 
 	@Test
