@@ -147,6 +147,16 @@
       "teamMember": "Selected team member",
       "fromDate": "Filter start date",
       "toDate": "Filter end date"
+    },
+    "taskPanel": {
+      "kebabMenu": "Task actions",
+      "editName": "Edit task subject",
+      "nameInput": "Task subject",
+      "editNotes": "Edit notes",
+      "notesInput": "Notes",
+      "priority": "Task priority",
+      "dueDate": "Task due date: {{date}}",
+      "closePanel": "Close task panel"
     }
   }
 }

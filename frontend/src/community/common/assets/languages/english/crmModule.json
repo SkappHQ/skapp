@@ -680,6 +680,32 @@
         "reset": "Reset filters",
         "apply": "Apply filters"
       }
+    },
+    "taskPanel": {
+      "reopenTask": "Reopen task",
+      "deleteTask": "Delete task",
+      "notes": "Notes",
+      "notesPlaceholder": "Add notes",
+      "noNotes": "No notes added",
+      "dealsTitle": "Deals",
+      "noDealsDescription": "No deals associated with this task",
+      "loadError": "Couldn't load this task. Please refresh to try again.",
+      "info": {
+        "markAsDone": "Mark as done",
+        "statusDone": "Done",
+        "assignedTo": "Assigned to",
+        "noOwner": "No owner assigned",
+        "priority": "Priority",
+        "dueDate": "Due date",
+        "noDueDate": "No due date",
+        "contactName": "Contact",
+        "noContact": "No contact linked"
+      },
+      "validations": {
+        "nameRequired": "Task subject is required",
+        "nameLength": "Task name must be less than 255 characters",
+        "notesLength": "Notes must be less than 1000 characters"
+      }
     }
   }
 }
