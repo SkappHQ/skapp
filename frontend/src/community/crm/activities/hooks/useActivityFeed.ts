@@ -14,6 +14,7 @@ import {
   ActivityFeedQuery,
   isActivityFeedEmpty
 } from "~community/crm/activities/api/utils/activityFeedParams";
+import { useActivityTaskCompletion } from "~community/crm/activities/hooks/useActivityTaskCompletion";
 import { useActivityStore } from "~community/crm/activities/store/activityStore";
 import {
   ActivityAppliedFilters,
@@ -51,7 +52,7 @@ export interface UseActivityFeedResult {
   isTeamMembersLoading: boolean;
   isTeamMembersError: boolean;
   onRowClick: (row: ActivityRow) => void;
-  onToggleComplete: (row: ActivityRow) => void;
+  onToggleComplete: (row: ActivityRow, isCompleted: boolean) => void;
 }
 
 const NO_PAGES: ActivityFeedResponse[] = [];
@@ -156,7 +157,7 @@ export const useActivityFeed = (): UseActivityFeedResult => {
     [setSelectedActivity]
   );
 
-  const onToggleComplete = useCallback(() => {}, []);
+  const { toggleTaskComplete: onToggleComplete } = useActivityTaskCompletion();
 
   return {
     isManager,

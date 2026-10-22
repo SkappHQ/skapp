@@ -36,6 +36,14 @@ jest.mock("~community/common/hooks/useSessionData", () => ({
   default: () => mockUseSessionData()
 }));
 
+const mockToggleTaskComplete = jest.fn();
+
+jest.mock("~community/crm/activities/hooks/useActivityTaskCompletion", () => ({
+  useActivityTaskCompletion: () => ({
+    toggleTaskComplete: mockToggleTaskComplete
+  })
+}));
+
 jest.mock("~community/crm/activities/api/ActivityApi", () => ({
   useGetActivityFeedInfinite: jest.fn(),
   useGetActivityTeamMembers: jest.fn()
@@ -360,16 +368,13 @@ describe("useActivityFeed", () => {
     });
   });
 
-  it("leaves the store alone when a task is toggled", () => {
+  it("hands task toggles to the completion hook without selecting the row", () => {
     const { result } = renderFeedAs("rep");
+    const row = { ...firstRow(), type: ActivityType.TASK };
 
-    act(() =>
-      result.current.onToggleComplete({
-        ...firstRow(),
-        type: ActivityType.TASK
-      })
-    );
+    act(() => result.current.onToggleComplete(row, true));
 
+    expect(mockToggleTaskComplete).toHaveBeenCalledWith(row, true);
     expect(useActivityStore.getState().selectedActivity).toBeNull();
   });
 });
