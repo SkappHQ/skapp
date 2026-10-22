@@ -10,7 +10,6 @@ import {
   ActivityType
 } from "~community/crm/activities/types/activityTypes";
 import { getActivityRowKey } from "~community/crm/activities/utils/activityFeedUtil";
-import { CrmPriorityEnum } from "~community/crm/enums/common";
 
 import ActivityRowCheckbox from "./ActivityRowCheckbox";
 import ActivityRowSubtitle from "./ActivityRowSubtitle";
@@ -34,7 +33,6 @@ const ActivityRow: FC<ActivityRowProps> = ({
   const rowId = `crm-activity-row-${getActivityRowKey(row)}`;
   const isTask = row.type === ActivityType.TASK;
   const isCompletedStyleApplied = isTask && row.isCompleted;
-  const isHighPriority = row.priority === CrmPriorityEnum.HIGH;
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.target !== event.currentTarget) return;
@@ -62,6 +60,8 @@ const ActivityRow: FC<ActivityRowProps> = ({
       onClick={() => onRowClick(row)}
       onKeyDown={handleKeyDown}
     >
+      {!isTask && <span aria-hidden="true" className="w-7 shrink-0" />}
+
       {isTask && (
         <ActivityRowCheckbox
           id={`${rowId}-checkbox`}
@@ -98,7 +98,9 @@ const ActivityRow: FC<ActivityRowProps> = ({
       </div>
 
       <div className="flex items-center gap-6 shrink-0">
-        {isHighPriority && <ActivityPriorityMarker />}
+        {isTask && row.priority && (
+          <ActivityPriorityMarker priority={row.priority} />
+        )}
 
         {row.owner && (
           <ActivityOwnerAvatar id={`${rowId}-owner`} owner={row.owner} />
