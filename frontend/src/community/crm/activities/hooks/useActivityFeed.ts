@@ -14,7 +14,8 @@ import {
   ActivityFeedQuery,
   countActivityFeedRows,
   isActivityFeedEmpty,
-  resolveViewerTimezone
+  resolveViewerTimezone,
+  shouldShowActivityControls
 } from "~community/crm/activities/api/utils/activityFeedParams";
 import { useActivityTaskCompletion } from "~community/crm/activities/hooks/useActivityTaskCompletion";
 import { useActivityStore } from "~community/crm/activities/store/activityStore";
@@ -35,6 +36,7 @@ export interface UseActivityFeedResult {
   appliedFilters: ActivityFilterValues;
   hasAppliedFilters: boolean;
   hasActiveFilters: boolean;
+  showControls: boolean;
   selectedActivity: SelectedActivity | null;
   setActiveTab: (tab: ActivityTab) => void;
   setSearch: (search: string) => void;
@@ -147,6 +149,13 @@ export const useActivityFeed = (): UseActivityFeedResult => {
 
   const hasActiveFilters = hasAppliedFilters || query.search.length > 0;
 
+  const showControls = shouldShowActivityControls({
+    hasActiveFilters,
+    isError,
+    isLoading,
+    isEmpty
+  });
+
   const loadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
       void fetchNextPage();
@@ -170,6 +179,7 @@ export const useActivityFeed = (): UseActivityFeedResult => {
     appliedFilters,
     hasAppliedFilters,
     hasActiveFilters,
+    showControls,
     selectedActivity,
     setActiveTab,
     setSearch,

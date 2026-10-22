@@ -15,7 +15,8 @@ import {
   getNextActivityFeedPage,
   getViewerTimezone,
   isActivityFeedEmpty,
-  resolveViewerTimezone
+  resolveViewerTimezone,
+  shouldShowActivityControls
 } from "./activityFeedParams";
 
 const firstPage = activityFeedMock as ActivityFeedResponse;
@@ -165,5 +166,49 @@ describe("getViewerTimezone", () => {
     expect(getViewerTimezone()).toBe(
       Intl.DateTimeFormat().resolvedOptions().timeZone
     );
+  });
+});
+
+describe("shouldShowActivityControls", () => {
+  const base = {
+    hasActiveFilters: false,
+    isError: false,
+    isLoading: false,
+    isEmpty: false
+  };
+
+  it("hides the controls only for a loaded, truly empty tab", () => {
+    expect(shouldShowActivityControls({ ...base, isEmpty: true })).toBe(false);
+  });
+
+  it("stays hidden during the first load with nothing active", () => {
+    expect(
+      shouldShowActivityControls({ ...base, isLoading: true, isEmpty: false })
+    ).toBe(false);
+  });
+
+  it("shows the controls once the tab has rows", () => {
+    expect(shouldShowActivityControls(base)).toBe(true);
+  });
+
+  it("never hides the controls while a search or filter is active", () => {
+    expect(
+      shouldShowActivityControls({
+        ...base,
+        hasActiveFilters: true,
+        isLoading: true
+      })
+    ).toBe(true);
+    expect(
+      shouldShowActivityControls({
+        ...base,
+        hasActiveFilters: true,
+        isEmpty: true
+      })
+    ).toBe(true);
+  });
+
+  it("shows the controls when the feed errors", () => {
+    expect(shouldShowActivityControls({ ...base, isError: true })).toBe(true);
   });
 });

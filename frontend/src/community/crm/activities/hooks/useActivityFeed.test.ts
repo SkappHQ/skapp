@@ -330,6 +330,31 @@ describe("useActivityFeed", () => {
     expect(result.current.isEmpty).toBe(false);
   });
 
+  it("hides the controls on an empty tab and brings them back for a search", () => {
+    mockUseFeed.mockReturnValue(
+      feedResult({ data: { pages: [emptyPage], pageParams: [0] } })
+    );
+    const { result } = renderFeedAs("rep");
+
+    expect(result.current.showControls).toBe(false);
+
+    act(() => result.current.setSearch("acme"));
+    expect(result.current.showControls).toBe(true);
+
+    act(() => result.current.setSearch(""));
+    expect(result.current.showControls).toBe(false);
+  });
+
+  it("keeps the controls while a search is loading", () => {
+    mockUseFeed.mockReturnValue(feedResult({ data: null, isLoading: true }));
+    const { result } = renderFeedAs("rep");
+
+    expect(result.current.showControls).toBe(false);
+
+    act(() => result.current.setSearch("acme"));
+    expect(result.current.showControls).toBe(true);
+  });
+
   it("reports an empty feed once loaded with no rows", () => {
     mockUseFeed.mockReturnValue(
       feedResult({ data: { pages: [emptyPage], pageParams: [0] } })

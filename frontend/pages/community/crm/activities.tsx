@@ -18,6 +18,7 @@ const Activities: NextPage = () => {
 
   const {
     isManager,
+    showControls,
     timeZone,
     activeTab,
     search,
@@ -82,6 +83,7 @@ const Activities: NextPage = () => {
             teamMembers={teamMembers}
             isTeamMembersError={isTeamMembersError}
             timeZone={timeZone}
+            showControls={showControls}
           />
           <ActivityFeed
             activeTab={activeTab}
