@@ -1,8 +1,12 @@
-import { Tabs } from "@rootcodelabs/skapp-ui";
-import { FC, useState } from "react";
+import {
+  FilterListIcon,
+  IconButton,
+  Popper,
+  Tabs
+} from "@rootcodelabs/skapp-ui";
+import { FC, MouseEvent, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import ActivityFilterButton from "~community/crm/activities/components/atoms/ActivityFilterButton/ActivityFilterButton";
 import ActivityFilterPopover from "~community/crm/activities/components/molecules/ActivityFilterPopover/ActivityFilterPopover";
 import ActivitySearchField from "~community/crm/activities/components/molecules/ActivitySearchField/ActivitySearchField";
 import {
@@ -48,7 +52,11 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
 
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [filterAnchorEl, setFilterAnchorEl] = useState<HTMLElement | null>(
+    null
+  );
+
+  const isFilterOpen = filterAnchorEl !== null;
 
   const filterButtonId = `${id}-filter-button`;
   const filterPopoverId = `${id}-filter-popover`;
@@ -60,8 +68,12 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
   }));
 
   const handleCloseFilters = () => {
-    setIsFilterOpen(false);
+    setFilterAnchorEl(null);
     document.getElementById(filterButtonId)?.focus();
+  };
+
+  const handleToggleFilters = (event: MouseEvent<HTMLElement>) => {
+    setFilterAnchorEl(isFilterOpen ? null : event.currentTarget);
   };
 
   const searchPlaceholderKey =
@@ -81,11 +93,13 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
 
       <div className="flex items-center gap-3">
         {isManager && (
-          <div className="relative">
-            <ActivityFilterButton
+          <div>
+            <IconButton
               id={filterButtonId}
               type="button"
-              filterCount={activeFilterCount}
+              icon={<FilterListIcon />}
+              variant="transparent"
+              shape="square"
               aria-label={translateAria([
                 "activities",
                 "toolbar",
@@ -94,22 +108,29 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
               aria-haspopup="dialog"
               aria-expanded={isFilterOpen}
               aria-controls={isFilterOpen ? filterPopoverId : ""}
-              onClick={() => setIsFilterOpen((isOpen) => !isOpen)}
+              badge={{ count: activeFilterCount, show: activeFilterCount > 0 }}
+              onClick={handleToggleFilters}
             />
 
-            {isFilterOpen && (
-              <div className="absolute left-0 top-full z-50 mt-2">
-                <ActivityFilterPopover
-                  id={filterPopoverId}
-                  filters={filters}
-                  teamMembers={teamMembers}
-                  isTeamMembersError={isTeamMembersError}
-                  timeZone={timeZone}
-                  onApply={onApplyFilters}
-                  onClose={handleCloseFilters}
-                />
-              </div>
-            )}
+            <Popper
+              id={`${filterPopoverId}-popper`}
+              open={isFilterOpen}
+              anchorEl={filterAnchorEl}
+              position="bottom-start"
+              containerClassName="rounded-2xl shadow-lg"
+              ariaRole="presentation"
+              handleClose={handleCloseFilters}
+            >
+              <ActivityFilterPopover
+                id={filterPopoverId}
+                filters={filters}
+                teamMembers={teamMembers}
+                isTeamMembersError={isTeamMembersError}
+                timeZone={timeZone}
+                onApply={onApplyFilters}
+                onClose={handleCloseFilters}
+              />
+            </Popper>
           </div>
         )}
 

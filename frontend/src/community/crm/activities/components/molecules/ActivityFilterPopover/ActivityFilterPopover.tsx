@@ -69,11 +69,11 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
       aria-labelledby={`${id}-title`}
       tabIndex={-1}
       onKeyDown={handleKeyDown}
-      className="flex w-[25rem] max-w-[calc(100vw-2rem)] flex-col rounded-2xl bg-white shadow-lg focus:outline-none"
+      className="flex max-h-[765px] min-h-0 w-[25.5rem] max-w-[calc(100vw-2rem)] flex-col rounded-2xl bg-white shadow-lg focus:outline-none"
     >
-      <div className="flex flex-col gap-5 p-6 pb-5">
+      <div className="flex min-h-0 flex-col gap-5 overflow-y-auto px-5 pt-5 pb-4">
         <div className="flex items-center justify-between">
-          <h2 id={`${id}-title`} className="h3">
+          <h2 id={`${id}-title`} className="h2">
             {translateText(["activities", "toolbar", "filters", "title"])}
           </h2>
           <IconButton
@@ -106,7 +106,7 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3 border-t border-secondary-accent p-6 pt-4">
+      <div className="grid grid-cols-2 gap-3 border-t border-secondary-accent px-5 pt-4 pb-5">
         <ButtonV2
           id={`${id}-reset`}
           type="button"

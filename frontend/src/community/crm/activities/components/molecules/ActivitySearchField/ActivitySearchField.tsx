@@ -46,13 +46,14 @@ const ActivitySearchField: FC<ActivitySearchFieldProps> = ({
           "clearSearch"
         ])}
         placeholder={placeholder}
-        className="w-[20rem]"
+        className="w-82"
         leftIcon={<SearchIcon />}
         value={inputValue}
         onChange={(event: ChangeEvent<HTMLInputElement>) =>
           setInputValue(event.target.value)
         }
         state="default"
+        variant="sm"
       />
       <p
         id={`${id}-result-count`}
