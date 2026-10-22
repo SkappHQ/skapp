@@ -100,7 +100,7 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 		}
 
 		if (!StringUtils.isNullOrBlank(params.getSearchKeyword())) {
-			String pattern = "%" + StringUtils.escapeLikePattern(params.getSearchKeyword().trim().toLowerCase()) + "%";
+			String pattern = "%" + StringUtils.escapeLikePattern(params.getSearchKeyword().toLowerCase()) + "%";
 
 			Join<CrmActivityCall, CrmContact> contact = call.join(CrmActivityCall_.contact, JoinType.LEFT);
 			contact.on(cb.isFalse(contact.get(CrmContact_.isDeleted)));
