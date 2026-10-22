@@ -1,6 +1,7 @@
 {
   "breadcrumbs": {
-    "crm": "CRM"
+    "crm": "CRM",
+    "activities": "Activities"
   },
   "common": {
     "initData": {
@@ -574,6 +575,110 @@
         "successDescription": "The task has been deleted successfully.",
         "errorTitle": "Failed to delete task",
         "errorDescription": "Something went wrong. Please try again."
+      }
+    }
+  },
+  "activities": {
+    "page": {
+      "title": "Activities"
+    },
+    "toasts": {
+      "loadError": {
+        "title": "Oops! Something went wrong",
+        "description": "Failed to load activities"
+      }
+    },
+    "tabs": {
+      "all": "All activities",
+      "tasks": "Tasks",
+      "calls": "Calls",
+      "meetings": "Meetings",
+      "emails": "Emails"
+    },
+    "buckets": {
+      "overdue": "Overdue",
+      "today": "Today",
+      "upcoming": "Upcoming"
+    },
+    "types": {
+      "task": "Task",
+      "call": "Call",
+      "meeting": "Meeting",
+      "email": "Email"
+    },
+    "row": {
+      "subtitle": {
+        "dueOn": "Due on {{date}}",
+        "scheduledOn": "Scheduled on {{date}}",
+        "completedOn": "Completed on {{date}}",
+        "occurredAt": "{{date}} at {{time}}"
+      },
+      "deletedLink": "{{name}} (deleted)"
+    },
+    "feed": {
+      "loading": "Loading activities",
+      "loadingMore": "Loading more activities...",
+      "emptyState": {
+        "all": {
+          "title": "No activities logged",
+          "description": "No activities have been logged yet. Once you log activities, they will be displayed here."
+        },
+        "tasks": {
+          "title": "No tasks logged",
+          "description": "No tasks have been logged yet. Once you log tasks, they will be displayed here."
+        },
+        "calls": {
+          "title": "No calls logged",
+          "description": "No calls have been logged yet. Once you log calls, they will be displayed here."
+        },
+        "meetings": {
+          "title": "No meetings logged",
+          "description": "No meetings have been logged yet. Once you log meetings, they will be displayed here."
+        },
+        "emails": {
+          "title": "No emails logged",
+          "description": "No emails have been logged yet. Once you log emails, they will be displayed here."
+        }
+      },
+      "noResults": {
+        "title": "No activities match '{{term}}'",
+        "description": "Try a different search term."
+      },
+      "loadError": "Couldn't load your activities. Please refresh to try again."
+    },
+    "toolbar": {
+      "search": {
+        "label": "Search activities",
+        "placeholder": "Search activities",
+        "resultCount_one": "{{count}} activity found",
+        "resultCount_other": "{{count}} activities found"
+      },
+      "filters": {
+        "title": "Filters",
+        "dateRange": {
+          "label": "Date range",
+          "presets": {
+            "today": "Today",
+            "thisWeek": "This week",
+            "thisMonth": "This month",
+            "last30Days": "Last 30 days"
+          },
+          "from": "From",
+          "to": "To",
+          "fromPlaceholder": "Start date",
+          "toPlaceholder": "End date",
+          "error": "End date must be after start date"
+        },
+        "teamMember": {
+          "label": "Team member",
+          "placeholder": "Search team members",
+          "noMatches": "No team members found",
+          "noTeamMembers": "No team members to show",
+          "loadErrorInline": "Couldn't load team members",
+          "loadError": "Couldn't load team members. Refresh to try again."
+        },
+        "reset": "Reset filters",
+        "apply": "Apply filters"
       }
     }
   }
