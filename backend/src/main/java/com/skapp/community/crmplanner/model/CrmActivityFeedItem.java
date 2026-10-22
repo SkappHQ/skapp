@@ -7,7 +7,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.Subselect;
@@ -17,7 +16,6 @@ import java.time.Instant;
 
 @Entity
 @Immutable
-@Getter
 @NoArgsConstructor
 @Subselect(CrmActivityFeedItem.FEED_SUBSELECT)
 @Synchronize({ "crm_activity_task", "crm_activity_call", "crm_activity_meeting", "crm_activity_email" })

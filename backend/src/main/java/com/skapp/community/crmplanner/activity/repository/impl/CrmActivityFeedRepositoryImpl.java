@@ -41,6 +41,7 @@ import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
+import jakarta.persistence.metamodel.SingularAttribute;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -48,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 @Repository
 @RequiredArgsConstructor
@@ -59,80 +61,54 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 
 	@Override
 	public List<CrmActivityFeedRecord> findDueActivities(CrmActivityFeedCriteria criteria) {
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmActivityFeedRecord> query = cb.createQuery(CrmActivityFeedRecord.class);
-		Root<CrmActivityFeedItem> item = query.from(CrmActivityFeedItem.class);
-		FeedJoins joins = selectFeedRecord(cb, query, item);
-
-		List<Predicate> predicates = buildFeedPredicates(cb, query, item, joins, criteria);
-		predicates.add(cb.isTrue(item.get(CrmActivityFeedItem_.isDueKind)));
-		predicates.add(cb.not(passedScheduledMeetingPredicate(cb, item, criteria)));
-		query.where(predicates.toArray(new Predicate[0])).orderBy(newestFirst(cb, item));
-
-		return entityManager.createQuery(query).getResultList();
+		return findActivities(criteria, true, 0, 0);
 	}
 
 	@Override
 	public List<CrmActivityFeedRecord> findHistoryActivities(CrmActivityFeedCriteria criteria, int offset, int limit) {
+		return findActivities(criteria, false, offset, limit);
+	}
+
+	@Override
+	public List<CrmActivityLinkedContact> findLinkedContacts(CrmActivityType type, Collection<Long> activityIds) {
+		if (activityIds.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		return type == CrmActivityType.MEETING
+				? findLinkedContacts(CrmActivityMeetingContact.class, CrmActivityMeetingContact_.contact,
+						link -> link.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId),
+						activityIds)
+				: findLinkedContacts(CrmActivityEmailContact.class, CrmActivityEmailContact_.contact,
+						link -> link.get(CrmActivityEmailContact_.id).get(CrmActivityEmailContactId_.emailId),
+						activityIds);
+	}
+
+	private <L> List<CrmActivityLinkedContact> findLinkedContacts(Class<L> linkClass,
+			SingularAttribute<L, CrmContact> contactAttribute, Function<Root<L>, Path<Long>> activityIdPath,
+			Collection<Long> activityIds) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmActivityLinkedContact> query = cb.createQuery(CrmActivityLinkedContact.class);
+		Root<L> link = query.from(linkClass);
+		Join<L, CrmContact> contact = link.join(contactAttribute);
+		Path<Long> activityId = activityIdPath.apply(link);
+
+		query
+			.select(cb.construct(CrmActivityLinkedContact.class, activityId, contact.get(CrmContact_.id),
+					contact.get(CrmContact_.name), contact.get(CrmContact_.isDeleted)))
+			.where(activityId.in(activityIds))
+			.orderBy(cb.asc(activityId), cb.asc(cb.lower(contact.get(CrmContact_.name))),
+					cb.asc(contact.get(CrmContact_.id)));
+
+		return entityManager.createQuery(query).getResultList();
+	}
+
+	private List<CrmActivityFeedRecord> findActivities(CrmActivityFeedCriteria criteria, boolean due, int offset,
+			int limit) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmActivityFeedRecord> query = cb.createQuery(CrmActivityFeedRecord.class);
 		Root<CrmActivityFeedItem> item = query.from(CrmActivityFeedItem.class);
-		FeedJoins joins = selectFeedRecord(cb, query, item);
 
-		List<Predicate> predicates = buildFeedPredicates(cb, query, item, joins, criteria);
-		predicates.add(cb.or(cb.isFalse(item.get(CrmActivityFeedItem_.isDueKind)),
-				passedScheduledMeetingPredicate(cb, item, criteria)));
-		query.where(predicates.toArray(new Predicate[0])).orderBy(newestFirst(cb, item));
-
-		return entityManager.createQuery(query).setFirstResult(offset).setMaxResults(limit).getResultList();
-	}
-
-	@Override
-	public List<CrmActivityLinkedContact> findMeetingContacts(Collection<Long> meetingIds) {
-		if (meetingIds == null || meetingIds.isEmpty()) {
-			return Collections.emptyList();
-		}
-
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmActivityLinkedContact> query = cb.createQuery(CrmActivityLinkedContact.class);
-		Root<CrmActivityMeetingContact> link = query.from(CrmActivityMeetingContact.class);
-		Join<CrmActivityMeetingContact, CrmContact> contact = link.join(CrmActivityMeetingContact_.contact);
-		Path<Long> meetingId = link.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId);
-
-		query
-			.select(cb.construct(CrmActivityLinkedContact.class, meetingId, contact.get(CrmContact_.id),
-					contact.get(CrmContact_.name), contact.get(CrmContact_.isDeleted)))
-			.where(meetingId.in(meetingIds))
-			.orderBy(cb.asc(meetingId), cb.asc(cb.lower(contact.get(CrmContact_.name))),
-					cb.asc(contact.get(CrmContact_.id)));
-
-		return entityManager.createQuery(query).getResultList();
-	}
-
-	@Override
-	public List<CrmActivityLinkedContact> findEmailContacts(Collection<Long> emailIds) {
-		if (emailIds == null || emailIds.isEmpty()) {
-			return Collections.emptyList();
-		}
-
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmActivityLinkedContact> query = cb.createQuery(CrmActivityLinkedContact.class);
-		Root<CrmActivityEmailContact> link = query.from(CrmActivityEmailContact.class);
-		Join<CrmActivityEmailContact, CrmContact> contact = link.join(CrmActivityEmailContact_.contact);
-		Path<Long> emailId = link.get(CrmActivityEmailContact_.id).get(CrmActivityEmailContactId_.emailId);
-
-		query
-			.select(cb.construct(CrmActivityLinkedContact.class, emailId, contact.get(CrmContact_.id),
-					contact.get(CrmContact_.name), contact.get(CrmContact_.isDeleted)))
-			.where(emailId.in(emailIds))
-			.orderBy(cb.asc(emailId), cb.asc(cb.lower(contact.get(CrmContact_.name))),
-					cb.asc(contact.get(CrmContact_.id)));
-
-		return entityManager.createQuery(query).getResultList();
-	}
-
-	private FeedJoins selectFeedRecord(CriteriaBuilder cb, CriteriaQuery<CrmActivityFeedRecord> query,
-			Root<CrmActivityFeedItem> item) {
 		Join<CrmActivityFeedItem, CrmActivityTask> task = item.join(CrmActivityFeedItem_.task, JoinType.LEFT);
 		Join<CrmActivityFeedItem, CrmActivityCall> call = item.join(CrmActivityFeedItem_.call, JoinType.LEFT);
 		Join<CrmActivityFeedItem, CrmActivityMeeting> meeting = item.join(CrmActivityFeedItem_.meeting, JoinType.LEFT);
@@ -159,13 +135,14 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 				item.get(CrmActivityFeedItem_.completedAt), item.get(CrmActivityFeedItem_.occurredAt),
 				item.get(CrmActivityFeedItem_.createdDate)));
 
-		return new FeedJoins(contact, subject);
-	}
-
-	private List<Predicate> buildFeedPredicates(CriteriaBuilder cb, CriteriaQuery<?> query,
-			Root<CrmActivityFeedItem> item, FeedJoins joins, CrmActivityFeedCriteria criteria) {
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.isFalse(item.get(CrmActivityFeedItem_.isDeleted)));
+
+		Predicate passedScheduledMeeting = cb.and(cb.equal(activityType(item), CrmActivityType.MEETING),
+				cb.lessThan(item.get(CrmActivityFeedItem_.feedAt), criteria.now()));
+		Predicate dueKind = cb.isTrue(item.get(CrmActivityFeedItem_.isDueKind));
+		predicates.add(
+				due ? cb.and(dueKind, cb.not(passedScheduledMeeting)) : cb.or(cb.not(dueKind), passedScheduledMeeting));
 
 		if (criteria.type() != null) {
 			predicates.add(cb.equal(activityType(item), criteria.type()));
@@ -184,67 +161,58 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		}
 
 		if (criteria.searchPattern() != null) {
-			predicates.add(buildSearchPredicate(cb, query, item, joins, criteria));
+			predicates.add(buildSearchPredicate(cb, query, item, contact, subject, criteria));
 		}
 
-		return predicates;
-	}
+		List<Order> orders = due
+				? List.of(cb.asc(item.get(CrmActivityFeedItem_.feedAt)), cb.asc(activityType(item)),
+						cb.asc(activityId(item)))
+				: List.of(cb.desc(item.get(CrmActivityFeedItem_.feedAt)), cb.asc(activityType(item)),
+						cb.desc(activityId(item)));
+		query.where(predicates.toArray(new Predicate[0])).orderBy(orders);
 
-	private Predicate passedScheduledMeetingPredicate(CriteriaBuilder cb, Root<CrmActivityFeedItem> item,
-			CrmActivityFeedCriteria criteria) {
-		return cb.and(cb.equal(activityType(item), CrmActivityType.MEETING),
-				cb.lessThan(item.get(CrmActivityFeedItem_.feedAt), criteria.now()));
-	}
-
-	private List<Order> newestFirst(CriteriaBuilder cb, Root<CrmActivityFeedItem> item) {
-		return List.of(cb.desc(item.get(CrmActivityFeedItem_.feedAt)), cb.asc(activityType(item)),
-				cb.desc(activityId(item)));
+		return due ? entityManager.createQuery(query).getResultList()
+				: entityManager.createQuery(query).setFirstResult(offset).setMaxResults(limit).getResultList();
 	}
 
 	private Predicate buildSearchPredicate(CriteriaBuilder cb, CriteriaQuery<?> query, Root<CrmActivityFeedItem> item,
-			FeedJoins joins, CrmActivityFeedCriteria criteria) {
+			Join<CrmActivityFeedItem, CrmContact> contact, Expression<String> subject,
+			CrmActivityFeedCriteria criteria) {
 		String pattern = criteria.searchPattern();
-		Join<CrmContact, CrmCompany> contactCompany = joins.contact().join(CrmContact_.company, JoinType.LEFT);
+		Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
 
 		List<Predicate> matches = new ArrayList<>();
-		matches.add(cb.like(cb.lower(joins.subject()), pattern, LIKE_ESCAPE));
-		matches.add(buildContactMatch(cb, joins.contact(), contactCompany, pattern));
+		matches.add(cb.like(cb.lower(subject), pattern, LIKE_ESCAPE));
+		matches.add(buildContactMatch(cb, contact, contactCompany, pattern));
 
 		if (criteria.type() == null || criteria.type() == CrmActivityType.MEETING) {
-			matches.add(cb.and(cb.equal(activityType(item), CrmActivityType.MEETING),
-					cb.exists(buildMeetingContactSubquery(cb, query, item, pattern))));
+			matches.add(cb
+				.and(cb.equal(activityType(item), CrmActivityType.MEETING), cb.exists(buildLinkedContactSubquery(cb,
+						query, item, pattern, CrmActivityMeetingContact.class, CrmActivityMeetingContact_.contact,
+						link -> link.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId)))));
 		}
 
 		if (criteria.type() == null || criteria.type() == CrmActivityType.EMAIL) {
 			matches.add(cb.and(cb.equal(activityType(item), CrmActivityType.EMAIL),
-					cb.exists(buildEmailContactSubquery(cb, query, item, pattern))));
+					cb.exists(buildLinkedContactSubquery(cb, query, item, pattern, CrmActivityEmailContact.class,
+							CrmActivityEmailContact_.contact,
+							link -> link.get(CrmActivityEmailContact_.id).get(CrmActivityEmailContactId_.emailId)))));
 		}
 
 		return cb.or(matches.toArray(new Predicate[0]));
 	}
 
-	private Subquery<Long> buildMeetingContactSubquery(CriteriaBuilder cb, CriteriaQuery<?> query,
-			Root<CrmActivityFeedItem> item, String pattern) {
+	private <L> Subquery<Long> buildLinkedContactSubquery(CriteriaBuilder cb, CriteriaQuery<?> query,
+			Root<CrmActivityFeedItem> item, String pattern, Class<L> linkClass,
+			SingularAttribute<L, CrmContact> contactAttribute, Function<Root<L>, Path<Long>> activityIdPath) {
 		Subquery<Long> subquery = query.subquery(Long.class);
-		Root<CrmActivityMeetingContact> link = subquery.from(CrmActivityMeetingContact.class);
-		Join<CrmActivityMeetingContact, CrmContact> contact = link.join(CrmActivityMeetingContact_.contact);
+		Root<L> link = subquery.from(linkClass);
+		Join<L, CrmContact> contact = link.join(contactAttribute);
 		Join<CrmContact, CrmCompany> company = contact.join(CrmContact_.company, JoinType.LEFT);
-		Path<Long> meetingId = link.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId);
+		Path<Long> linkedActivityId = activityIdPath.apply(link);
 
-		return subquery.select(meetingId)
-			.where(cb.equal(meetingId, activityId(item)), buildContactMatch(cb, contact, company, pattern));
-	}
-
-	private Subquery<Long> buildEmailContactSubquery(CriteriaBuilder cb, CriteriaQuery<?> query,
-			Root<CrmActivityFeedItem> item, String pattern) {
-		Subquery<Long> subquery = query.subquery(Long.class);
-		Root<CrmActivityEmailContact> link = subquery.from(CrmActivityEmailContact.class);
-		Join<CrmActivityEmailContact, CrmContact> contact = link.join(CrmActivityEmailContact_.contact);
-		Join<CrmContact, CrmCompany> company = contact.join(CrmContact_.company, JoinType.LEFT);
-		Path<Long> emailId = link.get(CrmActivityEmailContact_.id).get(CrmActivityEmailContactId_.emailId);
-
-		return subquery.select(emailId)
-			.where(cb.equal(emailId, activityId(item)), buildContactMatch(cb, contact, company, pattern));
+		return subquery.select(linkedActivityId)
+			.where(cb.equal(linkedActivityId, activityId(item)), buildContactMatch(cb, contact, company, pattern));
 	}
 
 	private Predicate buildContactMatch(CriteriaBuilder cb, Join<?, CrmContact> contact,
@@ -262,9 +230,6 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 
 	private Path<Long> activityId(Root<CrmActivityFeedItem> item) {
 		return item.get(CrmActivityFeedItem_.id).get(CrmActivityFeedItemId_.activityId);
-	}
-
-	private record FeedJoins(Join<CrmActivityFeedItem, CrmContact> contact, Expression<String> subject) {
 	}
 
 }

@@ -15,7 +15,7 @@ public record CrmActivityScope(Long viewerId, Role role, boolean orgWide, Set<Lo
 	}
 
 	public boolean canViewDeal(Long dealOwnerId) {
-		return canFilter() || viewerId.equals(dealOwnerId);
+		return role != Role.CRM_SALES_REPRESENTATIVE || viewerId.equals(dealOwnerId);
 	}
 
 }

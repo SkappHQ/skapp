@@ -1,6 +1,5 @@
 package com.skapp.community.crmplanner.activity.service.impl;
 
-import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
@@ -16,7 +15,6 @@ import com.skapp.community.crmplanner.activity.service.CrmActivityScopeService;
 import com.skapp.community.crmplanner.activity.type.CrmActivityBucket;
 import com.skapp.community.crmplanner.activity.type.CrmActivityFeedCriteria;
 import com.skapp.community.crmplanner.activity.type.CrmActivityFeedRecord;
-import com.skapp.community.crmplanner.activity.type.CrmActivityFeedTab;
 import com.skapp.community.crmplanner.activity.type.CrmActivityLinkedContact;
 import com.skapp.community.crmplanner.activity.type.CrmActivityScope;
 import com.skapp.community.crmplanner.activity.type.CrmActivityType;
@@ -31,12 +29,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -58,59 +56,61 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 	public ResponseEntityDto getActivityFeed(CrmActivityFeedFilterDto filterDto) {
 		log.info("getActivityFeed: execution started");
 
-		User currentUser = userService.getCurrentUser();
-		CrmActivityScope scope = crmActivityScopeService.resolveScope(currentUser);
-
-		CrmActivityFeedResponseDto response = loadFeed(filterDto, scope);
-		log.info("getActivityFeed: execution ended");
-		return new ResponseEntityDto(false, response);
-	}
-
-	private CrmActivityFeedResponseDto loadFeed(CrmActivityFeedFilterDto filterDto, CrmActivityScope scope) {
-		int page = Math.max(filterDto.getPage(), 0);
+		CrmActivityScope scope = crmActivityScopeService.resolveScope(userService.getCurrentUser());
+		int page = filterDto.getPage();
+		CrmActivityValidations.validatePage(page);
 		LocalDate from = scope.canFilter() ? filterDto.getFrom() : null;
 		LocalDate to = scope.canFilter() ? filterDto.getTo() : null;
 		CrmActivityValidations.validateDateRange(from, to);
 
 		Set<Long> ownerIds = resolveOwnerIds(scope, filterDto.getOwnerId());
 		if (ownerIds != null && ownerIds.isEmpty()) {
-			return emptyFeed(page);
+			return new ResponseEntityDto(false, new CrmActivityFeedResponseDto(List.of(), List.of(), List.of(),
+					new CrmActivityFeedPageResponseDto(List.of(), page, false)));
 		}
 
 		ZoneId zone = timeZoneService.requestTimezone();
 		Instant now = Instant.now();
-		CrmActivityFeedCriteria criteria = new CrmActivityFeedCriteria(toActivityType(filterDto.getType()), ownerIds,
+		CrmActivityFeedCriteria criteria = new CrmActivityFeedCriteria(
+				filterDto.getType() == null ? null : filterDto.getType().getActivityType(), ownerIds,
 				CrmActivityFeedUtil.toSearchPattern(filterDto.getSearch()),
 				CrmActivityFeedUtil.toRangeStart(from, zone), CrmActivityFeedUtil.toRangeEndExclusive(to, zone), now);
 
 		List<CrmActivityFeedRecord> dueRecords = page == 0 ? crmActivityFeedRepository.findDueActivities(criteria)
 				: Collections.emptyList();
 		List<CrmActivityFeedRecord> historyRecords = crmActivityFeedRepository.findHistoryActivities(criteria,
-				page * CrmActivityConstants.BY_MONTH_PAGE_SIZE, CrmActivityConstants.BY_MONTH_PAGE_SIZE + 1);
+				page * CrmActivityConstants.BY_MONTH_PAGE_SIZE,
+				CrmActivityConstants.BY_MONTH_PAGE_SIZE + CrmActivityConstants.BY_MONTH_LOOKAHEAD);
 		boolean hasMore = historyRecords.size() > CrmActivityConstants.BY_MONTH_PAGE_SIZE;
 		if (hasMore) {
 			historyRecords = historyRecords.subList(0, CrmActivityConstants.BY_MONTH_PAGE_SIZE);
 		}
 
 		List<CrmActivityFeedRecord> allRecords = Stream.concat(dueRecords.stream(), historyRecords.stream()).toList();
-		Map<Long, List<CrmActivityLinkResponseDto>> meetingContacts = groupContacts(
-				crmActivityFeedRepository.findMeetingContacts(idsOfType(allRecords, CrmActivityType.MEETING)));
-		Map<Long, List<CrmActivityLinkResponseDto>> emailContacts = groupContacts(
-				crmActivityFeedRepository.findEmailContacts(idsOfType(allRecords, CrmActivityType.EMAIL)));
-		FeedContext context = new FeedContext(scope, meetingContacts, emailContacts);
-
-		Map<CrmActivityBucket, List<CrmActivityFeedRecord>> dueBuckets = new EnumMap<>(CrmActivityBucket.class);
-		for (CrmActivityFeedRecord dueRecord : dueRecords) {
-			CrmActivityBucket bucket = CrmActivityBucketUtil.resolveBucket(dueRecord, now, zone);
-			dueBuckets.computeIfAbsent(bucket, key -> new ArrayList<>()).add(dueRecord);
+		Map<CrmActivityType, Map<Long, List<CrmActivityLinkResponseDto>>> linkedContacts = new EnumMap<>(
+				CrmActivityType.class);
+		for (CrmActivityType type : List.of(CrmActivityType.MEETING, CrmActivityType.EMAIL)) {
+			List<Long> ids = allRecords.stream()
+				.filter(activity -> activity.type() == type)
+				.map(CrmActivityFeedRecord::id)
+				.distinct()
+				.toList();
+			linkedContacts.put(type, groupContacts(crmActivityFeedRepository.findLinkedContacts(type, ids)));
 		}
 
-		List<CrmActivityFeedRowResponseDto> byMonthRows = historyRecords.stream().map(context::toRow).toList();
+		Function<CrmActivityFeedRecord, CrmActivityFeedRowResponseDto> toRow = activity -> CrmActivityFeedUtil.toRow(
+				activity, scope,
+				linkedContacts.getOrDefault(activity.type(), Map.of()).getOrDefault(activity.id(), List.of()));
+		Map<CrmActivityBucket, List<CrmActivityFeedRowResponseDto>> dueRows = dueRecords.stream()
+			.collect(Collectors.groupingBy(activity -> CrmActivityBucketUtil.resolveBucket(activity, now, zone),
+					() -> new EnumMap<>(CrmActivityBucket.class), Collectors.mapping(toRow, Collectors.toList())));
+		List<CrmActivityFeedRowResponseDto> overdue = dueRows.getOrDefault(CrmActivityBucket.OVERDUE, List.of())
+			.reversed();
 
-		return new CrmActivityFeedResponseDto(toSortedRows(dueBuckets, CrmActivityBucket.OVERDUE, context),
-				toSortedRows(dueBuckets, CrmActivityBucket.TODAY, context),
-				toSortedRows(dueBuckets, CrmActivityBucket.UPCOMING, context),
-				new CrmActivityFeedPageResponseDto(byMonthRows, page, hasMore));
+		return new ResponseEntityDto(false, new CrmActivityFeedResponseDto(overdue,
+				dueRows.getOrDefault(CrmActivityBucket.TODAY, List.of()),
+				dueRows.getOrDefault(CrmActivityBucket.UPCOMING, List.of()),
+				new CrmActivityFeedPageResponseDto(historyRecords.stream().map(toRow).toList(), page, hasMore)));
 	}
 
 	private Set<Long> resolveOwnerIds(CrmActivityScope scope, Long requestedOwnerId) {
@@ -125,33 +125,6 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 		return scope.includesOwner(requestedOwnerId) ? Set.of(requestedOwnerId) : Set.of();
 	}
 
-	private CrmActivityType toActivityType(CrmActivityFeedTab tab) {
-		return tab == null || tab == CrmActivityFeedTab.ALL ? null : CrmActivityType.valueOf(tab.name());
-	}
-
-	private CrmActivityFeedResponseDto emptyFeed(int page) {
-		return new CrmActivityFeedResponseDto(List.of(), List.of(), List.of(),
-				new CrmActivityFeedPageResponseDto(List.of(), page, false));
-	}
-
-	private List<CrmActivityFeedRowResponseDto> toSortedRows(
-			Map<CrmActivityBucket, List<CrmActivityFeedRecord>> dueBuckets, CrmActivityBucket bucket,
-			FeedContext context) {
-		return dueBuckets.getOrDefault(bucket, List.of())
-			.stream()
-			.sorted(CrmActivityBucketUtil.comparatorFor(bucket))
-			.map(context::toRow)
-			.toList();
-	}
-
-	private List<Long> idsOfType(List<CrmActivityFeedRecord> records, CrmActivityType type) {
-		return records.stream()
-			.filter(feedRecord -> feedRecord.type() == type)
-			.map(CrmActivityFeedRecord::id)
-			.distinct()
-			.toList();
-	}
-
 	private Map<Long, List<CrmActivityLinkResponseDto>> groupContacts(List<CrmActivityLinkedContact> links) {
 		return links.stream()
 			.collect(
@@ -159,17 +132,6 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 							Collectors.mapping(link -> new CrmActivityLinkResponseDto(link.contactId(),
 									link.contactName(), Boolean.TRUE.equals(link.contactDeleted())),
 									Collectors.toList())));
-	}
-
-	private record FeedContext(CrmActivityScope scope, Map<Long, List<CrmActivityLinkResponseDto>> meetingContacts,
-			Map<Long, List<CrmActivityLinkResponseDto>> emailContacts) {
-
-		CrmActivityFeedRowResponseDto toRow(CrmActivityFeedRecord activity) {
-			Map<Long, List<CrmActivityLinkResponseDto>> linked = activity.type() == CrmActivityType.EMAIL
-					? emailContacts : meetingContacts;
-			return CrmActivityFeedUtil.toRow(activity, scope, linked.getOrDefault(activity.id(), List.of()));
-		}
-
 	}
 
 }

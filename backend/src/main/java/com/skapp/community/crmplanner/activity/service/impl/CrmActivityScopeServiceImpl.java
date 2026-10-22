@@ -13,6 +13,7 @@ import com.skapp.community.peopleplanner.repository.EmployeeManagerDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class CrmActivityScopeServiceImpl implements CrmActivityScopeService {
 
@@ -36,6 +38,13 @@ public class CrmActivityScopeServiceImpl implements CrmActivityScopeService {
 	@Override
 	@Transactional(readOnly = true)
 	public CrmActivityScope resolveScope(User user) {
+		log.info("resolveScope: execution started");
+		CrmActivityScope scope = buildScope(user);
+		log.info("resolveScope: execution ended");
+		return scope;
+	}
+
+	private CrmActivityScope buildScope(User user) {
 		Employee employee = user.getEmployee();
 		Long viewerId = employee.getEmployeeId();
 		EmployeeRole employeeRole = employee.getEmployeeRole();

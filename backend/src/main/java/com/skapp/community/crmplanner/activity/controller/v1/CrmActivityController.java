@@ -3,7 +3,6 @@ package com.skapp.community.crmplanner.activity.controller.v1;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.activity.payload.request.CrmActivityFeedFilterDto;
 import com.skapp.community.crmplanner.activity.service.CrmActivityFeedService;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,10 +20,6 @@ public class CrmActivityController {
 
 	private final CrmActivityFeedService crmActivityFeedService;
 
-	@Operation(summary = "Get the activity feed",
-			description = "Returns tasks, calls, meetings and emails visible to the caller, grouped into overdue, "
-					+ "today and upcoming (returned in full on page 0) and a by-month history paged 25 at a time. "
-					+ "Buckets use the X-Timezone header. ownerId, from and to apply to managers and admins only.")
 	@GetMapping
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getActivityFeed(CrmActivityFeedFilterDto filterDto) {

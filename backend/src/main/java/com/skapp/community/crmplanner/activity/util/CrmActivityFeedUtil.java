@@ -13,7 +13,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
-import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,7 +22,6 @@ public class CrmActivityFeedUtil {
 	public String toFullName(String firstName, String lastName) {
 		return Stream.of(firstName, lastName)
 			.filter(part -> !StringUtils.isNullOrBlank(part))
-			.map(String::trim)
 			.collect(Collectors.joining(" "));
 	}
 
@@ -31,7 +29,7 @@ public class CrmActivityFeedUtil {
 		if (StringUtils.isNullOrBlank(search)) {
 			return null;
 		}
-		return "%" + StringUtils.escapeLikePattern(search.trim().toLowerCase(Locale.ROOT)) + "%";
+		return "%" + StringUtils.escapeLikePattern(search.toLowerCase()) + "%";
 	}
 
 	public Instant toRangeStart(LocalDate from, ZoneId zone) {
