@@ -26,6 +26,7 @@ const ActivityFilterControl: FC<ActivityFilterControlProps> = ({
   isTeamMembersError,
   timeZone
 }) => {
+  const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
 
   const [filterAnchorEl, setFilterAnchorEl] = useState<HTMLElement | null>(
@@ -72,7 +73,8 @@ const ActivityFilterControl: FC<ActivityFilterControlProps> = ({
         anchorEl={filterAnchorEl}
         position="bottom-start"
         containerClassName="rounded-2xl shadow-lg"
-        ariaRole="presentation"
+        ariaRole="dialog"
+        ariaLabel={translateText(["activities", "toolbar", "filters", "title"])}
         handleClose={handleCloseFilters}
       >
         <ActivityFilterPopover

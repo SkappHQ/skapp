@@ -42,7 +42,7 @@ export const getPresetDateRange = (
   }
 };
 
-export const isSameDateRange = (first: DateRange, second: DateRange): boolean =>
+const isSameDateRange = (first: DateRange, second: DateRange): boolean =>
   first.from === second.from && first.to === second.to;
 
 export const getMatchingPreset = (

@@ -11,8 +11,7 @@ import {
   filterTeamMembers,
   getMatchingPreset,
   getPresetDateRange,
-  hasActiveFilters,
-  isSameDateRange
+  hasActiveFilters
 } from "../activityFilterUtil";
 
 const teamMembers = teamMembersMock as ActivityTeamMember[];
@@ -88,23 +87,6 @@ describe("getMatchingPreset", () => {
     expect(
       getMatchingPreset({ from: "2026-10-22", to: null }, "UTC")
     ).toBeNull();
-  });
-});
-
-describe("isSameDateRange", () => {
-  it("compares both ends", () => {
-    expect(
-      isSameDateRange(
-        { from: "2026-10-01", to: "2026-10-02" },
-        { from: "2026-10-01", to: "2026-10-02" }
-      )
-    ).toBe(true);
-    expect(
-      isSameDateRange(
-        { from: "2026-10-01", to: "2026-10-02" },
-        { from: "2026-10-01", to: null }
-      )
-    ).toBe(false);
   });
 });
 
