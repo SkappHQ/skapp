@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -83,6 +84,19 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		query.where(predicates.toArray(new Predicate[0])).orderBy(newestFirst(cb, item));
 
 		return entityManager.createQuery(query).setFirstResult(offset).setMaxResults(limit).getResultList();
+	}
+
+	@Override
+	public Optional<CrmActivityFeedRecord> findActivityById(CrmActivityType type, Long id) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmActivityFeedRecord> query = cb.createQuery(CrmActivityFeedRecord.class);
+		Root<CrmActivityFeedItem> item = query.from(CrmActivityFeedItem.class);
+		selectFeedRecord(cb, query, item);
+
+		query.where(cb.equal(activityType(item), type), cb.equal(activityId(item), id),
+				cb.isFalse(item.get(CrmActivityFeedItem_.isDeleted)));
+
+		return entityManager.createQuery(query).getResultList().stream().findFirst();
 	}
 
 	@Override
