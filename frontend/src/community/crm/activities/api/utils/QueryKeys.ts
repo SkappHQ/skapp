@@ -15,6 +15,5 @@ export const crmActivityQueryKeys = {
       to: query.to
     }
   ],
-  TEAM_MEMBERS: [CRM_ACTIVITIES, "team-members"],
-  TASK_DETAIL: (id: number) => [CRM_ACTIVITIES, "task", id]
+  TEAM_MEMBERS: [CRM_ACTIVITIES, "team-members"]
 };

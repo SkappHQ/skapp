@@ -13,8 +13,7 @@ import {
 export const initialActivityFeedState: ActivityFeedSliceState = {
   activeTab: DEFAULT_ACTIVITY_TAB,
   search: "",
-  appliedFilters: EMPTY_ACTIVITY_FILTERS,
-  selectedActivity: null
+  appliedFilters: EMPTY_ACTIVITY_FILTERS
 };
 
 const ActivityFeedSlice: StateCreator<
@@ -37,7 +36,6 @@ const ActivityFeedSlice: StateCreator<
         }
       }
     }),
-  setSelectedActivity: (selectedActivity) => set({ selectedActivity }),
   resetActivityFeed: () => set(initialActivityFeedState)
 });
 

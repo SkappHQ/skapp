@@ -7,7 +7,6 @@ import { ACTIVITY_MONTH_KEY_FORMAT } from "~community/crm/activities/constants/a
 import {
   ActivityFeedResponse,
   ActivityRow,
-  ActivityTaskDetail,
   ActivityType
 } from "~community/crm/activities/types/activityTypes";
 import { getMonthAnchor } from "~community/crm/activities/utils/activityFeedUtil";
@@ -85,17 +84,6 @@ export const markFeedCacheStale = (queryClient: QueryClient): Promise<void> =>
     queryKey: crmActivityQueryKeys.FEED_ROOT,
     refetchType: "none"
   });
-
-export const toFeedRowPatch = (
-  detail: ActivityTaskDetail
-): Partial<ActivityRow> => ({
-  subject: detail.name,
-  priority: detail.priority,
-  dueAt: detail.dueAt,
-  isCompleted: detail.isCompleted,
-  completedAt: detail.completedAt,
-  canComplete: detail.canComplete
-});
 
 const getRowMonthKey = (row: ActivityRow, zone: string): string | null => {
   const anchor = getMonthAnchor(row);

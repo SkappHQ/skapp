@@ -406,25 +406,12 @@ describe("useActivityFeed", () => {
     expect(mockSetToastMessage).not.toHaveBeenCalled();
   });
 
-  it("stores the clicked row as the selected activity", () => {
-    const { result } = renderFeedAs("rep");
-    const row = firstRow();
-
-    act(() => result.current.onRowClick(row));
-
-    expect(useActivityStore.getState().selectedActivity).toEqual({
-      id: row.id,
-      type: row.type
-    });
-  });
-
-  it("hands task toggles to the completion hook without selecting the row", () => {
+  it("hands task toggles to the completion hook", () => {
     const { result } = renderFeedAs("rep");
     const row = { ...firstRow(), type: ActivityType.TASK };
 
     act(() => result.current.onToggleComplete(row, true));
 
     expect(mockToggleTaskComplete).toHaveBeenCalledWith(row, true);
-    expect(useActivityStore.getState().selectedActivity).toBeNull();
   });
 });

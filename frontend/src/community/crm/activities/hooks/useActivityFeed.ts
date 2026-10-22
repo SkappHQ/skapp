@@ -45,7 +45,6 @@ export interface UseActivityFeedResult {
   loadMore: () => void;
   teamMembers: ActivityTeamMember[];
   isTeamMembersError: boolean;
-  onRowClick: (row: ActivityRow) => void;
   onToggleComplete: (row: ActivityRow, isCompleted: boolean) => void;
 }
 
@@ -67,8 +66,7 @@ export const useActivityFeed = (): UseActivityFeedResult => {
     appliedFilters,
     setActiveTab,
     setSearch,
-    applyFilters,
-    setSelectedActivity
+    applyFilters
   } = useActivityStore(
     useShallow((store) => ({
       activeTab: store.activeTab,
@@ -76,8 +74,7 @@ export const useActivityFeed = (): UseActivityFeedResult => {
       appliedFilters: store.appliedFilters,
       setActiveTab: store.setActiveTab,
       setSearch: store.setSearch,
-      applyFilters: store.applyFilters,
-      setSelectedActivity: store.setSelectedActivity
+      applyFilters: store.applyFilters
     }))
   );
 
@@ -144,13 +141,6 @@ export const useActivityFeed = (): UseActivityFeedResult => {
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const onRowClick = useCallback(
-    (row: ActivityRow) => {
-      setSelectedActivity({ id: row.id, type: row.type });
-    },
-    [setSelectedActivity]
-  );
-
   const { toggleTaskComplete: onToggleComplete } = useActivityTaskCompletion();
 
   return {
@@ -172,7 +162,6 @@ export const useActivityFeed = (): UseActivityFeedResult => {
     loadMore,
     teamMembers: teamMembers ?? NO_TEAM_MEMBERS,
     isTeamMembersError,
-    onRowClick,
     onToggleComplete
   };
 };

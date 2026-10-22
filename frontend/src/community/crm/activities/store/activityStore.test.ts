@@ -1,8 +1,7 @@
 import { EMPTY_ACTIVITY_FILTERS } from "~community/crm/activities/constants/activityConstants";
 import {
   ActivityFilterValues,
-  ActivityTab,
-  ActivityType
+  ActivityTab
 } from "~community/crm/activities/types/activityTypes";
 
 import { useActivityStore } from "./activityStore";
@@ -18,13 +17,12 @@ describe("useActivityStore", () => {
     useActivityStore.getState().resetActivityFeed();
   });
 
-  it("starts on the All tab with no filters and no selected row", () => {
+  it("starts on the All tab with no filters", () => {
     const state = useActivityStore.getState();
 
     expect(state.activeTab).toBe(ActivityTab.ALL);
     expect(state.search).toBe("");
     expect(state.appliedFilters).toEqual(EMPTY_ACTIVITY_FILTERS);
-    expect(state.selectedActivity).toBeNull();
   });
 
   it("updates the search directly", () => {
@@ -79,26 +77,12 @@ describe("useActivityStore", () => {
     expect(state.appliedFilters).toEqual(OCTOBER_FILTERS);
   });
 
-  it("stores and clears the selected row", () => {
-    const store = useActivityStore.getState();
-
-    store.setSelectedActivity({ id: 12, type: ActivityType.TASK });
-    expect(useActivityStore.getState().selectedActivity).toEqual({
-      id: 12,
-      type: ActivityType.TASK
-    });
-
-    store.setSelectedActivity(null);
-    expect(useActivityStore.getState().selectedActivity).toBeNull();
-  });
-
   it("resets everything back to the initial state", () => {
     const store = useActivityStore.getState();
 
     store.setActiveTab(ActivityTab.TASKS);
     store.setSearch("acme");
     store.applyFilters(OCTOBER_FILTERS);
-    store.setSelectedActivity({ id: 3, type: ActivityType.CALL });
     store.resetActivityFeed();
 
     expect(useActivityStore.getState()).toMatchObject(initialActivityFeedState);
