@@ -38,6 +38,12 @@ import {
   checkRestrictedRoutesAndRedirect,
   isEnterpriseMode
 } from "~community/common/utils/commonUtil";
+import {
+  CSP_HEADER_NAME,
+  NONCE_HEADER_NAME,
+  buildContentSecurityPolicy,
+  generateNonce
+} from "~community/common/utils/cspUtils";
 import { ENTERPRISE_UNGUARDED_PAGE_PATHS } from "~enterprise/common/constants/routeConstants";
 import { TenantStatusEnums, TierEnum } from "~enterprise/common/enums/Common";
 import { isCoreOrProTier } from "~enterprise/common/utils/commonUtil";
@@ -241,8 +247,11 @@ const isPrefetchRequest = (request: NextRequest): boolean =>
   request.headers.get("next-router-prefetch") !== null ||
   request.headers.get("purpose") === "prefetch";
 
+type ContinueRequest = () => NextResponse;
+
 interface RouteAccessContext {
   request: NextRequest;
+  continueRequest: ContinueRequest;
   currentPath: string;
   claims: Record<string, any>;
   roles: UserRole[];
@@ -294,6 +303,7 @@ const redirectToUnauthorized = (request: NextRequest): NextResponse =>
 // Super admins over their user limit are the only ones allowed to remove people
 const resolveRemovePeopleAccess: AccessGuard = ({
   request,
+  continueRequest,
   currentPath,
   claims,
   roles
@@ -303,7 +313,7 @@ const resolveRemovePeopleAccess: AccessGuard = ({
   if (!roles.includes(ROLE_SUPER_ADMIN)) return null;
 
   if (REMOVE_PEOPLE_ALLOWED_TENANT_STATUSES.has(claims?.tenantStatus)) {
-    return NextResponse.next();
+    return continueRequest();
   }
 
   return redirectTo(request, ROUTES.DASHBOARD.BASE);
@@ -466,6 +476,7 @@ const isRouteAllowedForRoles = ({
 
 function resolveRouteAccess(
   request: NextRequest,
+  continueRequest: ContinueRequest,
   token: string | undefined,
   isPasswordChangedForTheFirstTime: string | undefined
 ): NextResponse {
@@ -473,6 +484,7 @@ function resolveRouteAccess(
 
   const context: RouteAccessContext = {
     request,
+    continueRequest,
     currentPath: request.nextUrl.pathname,
     claims,
     roles: claims?.roles || [],
@@ -484,9 +496,7 @@ function resolveRouteAccess(
   if (guardResponse) return guardResponse;
 
   if (isRouteAllowedForRoles(context)) {
-    return (
-      runAccessGuards(ALLOWED_ROUTE_GUARDS, context) ?? NextResponse.next()
-    );
+    return runAccessGuards(ALLOWED_ROUTE_GUARDS, context) ?? continueRequest();
   }
 
   // Redirect to /unauthorized if no access
@@ -497,9 +507,72 @@ function resolveRouteAccess(
   return redirectTo(request, ROUTES.AUTH.SIGNIN);
 }
 
-export async function proxy(request: NextRequest): Promise<NextResponse> {
+const GUARDED_PATH_PATTERNS = [
+  // All community routes
+  "/community/:path*",
+  // All enterprise routes
+  "/enterprise/:path*",
+  // Super admin routes
+  "/setup-organization/:path*",
+  "/module-selection",
+  "/payment",
+  // Common routes
+  "/dashboard/:path*",
+  "/configurations/:path*",
+  "/settings/:path*",
+  "/notifications",
+  "/account",
+  "/reset-password",
+  "/unauthorized",
+  "/verify/email",
+  "/verify/success",
+  // Module routes
+  "/leave/:path*",
+  "/people/:path*",
+  "/timesheet/:path*",
+  "/remove-people",
+  "/integrations",
+  "/user-account",
+  // Sign routes
+  "/sign",
+  "/sign/contacts/:path*",
+  "/sign/create/:path*",
+  "/sign/folders/:path*",
+  "/sign/inbox/:path*",
+  "/sign/sent/:path*",
+  "/sign/template/:path*",
+  "/sign/complete/:path*",
+  // Project routes
+  "/projects/:path*",
+  // Invoice routes
+  "/invoice",
+  "/invoice/:path*",
+  "/invoice/create/:path*",
+  // Report module routes
+  "/report",
+  "/report/:path*",
+  // CRM module routes
+  "/crm",
+  "/crm/:path*"
+];
+
+const WILDCARD_SUFFIX = "/:path*";
+
+const isGuardedPath = (pathname: string): boolean =>
+  GUARDED_PATH_PATTERNS.some((pattern) => {
+    if (!pattern.endsWith(WILDCARD_SUFFIX)) return pathname === pattern;
+
+    const base = pattern.slice(0, -WILDCARD_SUFFIX.length);
+
+    return pathname === base || pathname.startsWith(`${base}/`);
+  });
+
+async function resolveGuardedRequest(
+  request: NextRequest,
+  continueRequest: ContinueRequest
+): Promise<NextResponse> {
   if (isUnguardedPath(request.nextUrl.pathname)) {
-    return NextResponse.next();
+    return continueRequest();
   }
 
   let token = request.cookies.get(ACCESS_TOKEN_COOKIE_NAME)?.value;
@@ -524,6 +597,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 
   const response = resolveRouteAccess(
     request,
+    continueRequest,
     token,
     isPasswordChangedForTheFirstTime
   );
@@ -535,54 +609,28 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   return applyRefreshedSession(response, refreshedSession);
 }
 
-// Configure which routes middleware should run on
+export async function proxy(request: NextRequest): Promise<NextResponse> {
+  const nonce = generateNonce();
+  const contentSecurityPolicy = buildContentSecurityPolicy(nonce);
+
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(NONCE_HEADER_NAME, nonce);
+  requestHeaders.set(CSP_HEADER_NAME, contentSecurityPolicy);
+
+  const continueRequest: ContinueRequest = () =>
+    NextResponse.next({ request: { headers: requestHeaders } });
+
+  const response = isGuardedPath(request.nextUrl.pathname)
+    ? await resolveGuardedRequest(request, continueRequest)
+    : continueRequest();
+
+  response.headers.set(CSP_HEADER_NAME, contentSecurityPolicy);
+
+  return response;
+}
+
 export const config = {
   matcher: [
-    // All community routes
-    "/community/:path*",
-    // All enterprise routes
-    "/enterprise/:path*",
-    // Super admin routes
-    "/setup-organization/:path*",
-    "/module-selection",
-    "/payment",
-    // Common routes
-    "/dashboard/:path*",
-    "/configurations/:path*",
-    "/settings/:path*",
-    "/notifications",
-    "/account",
-    "/reset-password",
-    "/unauthorized",
-    "/verify/email",
-    "/verify/success",
-    // Module routes
-    "/leave/:path*",
-    "/people/:path*",
-    "/timesheet/:path*",
-    "/remove-people",
-    "/integrations",
-    "/user-account",
-    // Sign routes
-    "/sign",
-    "/sign/contacts/:path*",
-    "/sign/create/:path*",
-    "/sign/folders/:path*",
-    "/sign/inbox/:path*",
-    "/sign/sent/:path*",
-    "/sign/template/:path*",
-    "/sign/complete/:path*",
-    // Project routes
-    "/projects/:path*",
-    // Invoice routes
-    "/invoice",
-    "/invoice/:path*",
-    "/invoice/create/:path*",
-    // Report module routes
-    "/report",
-    "/report/:path*",
-    // CRM module routes
-    "/crm",
-    "/crm/:path*"
+    "/((?!api|_next/static|_next/image|auth/_next|favicon|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|js|css|map|txt|csv|json|woff2?)$).*)"
   ]
 };
