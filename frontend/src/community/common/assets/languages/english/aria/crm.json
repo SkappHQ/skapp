@@ -136,6 +136,9 @@
       "markIncomplete": "Mark '{{name}}' incomplete",
       "owner": "Owner: {{name}}",
       "highPriority": "High priority"
+    },
+    "toolbar": {
+      "clearSearch": "Clear search"
     }
   }
 }
