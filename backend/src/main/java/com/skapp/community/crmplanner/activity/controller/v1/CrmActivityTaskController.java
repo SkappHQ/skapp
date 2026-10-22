@@ -2,7 +2,6 @@ package com.skapp.community.crmplanner.activity.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.activity.payload.request.CrmActivityTaskCompleteRequestDto;
-import com.skapp.community.crmplanner.activity.payload.request.CrmActivityTaskEditRequestDto;
 import com.skapp.community.crmplanner.activity.service.CrmActivityTaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,26 +33,6 @@ public class CrmActivityTaskController {
 	public ResponseEntity<ResponseEntityDto> completeTask(@PathVariable Long id,
 			@RequestBody CrmActivityTaskCompleteRequestDto requestDto) {
 		ResponseEntityDto response = crmActivityTaskService.completeTask(id, requestDto);
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
-	@Operation(summary = "Get activity task by ID",
-			description = "Returns the activity task details when the task is within the caller's feed scope.")
-	@GetMapping("/{id}")
-	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
-	public ResponseEntity<ResponseEntityDto> getTaskById(@PathVariable Long id) {
-		ResponseEntityDto response = crmActivityTaskService.getTaskById(id);
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
-	@Operation(summary = "Edit activity task",
-			description = "Updates the provided fields of an activity task and returns the updated task. Changing "
-					+ "isCompleted sets or clears completedAt.")
-	@PatchMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
-	public ResponseEntity<ResponseEntityDto> editTask(@PathVariable Long id,
-			@RequestBody CrmActivityTaskEditRequestDto requestDto) {
-		ResponseEntityDto response = crmActivityTaskService.editTask(id, requestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
