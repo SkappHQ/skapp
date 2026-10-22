@@ -26,6 +26,12 @@ const ActivityRowCheckbox: FC<ActivityRowCheckboxProps> = ({
     event.stopPropagation();
   };
 
+  const handleWrapperClick = (event: MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
+
+    if (!canComplete) event.preventDefault();
+  };
+
   const handleChange = (checked: boolean) => {
     if (canComplete) onToggle(checked);
   };
@@ -35,7 +41,7 @@ const ActivityRowCheckbox: FC<ActivityRowCheckboxProps> = ({
       className={`shrink-0 flex items-center justify-center pr-1 ${
         canComplete ? "" : "opacity-50 **:cursor-not-allowed"
       }`}
-      onClick={stopRowActivation}
+      onClick={handleWrapperClick}
       onKeyDown={stopRowActivation}
     >
       <CheckTask

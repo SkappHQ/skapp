@@ -92,6 +92,19 @@ describe("getMonthAnchor", () => {
     expect(getMonthAnchor(row)).toBe("2026-10-12T09:00:00Z");
   });
 
+  it("does not change when a task is ticked or unticked in the session", () => {
+    const row = buildRow({
+      type: ActivityType.TASK,
+      isCompleted: true,
+      dueAt: "2026-11-02T09:00:00Z",
+      completedAt: "2026-10-12T09:00:00Z"
+    });
+
+    expect(getMonthAnchor({ ...row, isCompleted: false })).toBe(
+      getMonthAnchor(row)
+    );
+  });
+
   it("uses when it happened for a logged activity", () => {
     expect(
       getMonthAnchor(buildRow({ occurredAt: "2026-09-01T09:00:00Z" }))
@@ -134,7 +147,7 @@ describe("groupByMonth", () => {
     ]);
   });
 
-  it("orders rows newest first within a month", () => {
+  it("keeps the server order of rows within a month", () => {
     const pages = [
       buildPage(
         [buildRow({ id: 1, occurredAt: "2026-10-01T09:00:00Z" })],
@@ -149,8 +162,25 @@ describe("groupByMonth", () => {
     ];
 
     expect(groupByMonth(pages, "UTC")[0].rows.map((row) => row.id)).toEqual([
-      2, 1
+      1, 2
     ]);
+  });
+
+  it("keeps a task in its month when it is ticked or unticked", () => {
+    const row = buildRow({
+      id: 4,
+      type: ActivityType.TASK,
+      isCompleted: true,
+      dueAt: "2026-11-02T09:00:00Z",
+      completedAt: "2026-10-12T09:00:00Z"
+    });
+    const keyFor = (isCompleted: boolean) =>
+      groupByMonth([buildPage([{ ...row, isCompleted }], 0, false)], "UTC").map(
+        (group) => group.monthKey
+      );
+
+    expect(keyFor(false)).toEqual(keyFor(true));
+    expect(keyFor(true)).toEqual(["2026-10"]);
   });
 
   it("drops a row that appears on more than one page", () => {

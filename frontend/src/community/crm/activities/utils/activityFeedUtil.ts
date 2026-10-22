@@ -31,13 +31,8 @@ export const getActivityRowKey = (row: ActivityRow): string =>
   `${row.type}-${row.id}`;
 
 export const getMonthAnchor = (row: ActivityRow): string | null => {
-  if (row.isCompleted && row.completedAt) return row.completedAt;
-
-  return row.occurredAt ?? row.dueAt;
+  return row.occurredAt ?? row.completedAt ?? row.dueAt;
 };
-
-const toMillis = (isoInstant: string): number =>
-  parseInstant(isoInstant).toMillis();
 
 export const groupByMonth = (
   pages: ActivityFeedResponse[],
@@ -67,11 +62,7 @@ export const groupByMonth = (
 
   return Array.from(groups, ([monthKey, rows]) => ({
     monthKey,
-    rows: [...rows].sort(
-      (first, second) =>
-        toMillis(getMonthAnchor(second) ?? "") -
-        toMillis(getMonthAnchor(first) ?? "")
-    )
+    rows
   })).sort((first, second) => second.monthKey.localeCompare(first.monthKey));
 };
 
@@ -116,6 +107,9 @@ export const formatActivityDate = (dateTime: DateTime): string =>
   `${dateTime.day}${getOrdinalIndicator(dateTime.day)} ${
     ACTIVITY_MONTH_ABBREVIATIONS[dateTime.month - 1]
   }`;
+
+const toMillis = (isoInstant: string): number =>
+  parseInstant(isoInstant).toMillis();
 
 const isInFuture = (isoInstant: string): boolean =>
   toMillis(isoInstant) >= DateTime.now().toMillis();
