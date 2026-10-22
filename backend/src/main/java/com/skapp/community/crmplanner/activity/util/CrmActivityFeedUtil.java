@@ -1,0 +1,86 @@
+package com.skapp.community.crmplanner.activity.util;
+
+import com.skapp.community.common.util.StringUtils;
+import com.skapp.community.crmplanner.activity.payload.response.CrmActivityFeedRowResponseDto;
+import com.skapp.community.crmplanner.activity.payload.response.CrmActivityLinkResponseDto;
+import com.skapp.community.crmplanner.activity.payload.response.CrmActivityPersonResponseDto;
+import com.skapp.community.crmplanner.activity.type.CrmActivityFeedRecord;
+import com.skapp.community.crmplanner.activity.type.CrmActivityScope;
+import com.skapp.community.crmplanner.activity.type.CrmActivityType;
+import lombok.experimental.UtilityClass;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+@UtilityClass
+public class CrmActivityFeedUtil {
+
+	public String toFullName(String firstName, String lastName) {
+		return Stream.of(firstName, lastName)
+			.filter(part -> !StringUtils.isNullOrBlank(part))
+			.collect(Collectors.joining(" "));
+	}
+
+	public String toSearchPattern(String search) {
+		if (StringUtils.isNullOrBlank(search)) {
+			return null;
+		}
+		return "%" + StringUtils.escapeLikePattern(search.toLowerCase()) + "%";
+	}
+
+	public Instant toRangeStart(LocalDate from, ZoneId zone) {
+		return from == null ? null : from.atStartOfDay(zone).toInstant();
+	}
+
+	public Instant toRangeEndExclusive(LocalDate to, ZoneId zone) {
+		return to == null ? null : to.plusDays(1).atStartOfDay(zone).toInstant();
+	}
+
+	public CrmActivityFeedRowResponseDto toRow(CrmActivityFeedRecord activity, CrmActivityScope scope,
+			List<CrmActivityLinkResponseDto> linkedContacts) {
+		CrmActivityFeedRowResponseDto row = new CrmActivityFeedRowResponseDto();
+		row.setId(activity.getId());
+		row.setType(activity.getType());
+		row.setSubject(activity.getSubject());
+
+		if (activity.getType() == CrmActivityType.TASK) {
+			boolean completed = Boolean.TRUE.equals(activity.getIsCompleted());
+			row.setDueAt(activity.getDueAt());
+			row.setCompletedAt(activity.getCompletedAt());
+			row.setIsCompleted(completed);
+			row.setPriority(activity.getPriority());
+			row.setOccurredAt(!completed && activity.getDueAt() == null ? activity.getCreatedDate() : null);
+		}
+		else {
+			row.setOccurredAt(activity.getOccurredAt() != null ? activity.getOccurredAt() : activity.getCreatedDate());
+			row.setIsCompleted(false);
+		}
+
+		row.setOwner(activity.getOwnerId() == null ? null : new CrmActivityPersonResponseDto(activity.getOwnerId(),
+				activity.getOwnerFirstName(), activity.getOwnerLastName(), activity.getOwnerAuthPic()));
+		row.setContacts(resolveContacts(activity, linkedContacts));
+		row.setDeal(scope.canViewDeal(activity.getDealOwnerId())
+				? toLink(activity.getDealId(), activity.getDealName(), activity.getDealDeleted()) : null);
+		row.setCompany(toLink(activity.getCompanyId(), activity.getCompanyName(), activity.getCompanyDeleted()));
+		return row;
+	}
+
+	private List<CrmActivityLinkResponseDto> resolveContacts(CrmActivityFeedRecord activity,
+			List<CrmActivityLinkResponseDto> linkedContacts) {
+		if (activity.getType() == CrmActivityType.MEETING || activity.getType() == CrmActivityType.EMAIL) {
+			return linkedContacts;
+		}
+
+		return activity.getContactId() == null ? List.of()
+				: List.of(toLink(activity.getContactId(), activity.getContactName(), activity.getContactDeleted()));
+	}
+
+	private CrmActivityLinkResponseDto toLink(Long id, String name, Boolean deleted) {
+		return id == null ? null : new CrmActivityLinkResponseDto(id, name, Boolean.TRUE.equals(deleted));
+	}
+
+}
