@@ -94,7 +94,9 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_ACTIVITY_INVALID_DATE_RANGE("api.error.crm.activity.invalid-date-range"),
 	CRM_ERROR_ACTIVITY_TASK_NOT_FOUND("api.error.crm.activity.task-not-found"),
 	CRM_ERROR_ACTIVITY_TASK_EDIT_DENIED("api.error.crm.activity.task-edit-denied"),
-	CRM_ERROR_ACTIVITY_TASK_STATUS_REQUIRED("api.error.crm.activity.task-status-required");
+	CRM_ERROR_ACTIVITY_TASK_STATUS_REQUIRED("api.error.crm.activity.task-status-required"),
+	CRM_ERROR_ACTIVITY_TASK_VIEW_DENIED("api.error.crm.activity.task-view-denied"),
+	CRM_SUCCESS_ACTIVITY_TASK_DELETED("api.success.crm.activity.task-deleted");
 
 	private final String messageKey;
 
