@@ -662,9 +662,15 @@
     "toolbar": {
       "search": {
         "label": "Search activities",
-        "placeholder": "Search activities",
         "resultCount_one": "{{count}} activity found",
-        "resultCount_other": "{{count}} activities found"
+        "resultCount_other": "{{count}} activities found",
+        "placeholders": {
+          "all": "Search activities",
+          "tasks": "Search tasks",
+          "calls": "Search calls",
+          "meetings": "Search meetings",
+          "emails": "Search emails"
+        }
       },
       "filters": {
         "title": "Filters",
