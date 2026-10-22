@@ -22,7 +22,6 @@ import com.skapp.community.peopleplanner.model.EmployeeTeam_;
 import com.skapp.community.peopleplanner.model.Employee_;
 import com.skapp.community.peopleplanner.model.Team_;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.AbstractQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -35,9 +34,6 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
@@ -51,7 +47,7 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 	private final EntityManager entityManager;
 
 	@Override
-	public Page<CrmActivityCallResponseDto> findCalls(CrmActivityCallFilterParams params, Pageable pageable) {
+	public List<CrmActivityCallResponseDto> findCalls(CrmActivityCallFilterParams params) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmActivityCallResponseDto> query = cb.createQuery(CrmActivityCallResponseDto.class);
 		Root<CrmActivityCall> call = query.from(CrmActivityCall.class);
@@ -67,18 +63,7 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 		query.where(buildCallPredicates(cb, query, call, params).toArray(new Predicate[0]))
 			.orderBy(buildCallOrder(cb, call, params.getSortKey(), params.getSortOrder()));
 
-		TypedQuery<CrmActivityCallResponseDto> typedQuery = entityManager.createQuery(query);
-		typedQuery.setFirstResult((int) pageable.getOffset());
-		typedQuery.setMaxResults(pageable.getPageSize());
-		List<CrmActivityCallResponseDto> content = typedQuery.getResultList();
-
-		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-		Root<CrmActivityCall> countRoot = countQuery.from(CrmActivityCall.class);
-		countQuery.select(cb.count(countRoot))
-			.where(buildCallPredicates(cb, countQuery, countRoot, params).toArray(new Predicate[0]));
-		Long total = entityManager.createQuery(countQuery).getSingleResult();
-
-		return new PageImpl<>(content, pageable, total);
+		return entityManager.createQuery(query).getResultList();
 	}
 
 	private List<Predicate> buildCallPredicates(CriteriaBuilder cb, AbstractQuery<?> query, Root<CrmActivityCall> call,

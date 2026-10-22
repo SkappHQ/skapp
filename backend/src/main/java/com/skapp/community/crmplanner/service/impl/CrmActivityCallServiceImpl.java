@@ -2,13 +2,10 @@ package com.skapp.community.crmplanner.service.impl;
 
 import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
-import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
-import com.skapp.community.common.util.transformer.PageTransformer;
-import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.payload.request.CrmActivityCallFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityCallResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityCallDao;
@@ -17,9 +14,6 @@ import com.skapp.community.crmplanner.type.CrmActivityCallFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityScope;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -39,8 +34,6 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 
 	private final TimeZoneService timeZoneService;
 
-	private final PageTransformer pageTransformer;
-
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getCalls(CrmActivityCallFilterDto filterDto) {
@@ -52,14 +45,8 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 
 		CrmValidations.validateActivityDateRange(filterDto.getStartDate(), filterDto.getEndDate());
 
-		CrmActivityCallFilterParams params = toFilterParams(filterDto, scope);
-		int pageSize = filterDto.getSize() > 0 ? filterDto.getSize() : CrmConstants.ACTIVITY_PAGE_SIZE;
-		Pageable pageable = PageRequest.of(Math.max(filterDto.getPage(), 0), pageSize);
-		Page<CrmActivityCallResponseDto> callPage = crmActivityCallDao.findCalls(params, pageable);
-
-		PageDto pageDto = pageTransformer.transform(callPage);
-		pageDto.setItems(callPage.getContent());
-		return new ResponseEntityDto(false, pageDto);
+		List<CrmActivityCallResponseDto> calls = crmActivityCallDao.findCalls(toFilterParams(filterDto, scope));
+		return new ResponseEntityDto(false, calls);
 	}
 
 	private CrmActivityScope resolveActivityScope() {

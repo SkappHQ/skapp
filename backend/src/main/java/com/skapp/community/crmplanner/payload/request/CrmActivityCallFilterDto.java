@@ -1,6 +1,5 @@
 package com.skapp.community.crmplanner.payload.request;
 
-import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.type.CrmActivityCallSort;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,9 +22,5 @@ public class CrmActivityCallFilterDto {
 	private CrmActivityCallSort sortKey = CrmActivityCallSort.LOGGED_AT;
 
 	private Sort.Direction sortOrder = Sort.Direction.DESC;
-
-	private int page = 0;
-
-	private int size = CrmConstants.ACTIVITY_PAGE_SIZE;
 
 }

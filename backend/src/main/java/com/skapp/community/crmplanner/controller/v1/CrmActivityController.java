@@ -6,7 +6,6 @@ import com.skapp.community.crmplanner.service.CrmActivityCallService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,7 +20,7 @@ public class CrmActivityController {
 
 	private final CrmActivityCallService crmActivityCallService;
 
-	@GetMapping(value = "/call", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping("/call")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getCalls(CrmActivityCallFilterDto filterDto) {
 		ResponseEntityDto response = crmActivityCallService.getCalls(filterDto);
