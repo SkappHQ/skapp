@@ -260,8 +260,8 @@ const routes = [
       },
       {
         id: "4D",
-        name: "Tasks",
-        url: ROUTES.CRM.TASKS,
+        name: "Activities",
+        url: ROUTES.CRM.ACTIVITIES,
         hasSubTree: false,
         requiredAuthLevel: [
           AdminTypes.SUPER_ADMIN,
