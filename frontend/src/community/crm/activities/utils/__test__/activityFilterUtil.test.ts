@@ -1,4 +1,3 @@
-import teamMembersMock from "~community/crm/activities/__mocks__/activityTeamMembersMock.json";
 import { EMPTY_ACTIVITY_FILTERS } from "~community/crm/activities/constants/activityConstants";
 import {
   ActivityDatePreset,
@@ -14,7 +13,11 @@ import {
   hasActiveFilters
 } from "../activityFilterUtil";
 
-const teamMembers = teamMembersMock as ActivityTeamMember[];
+const teamMembers: ActivityTeamMember[] = [
+  { id: 1, name: "Alex Perera", avatar: null },
+  { id: 2, name: "Sam Fernando", avatar: null },
+  { id: 3, name: "Priya Nadarajah", avatar: null }
+];
 
 describe("getPresetDateRange", () => {
   beforeEach(() => {

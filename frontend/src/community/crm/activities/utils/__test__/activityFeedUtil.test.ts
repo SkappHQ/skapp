@@ -1,6 +1,4 @@
 import crmModule from "~community/common/assets/languages/english/crmModule.json";
-import feedMock from "~community/crm/activities/__mocks__/activityFeedMock.json";
-import nextPageMock from "~community/crm/activities/__mocks__/activityFeedNextPageMock.json";
 import {
   ActivityBucket,
   ActivityFeedResponse,
@@ -34,9 +32,6 @@ const translate = (keys: string[], values: Record<string, string> = {}) => {
   );
 };
 
-const firstPage = feedMock as ActivityFeedResponse;
-const secondPage = nextPageMock as ActivityFeedResponse;
-
 const buildRow = (overrides: Partial<ActivityRow>): ActivityRow => ({
   id: 1,
   type: ActivityType.CALL,
@@ -57,13 +52,74 @@ const buildRow = (overrides: Partial<ActivityRow>): ActivityRow => ({
 const buildPage = (
   items: ActivityRow[],
   page: number,
-  hasMore: boolean
+  hasMore: boolean,
+  fixed: Partial<
+    Pick<ActivityFeedResponse, "overdue" | "today" | "upcoming">
+  > = {}
 ): ActivityFeedResponse => ({
   overdue: [],
   today: [],
   upcoming: [],
+  ...fixed,
   byMonth: { items, page, hasMore }
 });
+
+const firstPage = buildPage(
+  [
+    buildRow({
+      id: 101,
+      occurredAt: "2026-10-14T08:34:00Z"
+    }),
+    buildRow({
+      id: 95,
+      occurredAt: "2026-09-28T09:04:00Z"
+    })
+  ],
+  0,
+  true,
+  {
+    overdue: [
+      buildRow({
+        id: 9,
+        type: ActivityType.TASK,
+        dueAt: "2026-10-14T09:00:00Z"
+      })
+    ],
+    today: [
+      buildRow({
+        id: 104,
+        type: ActivityType.MEETING,
+        dueAt: "2026-10-22T16:00:00Z"
+      })
+    ],
+    upcoming: [
+      buildRow({
+        id: 7,
+        type: ActivityType.TASK,
+        dueAt: "2026-10-27T09:00:00Z"
+      })
+    ]
+  }
+);
+
+const secondPage = buildPage(
+  [
+    buildRow({
+      id: 5,
+      type: ActivityType.TASK,
+      isCompleted: true,
+      dueAt: "2026-09-15T09:00:00Z",
+      completedAt: "2026-09-12T09:04:00Z"
+    }),
+    buildRow({
+      id: 90,
+      type: ActivityType.EMAIL,
+      occurredAt: "2026-08-30T10:15:00Z"
+    })
+  ],
+  1,
+  false
+);
 
 describe("getActivityRowKey", () => {
   it("combines type and id so ids from different tables do not clash", () => {
