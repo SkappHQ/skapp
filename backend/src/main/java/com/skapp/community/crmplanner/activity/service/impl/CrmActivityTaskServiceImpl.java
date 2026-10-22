@@ -32,6 +32,7 @@ import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
 import com.skapp.community.peopleplanner.model.Employee;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -128,7 +129,7 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 			task.setDueAt(requestDto.getDueAt());
 		}
 
-		if (requestDto.getNotes().isPresent()) {
+		if (isProvided(requestDto.getNotes())) {
 			String notes = requestDto.getNotes().get();
 			CrmActivityValidations.validateTaskNotes(notes);
 			task.setNotes(notes);
@@ -138,11 +139,11 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 			task.setOwner(resolveOwner(requestDto.getOwnerId(), currentUser, scope, task));
 		}
 
-		if (requestDto.getContactId().isPresent()) {
+		if (isProvided(requestDto.getContactId())) {
 			applyContact(task, requestDto.getContactId().get());
 		}
 
-		if (requestDto.getDealId().isPresent()) {
+		if (isProvided(requestDto.getDealId())) {
 			applyDeal(task, requestDto.getDealId().get());
 		}
 
@@ -238,6 +239,10 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(dealId)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 		task.setDeal(deal);
+	}
+
+	private boolean isProvided(JsonNullable<?> value) {
+		return value != null && value.isPresent();
 	}
 
 	private void applyCompletion(CrmActivityTask task, boolean completed) {

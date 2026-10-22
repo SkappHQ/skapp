@@ -19,12 +19,12 @@ public class CrmActivityTaskEditRequestDto {
 
 	private Instant dueAt;
 
-	private JsonNullable<String> notes = JsonNullable.undefined();
+	private JsonNullable<String> notes;
 
 	private Long ownerId;
 
-	private JsonNullable<Long> contactId = JsonNullable.undefined();
+	private JsonNullable<Long> contactId;
 
-	private JsonNullable<Long> dealId = JsonNullable.undefined();
+	private JsonNullable<Long> dealId;
 
 }
