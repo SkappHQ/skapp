@@ -81,8 +81,6 @@ export const ACTIVITY_SKELETON_CONFIG = {
   rowCount: 4
 };
 
-export const ACTIVITY_TYPE_ICON_SIZE = 20;
-
 export const ACTIVITY_TOOLBAR_ID = "crm-activity-toolbar";
 
 export const ACTIVITY_FEED_ID = "crm-activity-feed";
