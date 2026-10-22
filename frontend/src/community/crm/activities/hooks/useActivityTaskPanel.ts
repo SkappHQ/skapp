@@ -11,7 +11,10 @@ import {
   useGetActivityTaskDetail,
   useUpdateActivityTask
 } from "~community/crm/activities/api/ActivityTaskApi";
-import { patchTaskInFeedCache } from "~community/crm/activities/api/utils/activityFeedCache";
+import {
+  keepMonthStable,
+  patchTaskInFeedCache
+} from "~community/crm/activities/api/utils/activityFeedCache";
 import { useActivityStore } from "~community/crm/activities/store/activityStore";
 import {
   ActivityRow,
@@ -81,7 +84,7 @@ export const useActivityTaskPanel = (): UseActivityTaskPanelResult => {
     patchTaskInFeedCache(
       queryClient,
       request.id,
-      updatedRow ?? { isCompleted: request.isCompleted }
+      keepMonthStable(updatedRow ?? { isCompleted: request.isCompleted })
     );
 
     if (request.isCompleted) {

@@ -12,6 +12,7 @@ export interface ActivityTaskDetailResponse {
   dueAt?: string | null;
   isCompleted?: boolean;
   completedAt?: string | null;
+  lastModifiedDate?: string | null;
   notes?: string | null;
   owner?: ActivityOwner | null;
   contact?: ActivityLink | null;

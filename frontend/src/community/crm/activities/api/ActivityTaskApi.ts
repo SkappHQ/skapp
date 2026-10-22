@@ -12,6 +12,7 @@ import authFetch from "~community/common/utils/axiosInterceptor";
 import { crmActivityEndpoints } from "~community/crm/activities/api/utils/ApiEndpoints";
 import { crmActivityQueryKeys } from "~community/crm/activities/api/utils/QueryKeys";
 import {
+  keepMonthStable,
   markFeedCacheStale,
   patchTaskInFeedCache,
   toFeedRowPatch
@@ -123,7 +124,11 @@ export const useUpdateActivityTask = (
         crmActivityQueryKeys.TASK_DETAIL(id),
         updatedTask
       );
-      patchTaskInFeedCache(queryClient, id, toFeedRowPatch(updatedTask));
+      patchTaskInFeedCache(
+        queryClient,
+        id,
+        keepMonthStable(toFeedRowPatch(updatedTask))
+      );
       void markFeedCacheStale(queryClient);
       onSuccess?.(updatedTask);
     }

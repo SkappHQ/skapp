@@ -8,7 +8,10 @@ import {
   CompleteActivityTaskRequest,
   useCompleteActivityTask
 } from "~community/crm/activities/api/ActivityTaskApi";
-import { patchTaskInFeedCache } from "~community/crm/activities/api/utils/activityFeedCache";
+import {
+  keepMonthStable,
+  patchTaskInFeedCache
+} from "~community/crm/activities/api/utils/activityFeedCache";
 import {
   ActivityRow,
   ActivityType
@@ -76,7 +79,7 @@ export const useActivityTaskCompletion = (): {
     };
 
     if (!pending) {
-      patchTaskInFeedCache(queryClient, request.id, serverRow);
+      patchTaskInFeedCache(queryClient, request.id, keepMonthStable(serverRow));
       return;
     }
 
@@ -90,7 +93,7 @@ export const useActivityTaskCompletion = (): {
       return;
     }
 
-    patchTaskInFeedCache(queryClient, request.id, serverRow);
+    patchTaskInFeedCache(queryClient, request.id, keepMonthStable(serverRow));
     pendingRef.current.delete(request.id);
   };
 
