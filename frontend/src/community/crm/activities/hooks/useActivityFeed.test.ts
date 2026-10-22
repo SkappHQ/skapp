@@ -1,6 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import { useCommonStore } from "~community/common/stores/commonStore";
 import activityFeedMock from "~community/crm/activities/__mocks__/activityFeedMock.json";
 import activityFeedNextPageMock from "~community/crm/activities/__mocks__/activityFeedNextPageMock.json";
 import activityTeamMembersMock from "~community/crm/activities/__mocks__/activityTeamMembersMock.json";
@@ -15,7 +16,6 @@ import {
   ActivityTab,
   ActivityType
 } from "~community/crm/activities/types/activityTypes";
-import { SEARCH_DEBOUNCE_DELAY } from "~community/crm/constants/commonConstants";
 
 import { useActivityFeed } from "./useActivityFeed";
 
@@ -62,7 +62,11 @@ const emptyPage: ActivityFeedResponse = {
   byMonth: { items: [], page: 0, hasMore: false }
 };
 
-const OCTOBER_FILTERS = { ownerId: 2, from: "2026-10-01", to: "2026-10-31" };
+const OCTOBER_FILTERS = {
+  ownerId: 2,
+  dateRange: { from: "2026-10-01", to: "2026-10-31" }
+};
+const OCTOBER_QUERY = { ownerId: 2, from: "2026-10-01", to: "2026-10-31" };
 const NO_FILTERS = { ownerId: null, from: null, to: null };
 
 const REP_SESSION = {
@@ -102,10 +106,12 @@ const lastQuery = () =>
 
 const firstRow = (): ActivityRow => firstPage.today[0];
 
+const initialCommonState = useCommonStore.getState();
+
 describe("useActivityFeed", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.useFakeTimers();
+    useCommonStore.setState(initialCommonState, true);
     useActivityStore.getState().resetActivityFeed();
     mockUseFeed.mockReturnValue(feedResult());
     mockUseTeamMembers.mockReturnValue({
@@ -113,10 +119,6 @@ describe("useActivityFeed", () => {
       isLoading: false,
       isError: false
     });
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
   });
 
   describe("role access", () => {
@@ -148,7 +150,7 @@ describe("useActivityFeed", () => {
         expect(lastQuery()).toEqual({
           tab: ActivityTab.ALL,
           search: "",
-          ...OCTOBER_FILTERS
+          ...OCTOBER_QUERY
         });
         expect(result.current.hasAppliedFilters).toBe(true);
       }
@@ -174,21 +176,76 @@ describe("useActivityFeed", () => {
     expect(result.current.hasActiveFilters).toBe(false);
   });
 
-  it("sends the search only after the debounce delay", () => {
+  it("sends the search from the toolbar straight away, trimmed", () => {
     const { result } = renderFeedAs("rep");
 
     act(() => result.current.setSearch("  acme "));
+
     expect(result.current.search).toBe("  acme ");
-    expect(lastQuery().search).toBe("");
-
-    act(() => {
-      jest.advanceTimersByTime(SEARCH_DEBOUNCE_DELAY);
-    });
-
     expect(lastQuery().search).toBe("acme");
-    expect(result.current.appliedSearch).toBe("acme");
     expect(result.current.hasActiveFilters).toBe(true);
     expect(result.current.hasAppliedFilters).toBe(false);
+  });
+
+  it("clearing the search keeps the tab and filters", () => {
+    const { result } = renderFeedAs("manager");
+
+    act(() => {
+      result.current.setActiveTab(ActivityTab.TASKS);
+      result.current.applyFilters(OCTOBER_FILTERS);
+      result.current.setSearch("acme");
+    });
+    act(() => result.current.setSearch(""));
+
+    expect(lastQuery()).toEqual({
+      tab: ActivityTab.TASKS,
+      search: "",
+      ...OCTOBER_QUERY
+    });
+  });
+
+  it("uses the synced request timezone and falls back to the browser", () => {
+    const { result } = renderFeedAs("rep");
+    expect(result.current.timeZone).toBe(
+      Intl.DateTimeFormat().resolvedOptions().timeZone
+    );
+
+    act(() => useCommonStore.getState().setRequestTimezone("Asia/Colombo"));
+
+    expect(result.current.timeZone).toBe("Asia/Colombo");
+  });
+
+  it("counts the loaded rows for the search announcement", () => {
+    const { result } = renderFeedAs("rep");
+
+    expect(result.current.resultCount).toBe(
+      firstPage.overdue.length +
+        firstPage.today.length +
+        firstPage.upcoming.length +
+        firstPage.byMonth.items.length
+    );
+  });
+
+  it("has no result count while loading", () => {
+    mockUseFeed.mockReturnValue(feedResult({ data: null, isLoading: true }));
+
+    const { result } = renderFeedAs("rep");
+
+    expect(result.current.resultCount).toBeNull();
+  });
+
+  it("keeps the filter for a manager with an empty team", () => {
+    mockUseTeamMembers.mockReturnValue({
+      data: [],
+      isLoading: false,
+      isError: false
+    });
+
+    const { result } = renderFeedAs("manager");
+
+    expect(result.current.isManager).toBe(true);
+    expect(result.current.teamMembers).toEqual([]);
+    expect(result.current.pages).toEqual([firstPage]);
   });
 
   it("changes the query only when filters are applied", () => {
@@ -200,7 +257,7 @@ describe("useActivityFeed", () => {
     act(() => result.current.applyFilters(OCTOBER_FILTERS));
 
     expect(mockUseFeed.mock.calls.length).toBeGreaterThan(callsBefore);
-    expect(lastQuery()).toMatchObject(OCTOBER_FILTERS);
+    expect(lastQuery()).toMatchObject(OCTOBER_QUERY);
     expect(result.current.appliedFilters).toEqual(OCTOBER_FILTERS);
   });
 
@@ -221,15 +278,12 @@ describe("useActivityFeed", () => {
       result.current.setSearch("acme");
       result.current.applyFilters(OCTOBER_FILTERS);
     });
-    act(() => {
-      jest.advanceTimersByTime(SEARCH_DEBOUNCE_DELAY);
-    });
     act(() => result.current.setActiveTab(ActivityTab.CALLS));
 
     expect(lastQuery()).toEqual({
       tab: ActivityTab.CALLS,
       search: "acme",
-      ...OCTOBER_FILTERS
+      ...OCTOBER_QUERY
     });
     expect(result.current.activeTab).toBe(ActivityTab.CALLS);
   });

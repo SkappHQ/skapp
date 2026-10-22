@@ -2,46 +2,46 @@ import { useCallback, useEffect, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
-import useDebounce from "~community/common/hooks/useDebounce";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { useCommonStore } from "~community/common/stores/commonStore";
 import {
   useGetActivityFeedInfinite,
   useGetActivityTeamMembers
 } from "~community/crm/activities/api/ActivityApi";
 import {
   ActivityFeedQuery,
-  isActivityFeedEmpty
+  countActivityFeedRows,
+  isActivityFeedEmpty,
+  resolveViewerTimezone
 } from "~community/crm/activities/api/utils/activityFeedParams";
 import { useActivityTaskCompletion } from "~community/crm/activities/hooks/useActivityTaskCompletion";
 import { useActivityStore } from "~community/crm/activities/store/activityStore";
-import {
-  ActivityAppliedFilters,
-  SelectedActivity
-} from "~community/crm/activities/store/activityStoreTypes";
+import { SelectedActivity } from "~community/crm/activities/store/activityStoreTypes";
 import {
   ActivityFeedResponse,
+  ActivityFilterValues,
   ActivityRow,
   ActivityTab,
   ActivityTeamMember
 } from "~community/crm/activities/types/activityTypes";
-import { SEARCH_DEBOUNCE_DELAY } from "~community/crm/constants/commonConstants";
 
 export interface UseActivityFeedResult {
   isManager: boolean;
+  timeZone: string;
   activeTab: ActivityTab;
   search: string;
-  appliedSearch: string;
-  appliedFilters: ActivityAppliedFilters;
+  appliedFilters: ActivityFilterValues;
   hasAppliedFilters: boolean;
   hasActiveFilters: boolean;
   selectedActivity: SelectedActivity | null;
   setActiveTab: (tab: ActivityTab) => void;
   setSearch: (search: string) => void;
-  applyFilters: (filters: ActivityAppliedFilters) => void;
+  applyFilters: (filters: ActivityFilterValues) => void;
   resetFilters: () => void;
   pages: ActivityFeedResponse[];
+  resultCount: number | null;
   isLoading: boolean;
   isError: boolean;
   isEmpty: boolean;
@@ -62,8 +62,10 @@ export const useActivityFeed = (): UseActivityFeedResult => {
   const translateText = useTranslator("crmModule");
   const { setToastMessage } = useToast();
   const { isCrmSalesManager, isCrmAdmin, isSuperAdmin } = useSessionData();
+  const requestTimezone = useCommonStore((state) => state.requestTimezone);
 
   const isManager = Boolean(isCrmSalesManager || isCrmAdmin || isSuperAdmin);
+  const timeZone = resolveViewerTimezone(requestTimezone);
 
   const {
     activeTab,
@@ -89,17 +91,15 @@ export const useActivityFeed = (): UseActivityFeedResult => {
     }))
   );
 
-  const appliedSearch = useDebounce(search.trim(), SEARCH_DEBOUNCE_DELAY);
-
   const query: ActivityFeedQuery = useMemo(
     () => ({
       tab: activeTab,
-      search: appliedSearch,
+      search: search.trim(),
       ownerId: isManager ? appliedFilters.ownerId : null,
-      from: isManager ? appliedFilters.from : null,
-      to: isManager ? appliedFilters.to : null
+      from: isManager ? appliedFilters.dateRange.from : null,
+      to: isManager ? appliedFilters.dateRange.to : null
     }),
-    [activeTab, appliedSearch, isManager, appliedFilters]
+    [activeTab, search, isManager, appliedFilters]
   );
 
   const {
@@ -139,6 +139,9 @@ export const useActivityFeed = (): UseActivityFeedResult => {
 
   const isEmpty = !isLoading && !isError && isActivityFeedEmpty(pages);
 
+  const resultCount =
+    isLoading || isError ? null : countActivityFeedRows(pages);
+
   const hasAppliedFilters =
     query.ownerId !== null || query.from !== null || query.to !== null;
 
@@ -161,9 +164,9 @@ export const useActivityFeed = (): UseActivityFeedResult => {
 
   return {
     isManager,
+    timeZone,
     activeTab,
     search,
-    appliedSearch,
     appliedFilters,
     hasAppliedFilters,
     hasActiveFilters,
@@ -173,6 +176,7 @@ export const useActivityFeed = (): UseActivityFeedResult => {
     applyFilters,
     resetFilters,
     pages,
+    resultCount,
     isLoading,
     isError,
     isEmpty,

@@ -1,13 +1,8 @@
 import {
+  ActivityFilterValues,
   ActivityTab,
   ActivityType
 } from "~community/crm/activities/types/activityTypes";
-
-export interface ActivityAppliedFilters {
-  ownerId: number | null;
-  from: string | null;
-  to: string | null;
-}
 
 export interface SelectedActivity {
   id: number;
@@ -17,14 +12,14 @@ export interface SelectedActivity {
 export interface ActivityFeedSliceState {
   activeTab: ActivityTab;
   search: string;
-  appliedFilters: ActivityAppliedFilters;
+  appliedFilters: ActivityFilterValues;
   selectedActivity: SelectedActivity | null;
 }
 
 export interface ActivityFeedSliceActions {
   setActiveTab: (activeTab: ActivityTab) => void;
   setSearch: (search: string) => void;
-  applyFilters: (filters: ActivityAppliedFilters) => void;
+  applyFilters: (filters: ActivityFilterValues) => void;
   resetFilters: () => void;
   setSelectedActivity: (selectedActivity: SelectedActivity | null) => void;
   resetActivityFeed: () => void;

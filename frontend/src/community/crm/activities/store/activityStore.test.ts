@@ -1,4 +1,6 @@
+import { EMPTY_ACTIVITY_FILTERS } from "~community/crm/activities/constants/activityConstants";
 import {
+  ActivityFilterValues,
   ActivityTab,
   ActivityType
 } from "~community/crm/activities/types/activityTypes";
@@ -6,7 +8,10 @@ import {
 import { useActivityStore } from "./activityStore";
 import { initialActivityFeedState } from "./slices/activityFeedSlice";
 
-const OCTOBER_FILTERS = { ownerId: 7, from: "2026-10-01", to: "2026-10-31" };
+const OCTOBER_FILTERS: ActivityFilterValues = {
+  ownerId: 7,
+  dateRange: { from: "2026-10-01", to: "2026-10-31" }
+};
 
 describe("useActivityStore", () => {
   beforeEach(() => {
@@ -18,11 +23,7 @@ describe("useActivityStore", () => {
 
     expect(state.activeTab).toBe(ActivityTab.ALL);
     expect(state.search).toBe("");
-    expect(state.appliedFilters).toEqual({
-      ownerId: null,
-      from: null,
-      to: null
-    });
+    expect(state.appliedFilters).toEqual(EMPTY_ACTIVITY_FILTERS);
     expect(state.selectedActivity).toBeNull();
   });
 
@@ -39,14 +40,18 @@ describe("useActivityStore", () => {
   });
 
   it("copies the applied filters so later draft edits do not leak in", () => {
-    const draft = { ...OCTOBER_FILTERS };
+    const draft: ActivityFilterValues = {
+      ownerId: 7,
+      dateRange: { from: "2026-10-01", to: "2026-10-31" }
+    };
     useActivityStore.getState().applyFilters(draft);
     draft.ownerId = 99;
+    draft.dateRange.from = "2026-01-01";
 
-    expect(useActivityStore.getState().appliedFilters.ownerId).toBe(7);
+    expect(useActivityStore.getState().appliedFilters).toEqual(OCTOBER_FILTERS);
   });
 
-  it("keeps the search and filters when the tab changes", () => {
+  it("keeps the search, team member and date range when the tab changes", () => {
     const store = useActivityStore.getState();
 
     store.setSearch("acme");
@@ -57,6 +62,20 @@ describe("useActivityStore", () => {
     const state = useActivityStore.getState();
     expect(state.activeTab).toBe(ActivityTab.MEETINGS);
     expect(state.search).toBe("acme");
+    expect(state.appliedFilters).toEqual(OCTOBER_FILTERS);
+  });
+
+  it("clears only the search when the search is cleared", () => {
+    const store = useActivityStore.getState();
+
+    store.setActiveTab(ActivityTab.TASKS);
+    store.applyFilters(OCTOBER_FILTERS);
+    store.setSearch("acme");
+    store.setSearch("");
+
+    const state = useActivityStore.getState();
+    expect(state.search).toBe("");
+    expect(state.activeTab).toBe(ActivityTab.TASKS);
     expect(state.appliedFilters).toEqual(OCTOBER_FILTERS);
   });
 
@@ -71,11 +90,7 @@ describe("useActivityStore", () => {
     const state = useActivityStore.getState();
     expect(state.activeTab).toBe(ActivityTab.EMAILS);
     expect(state.search).toBe("acme");
-    expect(state.appliedFilters).toEqual({
-      ownerId: null,
-      from: null,
-      to: null
-    });
+    expect(state.appliedFilters).toEqual(EMPTY_ACTIVITY_FILTERS);
   });
 
   it("stores and clears the selected row", () => {
@@ -115,11 +130,7 @@ describe("useActivityStore", () => {
 
       expect(state.activeTab).toBe(ActivityTab.ALL);
       expect(state.search).toBe("");
-      expect(state.appliedFilters).toEqual({
-        ownerId: null,
-        from: null,
-        to: null
-      });
+      expect(state.appliedFilters).toEqual(EMPTY_ACTIVITY_FILTERS);
     });
 
     expect(useActivityStore.getState().activeTab).toBe(ActivityTab.CALLS);

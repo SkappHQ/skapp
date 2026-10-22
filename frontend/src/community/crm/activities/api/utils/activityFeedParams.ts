@@ -35,26 +35,34 @@ export const buildActivityFeedParams = (
   return params;
 };
 
+export const resolveViewerTimezone = (requestTimezone?: string): string =>
+  requestTimezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+
 export const getViewerTimezone = (): string =>
-  getRequestTimezone() ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+  resolveViewerTimezone(getRequestTimezone());
 
 export const getNextActivityFeedPage = (
   lastPage: ActivityFeedResponse | null
 ): number | null =>
   lastPage?.byMonth?.hasMore ? lastPage.byMonth.page + 1 : null;
 
-export const isActivityFeedEmpty = (pages: ActivityFeedResponse[]): boolean => {
+export const countActivityFeedRows = (
+  pages: ActivityFeedResponse[]
+): number => {
   const [firstPage] = pages;
 
-  if (!firstPage) return true;
+  if (!firstPage) return 0;
 
-  const hasDatedRows =
-    (firstPage.overdue?.length ?? 0) > 0 ||
-    (firstPage.today?.length ?? 0) > 0 ||
-    (firstPage.upcoming?.length ?? 0) > 0;
+  const datedRowCount =
+    (firstPage.overdue?.length ?? 0) +
+    (firstPage.today?.length ?? 0) +
+    (firstPage.upcoming?.length ?? 0);
 
-  return (
-    !hasDatedRows &&
-    pages.every((page) => (page?.byMonth?.items?.length ?? 0) === 0)
+  return pages.reduce(
+    (total, page) => total + (page?.byMonth?.items?.length ?? 0),
+    datedRowCount
   );
 };
+
+export const isActivityFeedEmpty = (pages: ActivityFeedResponse[]): boolean =>
+  countActivityFeedRows(pages) === 0;

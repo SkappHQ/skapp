@@ -1,18 +1,14 @@
 import { StateCreator } from "zustand";
 
-import { DEFAULT_ACTIVITY_TAB } from "~community/crm/activities/constants/activityConstants";
 import {
-  ActivityAppliedFilters,
+  DEFAULT_ACTIVITY_TAB,
+  EMPTY_ACTIVITY_FILTERS
+} from "~community/crm/activities/constants/activityConstants";
+import {
   ActivityFeedSliceState,
   ActivityFeedSliceTypes,
   ActivityStore
 } from "~community/crm/activities/store/activityStoreTypes";
-
-export const EMPTY_ACTIVITY_FILTERS: ActivityAppliedFilters = {
-  ownerId: null,
-  from: null,
-  to: null
-};
 
 export const initialActivityFeedState: ActivityFeedSliceState = {
   activeTab: DEFAULT_ACTIVITY_TAB,
@@ -35,8 +31,10 @@ const ActivityFeedSlice: StateCreator<
     set({
       appliedFilters: {
         ownerId: filters.ownerId,
-        from: filters.from,
-        to: filters.to
+        dateRange: {
+          from: filters.dateRange.from,
+          to: filters.dateRange.to
+        }
       }
     }),
   resetFilters: () => set({ appliedFilters: EMPTY_ACTIVITY_FILTERS }),

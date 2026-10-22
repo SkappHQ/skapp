@@ -10,10 +10,12 @@ import {
 import {
   ActivityFeedQuery,
   buildActivityFeedParams,
+  countActivityFeedRows,
   getActivityTypeForTab,
   getNextActivityFeedPage,
   getViewerTimezone,
-  isActivityFeedEmpty
+  isActivityFeedEmpty,
+  resolveViewerTimezone
 } from "./activityFeedParams";
 
 const firstPage = activityFeedMock as ActivityFeedResponse;
@@ -115,6 +117,34 @@ describe("isActivityFeedEmpty", () => {
     expect(
       isActivityFeedEmpty([{ ...emptyPage, today: firstPage.byMonth.items }])
     ).toBe(false);
+  });
+});
+
+describe("countActivityFeedRows", () => {
+  it("counts the dated buckets once and every By month page", () => {
+    const datedRows =
+      firstPage.overdue.length +
+      firstPage.today.length +
+      firstPage.upcoming.length;
+
+    expect(countActivityFeedRows([])).toBe(0);
+    expect(
+      countActivityFeedRows([
+        firstPage,
+        { ...lastPage, today: firstPage.today }
+      ])
+    ).toBe(
+      datedRows + firstPage.byMonth.items.length + lastPage.byMonth.items.length
+    );
+  });
+});
+
+describe("resolveViewerTimezone", () => {
+  it("prefers the given timezone and falls back to the browser", () => {
+    expect(resolveViewerTimezone("Asia/Colombo")).toBe("Asia/Colombo");
+    expect(resolveViewerTimezone()).toBe(
+      Intl.DateTimeFormat().resolvedOptions().timeZone
+    );
   });
 });
 
