@@ -1,13 +1,8 @@
-import {
-  FilterListIcon,
-  IconButton,
-  Popper,
-  Tabs
-} from "@rootcodelabs/skapp-ui";
-import { FC, MouseEvent, useEffect, useState } from "react";
+import { Tabs } from "@rootcodelabs/skapp-ui";
+import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import ActivityFilterPopover from "~community/crm/activities/components/molecules/ActivityFilterPopover/ActivityFilterPopover";
+import ActivityFilterControl from "~community/crm/activities/components/molecules/ActivityFilterControl/ActivityFilterControl";
 import ActivitySearchField from "~community/crm/activities/components/molecules/ActivitySearchField/ActivitySearchField";
 import {
   ACTIVITY_TABS,
@@ -18,7 +13,6 @@ import {
   ActivityTab,
   ActivityTeamMember
 } from "~community/crm/activities/types/activityTypes";
-import { countActiveFilters } from "~community/crm/activities/utils/activityFilterUtil";
 
 export interface ActivityToolbarProps {
   id?: string;
@@ -54,33 +48,10 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
 
-  const [filterAnchorEl, setFilterAnchorEl] = useState<HTMLElement | null>(
-    null
-  );
-
-  const isFilterOpen = showControls && filterAnchorEl !== null;
-
-  useEffect(() => {
-    if (!showControls) setFilterAnchorEl(null);
-  }, [showControls]);
-
-  const filterButtonId = `${id}-filter-button`;
-  const filterPopoverId = `${id}-filter-popover`;
-  const activeFilterCount = countActiveFilters(filters);
-
   const tabs = ACTIVITY_TABS.map((tab) => ({
     id: tab.id,
     label: translateText(["activities", "tabs", tab.labelKey])
   }));
-
-  const handleCloseFilters = () => {
-    setFilterAnchorEl(null);
-    document.getElementById(filterButtonId)?.focus();
-  };
-
-  const handleToggleFilters = (event: MouseEvent<HTMLElement>) => {
-    setFilterAnchorEl(isFilterOpen ? null : event.currentTarget);
-  };
 
   const searchPlaceholderKey =
     ACTIVITY_TABS.find((tab) => tab.id === activeTab)?.labelKey ??
@@ -100,48 +71,14 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
       {showControls && (
         <div className="flex items-center gap-3">
           {isManager && (
-            <div>
-              <IconButton
-                id={filterButtonId}
-                type="button"
-                icon={<FilterListIcon />}
-                variant="transparent"
-                shape="square"
-                aria-label={translateAria([
-                  "activities",
-                  "toolbar",
-                  activeFilterCount > 0 ? "openFiltersActive" : "openFilters"
-                ])}
-                aria-haspopup="dialog"
-                aria-expanded={isFilterOpen}
-                aria-controls={isFilterOpen ? filterPopoverId : ""}
-                badge={{
-                  count: activeFilterCount,
-                  show: activeFilterCount > 0
-                }}
-                onClick={handleToggleFilters}
-              />
-
-              <Popper
-                id={`${filterPopoverId}-popper`}
-                open={isFilterOpen}
-                anchorEl={filterAnchorEl}
-                position="bottom-start"
-                containerClassName="rounded-2xl shadow-lg"
-                ariaRole="presentation"
-                handleClose={handleCloseFilters}
-              >
-                <ActivityFilterPopover
-                  id={filterPopoverId}
-                  filters={filters}
-                  teamMembers={teamMembers}
-                  isTeamMembersError={isTeamMembersError}
-                  timeZone={timeZone}
-                  onApply={onApplyFilters}
-                  onClose={handleCloseFilters}
-                />
-              </Popper>
-            </div>
+            <ActivityFilterControl
+              id={`${id}-filter`}
+              filters={filters}
+              onApplyFilters={onApplyFilters}
+              teamMembers={teamMembers}
+              isTeamMembersError={isTeamMembersError}
+              timeZone={timeZone}
+            />
           )}
 
           <ActivitySearchField
