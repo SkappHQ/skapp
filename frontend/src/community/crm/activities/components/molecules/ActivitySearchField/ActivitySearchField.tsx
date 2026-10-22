@@ -7,6 +7,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 
 export interface ActivitySearchFieldProps {
   id: string;
+  placeholder: string;
   searchTerm: string;
   onSearchChange: (searchTerm: string) => void;
   resultCount: number | null;
@@ -14,6 +15,7 @@ export interface ActivitySearchFieldProps {
 
 const ActivitySearchField: FC<ActivitySearchFieldProps> = ({
   id,
+  placeholder,
   searchTerm,
   onSearchChange,
   resultCount
@@ -43,13 +45,8 @@ const ActivitySearchField: FC<ActivitySearchFieldProps> = ({
           "toolbar",
           "clearSearch"
         ])}
-        placeholder={translateText([
-          "activities",
-          "toolbar",
-          "search",
-          "placeholder"
-        ])}
-        className="w-[18rem] h-[3rem]"
+        placeholder={placeholder}
+        className="w-[20rem] h-[3rem]"
         customStyles={{ borderRadius: "rounded-[1.5rem]" }}
         rightIcon={<SearchIcon />}
         value={inputValue}

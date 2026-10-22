@@ -63,33 +63,30 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
     document.getElementById(filterButtonId)?.focus();
   };
 
+  const searchPlaceholderKey =
+    ACTIVITY_TABS.find((tab) => tab.id === activeTab)?.labelKey ??
+    ACTIVITY_TABS[0].labelKey;
+
   return (
-    <div
-      id={id}
-      className="flex flex-wrap items-end justify-between gap-4 border-b border-secondary-accent"
-    >
-      <Tabs
-        tabs={tabs}
-        activeTabId={activeTab}
-        ariaLabel={translateAria(["activities", "tabs"])}
-        onTabChange={(tabId: string) => onTabChange(tabId as ActivityTab)}
-      />
-
-      <div className="flex items-center gap-2 pb-2">
-        <ActivitySearchField
-          id={`${id}-search`}
-          searchTerm={searchTerm}
-          onSearchChange={onSearchChange}
-          resultCount={resultCount}
+    <div id={id} className="flex flex-col gap-4">
+      <div className="border-b border-secondary-accent">
+        <Tabs
+          tabs={tabs}
+          activeTabId={activeTab}
+          ariaLabel={translateAria(["activities", "tabs"])}
+          onTabChange={(tabId: string) => onTabChange(tabId as ActivityTab)}
         />
+      </div>
 
+      <div className="flex items-center gap-3">
         {isManager && (
           <div className="relative">
             <IconButton
               id={filterButtonId}
               type="button"
               icon={<FilterIcon />}
-              isRounded
+              shape="square"
+              variant="outlined"
               aria-label={translateAria([
                 "activities",
                 "toolbar",
@@ -103,7 +100,7 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
             />
 
             {isFilterOpen && (
-              <div className="absolute right-0 top-full z-50 mt-2">
+              <div className="absolute left-0 top-full z-50 mt-2">
                 <ActivityFilterPopover
                   id={filterPopoverId}
                   filters={filters}
@@ -117,6 +114,20 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
             )}
           </div>
         )}
+
+        <ActivitySearchField
+          id={`${id}-search`}
+          placeholder={translateText([
+            "activities",
+            "toolbar",
+            "search",
+            "placeholders",
+            searchPlaceholderKey
+          ])}
+          searchTerm={searchTerm}
+          onSearchChange={onSearchChange}
+          resultCount={resultCount}
+        />
       </div>
     </div>
   );
