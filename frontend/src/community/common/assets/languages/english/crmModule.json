@@ -580,12 +580,25 @@
   },
   "activities": {
     "page": {
-      "title": "Activities"
+      "title": "Activities",
+      "pageHead": "Activities | Skapp"
     },
     "toasts": {
       "loadError": {
         "title": "Oops! Something went wrong",
         "description": "Failed to load activities"
+      },
+      "completeError": {
+        "title": "Failed to update task",
+        "description": "Could not update the task status. Please try again."
+      },
+      "updateError": {
+        "title": "Oops! Something went wrong",
+        "description": "Failed to update task. Please try again"
+      },
+      "reopenSuccess": {
+        "title": "Task reopened",
+        "description": "Task reopened successfully"
       }
     },
     "tabs": {
