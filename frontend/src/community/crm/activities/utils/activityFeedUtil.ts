@@ -5,6 +5,7 @@ import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import {
   getOrdinalIndicator,
   instantInZone,
+  nowInZone,
   parseInstant
 } from "~community/common/utils/dateTimeUtils";
 import {
@@ -111,19 +112,30 @@ const toMillis = (isoInstant: string): number =>
 const isInFuture = (isoInstant: string): boolean =>
   toMillis(isoInstant) >= DateTime.now().toMillis();
 
+const isDueToday = (dueAt: string, zone?: string): boolean =>
+  instantInZone(dueAt, zone).hasSame(nowInZone(zone), "day");
+
+export const isRowOverdue = (row: ActivityRow, zone?: string): boolean =>
+  row.type === ActivityType.TASK &&
+  row.dueAt !== null &&
+  instantInZone(row.dueAt, zone).startOf("day") <
+    nowInZone(zone).startOf("day");
+
 export const getRowSubtitle = (
   row: ActivityRow,
   translate: TranslatorFunctionType,
   zone?: string
 ): string => {
   if (row.type === ActivityType.TASK) {
-    if (row.isCompleted && row.completedAt) {
-      return translate(["activities", "row", "subtitle", "completedOn"], {
-        date: formatActivityDate(instantInZone(row.completedAt, zone))
-      });
+    if (!row.dueAt) return "";
+
+    if (isRowOverdue(row, zone)) {
+      return translate(["activities", "row", "subtitle", "overdue"]);
     }
 
-    if (!row.dueAt) return "";
+    if (isDueToday(row.dueAt, zone)) {
+      return translate(["activities", "row", "subtitle", "dueToday"]);
+    }
 
     return translate(["activities", "row", "subtitle", "dueOn"], {
       date: formatActivityDate(instantInZone(row.dueAt, zone))

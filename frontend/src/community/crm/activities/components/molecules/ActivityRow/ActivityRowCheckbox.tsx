@@ -40,7 +40,7 @@ const ActivityRowCheckbox: FC<ActivityRowCheckboxProps> = ({
     <div
       className={`shrink-0 flex items-center justify-center pr-1 ${
         canComplete ? "" : "opacity-50 **:cursor-not-allowed"
-      }`}
+      } **:checked:bg-semantic-success! **:checked:border-semantic-success!`}
       onClick={handleWrapperClick}
       onKeyDown={stopRowActivation}
     >

@@ -28,7 +28,7 @@ const ActivityBucketSection: FC<ActivityBucketSectionProps> = ({
     >
       {title}
     </h2>
-    <ul className="border-y border-secondary-accent divide-y divide-secondary-accent">
+    <ul className="border border-secondary-accent rounded-lg overflow-hidden divide-y divide-secondary-accent">
       {rows.map((row) => (
         <li key={getActivityRowKey(row)}>
           <ActivityRow
