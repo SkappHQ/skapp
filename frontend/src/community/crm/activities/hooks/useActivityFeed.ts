@@ -16,7 +16,6 @@ import {
   resolveViewerTimezone,
   shouldShowActivityControls
 } from "~community/crm/activities/api/utils/activityFeedParams";
-import { useActivityTaskCompletion } from "~community/crm/activities/hooks/useActivityTaskCompletion";
 import { useActivityStore } from "~community/crm/activities/store/activityStore";
 import {
   ActivityFeedResponse,
@@ -45,7 +44,6 @@ export interface UseActivityFeedResult {
   loadMore: () => void;
   teamMembers: ActivityTeamMember[];
   isTeamMembersError: boolean;
-  onToggleComplete: (row: ActivityRow, isCompleted: boolean) => void;
 }
 
 const NO_PAGES: ActivityFeedResponse[] = [];
@@ -141,8 +139,6 @@ export const useActivityFeed = (): UseActivityFeedResult => {
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const { toggleTaskComplete: onToggleComplete } = useActivityTaskCompletion();
-
   return {
     isManager,
     timeZone,
@@ -161,7 +157,6 @@ export const useActivityFeed = (): UseActivityFeedResult => {
     isFetchingNextPage,
     loadMore,
     teamMembers: teamMembers ?? NO_TEAM_MEMBERS,
-    isTeamMembersError,
-    onToggleComplete
+    isTeamMembersError
   };
 };

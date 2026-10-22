@@ -10,6 +10,8 @@ import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData"
 
 const handleRowClick = () => {};
 
+const handleToggleComplete = () => {};
+
 const Activities: NextPage = () => {
   const translateText = useTranslator("crmModule");
 
@@ -33,8 +35,7 @@ const Activities: NextPage = () => {
     isFetchingNextPage,
     loadMore,
     teamMembers,
-    isTeamMembersError,
-    onToggleComplete
+    isTeamMembersError
   } = useActivityFeed();
 
   return (
@@ -76,7 +77,7 @@ const Activities: NextPage = () => {
           timeZone={timeZone}
           onLoadMore={loadMore}
           onRowClick={handleRowClick}
-          onToggleComplete={onToggleComplete}
+          onToggleComplete={handleToggleComplete}
         />
       </div>
     </ContentLayout>
