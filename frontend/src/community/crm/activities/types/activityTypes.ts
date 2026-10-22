@@ -96,3 +96,15 @@ export interface ActivityTabConfig {
 }
 
 export type ActivityTeamMember = ActivityOwner;
+
+export enum ActivityDatePreset {
+  TODAY = "TODAY",
+  THIS_WEEK = "THIS_WEEK",
+  THIS_MONTH = "THIS_MONTH",
+  LAST_30_DAYS = "LAST_30_DAYS"
+}
+
+export interface ActivityFilterValues {
+  ownerId: number | null;
+  dateRange: DateRange;
+}
