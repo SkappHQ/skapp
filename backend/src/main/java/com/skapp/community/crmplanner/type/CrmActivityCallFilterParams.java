@@ -1,29 +1,32 @@
 package com.skapp.community.crmplanner.type;
 
-import lombok.AllArgsConstructor;
+import com.skapp.community.common.type.Role;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.domain.Sort;
 
 import java.time.Instant;
 
 @Getter
-@AllArgsConstructor
+@Setter
 public class CrmActivityCallFilterParams {
 
-	private final CrmActivityScope scope;
+	private Long currentEmployeeId;
 
-	private final Long currentEmployeeId;
+	private Role crmRole;
 
-	private final Long ownerId;
+	private Boolean isSuperAdmin;
 
-	private final String searchKeyword;
+	private Long ownerId;
 
-	private final Instant loggedFrom;
+	private String searchKeyword;
 
-	private final Instant loggedBefore;
+	private Instant loggedFrom;
 
-	private final CrmActivityCallSort sortKey;
+	private Instant loggedBefore;
 
-	private final Sort.Direction sortOrder;
+	private CrmActivityCallSort sortKey;
+
+	private Sort.Direction sortOrder;
 
 }

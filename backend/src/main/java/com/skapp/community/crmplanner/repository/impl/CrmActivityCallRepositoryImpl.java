@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.repository.impl;
 
+import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.StringUtils;
 import com.skapp.community.crmplanner.model.CrmActivityCall;
 import com.skapp.community.crmplanner.model.CrmActivityCall_;
@@ -12,7 +13,6 @@ import com.skapp.community.crmplanner.payload.response.CrmActivityCallResponseDt
 import com.skapp.community.crmplanner.repository.CrmActivityCallRepository;
 import com.skapp.community.crmplanner.type.CrmActivityCallFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityCallSort;
-import com.skapp.community.crmplanner.type.CrmActivityScope;
 import com.skapp.community.leaveplanner.type.ManagerType;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
@@ -56,11 +56,14 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.isFalse(call.get(CrmActivityCall_.isDeleted)));
 
-		if (params.getScope() == CrmActivityScope.SELF) {
+		boolean isOrganizationWide = Boolean.TRUE.equals(params.getIsSuperAdmin())
+				|| params.getCrmRole() == Role.CRM_ADMIN;
+
+		if (!isOrganizationWide && params.getCrmRole() != Role.CRM_SALES_MANAGER) {
 			predicates.add(cb.equal(ownerId, params.getCurrentEmployeeId()));
 		}
 
-		if (params.getScope() == CrmActivityScope.TEAM) {
+		if (!isOrganizationWide && params.getCrmRole() == Role.CRM_SALES_MANAGER) {
 			Subquery<Long> directReports = query.subquery(Long.class);
 			Root<EmployeeManager> employeeManager = directReports.from(EmployeeManager.class);
 			directReports.select(employeeManager.get(EmployeeManager_.employee).get(Employee_.employeeId))
