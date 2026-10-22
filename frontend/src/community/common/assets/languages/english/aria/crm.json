@@ -128,5 +128,14 @@
       "confirm": "Confirm delete task",
       "cancel": "Cancel delete task"
     }
+  },
+  "activities": {
+    "row": {
+      "openDetails": "Open {{type}} details for {{subject}}",
+      "markComplete": "Mark '{{name}}' complete",
+      "markIncomplete": "Mark '{{name}}' incomplete",
+      "owner": "Owner: {{name}}",
+      "highPriority": "High priority"
+    }
   }
 }
