@@ -56,6 +56,8 @@ public class CrmConstants {
 
 	public static final CrmTaskPriority DEFAULT_TASK_PRIORITY = CrmTaskPriority.MEDIUM;
 
+	public static final int ACTIVITY_PAGE_SIZE = 25;
+
 	public static final int DOMAIN_MAX_LENGTH = 255;
 
 	public static final String HTTPS_SCHEME = "https";
