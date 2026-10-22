@@ -7,7 +7,8 @@ import {
 } from "~community/crm/activities/types/activityTypes";
 import {
   getLinkLabel,
-  getRowSubtitle
+  getRowSubtitle,
+  isRowOverdue
 } from "~community/crm/activities/utils/activityFeedUtil";
 
 interface ActivityRowSubtitleProps {
@@ -26,6 +27,15 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
   const translateText = useTranslator("crmModule");
 
   const status = getRowSubtitle(row, translateText, timeZone);
+  const strikeClass = isCompletedStyleApplied ? "line-through" : "";
+  const statusColor = isRowOverdue(row, timeZone)
+    ? "text-semantic-red-text"
+    : isCompletedStyleApplied
+      ? "text-secondary-icon"
+      : "text-secondary-text";
+  const nameColor = isCompletedStyleApplied
+    ? "text-secondary-icon"
+    : "text-secondary-text";
 
   const renderLink = (link: ActivityLink, linkId: string) => {
     const label = getLinkLabel(link, translateText);
@@ -34,8 +44,8 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
       <span
         id={linkId}
         className={`min-w-0 truncate ${
-          link.deleted ? "text-secondary-icon" : "text-secondary-text"
-        }`}
+          link.deleted ? "text-secondary-icon" : nameColor
+        } ${strikeClass}`}
         title={label}
       >
         {label}
@@ -51,11 +61,7 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
       content: (
         <span
           id={`${id}-status`}
-          className={`shrink-0 ${
-            isCompletedStyleApplied
-              ? "line-through text-secondary-icon"
-              : "text-secondary-text"
-          }`}
+          className={`shrink-0 ${statusColor} ${strikeClass}`}
         >
           {status}
         </span>
@@ -70,7 +76,9 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
         <span className="flex min-w-0 items-center gap-1">
           {row.contacts.map((contact, index) => (
             <Fragment key={contact.id}>
-              {index > 0 && <span className="text-secondary-text">,</span>}
+              {index > 0 && (
+                <span className={`${nameColor} ${strikeClass}`}>,</span>
+              )}
               {renderLink(contact, `${id}-contact-${contact.id}`)}
             </Fragment>
           ))}
@@ -98,7 +106,7 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
           {index > 0 && (
             <span
               aria-hidden="true"
-              className="w-1 h-1 rounded-full bg-secondary-accent shrink-0"
+              className="w-1 h-1 rounded-full bg-border-surface-secondary shrink-0"
             />
           )}
           {part.content}

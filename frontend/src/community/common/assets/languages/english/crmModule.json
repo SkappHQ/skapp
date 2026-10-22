@@ -613,9 +613,10 @@
     },
     "row": {
       "subtitle": {
+        "overdue": "Overdue",
+        "dueToday": "Due today",
         "dueOn": "Due on {{date}}",
         "scheduledOn": "Scheduled on {{date}}",
-        "completedOn": "Completed on {{date}}",
         "occurredAt": "{{date}} at {{time}}"
       },
       "deletedLink": "{{name}} (deleted)"

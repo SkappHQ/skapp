@@ -72,25 +72,29 @@ const ActivityRow: FC<ActivityRowProps> = ({
         />
       )}
 
-      <ActivityTypeIcon id={`${rowId}-type`} type={row.type} />
+      <div className="flex flex-1 items-center gap-3 min-w-0">
+        <ActivityTypeIcon id={`${rowId}-type`} type={row.type} />
 
-      <div className="flex-1 min-w-0">
-        <p
-          id={`${rowId}-subject`}
-          className={`body2 leading-snug truncate text-black ${
-            isCompletedStyleApplied ? "line-through" : ""
-          }`}
-          title={row.subject}
-        >
-          {row.subject}
-        </p>
+        <div className="flex-1 min-w-0">
+          <p
+            id={`${rowId}-subject`}
+            className={`body2 truncate ${
+              isCompletedStyleApplied
+                ? "line-through text-secondary-icon"
+                : "text-black"
+            }`}
+            title={row.subject}
+          >
+            {row.subject}
+          </p>
 
-        <ActivityRowSubtitle
-          id={`${rowId}-subtitle`}
-          row={row}
-          timeZone={timeZone}
-          isCompletedStyleApplied={isCompletedStyleApplied}
-        />
+          <ActivityRowSubtitle
+            id={`${rowId}-subtitle`}
+            row={row}
+            timeZone={timeZone}
+            isCompletedStyleApplied={isCompletedStyleApplied}
+          />
+        </div>
       </div>
 
       <div className="flex items-center gap-6 shrink-0">
