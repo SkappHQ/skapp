@@ -108,25 +108,3 @@ export interface ActivityFilterValues {
   ownerId: number | null;
   dateRange: DateRange;
 }
-
-export interface ActivityTaskDetail {
-  id: number;
-  name: string;
-  priority: CrmPriorityEnum | null;
-  dueAt: string | null;
-  isCompleted: boolean;
-  completedAt: string | null;
-  notes: string | null;
-  owner: ActivityOwner | null;
-  contact: ActivityLink | null;
-  deal: ActivityLink | null;
-  company: ActivityLink | null;
-  canComplete: boolean;
-}
-
-export interface ActivityTaskUpdate {
-  name?: string;
-  priority?: CrmPriorityEnum;
-  dueAt?: string;
-  notes?: string;
-}
