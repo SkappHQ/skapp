@@ -1,6 +1,5 @@
 package com.skapp.community.crmplanner.activity.service.impl;
 
-import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
@@ -26,7 +25,6 @@ import com.skapp.community.crmplanner.activity.util.CrmActivityFeedUtil;
 import com.skapp.community.crmplanner.activity.util.CrmActivityValidations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,10 +45,6 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 
-	private static final String FEED_FAILURE_LOG = "getActivityFeed: load {} event=CRM_ACTIVITY_FEED_LOAD_FAILURE "
-			+ "userId={} organizationId={} role={} view={} tab={} ownerId={} from={} to={} page={} hasSearch={} "
-			+ "errorType={} timestamp={}";
-
 	private final UserService userService;
 
 	private final TimeZoneService timeZoneService;
@@ -67,15 +61,9 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 		User currentUser = userService.getCurrentUser();
 		CrmActivityScope scope = crmActivityScopeService.resolveScope(currentUser);
 
-		try {
-			CrmActivityFeedResponseDto response = loadFeed(filterDto, scope);
-			log.info("getActivityFeed: execution ended");
-			return new ResponseEntityDto(false, response);
-		}
-		catch (RuntimeException e) {
-			logFeedFailure(scope, filterDto, e);
-			throw e;
-		}
+		CrmActivityFeedResponseDto response = loadFeed(filterDto, scope);
+		log.info("getActivityFeed: execution ended");
+		return new ResponseEntityDto(false, response);
 	}
 
 	private CrmActivityFeedResponseDto loadFeed(CrmActivityFeedFilterDto filterDto, CrmActivityScope scope) {
@@ -171,22 +159,6 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 							Collectors.mapping(link -> new CrmActivityLinkResponseDto(link.contactId(),
 									link.contactName(), Boolean.TRUE.equals(link.contactDeleted())),
 									Collectors.toList())));
-	}
-
-	private void logFeedFailure(CrmActivityScope scope, CrmActivityFeedFilterDto filterDto, RuntimeException e) {
-		boolean rejected = e instanceof ModuleException;
-		Object[] arguments = { rejected ? "rejected" : "failed", scope.viewerId(),
-				MDC.get(CrmActivityConstants.TENANT_ID_MDC_KEY), scope.role(), CrmActivityConstants.FEED_VIEW,
-				filterDto.getType(), filterDto.getOwnerId(), filterDto.getFrom(), filterDto.getTo(),
-				filterDto.getPage(), CrmActivityFeedUtil.toSearchPattern(filterDto.getSearch()) != null,
-				e.getClass().getSimpleName(), Instant.now() };
-
-		if (rejected) {
-			log.warn(FEED_FAILURE_LOG, arguments);
-		}
-		else {
-			log.error(FEED_FAILURE_LOG, arguments);
-		}
 	}
 
 	private record FeedContext(CrmActivityScope scope, Map<Long, List<CrmActivityLinkResponseDto>> meetingContacts,
