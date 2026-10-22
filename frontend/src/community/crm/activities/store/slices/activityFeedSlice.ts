@@ -37,7 +37,6 @@ const ActivityFeedSlice: StateCreator<
         }
       }
     }),
-  resetFilters: () => set({ appliedFilters: EMPTY_ACTIVITY_FILTERS }),
   setSelectedActivity: (selectedActivity) => set({ selectedActivity }),
   resetActivityFeed: () => set(initialActivityFeedState)
 });

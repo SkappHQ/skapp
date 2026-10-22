@@ -13,13 +13,11 @@ import {
 import {
   ActivityFeedQuery,
   countActivityFeedRows,
-  isActivityFeedEmpty,
   resolveViewerTimezone,
   shouldShowActivityControls
 } from "~community/crm/activities/api/utils/activityFeedParams";
 import { useActivityTaskCompletion } from "~community/crm/activities/hooks/useActivityTaskCompletion";
 import { useActivityStore } from "~community/crm/activities/store/activityStore";
-import { SelectedActivity } from "~community/crm/activities/store/activityStoreTypes";
 import {
   ActivityFeedResponse,
   ActivityFilterValues,
@@ -34,24 +32,18 @@ export interface UseActivityFeedResult {
   activeTab: ActivityTab;
   search: string;
   appliedFilters: ActivityFilterValues;
-  hasAppliedFilters: boolean;
-  hasActiveFilters: boolean;
   showControls: boolean;
-  selectedActivity: SelectedActivity | null;
   setActiveTab: (tab: ActivityTab) => void;
   setSearch: (search: string) => void;
   applyFilters: (filters: ActivityFilterValues) => void;
-  resetFilters: () => void;
   pages: ActivityFeedResponse[];
   resultCount: number | null;
   isLoading: boolean;
   isError: boolean;
-  isEmpty: boolean;
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   loadMore: () => void;
   teamMembers: ActivityTeamMember[];
-  isTeamMembersLoading: boolean;
   isTeamMembersError: boolean;
   onRowClick: (row: ActivityRow) => void;
   onToggleComplete: (row: ActivityRow, isCompleted: boolean) => void;
@@ -73,22 +65,18 @@ export const useActivityFeed = (): UseActivityFeedResult => {
     activeTab,
     search,
     appliedFilters,
-    selectedActivity,
     setActiveTab,
     setSearch,
     applyFilters,
-    resetFilters,
     setSelectedActivity
   } = useActivityStore(
     useShallow((store) => ({
       activeTab: store.activeTab,
       search: store.search,
       appliedFilters: store.appliedFilters,
-      selectedActivity: store.selectedActivity,
       setActiveTab: store.setActiveTab,
       setSearch: store.setSearch,
       applyFilters: store.applyFilters,
-      resetFilters: store.resetFilters,
       setSelectedActivity: store.setSelectedActivity
     }))
   );
@@ -114,11 +102,8 @@ export const useActivityFeed = (): UseActivityFeedResult => {
     fetchNextPage
   } = useGetActivityFeedInfinite(query);
 
-  const {
-    data: teamMembers,
-    isLoading: isTeamMembersLoading,
-    isError: isTeamMembersError
-  } = useGetActivityTeamMembers(isManager);
+  const { data: teamMembers, isError: isTeamMembersError } =
+    useGetActivityTeamMembers(isManager);
 
   useEffect(() => {
     if (!isError) return;
@@ -139,21 +124,18 @@ export const useActivityFeed = (): UseActivityFeedResult => {
 
   const pages = data?.pages ?? NO_PAGES;
 
-  const isEmpty = !isLoading && !isError && isActivityFeedEmpty(pages);
-
   const resultCount =
     isLoading || isError ? null : countActivityFeedRows(pages);
 
-  const hasAppliedFilters =
-    query.ownerId !== null || query.from !== null || query.to !== null;
-
-  const hasActiveFilters = hasAppliedFilters || query.search.length > 0;
-
   const showControls = shouldShowActivityControls({
-    hasActiveFilters,
+    hasActiveFilters:
+      query.ownerId !== null ||
+      query.from !== null ||
+      query.to !== null ||
+      query.search.length > 0,
     isError,
     isLoading,
-    isEmpty
+    isEmpty: resultCount === 0
   });
 
   const loadMore = useCallback(() => {
@@ -177,24 +159,18 @@ export const useActivityFeed = (): UseActivityFeedResult => {
     activeTab,
     search,
     appliedFilters,
-    hasAppliedFilters,
-    hasActiveFilters,
     showControls,
-    selectedActivity,
     setActiveTab,
     setSearch,
     applyFilters,
-    resetFilters,
     pages,
     resultCount,
     isLoading,
     isError,
-    isEmpty,
     hasNextPage,
     isFetchingNextPage,
     loadMore,
     teamMembers: teamMembers ?? NO_TEAM_MEMBERS,
-    isTeamMembersLoading,
     isTeamMembersError,
     onRowClick,
     onToggleComplete

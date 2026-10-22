@@ -133,8 +133,6 @@ describe("useActivityFeed", () => {
         mockUseTeamMembers.mock.calls.every(([enabled]) => enabled === false)
       ).toBe(true);
       expect(lastQuery()).toMatchObject(NO_FILTERS);
-      expect(result.current.hasAppliedFilters).toBe(false);
-      expect(result.current.hasActiveFilters).toBe(false);
     });
 
     it.each<Role>(["manager", "crmAdmin", "superAdmin"])(
@@ -152,7 +150,6 @@ describe("useActivityFeed", () => {
           search: "",
           ...OCTOBER_QUERY
         });
-        expect(result.current.hasAppliedFilters).toBe(true);
       }
     );
 
@@ -166,14 +163,13 @@ describe("useActivityFeed", () => {
   });
 
   it("queries the All tab with no filters by default", () => {
-    const { result } = renderFeedAs("manager");
+    renderFeedAs("manager");
 
     expect(lastQuery()).toEqual({
       tab: ActivityTab.ALL,
       search: "",
       ...NO_FILTERS
     });
-    expect(result.current.hasActiveFilters).toBe(false);
   });
 
   it("sends the search from the toolbar straight away, trimmed", () => {
@@ -183,8 +179,6 @@ describe("useActivityFeed", () => {
 
     expect(result.current.search).toBe("  acme ");
     expect(lastQuery().search).toBe("acme");
-    expect(result.current.hasActiveFilters).toBe(true);
-    expect(result.current.hasAppliedFilters).toBe(false);
   });
 
   it("clearing the search keeps the tab and filters", () => {
@@ -261,16 +255,6 @@ describe("useActivityFeed", () => {
     expect(result.current.appliedFilters).toEqual(OCTOBER_FILTERS);
   });
 
-  it("clears the filters on reset", () => {
-    const { result } = renderFeedAs("crmAdmin");
-
-    act(() => result.current.applyFilters(OCTOBER_FILTERS));
-    act(() => result.current.resetFilters());
-
-    expect(lastQuery()).toMatchObject(NO_FILTERS);
-    expect(result.current.hasAppliedFilters).toBe(false);
-  });
-
   it("keeps the search and filters when the tab changes", () => {
     const { result } = renderFeedAs("manager");
 
@@ -327,7 +311,6 @@ describe("useActivityFeed", () => {
     const { result } = renderFeedAs("rep");
 
     expect(result.current.pages).toEqual([firstPage, lastPage]);
-    expect(result.current.isEmpty).toBe(false);
   });
 
   it("hides the controls on an empty tab and brings them back for a search", () => {
@@ -355,24 +338,13 @@ describe("useActivityFeed", () => {
     expect(result.current.showControls).toBe(true);
   });
 
-  it("reports an empty feed once loaded with no rows", () => {
-    mockUseFeed.mockReturnValue(
-      feedResult({ data: { pages: [emptyPage], pageParams: [0] } })
-    );
-
-    const { result } = renderFeedAs("rep");
-
-    expect(result.current.isEmpty).toBe(true);
-  });
-
-  it("does not report empty while loading", () => {
+  it("exposes loading state and no pages while loading", () => {
     mockUseFeed.mockReturnValue(feedResult({ data: null, isLoading: true }));
 
     const { result } = renderFeedAs("rep");
 
     expect(result.current.isLoading).toBe(true);
     expect(result.current.pages).toEqual([]);
-    expect(result.current.isEmpty).toBe(false);
   });
 
   it("loads the next By month page only when there is one", () => {
@@ -402,7 +374,6 @@ describe("useActivityFeed", () => {
     const { result } = renderFeedAs("rep");
 
     expect(result.current.isError).toBe(true);
-    expect(result.current.isEmpty).toBe(false);
     expect(mockSetToastMessage).toHaveBeenCalledTimes(1);
     expect(mockSetToastMessage).toHaveBeenCalledWith({
       open: true,
@@ -441,7 +412,7 @@ describe("useActivityFeed", () => {
 
     act(() => result.current.onRowClick(row));
 
-    expect(result.current.selectedActivity).toEqual({
+    expect(useActivityStore.getState().selectedActivity).toEqual({
       id: row.id,
       type: row.type
     });

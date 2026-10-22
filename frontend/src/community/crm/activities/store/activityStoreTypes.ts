@@ -20,7 +20,6 @@ export interface ActivityFeedSliceActions {
   setActiveTab: (activeTab: ActivityTab) => void;
   setSearch: (search: string) => void;
   applyFilters: (filters: ActivityFilterValues) => void;
-  resetFilters: () => void;
   setSelectedActivity: (selectedActivity: SelectedActivity | null) => void;
   resetActivityFeed: () => void;
 }

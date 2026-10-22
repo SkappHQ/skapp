@@ -64,9 +64,6 @@ export const countActivityFeedRows = (
   );
 };
 
-export const isActivityFeedEmpty = (pages: ActivityFeedResponse[]): boolean =>
-  countActivityFeedRows(pages) === 0;
-
 export const shouldShowActivityControls = ({
   hasActiveFilters,
   isError,

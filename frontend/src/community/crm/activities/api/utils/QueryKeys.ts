@@ -3,7 +3,6 @@ import { ActivityFeedQuery } from "~community/crm/activities/api/utils/activityF
 const CRM_ACTIVITIES = "crm-activities";
 
 export const crmActivityQueryKeys = {
-  ROOT: [CRM_ACTIVITIES],
   FEED_ROOT: [CRM_ACTIVITIES, "feed"],
   FEED: (query: ActivityFeedQuery) => [
     CRM_ACTIVITIES,

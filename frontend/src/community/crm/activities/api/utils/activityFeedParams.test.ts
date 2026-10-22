@@ -14,20 +14,12 @@ import {
   getActivityTypeForTab,
   getNextActivityFeedPage,
   getViewerTimezone,
-  isActivityFeedEmpty,
   resolveViewerTimezone,
   shouldShowActivityControls
 } from "./activityFeedParams";
 
 const firstPage = activityFeedMock as ActivityFeedResponse;
 const lastPage = activityFeedNextPageMock as ActivityFeedResponse;
-
-const emptyPage: ActivityFeedResponse = {
-  overdue: [],
-  today: [],
-  upcoming: [],
-  byMonth: { items: [], page: 0, hasMore: false }
-};
 
 const baseQuery: ActivityFeedQuery = {
   tab: ActivityTab.ALL,
@@ -103,21 +95,6 @@ describe("getNextActivityFeedPage", () => {
   it("returns null when there are no more pages", () => {
     expect(getNextActivityFeedPage(lastPage)).toBeNull();
     expect(getNextActivityFeedPage(null)).toBeNull();
-  });
-});
-
-describe("isActivityFeedEmpty", () => {
-  it("is empty with no pages or only empty pages", () => {
-    expect(isActivityFeedEmpty([])).toBe(true);
-    expect(isActivityFeedEmpty([emptyPage, emptyPage])).toBe(true);
-  });
-
-  it("is not empty when any bucket has rows", () => {
-    expect(isActivityFeedEmpty([firstPage])).toBe(false);
-    expect(isActivityFeedEmpty([emptyPage, lastPage])).toBe(false);
-    expect(
-      isActivityFeedEmpty([{ ...emptyPage, today: firstPage.byMonth.items }])
-    ).toBe(false);
   });
 });
 

@@ -79,20 +79,6 @@ describe("useActivityStore", () => {
     expect(state.appliedFilters).toEqual(OCTOBER_FILTERS);
   });
 
-  it("resets the filters but keeps the tab and search", () => {
-    const store = useActivityStore.getState();
-
-    store.setActiveTab(ActivityTab.EMAILS);
-    store.setSearch("acme");
-    store.applyFilters(OCTOBER_FILTERS);
-    store.resetFilters();
-
-    const state = useActivityStore.getState();
-    expect(state.activeTab).toBe(ActivityTab.EMAILS);
-    expect(state.search).toBe("acme");
-    expect(state.appliedFilters).toEqual(EMPTY_ACTIVITY_FILTERS);
-  });
-
   it("stores and clears the selected row", () => {
     const store = useActivityStore.getState();
 
