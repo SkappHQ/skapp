@@ -7,7 +7,7 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import {
   CompleteActivityTaskRequest,
   useCompleteActivityTask
-} from "~community/crm/activities/api/ActivityApi";
+} from "~community/crm/activities/api/ActivityTaskApi";
 import { patchTaskInFeedCache } from "~community/crm/activities/api/utils/activityFeedCache";
 import {
   ActivityRow,

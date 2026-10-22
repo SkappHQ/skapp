@@ -4,6 +4,7 @@ import { crmActivityQueryKeys } from "~community/crm/activities/api/utils/QueryK
 import {
   ActivityFeedResponse,
   ActivityRow,
+  ActivityTaskDetail,
   ActivityType
 } from "~community/crm/activities/types/activityTypes";
 
@@ -70,3 +71,14 @@ export const markFeedCacheStale = (queryClient: QueryClient): Promise<void> =>
     queryKey: crmActivityQueryKeys.FEED_ROOT,
     refetchType: "none"
   });
+
+export const toFeedRowPatch = (
+  detail: ActivityTaskDetail
+): Partial<ActivityRow> => ({
+  subject: detail.name,
+  priority: detail.priority,
+  dueAt: detail.dueAt,
+  isCompleted: detail.isCompleted,
+  completedAt: detail.completedAt,
+  canComplete: detail.canComplete
+});
