@@ -1,0 +1,185 @@
+{
+  "overdue": [
+    {
+      "id": 9,
+      "type": "TASK",
+      "subject": "Chase invoice",
+      "dueAt": "2026-10-14T09:00:00Z",
+      "occurredAt": null,
+      "completedAt": null,
+      "isCompleted": false,
+      "priority": "HIGH",
+      "owner": { "id": 1, "name": "Alex Perera", "avatar": null },
+      "contacts": [{ "id": 31, "name": "Nimal Silva", "deleted": false }],
+      "deal": { "id": 51, "name": "Acme renewal", "deleted": false },
+      "company": { "id": 71, "name": "Acme", "deleted": false },
+      "canComplete": true
+    },
+    {
+      "id": 12,
+      "type": "TASK",
+      "subject": "Send revised quote",
+      "dueAt": "2026-10-20T11:30:00Z",
+      "occurredAt": null,
+      "completedAt": null,
+      "isCompleted": false,
+      "priority": "MEDIUM",
+      "owner": { "id": 2, "name": "Sam Fernando", "avatar": null },
+      "contacts": [{ "id": 32, "name": "Kamala Jayasuriya", "deleted": true }],
+      "deal": null,
+      "company": null,
+      "canComplete": false
+    }
+  ],
+  "today": [
+    {
+      "id": 15,
+      "type": "TASK",
+      "subject": "Prepare demo notes",
+      "dueAt": "2026-10-22T15:00:00Z",
+      "occurredAt": null,
+      "completedAt": null,
+      "isCompleted": false,
+      "priority": "LOW",
+      "owner": { "id": 1, "name": "Alex Perera", "avatar": null },
+      "contacts": [],
+      "deal": { "id": 52, "name": "Globex pilot", "deleted": true },
+      "company": null,
+      "canComplete": true
+    },
+    {
+      "id": 104,
+      "type": "MEETING",
+      "subject": "Kick-off with Globex",
+      "dueAt": "2026-10-22T16:00:00Z",
+      "occurredAt": null,
+      "completedAt": null,
+      "isCompleted": false,
+      "priority": null,
+      "owner": { "id": 1, "name": "Alex Perera", "avatar": null },
+      "contacts": [
+        { "id": 33, "name": "Ruwan Dias", "deleted": false },
+        { "id": 34, "name": "Ishara Mendis", "deleted": false }
+      ],
+      "deal": { "id": 53, "name": "Globex expansion", "deleted": false },
+      "company": { "id": 72, "name": "Globex", "deleted": false },
+      "canComplete": false
+    }
+  ],
+  "upcoming": [
+    {
+      "id": 7,
+      "type": "TASK",
+      "subject": "Send contract",
+      "dueAt": "2026-10-27T09:00:00Z",
+      "occurredAt": null,
+      "completedAt": null,
+      "isCompleted": false,
+      "priority": "HIGH",
+      "owner": { "id": 2, "name": "Sam Fernando", "avatar": null },
+      "contacts": [{ "id": 31, "name": "Nimal Silva", "deleted": false }],
+      "deal": { "id": 51, "name": "Acme renewal", "deleted": false },
+      "company": { "id": 71, "name": "Acme", "deleted": false },
+      "canComplete": true
+    },
+    {
+      "id": 102,
+      "type": "MEETING",
+      "subject": "Quarterly review",
+      "dueAt": "2026-11-03T10:00:00Z",
+      "occurredAt": null,
+      "completedAt": null,
+      "isCompleted": false,
+      "priority": null,
+      "owner": { "id": 1, "name": "Alex Perera", "avatar": null },
+      "contacts": [{ "id": 35, "name": "Dilani Wickrama", "deleted": false }],
+      "deal": null,
+      "company": { "id": 73, "name": "Initech", "deleted": false },
+      "canComplete": false
+    }
+  ],
+  "byMonth": {
+    "items": [
+      {
+        "id": 101,
+        "type": "CALL",
+        "subject": "Pricing follow-up",
+        "dueAt": null,
+        "occurredAt": "2026-10-14T08:34:00Z",
+        "completedAt": null,
+        "isCompleted": false,
+        "priority": null,
+        "owner": { "id": 1, "name": "Alex Perera", "avatar": null },
+        "contacts": [{ "id": 31, "name": "Nimal Silva", "deleted": false }],
+        "deal": { "id": 51, "name": "Acme renewal", "deleted": false },
+        "company": { "id": 71, "name": "Acme", "deleted": false },
+        "canComplete": false
+      },
+      {
+        "id": 103,
+        "type": "EMAIL",
+        "subject": "Proposal sent",
+        "dueAt": null,
+        "occurredAt": "2026-10-13T05:10:00Z",
+        "completedAt": null,
+        "isCompleted": false,
+        "priority": null,
+        "owner": { "id": 2, "name": "Sam Fernando", "avatar": null },
+        "contacts": [
+          { "id": 33, "name": "Ruwan Dias", "deleted": false },
+          { "id": 36, "name": "Tharindu Raj", "deleted": true }
+        ],
+        "deal": { "id": 53, "name": "Globex expansion", "deleted": false },
+        "company": { "id": 72, "name": "Globex", "deleted": false },
+        "canComplete": false
+      },
+      {
+        "id": 8,
+        "type": "TASK",
+        "subject": "Book demo",
+        "dueAt": "2026-10-24T09:00:00Z",
+        "occurredAt": null,
+        "completedAt": "2026-10-12T07:20:00Z",
+        "isCompleted": true,
+        "priority": "MEDIUM",
+        "owner": { "id": 1, "name": "Alex Perera", "avatar": null },
+        "contacts": [{ "id": 34, "name": "Ishara Mendis", "deleted": false }],
+        "deal": null,
+        "company": { "id": 72, "name": "Globex", "deleted": false },
+        "canComplete": true
+      },
+      {
+        "id": 99,
+        "type": "MEETING",
+        "subject": "Discovery session",
+        "dueAt": null,
+        "occurredAt": "2026-10-02T04:00:00Z",
+        "completedAt": null,
+        "isCompleted": false,
+        "priority": null,
+        "owner": { "id": 2, "name": "Sam Fernando", "avatar": null },
+        "contacts": [{ "id": 35, "name": "Dilani Wickrama", "deleted": false }],
+        "deal": null,
+        "company": { "id": 73, "name": "Initech", "deleted": false },
+        "canComplete": false
+      },
+      {
+        "id": 95,
+        "type": "CALL",
+        "subject": "Intro call",
+        "dueAt": null,
+        "occurredAt": "2026-09-28T09:04:00Z",
+        "completedAt": null,
+        "isCompleted": false,
+        "priority": null,
+        "owner": { "id": 1, "name": "Alex Perera", "avatar": null },
+        "contacts": [{ "id": 35, "name": "Dilani Wickrama", "deleted": false }],
+        "deal": null,
+        "company": { "id": 73, "name": "Initech", "deleted": false },
+        "canComplete": false
+      }
+    ],
+    "page": 0,
+    "hasMore": true
+  }
+}
