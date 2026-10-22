@@ -26,12 +26,14 @@ public class CrmActivityTaskResponseDto {
 
 	private String notes;
 
-	private Long ownerId;
+	private CrmActivityPersonResponseDto owner;
 
-	private Long contactId;
+	private CrmActivityLinkResponseDto contact;
 
-	private Long companyId;
+	private CrmActivityLinkResponseDto deal;
 
-	private Long dealId;
+	private CrmActivityLinkResponseDto company;
+
+	private Boolean canComplete;
 
 }

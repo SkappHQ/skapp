@@ -335,10 +335,34 @@ class CrmActivityTaskControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['priority']").value("MEDIUM"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['isCompleted']").value(false))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['notes']").value("Panel notes"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['ownerId']").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contactId']").value(contact.getId()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(company.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['owner']['id']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['owner']['name']").value("Employee User One Lastname One"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['name']").value("Panel Contact"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['deleted']").value(false))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['name']").value("Panel Company"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['deal']").isEmpty())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['canComplete']").value(true))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['id']").value(contact.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(company.getId()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['dueAt']").isNotEmpty());
+	}
+
+	@Test
+	@DisplayName("Get task by ID as Sales Representative - Hides a deal owned by someone else")
+	void getTaskById_AsRepresentativeWithOthersDeal_HidesDeal() throws Exception {
+		setCrmRole(2L, Role.CRM_SALES_REPRESENTATIVE);
+		CrmContact contact = savedContact("Hidden Deal Contact", null);
+		CrmDeal deal = savedDeal("Hidden Panel Deal", contact);
+		CrmActivityTask task = savedTask("Rep task with hidden deal", 2L);
+		task.setContact(contact);
+		task.setDeal(deal);
+		crmActivityTaskDao.flush();
+		authToken = tokenFor("user2@gmail.com");
+
+		performRequest(get(TASK_PATH, task.getId())).andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['deal']").isEmpty())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['name']").value("Hidden Deal Contact"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['canComplete']").value(true));
 	}
 
 	@Test
@@ -350,7 +374,7 @@ class CrmActivityTaskControllerIntegrationTest {
 		loginAs(3L, "user3@gmail.com", Role.CRM_SALES_MANAGER);
 
 		performRequest(get(TASK_PATH, task.getId())).andExpect(status().isOk())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['ownerId']").value(5));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['owner']['id']").value(5));
 	}
 
 	@Test
@@ -420,14 +444,14 @@ class CrmActivityTaskControllerIntegrationTest {
 
 		performEdit(task.getId(), "{\"contactId\":" + contact.getId() + ",\"dealId\":" + deal.getId() + "}")
 			.andExpect(status().isOk())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contactId']").value(contact.getId()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(company.getId()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['dealId']").value(deal.getId()));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['id']").value(contact.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(company.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['deal']['id']").value(deal.getId()));
 
 		performEdit(task.getId(), "{\"contactId\":null,\"dealId\":null}").andExpect(status().isOk())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contactId']").isEmpty())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").isEmpty())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['dealId']").isEmpty());
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']").isEmpty())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['company']").isEmpty())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['deal']").isEmpty());
 	}
 
 	@Test
@@ -485,7 +509,7 @@ class CrmActivityTaskControllerIntegrationTest {
 
 		performEdit(task.getId(), "{\"ownerId\":1}").andExpect(status().isForbidden());
 		performEdit(task.getId(), "{\"ownerId\":3}").andExpect(status().isOk())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['ownerId']").value(3));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['owner']['id']").value(3));
 	}
 
 	@Test

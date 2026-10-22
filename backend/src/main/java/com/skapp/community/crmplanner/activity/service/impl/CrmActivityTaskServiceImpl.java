@@ -99,7 +99,7 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 		requireTaskAccess(scope, task, "getTaskById", CrmMessageConstant.CRM_ERROR_ACTIVITY_TASK_VIEW_DENIED);
 
 		log.info("getTaskById: execution ended");
-		return new ResponseEntityDto(false, toResponseDto(task));
+		return new ResponseEntityDto(false, toResponseDto(task, scope));
 	}
 
 	@Override
@@ -152,7 +152,7 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 		CrmActivityTask updatedTask = crmActivityTaskDao.save(task);
 
 		log.info("editTask: execution ended for taskId={}", id);
-		return new ResponseEntityDto(false, toResponseDto(updatedTask));
+		return new ResponseEntityDto(false, toResponseDto(updatedTask, scope));
 	}
 
 	@Override
@@ -185,7 +185,7 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 				scope.orgWide() ? null : scope.ownerIds(), toPageable(filterDto.getPage(), filterDto.getSize()));
 
 		log.info("getRelatedTasks: execution ended");
-		return new ResponseEntityDto(false, toPageDto(relatedPage));
+		return new ResponseEntityDto(false, toPageDto(relatedPage, scope));
 	}
 
 	private CrmActivityTask findActiveTask(Long id) {
@@ -250,10 +250,14 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 		task.setCompletedAt(completed ? Instant.now() : null);
 	}
 
-	private CrmActivityTaskResponseDto toResponseDto(CrmActivityTask task) {
+	private CrmActivityTaskResponseDto toResponseDto(CrmActivityTask task, CrmActivityScope scope) {
 		CrmActivityTaskResponseDto dto = crmActivityMapper.crmActivityTaskToCrmActivityTaskResponseDto(task);
-		if (task.getCompany() != null && Boolean.TRUE.equals(task.getCompany().getIsDeleted())) {
-			dto.setCompanyId(null);
+		Long ownerId = task.getOwner() != null ? task.getOwner().getEmployeeId() : null;
+		Long dealOwnerId = task.getDeal() != null && task.getDeal().getOwner() != null
+				? task.getDeal().getOwner().getEmployeeId() : null;
+		dto.setCanComplete(scope.includesOwner(ownerId));
+		if (!scope.canViewDeal(dealOwnerId)) {
+			dto.setDeal(null);
 		}
 		return dto;
 	}
@@ -262,9 +266,9 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 		return size <= 0 ? Pageable.unpaged() : PageRequest.of(Math.max(page, 0), size);
 	}
 
-	private PageDto toPageDto(Page<CrmActivityTask> taskPage) {
+	private PageDto toPageDto(Page<CrmActivityTask> taskPage, CrmActivityScope scope) {
 		PageDto pageDto = new PageDto();
-		pageDto.setItems(taskPage.getContent().stream().map(this::toResponseDto).toList());
+		pageDto.setItems(taskPage.getContent().stream().map(task -> toResponseDto(task, scope)).toList());
 
 		if (taskPage.isEmpty()) {
 			return pageDto;
