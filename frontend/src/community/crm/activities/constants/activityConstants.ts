@@ -10,8 +10,6 @@ import {
 } from "~community/crm/activities/types/activityTypes";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 
-export const ACTIVITY_PAGE_SIZE = 25;
-
 export const ACTIVITY_TABS: ActivityTabConfig[] = [
   { id: ActivityTab.ALL, labelKey: "all", type: null },
   { id: ActivityTab.TASKS, labelKey: "tasks", type: ActivityType.TASK },
@@ -102,7 +100,7 @@ export const ACTIVITY_DATE_PRESETS: {
 
 export const ACTIVITY_LAST_DAYS_PRESET_LENGTH = 30;
 
-export const EMPTY_ACTIVITY_DATE_RANGE: DateRange = { from: null, to: null };
+const EMPTY_ACTIVITY_DATE_RANGE: DateRange = { from: null, to: null };
 
 export const EMPTY_ACTIVITY_FILTERS: ActivityFilterValues = {
   ownerId: null,

@@ -1,5 +1,5 @@
 import { ButtonV2, CloseIcon, IconButton } from "@rootcodelabs/skapp-ui";
-import { FC, KeyboardEvent, useEffect, useState } from "react";
+import { FC, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import ActivityDateRangeField from "~community/crm/activities/components/molecules/ActivityDateRangeField/ActivityDateRangeField";
@@ -36,10 +36,6 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
 
   const [draft, setDraft] = useState<ActivityFilterValues>(filters);
 
-  useEffect(() => {
-    document.getElementById(id)?.focus();
-  }, [id]);
-
   const isRangeValid = validateDateRange(draft.dateRange);
   const isChanged = !areFilterValuesEqual(draft, filters);
   const isApplyDisabled = !isChanged || !isRangeValid;
@@ -54,26 +50,14 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
     onApply(EMPTY_ACTIVITY_FILTERS);
   };
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "Escape" && !event.defaultPrevented) {
-      event.preventDefault();
-      onClose();
-    }
-  };
-
   return (
     <div
       id={id}
-      role="dialog"
-      aria-modal={false}
-      aria-labelledby={`${id}-title`}
-      tabIndex={-1}
-      onKeyDown={handleKeyDown}
-      className="flex max-h-[765px] min-h-0 w-[25.5rem] max-w-[calc(100vw-2rem)] flex-col rounded-2xl bg-white shadow-lg focus:outline-none"
+      className="flex max-h-[765px] min-h-0 w-[25.5rem] max-w-[calc(100vw-2rem)] flex-col rounded-2xl bg-white shadow-lg"
     >
       <div className="flex min-h-0 flex-col gap-5 overflow-y-auto px-5 pt-5 pb-4">
         <div className="flex items-center justify-between">
-          <h2 id={`${id}-title`} className="h2">
+          <h2 className="h2">
             {translateText(["activities", "toolbar", "filters", "title"])}
           </h2>
           <IconButton

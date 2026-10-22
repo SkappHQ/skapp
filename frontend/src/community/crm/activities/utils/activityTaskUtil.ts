@@ -6,9 +6,7 @@ import {
   instantToPickedDay,
   pickedDayToInstant
 } from "~community/common/utils/dateTimeUtils";
-import { ACTIVITY_PRIORITY_KEYS } from "~community/crm/activities/constants/activityConstants";
 import { ActivityTaskDetail } from "~community/crm/activities/types/activityTypes";
-import { CrmPriorityEnum } from "~community/crm/enums/common";
 
 const VALIDATION_KEYS = ["activities", "taskPanel", "validations"];
 
@@ -43,9 +41,6 @@ export const toTaskDueAt = (pickedDay: Date, zone?: string): string | null =>
 
 export const toTaskDueDay = (dueAt: string, zone?: string): Date =>
   instantToPickedDay(dueAt, zone);
-
-export const getTaskPriorityKey = (priority: CrmPriorityEnum | null): string =>
-  ACTIVITY_PRIORITY_KEYS[priority ?? CrmPriorityEnum.LOW];
 
 export const canReopenTask = (task: ActivityTaskDetail): boolean =>
   task.isCompleted && task.canComplete;

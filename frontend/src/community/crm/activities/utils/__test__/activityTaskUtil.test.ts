@@ -6,7 +6,6 @@ import {
   canMarkTaskAsDone,
   canReopenTask,
   formatTaskDueDate,
-  getTaskPriorityKey,
   toTaskDueAt,
   toTaskDueDay,
   validateActivityTaskName,
@@ -99,18 +98,6 @@ describe("due date helpers", () => {
     expect(day.getFullYear()).toBe(2026);
     expect(day.getMonth()).toBe(9);
     expect(day.getDate()).toBe(27);
-  });
-});
-
-describe("getTaskPriorityKey", () => {
-  it("maps each priority to its label key", () => {
-    expect(getTaskPriorityKey(CrmPriorityEnum.HIGH)).toBe("high");
-    expect(getTaskPriorityKey(CrmPriorityEnum.MEDIUM)).toBe("medium");
-    expect(getTaskPriorityKey(CrmPriorityEnum.LOW)).toBe("low");
-  });
-
-  it("treats a missing priority as low", () => {
-    expect(getTaskPriorityKey(null)).toBe("low");
   });
 });
 

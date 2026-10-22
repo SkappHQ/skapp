@@ -50,7 +50,7 @@ export interface ActivityRow {
   canComplete: boolean;
 }
 
-export interface ActivityByMonthPage {
+interface ActivityByMonthPage {
   items: ActivityRow[];
   page: number;
   hasMore: boolean;

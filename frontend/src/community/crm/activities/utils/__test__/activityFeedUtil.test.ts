@@ -9,16 +9,12 @@ import {
 } from "~community/crm/activities/types/activityTypes";
 
 import {
-  countBucketRows,
   formatMonthHeading,
-  fromPickerDateRange,
   getActivityRowKey,
   getLinkLabel,
   getMonthAnchor,
   getRowSubtitle,
   getVisibleBuckets,
-  groupByMonth,
-  isDateRangeEmpty,
   toDateValue,
   toPickerDateRange,
   validateDateRange
@@ -121,6 +117,11 @@ describe("getMonthAnchor", () => {
     expect(getMonthAnchor(buildRow({}))).toBeNull();
   });
 });
+
+const groupByMonth = (pages: ActivityFeedResponse[], zone?: string) =>
+  getVisibleBuckets(pages, zone)
+    .filter((group) => group.monthKey !== null)
+    .map((group) => ({ monthKey: group.monthKey, rows: group.rows }));
 
 describe("groupByMonth", () => {
   it("returns no groups for no pages", () => {
@@ -249,12 +250,6 @@ describe("getVisibleBuckets", () => {
     expect(
       groups.some((group) => group.bucket === ActivityBucket.OVERDUE)
     ).toBe(false);
-  });
-
-  it("counts rows across visible buckets", () => {
-    expect(
-      countBucketRows(getVisibleBuckets([firstPage, secondPage], "UTC"))
-    ).toBe(13);
   });
 });
 
@@ -397,21 +392,14 @@ describe("date range conversion", () => {
 
     expect(pickerRange.from?.getDate()).toBe(1);
     expect(pickerRange.to?.getMonth()).toBe(9);
-    expect(fromPickerDateRange(pickerRange)).toEqual(range);
   });
 
   it("leaves out missing dates", () => {
     expect(toPickerDateRange({ from: null, to: null })).toEqual({});
-    expect(fromPickerDateRange()).toEqual({ from: null, to: null });
   });
 
   it("formats a picked day as a date value", () => {
     expect(toDateValue(new Date(2026, 9, 5))).toBe("2026-10-05");
     expect(toDateValue()).toBeNull();
-  });
-
-  it("detects an empty range", () => {
-    expect(isDateRangeEmpty({ from: null, to: null })).toBe(true);
-    expect(isDateRangeEmpty({ from: "2026-10-01", to: null })).toBe(false);
   });
 });

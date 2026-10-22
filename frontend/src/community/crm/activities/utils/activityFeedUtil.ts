@@ -34,7 +34,7 @@ export const getMonthAnchor = (row: ActivityRow): string | null => {
   return row.occurredAt ?? row.completedAt ?? row.dueAt;
 };
 
-export const groupByMonth = (
+const groupByMonth = (
   pages: ActivityFeedResponse[],
   zone?: string
 ): ActivityMonthGroup[] => {
@@ -95,15 +95,12 @@ export const getVisibleBuckets = (
   }).filter((group) => group.rows.length > 0);
 };
 
-export const countBucketRows = (groups: ActivityBucketGroup[]): number =>
-  groups.reduce((total, group) => total + group.rows.length, 0);
-
 export const formatMonthHeading = (monthKey: string): string =>
   DateTime.fromFormat(monthKey, ACTIVITY_MONTH_KEY_FORMAT).toFormat(
     ACTIVITY_MONTH_HEADING_FORMAT
   );
 
-export const formatActivityDate = (dateTime: DateTime): string =>
+const formatActivityDate = (dateTime: DateTime): string =>
   `${dateTime.day}${getOrdinalIndicator(dateTime.day)} ${
     ACTIVITY_MONTH_ABBREVIATIONS[dateTime.month - 1]
   }`;
@@ -184,11 +181,3 @@ export const toPickerDateRange = (range: DateRange): PickerDateRange => {
 
 export const toDateValue = (date?: Date): string | null =>
   date ? DateTime.fromJSDate(date).toFormat(ACTIVITY_DATE_FORMAT) : null;
-
-export const fromPickerDateRange = (range?: PickerDateRange): DateRange => ({
-  from: toDateValue(range?.from),
-  to: toDateValue(range?.to)
-});
-
-export const isDateRangeEmpty = (range: DateRange): boolean =>
-  !range.from && !range.to;
