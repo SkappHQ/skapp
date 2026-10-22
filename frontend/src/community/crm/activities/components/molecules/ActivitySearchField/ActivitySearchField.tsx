@@ -46,9 +46,8 @@ const ActivitySearchField: FC<ActivitySearchFieldProps> = ({
           "clearSearch"
         ])}
         placeholder={placeholder}
-        className="w-[20rem] h-[3rem]"
-        customStyles={{ borderRadius: "rounded-[1.5rem]" }}
-        rightIcon={<SearchIcon />}
+        className="w-[20rem]"
+        leftIcon={<SearchIcon />}
         value={inputValue}
         onChange={(event: ChangeEvent<HTMLInputElement>) =>
           setInputValue(event.target.value)

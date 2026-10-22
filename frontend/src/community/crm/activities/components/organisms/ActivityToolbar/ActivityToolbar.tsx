@@ -1,7 +1,8 @@
-import { FilterIcon, IconButton, Tabs } from "@rootcodelabs/skapp-ui";
+import { Tabs } from "@rootcodelabs/skapp-ui";
 import { FC, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import ActivityFilterButton from "~community/crm/activities/components/atoms/ActivityFilterButton/ActivityFilterButton";
 import ActivityFilterPopover from "~community/crm/activities/components/molecules/ActivityFilterPopover/ActivityFilterPopover";
 import ActivitySearchField from "~community/crm/activities/components/molecules/ActivitySearchField/ActivitySearchField";
 import {
@@ -81,12 +82,10 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
       <div className="flex items-center gap-3">
         {isManager && (
           <div className="relative">
-            <IconButton
+            <ActivityFilterButton
               id={filterButtonId}
               type="button"
-              icon={<FilterIcon />}
-              shape="square"
-              variant="outlined"
+              filterCount={activeFilterCount}
               aria-label={translateAria([
                 "activities",
                 "toolbar",
@@ -95,7 +94,6 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
               aria-haspopup="dialog"
               aria-expanded={isFilterOpen}
               aria-controls={isFilterOpen ? filterPopoverId : ""}
-              badge={{ count: activeFilterCount, show: activeFilterCount > 0 }}
               onClick={() => setIsFilterOpen((isOpen) => !isOpen)}
             />
 
