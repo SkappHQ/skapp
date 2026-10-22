@@ -1,9 +1,12 @@
 import {
   ActivityBucket,
+  ActivityDatePreset,
   ActivityFeedResponse,
+  ActivityFilterValues,
   ActivityTab,
   ActivityTabConfig,
-  ActivityType
+  ActivityType,
+  DateRange
 } from "~community/crm/activities/types/activityTypes";
 
 export const ACTIVITY_PAGE_SIZE = 25;
@@ -85,3 +88,22 @@ export const ACTIVITY_TYPE_ICON_SIZE = 20;
 export const ACTIVITY_TOOLBAR_ID = "crm-activity-toolbar";
 
 export const ACTIVITY_FEED_ID = "crm-activity-feed";
+
+export const ACTIVITY_DATE_PRESETS: {
+  id: ActivityDatePreset;
+  labelKey: string;
+}[] = [
+  { id: ActivityDatePreset.TODAY, labelKey: "today" },
+  { id: ActivityDatePreset.THIS_WEEK, labelKey: "thisWeek" },
+  { id: ActivityDatePreset.THIS_MONTH, labelKey: "thisMonth" },
+  { id: ActivityDatePreset.LAST_30_DAYS, labelKey: "last30Days" }
+];
+
+export const ACTIVITY_LAST_DAYS_PRESET_LENGTH = 30;
+
+export const EMPTY_ACTIVITY_DATE_RANGE: DateRange = { from: null, to: null };
+
+export const EMPTY_ACTIVITY_FILTERS: ActivityFilterValues = {
+  ownerId: null,
+  dateRange: EMPTY_ACTIVITY_DATE_RANGE
+};
