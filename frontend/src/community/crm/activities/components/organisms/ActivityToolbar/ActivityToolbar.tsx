@@ -4,7 +4,7 @@ import {
   Popper,
   Tabs
 } from "@rootcodelabs/skapp-ui";
-import { FC, MouseEvent, useState } from "react";
+import { FC, MouseEvent, useEffect, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import ActivityFilterPopover from "~community/crm/activities/components/molecules/ActivityFilterPopover/ActivityFilterPopover";
@@ -33,6 +33,7 @@ export interface ActivityToolbarProps {
   teamMembers: ActivityTeamMember[];
   isTeamMembersError: boolean;
   timeZone?: string;
+  showControls?: boolean;
 }
 
 const ActivityToolbar: FC<ActivityToolbarProps> = ({
@@ -47,7 +48,8 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
   onApplyFilters,
   teamMembers,
   isTeamMembersError,
-  timeZone
+  timeZone,
+  showControls = true
 }) => {
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
@@ -56,7 +58,11 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
     null
   );
 
-  const isFilterOpen = filterAnchorEl !== null;
+  const isFilterOpen = showControls && filterAnchorEl !== null;
+
+  useEffect(() => {
+    if (!showControls) setFilterAnchorEl(null);
+  }, [showControls]);
 
   const filterButtonId = `${id}-filter-button`;
   const filterPopoverId = `${id}-filter-popover`;
@@ -91,63 +97,68 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
         />
       </div>
 
-      <div className="flex items-center gap-3">
-        {isManager && (
-          <div>
-            <IconButton
-              id={filterButtonId}
-              type="button"
-              icon={<FilterListIcon />}
-              variant="transparent"
-              shape="square"
-              aria-label={translateAria([
-                "activities",
-                "toolbar",
-                activeFilterCount > 0 ? "openFiltersActive" : "openFilters"
-              ])}
-              aria-haspopup="dialog"
-              aria-expanded={isFilterOpen}
-              aria-controls={isFilterOpen ? filterPopoverId : ""}
-              badge={{ count: activeFilterCount, show: activeFilterCount > 0 }}
-              onClick={handleToggleFilters}
-            />
-
-            <Popper
-              id={`${filterPopoverId}-popper`}
-              open={isFilterOpen}
-              anchorEl={filterAnchorEl}
-              position="bottom-start"
-              containerClassName="rounded-2xl shadow-lg"
-              ariaRole="presentation"
-              handleClose={handleCloseFilters}
-            >
-              <ActivityFilterPopover
-                id={filterPopoverId}
-                filters={filters}
-                teamMembers={teamMembers}
-                isTeamMembersError={isTeamMembersError}
-                timeZone={timeZone}
-                onApply={onApplyFilters}
-                onClose={handleCloseFilters}
+      {showControls && (
+        <div className="flex items-center gap-3">
+          {isManager && (
+            <div>
+              <IconButton
+                id={filterButtonId}
+                type="button"
+                icon={<FilterListIcon />}
+                variant="transparent"
+                shape="square"
+                aria-label={translateAria([
+                  "activities",
+                  "toolbar",
+                  activeFilterCount > 0 ? "openFiltersActive" : "openFilters"
+                ])}
+                aria-haspopup="dialog"
+                aria-expanded={isFilterOpen}
+                aria-controls={isFilterOpen ? filterPopoverId : ""}
+                badge={{
+                  count: activeFilterCount,
+                  show: activeFilterCount > 0
+                }}
+                onClick={handleToggleFilters}
               />
-            </Popper>
-          </div>
-        )}
 
-        <ActivitySearchField
-          id={`${id}-search`}
-          placeholder={translateText([
-            "activities",
-            "toolbar",
-            "search",
-            "placeholders",
-            searchPlaceholderKey
-          ])}
-          searchTerm={searchTerm}
-          onSearchChange={onSearchChange}
-          resultCount={resultCount}
-        />
-      </div>
+              <Popper
+                id={`${filterPopoverId}-popper`}
+                open={isFilterOpen}
+                anchorEl={filterAnchorEl}
+                position="bottom-start"
+                containerClassName="rounded-2xl shadow-lg"
+                ariaRole="presentation"
+                handleClose={handleCloseFilters}
+              >
+                <ActivityFilterPopover
+                  id={filterPopoverId}
+                  filters={filters}
+                  teamMembers={teamMembers}
+                  isTeamMembersError={isTeamMembersError}
+                  timeZone={timeZone}
+                  onApply={onApplyFilters}
+                  onClose={handleCloseFilters}
+                />
+              </Popper>
+            </div>
+          )}
+
+          <ActivitySearchField
+            id={`${id}-search`}
+            placeholder={translateText([
+              "activities",
+              "toolbar",
+              "search",
+              "placeholders",
+              searchPlaceholderKey
+            ])}
+            searchTerm={searchTerm}
+            onSearchChange={onSearchChange}
+            resultCount={resultCount}
+          />
+        </div>
+      )}
     </div>
   );
 };
