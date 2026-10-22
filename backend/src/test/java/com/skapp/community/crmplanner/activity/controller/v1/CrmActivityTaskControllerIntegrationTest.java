@@ -47,7 +47,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -66,8 +65,6 @@ class CrmActivityTaskControllerIntegrationTest {
 	private static final String COMPLETE_PATH = "/v1/crm/activities/tasks/{id}/complete";
 
 	private static final String TASK_PATH = "/v1/crm/activities/tasks/{id}";
-
-	private static final String RELATED_PATH = "/v1/crm/activities/tasks/{id}/related";
 
 	private static final String TIMEZONE_HEADER = "X-Timezone";
 
@@ -526,70 +523,6 @@ class CrmActivityTaskControllerIntegrationTest {
 	@DisplayName("Edit a missing task - Returns not found")
 	void editTask_MissingTask_ReturnsNotFound() throws Exception {
 		performEdit(999_999L, "{\"name\":\"Nothing\"}").andExpect(status().isNotFound());
-	}
-
-	@Test
-	@DisplayName("Delete task as owner - Soft-deletes the task")
-	void deleteTask_AsOwner_SoftDeletes() throws Exception {
-		CrmActivityTask task = savedTask("Delete me", 1L);
-
-		performRequest(delete(TASK_PATH, task.getId())).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
-
-		assertTrue(reloaded(task.getId()).getIsDeleted());
-		performRequest(get(TASK_PATH, task.getId())).andExpect(status().isNotFound());
-	}
-
-	@Test
-	@DisplayName("Delete task as Sales Representative on someone else's task - Returns forbidden")
-	void deleteTask_AsRepresentativeOnOthersTask_ReturnsForbidden() throws Exception {
-		CrmActivityTask task = savedTask("Do not delete", 1L);
-		loginAs(2L, "user2@gmail.com", Role.CRM_SALES_REPRESENTATIVE);
-
-		performRequest(delete(TASK_PATH, task.getId())).andExpect(status().isForbidden());
-
-		assertFalse(reloaded(task.getId()).getIsDeleted());
-	}
-
-	@Test
-	@DisplayName("Delete a missing task - Returns not found")
-	void deleteTask_MissingTask_ReturnsNotFound() throws Exception {
-		performRequest(delete(TASK_PATH, 999_999L)).andExpect(status().isNotFound());
-	}
-
-	@Test
-	@DisplayName("Get related tasks - Returns tasks sharing the contact within the caller's scope")
-	void getRelatedTasks_SharedContact_ReturnsScopedTasks() throws Exception {
-		setCrmRole(2L, Role.CRM_SALES_REPRESENTATIVE);
-		CrmContact contact = savedContact("Related Contact", null);
-		CrmActivityTask source = savedTask("Related source", 2L);
-		CrmActivityTask sibling = savedTask("Related sibling", 2L);
-		CrmActivityTask othersSibling = savedTask("Related other owner", 1L);
-		CrmActivityTask unrelated = savedTask("Unrelated", 2L);
-		source.setContact(contact);
-		sibling.setContact(contact);
-		othersSibling.setContact(contact);
-		crmActivityTaskDao.flush();
-		authToken = tokenFor("user2@gmail.com");
-
-		performRequest(get(RELATED_PATH, source.getId())).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['id']").value(sibling.getId()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1));
-
-		performRequest(get(RELATED_PATH, unrelated.getId())).andExpect(status().isOk())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(0));
-	}
-
-	@Test
-	@DisplayName("Get related tasks for someone else's task as Sales Representative - Returns forbidden")
-	void getRelatedTasks_AsRepresentativeOnOthersTask_ReturnsForbidden() throws Exception {
-		CrmActivityTask task = savedTask("Others related source", 1L);
-		loginAs(2L, "user2@gmail.com", Role.CRM_SALES_REPRESENTATIVE);
-
-		performRequest(get(RELATED_PATH, task.getId())).andExpect(status().isForbidden());
 	}
 
 }

@@ -12,7 +12,6 @@ import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
@@ -29,25 +28,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CrmActivityTeamMemberRepositoryImpl implements CrmActivityTeamMemberRepository {
 
-	private static final char LIKE_ESCAPE = '\\';
-
 	private final EntityManager entityManager;
 
 	@Override
-	public List<CrmActivityPersonResponseDto> findAllCrmMembers(String searchPattern) {
-		return findCrmMembers(null, searchPattern);
-	}
-
-	@Override
-	public List<CrmActivityPersonResponseDto> findCrmMembersByEmployeeIds(Collection<Long> employeeIds,
-			String searchPattern) {
-		if (employeeIds == null || employeeIds.isEmpty()) {
+	public List<CrmActivityPersonResponseDto> findCrmMembers(Collection<Long> employeeIds) {
+		if (employeeIds != null && employeeIds.isEmpty()) {
 			return Collections.emptyList();
 		}
-		return findCrmMembers(employeeIds, searchPattern);
-	}
 
-	private List<CrmActivityPersonResponseDto> findCrmMembers(Collection<Long> employeeIds, String searchPattern) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmActivityPersonResponseDto> query = cb.createQuery(CrmActivityPersonResponseDto.class);
 		Root<Employee> employee = query.from(Employee.class);
@@ -60,14 +48,6 @@ public class CrmActivityTeamMemberRepositoryImpl implements CrmActivityTeamMembe
 
 		if (employeeIds != null) {
 			predicates.add(employee.get(Employee_.employeeId).in(employeeIds));
-		}
-
-		if (searchPattern != null) {
-			Expression<String> fullName = cb.concat(cb.concat(employee.get(Employee_.firstName), " "),
-					employee.get(Employee_.lastName));
-			predicates.add(cb.or(cb.like(cb.lower(employee.get(Employee_.firstName)), searchPattern, LIKE_ESCAPE),
-					cb.like(cb.lower(employee.get(Employee_.lastName)), searchPattern, LIKE_ESCAPE),
-					cb.like(cb.lower(fullName), searchPattern, LIKE_ESCAPE)));
 		}
 
 		query.select(cb.construct(CrmActivityPersonResponseDto.class, employee.get(Employee_.employeeId),

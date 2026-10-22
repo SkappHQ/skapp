@@ -682,10 +682,6 @@ class CrmActivityControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_PATH + ".length()").value(3))
 			.andExpect(jsonPath(RESULTS_PATH + "[*]['id']", containsInAnyOrder(3, 4, 5)))
 			.andExpect(jsonPath(RESULTS_PATH + "[0]['name']").value("Manager User Five LastnameGlobal"));
-
-		performRequest(get(TEAM_MEMBERS_PATH).param("search", "four")).andExpect(status().isOk())
-			.andExpect(jsonPath(RESULTS_PATH + ".length()").value(1))
-			.andExpect(jsonPath(RESULTS_PATH + "[0]['id']").value(4));
 	}
 
 	@Test

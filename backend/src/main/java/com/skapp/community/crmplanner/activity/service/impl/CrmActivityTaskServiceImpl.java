@@ -3,17 +3,14 @@ package com.skapp.community.crmplanner.activity.service.impl;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
-import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.activity.mapper.CrmActivityMapper;
 import com.skapp.community.crmplanner.activity.payload.request.CrmActivityTaskCompleteRequestDto;
 import com.skapp.community.crmplanner.activity.payload.request.CrmActivityTaskEditRequestDto;
-import com.skapp.community.crmplanner.activity.payload.request.CrmActivityTaskRelatedFilterDto;
 import com.skapp.community.crmplanner.activity.payload.response.CrmActivityTaskResponseDto;
 import com.skapp.community.crmplanner.activity.repository.CrmActivityFeedRepository;
-import com.skapp.community.crmplanner.activity.repository.CrmActivityTaskRepository;
 import com.skapp.community.crmplanner.activity.service.CrmActivityScopeService;
 import com.skapp.community.crmplanner.activity.service.CrmActivityTaskService;
 import com.skapp.community.crmplanner.activity.type.CrmActivityFeedRecord;
@@ -33,9 +30,6 @@ import com.skapp.community.peopleplanner.model.Employee;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openapitools.jackson.nullable.JsonNullable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,8 +43,6 @@ import java.util.List;
 public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 
 	private final CrmActivityTaskDao crmActivityTaskDao;
-
-	private final CrmActivityTaskRepository crmActivityTaskRepository;
 
 	private final CrmActivityFeedRepository crmActivityFeedRepository;
 
@@ -155,39 +147,6 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 		return new ResponseEntityDto(false, toResponseDto(updatedTask, scope));
 	}
 
-	@Override
-	@Transactional
-	public ResponseEntityDto deleteTask(Long id) {
-		log.info("deleteTask: execution started");
-
-		CrmActivityTask task = findActiveTask(id);
-		CrmActivityScope scope = crmActivityScopeService.resolveScope(userService.getCurrentUser());
-		requireTaskAccess(scope, task, "deleteTask", CrmMessageConstant.CRM_ERROR_ACTIVITY_TASK_EDIT_DENIED);
-
-		task.setIsDeleted(true);
-		crmActivityTaskDao.save(task);
-
-		log.info("deleteTask: execution ended for taskId={}", id);
-		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_ACTIVITY_TASK_DELETED),
-				false);
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public ResponseEntityDto getRelatedTasks(Long id, CrmActivityTaskRelatedFilterDto filterDto) {
-		log.info("getRelatedTasks: execution started");
-
-		CrmActivityTask task = findActiveTask(id);
-		CrmActivityScope scope = crmActivityScopeService.resolveScope(userService.getCurrentUser());
-		requireTaskAccess(scope, task, "getRelatedTasks", CrmMessageConstant.CRM_ERROR_ACTIVITY_TASK_VIEW_DENIED);
-
-		Page<CrmActivityTask> relatedPage = crmActivityTaskRepository.findRelatedTasks(task,
-				scope.orgWide() ? null : scope.ownerIds(), toPageable(filterDto.getPage(), filterDto.getSize()));
-
-		log.info("getRelatedTasks: execution ended");
-		return new ResponseEntityDto(false, toPageDto(relatedPage, scope));
-	}
-
 	private CrmActivityTask findActiveTask(Long id) {
 		return crmActivityTaskDao.findByIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new EntityNotFoundException(CrmMessageConstant.CRM_ERROR_ACTIVITY_TASK_NOT_FOUND));
@@ -260,24 +219,6 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 			dto.setDeal(null);
 		}
 		return dto;
-	}
-
-	private Pageable toPageable(int page, int size) {
-		return size <= 0 ? Pageable.unpaged() : PageRequest.of(Math.max(page, 0), size);
-	}
-
-	private PageDto toPageDto(Page<CrmActivityTask> taskPage, CrmActivityScope scope) {
-		PageDto pageDto = new PageDto();
-		pageDto.setItems(taskPage.getContent().stream().map(task -> toResponseDto(task, scope)).toList());
-
-		if (taskPage.isEmpty()) {
-			return pageDto;
-		}
-
-		pageDto.setCurrentPage(taskPage.getNumber());
-		pageDto.setTotalPages(taskPage.getTotalPages());
-		pageDto.setTotalItems(taskPage.getTotalElements());
-		return pageDto;
 	}
 
 }

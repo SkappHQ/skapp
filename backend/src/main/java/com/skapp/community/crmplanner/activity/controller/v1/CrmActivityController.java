@@ -2,7 +2,6 @@ package com.skapp.community.crmplanner.activity.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.activity.payload.request.CrmActivityFeedFilterDto;
-import com.skapp.community.crmplanner.activity.payload.request.CrmActivityTeamMemberFilterDto;
 import com.skapp.community.crmplanner.activity.service.CrmActivityFeedService;
 import com.skapp.community.crmplanner.activity.service.CrmActivityScopeService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,8 +40,8 @@ public class CrmActivityController {
 					+ "sales manager and every CRM user for an admin.")
 	@GetMapping("/team-members")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_MANAGER')")
-	public ResponseEntity<ResponseEntityDto> getTeamMembers(CrmActivityTeamMemberFilterDto filterDto) {
-		ResponseEntityDto response = crmActivityScopeService.getTeamMembers(filterDto);
+	public ResponseEntity<ResponseEntityDto> getTeamMembers() {
+		ResponseEntityDto response = crmActivityScopeService.getTeamMembers();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

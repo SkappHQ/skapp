@@ -7,8 +7,6 @@ import java.util.List;
 
 public interface CrmActivityTeamMemberRepository {
 
-	List<CrmActivityPersonResponseDto> findAllCrmMembers(String searchPattern);
-
-	List<CrmActivityPersonResponseDto> findCrmMembersByEmployeeIds(Collection<Long> employeeIds, String searchPattern);
+	List<CrmActivityPersonResponseDto> findCrmMembers(Collection<Long> employeeIds);
 
 }

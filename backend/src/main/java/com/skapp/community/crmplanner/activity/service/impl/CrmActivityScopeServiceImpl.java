@@ -4,12 +4,10 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
-import com.skapp.community.crmplanner.activity.payload.request.CrmActivityTeamMemberFilterDto;
 import com.skapp.community.crmplanner.activity.payload.response.CrmActivityPersonResponseDto;
 import com.skapp.community.crmplanner.activity.repository.CrmActivityTeamMemberRepository;
 import com.skapp.community.crmplanner.activity.service.CrmActivityScopeService;
 import com.skapp.community.crmplanner.activity.type.CrmActivityScope;
-import com.skapp.community.crmplanner.activity.util.CrmActivityFeedUtil;
 import com.skapp.community.leaveplanner.type.ManagerType;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
@@ -62,14 +60,12 @@ public class CrmActivityScopeServiceImpl implements CrmActivityScopeService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto getTeamMembers(CrmActivityTeamMemberFilterDto filterDto) {
+	public ResponseEntityDto getTeamMembers() {
 		log.info("getTeamMembers: execution started");
 
 		CrmActivityScope scope = resolveScope(userService.getCurrentUser());
-		String searchPattern = CrmActivityFeedUtil.toSearchPattern(filterDto.getSearch());
-		List<CrmActivityPersonResponseDto> members = scope.orgWide()
-				? crmActivityTeamMemberRepository.findAllCrmMembers(searchPattern)
-				: crmActivityTeamMemberRepository.findCrmMembersByEmployeeIds(scope.ownerIds(), searchPattern);
+		List<CrmActivityPersonResponseDto> members = crmActivityTeamMemberRepository
+			.findCrmMembers(scope.orgWide() ? null : scope.ownerIds());
 
 		log.info("getTeamMembers: execution ended");
 		return new ResponseEntityDto(false, members);
