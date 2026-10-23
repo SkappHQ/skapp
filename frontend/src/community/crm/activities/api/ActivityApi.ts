@@ -9,16 +9,22 @@ import { AxiosError } from "axios";
 
 import { TIMEZONE_HEADER } from "~community/common/constants/configs";
 import authFetch from "~community/common/utils/axiosInterceptor";
-import { crmActivityEndpoints } from "~community/crm/activities/api/utils/ApiEndpoints";
+import {
+  crmActivityEndpoints,
+  crmActivityListEndpoints
+} from "~community/crm/activities/api/utils/ApiEndpoints";
 import { crmActivityQueryKeys } from "~community/crm/activities/api/utils/QueryKeys";
 import {
   ActivityFeedQuery,
   buildActivityFeedParams,
+  buildActivityListParams,
+  getActivityTypeForTab,
   getNextActivityFeedPage,
   getViewerTimezone
 } from "~community/crm/activities/api/utils/activityFeedParams";
 import {
   ActivityFeedResponse,
+  ActivityListItem,
   ActivityTeamMember
 } from "~community/crm/activities/types/activityTypes";
 
@@ -64,5 +70,32 @@ export const useGetActivityTeamMembers = (
     queryKey: crmActivityQueryKeys.TEAM_MEMBERS,
     queryFn: fetchActivityTeamMembers,
     enabled: isManager,
+    refetchOnWindowFocus: false
+  });
+
+const fetchActivityList = async (
+  query: ActivityFeedQuery,
+  signal?: AbortSignal
+): Promise<ActivityListItem[]> => {
+  const type = getActivityTypeForTab(query.tab);
+
+  if (!type) return [];
+
+  const response = await authFetch.get(crmActivityListEndpoints[type], {
+    params: buildActivityListParams(query),
+    headers: { [TIMEZONE_HEADER]: getViewerTimezone() },
+    signal
+  });
+  return response?.data?.results ?? [];
+};
+
+export const useGetActivityList = (
+  query: ActivityFeedQuery,
+  enabled: boolean = true
+): UseQueryResult<ActivityListItem[], AxiosError> =>
+  useQuery({
+    queryKey: crmActivityQueryKeys.LIST(query),
+    queryFn: ({ signal }) => fetchActivityList(query, signal),
+    enabled: enabled && getActivityTypeForTab(query.tab) !== null,
     refetchOnWindowFocus: false
   });

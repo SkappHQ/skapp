@@ -3,6 +3,7 @@ import { ACTIVITY_TABS } from "~community/crm/activities/constants/activityConst
 import {
   ActivityFeedFilters,
   ActivityFeedResponse,
+  ActivityListParams,
   ActivityTab,
   ActivityType
 } from "~community/crm/activities/types/activityTypes";
@@ -15,7 +16,7 @@ export interface ActivityFeedQuery {
   to: string | null;
 }
 
-const getActivityTypeForTab = (tab: ActivityTab): ActivityType | null =>
+export const getActivityTypeForTab = (tab: ActivityTab): ActivityType | null =>
   ACTIVITY_TABS.find((tabConfig) => tabConfig.id === tab)?.type ?? null;
 
 export const buildActivityFeedParams = (
@@ -31,6 +32,20 @@ export const buildActivityFeedParams = (
   if (query.ownerId !== null) params.ownerId = query.ownerId;
   if (query.from) params.from = query.from;
   if (query.to) params.to = query.to;
+
+  return params;
+};
+
+export const buildActivityListParams = (
+  query: ActivityFeedQuery
+): ActivityListParams => {
+  const params: ActivityListParams = {};
+  const searchKeyword = query.search.trim();
+
+  if (searchKeyword) params.searchKeyword = searchKeyword;
+  if (query.ownerId !== null) params.ownerId = query.ownerId;
+  if (query.from) params.startDate = query.from;
+  if (query.to) params.endDate = query.to;
 
   return params;
 };
