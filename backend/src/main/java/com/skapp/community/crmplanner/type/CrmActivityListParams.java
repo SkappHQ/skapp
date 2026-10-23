@@ -1,6 +1,5 @@
 package com.skapp.community.crmplanner.type;
 
-import com.skapp.community.common.type.Role;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.domain.Sort;
@@ -13,9 +12,7 @@ public class CrmActivityListParams {
 
 	private Long currentEmployeeId;
 
-	private Role crmRole;
-
-	private Boolean isSuperAdmin;
+	private Boolean isRestrictedToOwner;
 
 	private Long ownerId;
 

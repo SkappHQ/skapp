@@ -48,7 +48,7 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 		Join<CrmActivityCall, CrmCompany> company = call.join(CrmActivityCall_.company, JoinType.LEFT);
 		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 
-		List<Predicate> predicates = CrmActivityScopeUtil.buildScopePredicates(cb, query, ownerId,
+		List<Predicate> predicates = CrmActivityScopeUtil.buildScopePredicates(cb, ownerId,
 				call.get(CrmActivityCall_.loggedAt), params);
 		predicates.add(cb.isFalse(call.get(CrmActivityCall_.isDeleted)));
 
