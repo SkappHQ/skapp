@@ -456,6 +456,10 @@ const nextConfig = {
         destination: "/enterprise/report/workforce-demographics"
       },
       {
+        source: "/report/attendance-overview",
+        destination: "/enterprise/report/attendance-overview"
+      },
+      {
         source: "/report/clock-in-overview",
         destination: "/enterprise/report/clock-in-overview"
       },
