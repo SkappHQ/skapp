@@ -58,7 +58,10 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 		CrmValidations.validateActivityDateRange(filterDto.getStartDate(), filterDto.getEndDate());
 
 		params.setOwnerId(filterDto.getOwnerId());
-		params.setSearchPattern(toSearchPattern(filterDto.getSearchKeyword()));
+		if (!StringUtils.isNullOrBlank(filterDto.getSearchKeyword())) {
+			params.setSearchPattern(
+					"%" + StringUtils.escapeLikePattern(filterDto.getSearchKeyword().toLowerCase()) + "%");
+		}
 		Sort.Direction defaultSortOrder = sortKey == CrmActivityCallSort.OWNER ? Sort.Direction.ASC
 				: Sort.Direction.DESC;
 		params.setSortOrder(filterDto.getSortOrder() != null ? filterDto.getSortOrder() : defaultSortOrder);
@@ -75,13 +78,6 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 
 		log.info("getCalls: execution ended");
 		return new ResponseEntityDto(false, calls);
-	}
-
-	private String toSearchPattern(String searchKeyword) {
-		if (StringUtils.isNullOrBlank(searchKeyword)) {
-			return null;
-		}
-		return "%" + StringUtils.escapeLikePattern(searchKeyword.toLowerCase()) + "%";
 	}
 
 }

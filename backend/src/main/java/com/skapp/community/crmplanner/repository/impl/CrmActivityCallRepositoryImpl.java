@@ -11,7 +11,6 @@ import com.skapp.community.crmplanner.payload.response.CrmActivityCallResponseDt
 import com.skapp.community.crmplanner.repository.CrmActivityCallRepository;
 import com.skapp.community.crmplanner.type.CrmActivityCallFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityCallSort;
-import com.skapp.community.crmplanner.type.CrmActivityListParams;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
@@ -47,7 +46,20 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 		Join<CrmActivityCall, CrmCompany> company = call.join(CrmActivityCall_.company, JoinType.LEFT);
 		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 
-		List<Predicate> predicates = buildScopePredicates(cb, ownerId, call.get(CrmActivityCall_.loggedAt), params);
+		Path<Instant> loggedAt = call.get(CrmActivityCall_.loggedAt);
+		List<Predicate> predicates = new ArrayList<>();
+		if (Boolean.TRUE.equals(params.getIsRestrictedToOwner())) {
+			predicates.add(cb.equal(ownerId, params.getCurrentEmployeeId()));
+		}
+		if (params.getOwnerId() != null) {
+			predicates.add(cb.equal(ownerId, params.getOwnerId()));
+		}
+		if (params.getRangeStart() != null) {
+			predicates.add(cb.greaterThanOrEqualTo(loggedAt, params.getRangeStart()));
+		}
+		if (params.getRangeEnd() != null) {
+			predicates.add(cb.lessThan(loggedAt, params.getRangeEnd()));
+		}
 		predicates.add(cb.isFalse(call.get(CrmActivityCall_.isDeleted)));
 
 		if (params.getSearchPattern() != null) {
@@ -56,9 +68,22 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 			Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
 			contactCompany.on(cb.isFalse(contactCompany.get(CrmCompany_.isDeleted)));
 
-			predicates.add(cb.or(cb.like(cb.lower(call.get(CrmActivityCall_.subject)), params.getSearchPattern(), '\\'),
-					cb.like(cb.lower(contact.get(CrmContact_.name)), params.getSearchPattern(), '\\'),
-					cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), params.getSearchPattern(), '\\')));
+			predicates.add(cb.or(cb.like(cb.lower(call.get(CrmActivityCall_.subject)), params.getSearchPattern()),
+					cb.like(cb.lower(contact.get(CrmContact_.name)), params.getSearchPattern()),
+					cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), params.getSearchPattern())));
+		}
+
+		boolean ascending = params.getSortOrder().isAscending();
+		List<Order> orders = new ArrayList<>();
+		if (params.getSortKey() == CrmActivityCallSort.OWNER) {
+			orders.add(ascending ? cb.asc(owner.get(Employee_.firstName)) : cb.desc(owner.get(Employee_.firstName)));
+			orders.add(ascending ? cb.asc(owner.get(Employee_.lastName)) : cb.desc(owner.get(Employee_.lastName)));
+			orders.add(cb.desc(loggedAt));
+			orders.add(cb.desc(call.get(CrmActivityCall_.id)));
+		}
+		else {
+			orders.add(ascending ? cb.asc(loggedAt) : cb.desc(loggedAt));
+			orders.add(ascending ? cb.asc(call.get(CrmActivityCall_.id)) : cb.desc(call.get(CrmActivityCall_.id)));
 		}
 
 		query.select(cb.construct(CrmActivityCallResponseDto.class, call.get(CrmActivityCall_.id),
@@ -66,53 +91,9 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 				call.get(CrmActivityCall_.loggedAt), ownerId, call.get(CrmActivityCall_.contact).get(CrmContact_.id),
 				call.get(CrmActivityCall_.deal).get(CrmDeal_.id), company.get(CrmCompany_.id)))
 			.where(predicates.toArray(new Predicate[0]))
-			.orderBy(buildOrders(cb, params.getSortKey() == CrmActivityCallSort.OWNER, owner.get(Employee_.firstName),
-					owner.get(Employee_.lastName), call.get(CrmActivityCall_.loggedAt), call.get(CrmActivityCall_.id),
-					params));
+			.orderBy(orders);
 
 		return entityManager.createQuery(query).getResultList();
-	}
-
-	private List<Predicate> buildScopePredicates(CriteriaBuilder cb, Path<Long> ownerId, Path<Instant> dateField,
-			CrmActivityListParams params) {
-		List<Predicate> predicates = new ArrayList<>();
-
-		if (Boolean.TRUE.equals(params.getIsRestrictedToOwner())) {
-			predicates.add(cb.equal(ownerId, params.getCurrentEmployeeId()));
-		}
-
-		if (params.getOwnerId() != null) {
-			predicates.add(cb.equal(ownerId, params.getOwnerId()));
-		}
-
-		if (params.getRangeStart() != null) {
-			predicates.add(cb.greaterThanOrEqualTo(dateField, params.getRangeStart()));
-		}
-
-		if (params.getRangeEnd() != null) {
-			predicates.add(cb.lessThan(dateField, params.getRangeEnd()));
-		}
-
-		return predicates;
-	}
-
-	private List<Order> buildOrders(CriteriaBuilder cb, boolean sortByOwner, Path<String> ownerFirstName,
-			Path<String> ownerLastName, Path<Instant> dateField, Path<Long> id, CrmActivityListParams params) {
-		boolean ascending = params.getSortOrder().isAscending();
-		List<Order> orders = new ArrayList<>();
-
-		if (sortByOwner) {
-			orders.add(ascending ? cb.asc(ownerFirstName) : cb.desc(ownerFirstName));
-			orders.add(ascending ? cb.asc(ownerLastName) : cb.desc(ownerLastName));
-			orders.add(cb.desc(dateField));
-			orders.add(cb.desc(id));
-		}
-		else {
-			orders.add(ascending ? cb.asc(dateField) : cb.desc(dateField));
-			orders.add(ascending ? cb.asc(id) : cb.desc(id));
-		}
-
-		return orders;
 	}
 
 }
