@@ -83,12 +83,11 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 			contactMatch.select(link.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId))
 				.where(cb.equal(link.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId),
 						meeting.get(CrmActivityMeeting_.id)), cb.isFalse(contact.get(CrmContact_.isDeleted)),
-						cb.or(cb.like(cb.lower(contact.get(CrmContact_.name)), params.getSearchPattern(), '\\'), cb
-							.like(cb.lower(contactCompany.get(CrmCompany_.name)), params.getSearchPattern(), '\\')));
+						cb.or(cb.like(cb.lower(contact.get(CrmContact_.name)), params.getSearchPattern()),
+								cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), params.getSearchPattern())));
 
-			predicates
-				.add(cb.or(cb.like(cb.lower(meeting.get(CrmActivityMeeting_.name)), params.getSearchPattern(), '\\'),
-						cb.exists(contactMatch)));
+			predicates.add(cb.or(cb.like(cb.lower(meeting.get(CrmActivityMeeting_.name)), params.getSearchPattern()),
+					cb.exists(contactMatch)));
 		}
 
 		boolean ascending = params.getSortOrder().isAscending();
