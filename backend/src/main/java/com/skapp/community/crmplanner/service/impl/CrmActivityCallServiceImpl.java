@@ -1,22 +1,28 @@
 package com.skapp.community.crmplanner.service.impl;
 
+import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.type.Role;
+import com.skapp.community.common.util.StringUtils;
 import com.skapp.community.crmplanner.payload.request.CrmActivityCallFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityCallResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityCallDao;
 import com.skapp.community.crmplanner.service.CrmActivityCallService;
 import com.skapp.community.crmplanner.type.CrmActivityCallFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityCallSort;
-import com.skapp.community.crmplanner.util.CrmActivityListUtil;
+import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
+import com.skapp.community.peopleplanner.model.EmployeeRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -41,13 +47,44 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 
 		CrmActivityCallFilterParams params = new CrmActivityCallFilterParams();
 		params.setSortKey(sortKey);
-		CrmActivityListUtil.applyFilters(params, filterDto, currentEmployee, timeZoneService.requestTimezone(),
-				sortKey == CrmActivityCallSort.OWNER ? Sort.Direction.ASC : Sort.Direction.DESC);
+		EmployeeRole employeeRole = currentEmployee.getEmployeeRole();
+		params.setCurrentEmployeeId(currentEmployee.getEmployeeId());
+		params.setCrmRole(employeeRole.getCrmRole());
+		params.setIsSuperAdmin(employeeRole.getIsSuperAdmin());
+
+		boolean hasDateRange = filterDto.getStartDate() != null || filterDto.getEndDate() != null;
+		if (params.getCrmRole() == Role.CRM_SALES_REPRESENTATIVE && !Boolean.TRUE.equals(params.getIsSuperAdmin())
+				&& (filterDto.getOwnerId() != null || hasDateRange)) {
+			throw new AccessDeniedException(CommonMessageConstant.COMMON_ERROR_ACCESS_DENIED.name());
+		}
+
+		CrmValidations.validateActivityDateRange(filterDto.getStartDate(), filterDto.getEndDate());
+
+		params.setOwnerId(filterDto.getOwnerId());
+		params.setSearchPattern(toSearchPattern(filterDto.getSearchKeyword()));
+		Sort.Direction defaultSortOrder = sortKey == CrmActivityCallSort.OWNER ? Sort.Direction.ASC
+				: Sort.Direction.DESC;
+		params.setSortOrder(filterDto.getSortOrder() != null ? filterDto.getSortOrder() : defaultSortOrder);
+
+		ZoneId zone = timeZoneService.requestTimezone();
+		if (filterDto.getStartDate() != null) {
+			params.setRangeStart(filterDto.getStartDate().atStartOfDay(zone).toInstant());
+		}
+		if (filterDto.getEndDate() != null) {
+			params.setRangeEnd(filterDto.getEndDate().plusDays(1).atStartOfDay(zone).toInstant());
+		}
 
 		List<CrmActivityCallResponseDto> calls = crmActivityCallDao.findCalls(params);
 
 		log.info("getCalls: execution ended");
 		return new ResponseEntityDto(false, calls);
+	}
+
+	private String toSearchPattern(String searchKeyword) {
+		if (StringUtils.isNullOrBlank(searchKeyword)) {
+			return null;
+		}
+		return "%" + StringUtils.escapeLikePattern(searchKeyword.toLowerCase()) + "%";
 	}
 
 }

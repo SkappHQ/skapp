@@ -11,7 +11,6 @@ import com.skapp.community.peopleplanner.model.Employee_;
 import com.skapp.community.peopleplanner.model.Team_;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -24,8 +23,6 @@ import java.util.List;
 
 @UtilityClass
 public class CrmActivityScopeUtil {
-
-	public static final char LIKE_ESCAPE = '\\';
 
 	public List<Predicate> buildScopePredicates(CriteriaBuilder cb, CriteriaQuery<?> query, Path<Long> ownerId,
 			Path<Instant> dateField, CrmActivityListParams params) {
@@ -74,25 +71,6 @@ public class CrmActivityScopeUtil {
 		}
 
 		return predicates;
-	}
-
-	public List<Order> buildOrders(CriteriaBuilder cb, boolean sortByOwner, Path<String> ownerFirstName,
-			Path<String> ownerLastName, Path<Instant> dateField, Path<Long> id, CrmActivityListParams params) {
-		boolean ascending = params.getSortOrder().isAscending();
-		List<Order> orders = new ArrayList<>();
-
-		if (sortByOwner) {
-			orders.add(ascending ? cb.asc(ownerFirstName) : cb.desc(ownerFirstName));
-			orders.add(ascending ? cb.asc(ownerLastName) : cb.desc(ownerLastName));
-			orders.add(cb.desc(dateField));
-			orders.add(cb.desc(id));
-		}
-		else {
-			orders.add(ascending ? cb.asc(dateField) : cb.desc(dateField));
-			orders.add(ascending ? cb.asc(id) : cb.desc(id));
-		}
-
-		return orders;
 	}
 
 }

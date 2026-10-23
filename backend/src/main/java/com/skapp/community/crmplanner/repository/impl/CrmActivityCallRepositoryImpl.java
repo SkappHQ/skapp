@@ -11,6 +11,7 @@ import com.skapp.community.crmplanner.payload.response.CrmActivityCallResponseDt
 import com.skapp.community.crmplanner.repository.CrmActivityCallRepository;
 import com.skapp.community.crmplanner.type.CrmActivityCallFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityCallSort;
+import com.skapp.community.crmplanner.type.CrmActivityListParams;
 import com.skapp.community.crmplanner.util.CrmActivityScopeUtil;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
@@ -19,12 +20,15 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -54,13 +58,9 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 			Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
 			contactCompany.on(cb.isFalse(contactCompany.get(CrmCompany_.isDeleted)));
 
-			predicates.add(cb.or(
-					cb.like(cb.lower(call.get(CrmActivityCall_.subject)), params.getSearchPattern(),
-							CrmActivityScopeUtil.LIKE_ESCAPE),
-					cb.like(cb.lower(contact.get(CrmContact_.name)), params.getSearchPattern(),
-							CrmActivityScopeUtil.LIKE_ESCAPE),
-					cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), params.getSearchPattern(),
-							CrmActivityScopeUtil.LIKE_ESCAPE)));
+			predicates.add(cb.or(cb.like(cb.lower(call.get(CrmActivityCall_.subject)), params.getSearchPattern(), '\\'),
+					cb.like(cb.lower(contact.get(CrmContact_.name)), params.getSearchPattern(), '\\'),
+					cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), params.getSearchPattern(), '\\')));
 		}
 
 		query.select(cb.construct(CrmActivityCallResponseDto.class, call.get(CrmActivityCall_.id),
@@ -68,11 +68,30 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 				call.get(CrmActivityCall_.loggedAt), ownerId, call.get(CrmActivityCall_.contact).get(CrmContact_.id),
 				call.get(CrmActivityCall_.deal).get(CrmDeal_.id), company.get(CrmCompany_.id)))
 			.where(predicates.toArray(new Predicate[0]))
-			.orderBy(CrmActivityScopeUtil.buildOrders(cb, params.getSortKey() == CrmActivityCallSort.OWNER,
-					owner.get(Employee_.firstName), owner.get(Employee_.lastName), call.get(CrmActivityCall_.loggedAt),
-					call.get(CrmActivityCall_.id), params));
+			.orderBy(buildOrders(cb, params.getSortKey() == CrmActivityCallSort.OWNER, owner.get(Employee_.firstName),
+					owner.get(Employee_.lastName), call.get(CrmActivityCall_.loggedAt), call.get(CrmActivityCall_.id),
+					params));
 
 		return entityManager.createQuery(query).getResultList();
+	}
+
+	private List<Order> buildOrders(CriteriaBuilder cb, boolean sortByOwner, Path<String> ownerFirstName,
+			Path<String> ownerLastName, Path<Instant> dateField, Path<Long> id, CrmActivityListParams params) {
+		boolean ascending = params.getSortOrder().isAscending();
+		List<Order> orders = new ArrayList<>();
+
+		if (sortByOwner) {
+			orders.add(ascending ? cb.asc(ownerFirstName) : cb.desc(ownerFirstName));
+			orders.add(ascending ? cb.asc(ownerLastName) : cb.desc(ownerLastName));
+			orders.add(cb.desc(dateField));
+			orders.add(cb.desc(id));
+		}
+		else {
+			orders.add(ascending ? cb.asc(dateField) : cb.desc(dateField));
+			orders.add(ascending ? cb.asc(id) : cb.desc(id));
+		}
+
+		return orders;
 	}
 
 }

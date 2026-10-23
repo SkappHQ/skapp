@@ -3,7 +3,6 @@ package com.skapp.community.crmplanner.payload.request;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.domain.Sort;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 
@@ -15,10 +14,8 @@ public class CrmActivityListFilterDto {
 
 	private Long ownerId;
 
-	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
 	private LocalDate startDate;
 
-	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
 	private LocalDate endDate;
 
 	private Sort.Direction sortOrder;
