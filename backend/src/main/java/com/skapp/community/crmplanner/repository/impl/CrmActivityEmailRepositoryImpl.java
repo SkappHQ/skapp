@@ -78,12 +78,11 @@ public class CrmActivityEmailRepositoryImpl implements CrmActivityEmailRepositor
 			contactMatch.select(link.get(CrmActivityEmailContact_.id).get(CrmActivityEmailContactId_.emailId))
 				.where(cb.equal(link.get(CrmActivityEmailContact_.id).get(CrmActivityEmailContactId_.emailId),
 						email.get(CrmActivityEmail_.id)), cb.isFalse(contact.get(CrmContact_.isDeleted)),
-						cb.or(cb.like(cb.lower(contact.get(CrmContact_.name)), params.getSearchPattern(), '\\'), cb
-							.like(cb.lower(contactCompany.get(CrmCompany_.name)), params.getSearchPattern(), '\\')));
+						cb.or(cb.like(cb.lower(contact.get(CrmContact_.name)), params.getSearchPattern()),
+								cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), params.getSearchPattern())));
 
-			predicates
-				.add(cb.or(cb.like(cb.lower(email.get(CrmActivityEmail_.subject)), params.getSearchPattern(), '\\'),
-						cb.exists(contactMatch)));
+			predicates.add(cb.or(cb.like(cb.lower(email.get(CrmActivityEmail_.subject)), params.getSearchPattern()),
+					cb.exists(contactMatch)));
 		}
 
 		boolean ascending = params.getSortOrder().isAscending();
