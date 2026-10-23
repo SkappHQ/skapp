@@ -8,14 +8,17 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import {
   useGetActivityFeedInfinite,
+  useGetActivityList,
   useGetActivityTeamMembers
 } from "~community/crm/activities/api/ActivityApi";
 import {
   ActivityFeedQuery,
   countActivityFeedRows,
+  getActivityTypeForTab,
   resolveViewerTimezone,
   shouldShowActivityControls
 } from "~community/crm/activities/api/utils/activityFeedParams";
+import { toActivityListPage } from "~community/crm/activities/api/utils/activityListUtil";
 import { useActivityStore } from "~community/crm/activities/store/activityStore";
 import {
   ActivityFeedResponse,
@@ -24,6 +27,7 @@ import {
   ActivityTab,
   ActivityTeamMember
 } from "~community/crm/activities/types/activityTypes";
+import { useCrmStore } from "~community/crm/store/store";
 
 export interface UseActivityFeedResult {
   isManager: boolean;
@@ -87,18 +91,38 @@ export const useActivityFeed = (): UseActivityFeedResult => {
     [activeTab, search, isManager, appliedFilters]
   );
 
-  const {
-    data,
-    isLoading,
-    isError,
-    errorUpdatedAt,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage
-  } = useGetActivityFeedInfinite(query);
+  const isAllTab = activeTab === ActivityTab.ALL;
+
+  const feed = useGetActivityFeedInfinite(query, isAllTab);
+  const list = useGetActivityList(query, !isAllTab);
+
+  const { owners, contacts } = useCrmStore(
+    useShallow((store) => ({
+      owners: store.owners,
+      contacts: store.contacts
+    }))
+  );
 
   const { data: teamMembers, isError: isTeamMembersError } =
     useGetActivityTeamMembers(isManager);
+
+  const listData = list.data;
+
+  const listPages = useMemo(() => {
+    const type = getActivityTypeForTab(activeTab);
+
+    if (!type || !listData) return NO_PAGES;
+
+    return [toActivityListPage(type, listData, { owners, contacts })];
+  }, [activeTab, listData, owners, contacts]);
+
+  const pages = isAllTab ? (feed.data?.pages ?? NO_PAGES) : listPages;
+  const isLoading = isAllTab ? feed.isLoading : list.isLoading;
+  const isError = isAllTab ? feed.isError : list.isError;
+  const errorUpdatedAt = isAllTab ? feed.errorUpdatedAt : list.errorUpdatedAt;
+  const hasNextPage = isAllTab ? feed.hasNextPage : false;
+  const isFetchingNextPage = isAllTab ? feed.isFetchingNextPage : false;
+  const { fetchNextPage } = feed;
 
   useEffect(() => {
     if (!isError) return;
@@ -116,8 +140,6 @@ export const useActivityFeed = (): UseActivityFeedResult => {
       isIcon: true
     });
   }, [isError, errorUpdatedAt]);
-
-  const pages = data?.pages ?? NO_PAGES;
 
   const resultCount =
     isLoading || isError ? null : countActivityFeedRows(pages);
