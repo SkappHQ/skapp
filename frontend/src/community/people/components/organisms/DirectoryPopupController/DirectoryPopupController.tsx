@@ -18,6 +18,7 @@ import { QuickSetupModalTypeEnums } from "~enterprise/common/enums/Common";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 import UploadTypeSelectModal from "~enterprise/people/components/molecules/UploadTypeSelectModal/UploadTypeSelectModal";
 import ConnectGoogleWorkspaceModal from "~enterprise/people/components/organisms/ConnectGoogleWorkspaceModal/ConnectGoogleWorkspaceModal";
+import ConnectMicrosoftEntraModal from "~enterprise/people/components/organisms/ConnectMicrosoftEntraModal/ConnectMicrosoftEntraModal";
 
 const DirectoryPopupController = () => {
   const translatedTexts = useTranslator("peopleModule", "peoples");
@@ -142,6 +143,9 @@ const DirectoryPopupController = () => {
   const isConnectGoogleWorkspaceEnabled =
     directoryModalType === DirectoryModalTypes.CONNECT_GOOGLE_WORKSPACE;
 
+  const isConnectMicrosoftEntraEnabled =
+    directoryModalType === DirectoryModalTypes.CONNECT_MICROSOFT_ENTRA;
+
   const isImportTypeSelectEnabled =
     directoryModalType === DirectoryModalTypes.IMPORT_TYPE_SELECT;
 
@@ -149,6 +153,11 @@ const DirectoryPopupController = () => {
     <>
       <ConnectGoogleWorkspaceModal
         isEnabled={isConnectGoogleWorkspaceEnabled}
+        isOpen={isDirectoryModalOpen}
+        onClose={onClose}
+      />
+      <ConnectMicrosoftEntraModal
+        isEnabled={isConnectMicrosoftEntraEnabled}
         isOpen={isDirectoryModalOpen}
         onClose={onClose}
       />
@@ -161,14 +170,16 @@ const DirectoryPopupController = () => {
           content={modalContent}
         />
       )}
-      {!isConnectGoogleWorkspaceEnabled && !isImportTypeSelectEnabled && (
-        <SmallModal
-          isOpen={isDirectoryModalOpen}
-          onClose={onClose}
-          modalHeader={getModalTitle()}
-          content={modalContent}
-        />
-      )}
+      {!isConnectGoogleWorkspaceEnabled &&
+        !isConnectMicrosoftEntraEnabled &&
+        !isImportTypeSelectEnabled && (
+          <SmallModal
+            isOpen={isDirectoryModalOpen}
+            onClose={onClose}
+            modalHeader={getModalTitle()}
+            content={modalContent}
+          />
+        )}
     </>
   );
 };

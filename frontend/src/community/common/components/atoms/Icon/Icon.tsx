@@ -91,6 +91,7 @@ import LocalPhoneIcon from "~community/common/assets/Icons/LocalPhoneIcon";
 import LockIcon from "~community/common/assets/Icons/LockIcon";
 import MagnifyingGlassIcon from "~community/common/assets/Icons/MagnifyingGlassIcon";
 import MenuIcon from "~community/common/assets/Icons/MenuIcon";
+import MicrosoftIcon from "~community/common/assets/Icons/MicrosoftIcon";
 import MinusIcon from "~community/common/assets/Icons/MinusIcon";
 import MoreIcon from "~community/common/assets/Icons/MoreIcon";
 import NewWindowIcon from "~community/common/assets/Icons/NewWindowIcon";
@@ -273,6 +274,7 @@ export const IconMapping: Partial<
   [IconName.WARNING_SIGN_ICON]: WarningSignIcon,
   [IconName.WARNING_TRIANGLE_ICON]: WarningTriangleIcon,
   [IconName.GOOGLE_ICON]: GoogleIcon,
+  [IconName.MICROSOFT_ICON]: MicrosoftIcon,
   [IconName.DOCUMENTS_ICON]: DocumentsIcon,
   [IconName.PEOPLE_MODULE_ICON]: PeopleModuleIcon,
   [IconName.ATTENDANCE_MODULE_ICON]: AttendanceModuleIcon,
