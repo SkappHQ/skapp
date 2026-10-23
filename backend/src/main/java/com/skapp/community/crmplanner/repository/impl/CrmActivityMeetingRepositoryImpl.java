@@ -9,6 +9,7 @@ import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmContact_;
+import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.payload.response.CrmActivityMeetingResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityMeetingRepository;
@@ -57,6 +58,9 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 		Join<CrmActivityMeeting, CrmCompany> company = meeting.join(CrmActivityMeeting_.company, JoinType.LEFT);
 		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 
+		Join<CrmActivityMeeting, CrmDeal> deal = meeting.join(CrmActivityMeeting_.deal, JoinType.LEFT);
+		deal.on(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+
 		List<Predicate> predicates = CrmActivityScopeUtil.buildScopePredicates(cb, ownerId,
 				meeting.get(CrmActivityMeeting_.startAt), params);
 		predicates.add(cb.isFalse(meeting.get(CrmActivityMeeting_.isDeleted)));
@@ -82,8 +86,7 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 			.multiselect(meeting.get(CrmActivityMeeting_.id), meeting.get(CrmActivityMeeting_.name),
 					meeting.get(CrmActivityMeeting_.isScheduled), meeting.get(CrmActivityMeeting_.meetingVenue),
 					meeting.get(CrmActivityMeeting_.location), meeting.get(CrmActivityMeeting_.startAt),
-					meeting.get(CrmActivityMeeting_.endAt), ownerId,
-					meeting.get(CrmActivityMeeting_.deal).get(CrmDeal_.id), company.get(CrmCompany_.id))
+					meeting.get(CrmActivityMeeting_.endAt), ownerId, deal.get(CrmDeal_.id), company.get(CrmCompany_.id))
 			.where(predicates.toArray(new Predicate[0]))
 			.orderBy(buildOrders(cb, params.getSortKey() == CrmActivityMeetingSort.OWNER,
 					owner.get(Employee_.firstName), owner.get(Employee_.lastName),
@@ -102,10 +105,11 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 		CriteriaQuery<CrmActivityContactLink> query = cb.createQuery(CrmActivityContactLink.class);
 		Root<CrmActivityMeetingContact> link = query.from(CrmActivityMeetingContact.class);
 		Path<Long> meetingId = link.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId);
-		Path<Long> contactId = link.get(CrmActivityMeetingContact_.contact).get(CrmContact_.id);
+		Join<CrmActivityMeetingContact, CrmContact> contact = link.join(CrmActivityMeetingContact_.contact);
+		Path<Long> contactId = contact.get(CrmContact_.id);
 
 		query.select(cb.construct(CrmActivityContactLink.class, meetingId, contactId))
-			.where(meetingId.in(meetingIds))
+			.where(meetingId.in(meetingIds), cb.isFalse(contact.get(CrmContact_.isDeleted)))
 			.orderBy(cb.asc(meetingId), cb.asc(contactId));
 
 		return entityManager.createQuery(query).getResultList();
