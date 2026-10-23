@@ -13,7 +13,6 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.payload.response.CrmActivityMeetingResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityMeetingRepository;
-import com.skapp.community.crmplanner.type.CrmActivityListParams;
 import com.skapp.community.crmplanner.type.CrmActivityMeetingFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityMeetingSort;
 import com.skapp.community.crmplanner.type.CrmActivityMeetingVenue;
@@ -36,7 +35,6 @@ import org.springframework.stereotype.Repository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -94,25 +92,47 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 						cb.exists(contactMatch)));
 		}
 
+		boolean ascending = params.getSortOrder().isAscending();
+		List<Order> orders = new ArrayList<>();
+		if (params.getSortKey() == CrmActivityMeetingSort.OWNER) {
+			orders.add(ascending ? cb.asc(owner.get(Employee_.firstName)) : cb.desc(owner.get(Employee_.firstName)));
+			orders.add(ascending ? cb.asc(owner.get(Employee_.lastName)) : cb.desc(owner.get(Employee_.lastName)));
+			orders.add(cb.desc(meeting.get(CrmActivityMeeting_.startAt)));
+			orders.add(cb.desc(meeting.get(CrmActivityMeeting_.id)));
+		}
+		else {
+			orders.add(ascending ? cb.asc(meeting.get(CrmActivityMeeting_.startAt))
+					: cb.desc(meeting.get(CrmActivityMeeting_.startAt)));
+			orders.add(ascending ? cb.asc(meeting.get(CrmActivityMeeting_.id))
+					: cb.desc(meeting.get(CrmActivityMeeting_.id)));
+		}
+
 		query
 			.multiselect(meeting.get(CrmActivityMeeting_.id), meeting.get(CrmActivityMeeting_.name),
 					meeting.get(CrmActivityMeeting_.isScheduled), meeting.get(CrmActivityMeeting_.meetingVenue),
 					meeting.get(CrmActivityMeeting_.location), meeting.get(CrmActivityMeeting_.startAt),
 					meeting.get(CrmActivityMeeting_.endAt), ownerId, deal.get(CrmDeal_.id), company.get(CrmCompany_.id))
 			.where(predicates.toArray(new Predicate[0]))
-			.orderBy(buildOrders(cb, params.getSortKey() == CrmActivityMeetingSort.OWNER,
-					owner.get(Employee_.firstName), owner.get(Employee_.lastName),
-					meeting.get(CrmActivityMeeting_.startAt), meeting.get(CrmActivityMeeting_.id), params));
+			.orderBy(orders);
 
-		return entityManager.createQuery(query).getResultList().stream().map(this::toMeetingResponse).toList();
+		return entityManager.createQuery(query).getResultList().stream().map(row -> {
+			CrmActivityMeetingResponseDto dto = new CrmActivityMeetingResponseDto();
+			dto.setId(row.get(0, Long.class));
+			dto.setName(row.get(1, String.class));
+			dto.setIsScheduled(row.get(2, Boolean.class));
+			dto.setMeetingVenue(row.get(3, CrmActivityMeetingVenue.class));
+			dto.setLocation(row.get(4, String.class));
+			dto.setStartAt(row.get(5, Instant.class));
+			dto.setEndAt(row.get(6, Instant.class));
+			dto.setOwnerId(row.get(7, Long.class));
+			dto.setDealId(row.get(8, Long.class));
+			dto.setCompanyId(row.get(9, Long.class));
+			return dto;
+		}).toList();
 	}
 
 	@Override
 	public Map<Long, List<Long>> findContactIdsByMeetingIds(Collection<Long> meetingIds) {
-		if (meetingIds == null || meetingIds.isEmpty()) {
-			return Collections.emptyMap();
-		}
-
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Tuple> query = cb.createTupleQuery();
 		Root<CrmActivityMeetingContact> link = query.from(CrmActivityMeetingContact.class);
@@ -129,40 +149,6 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 			.stream()
 			.collect(Collectors.groupingBy(row -> row.get(0, Long.class),
 					Collectors.mapping(row -> row.get(1, Long.class), Collectors.toList())));
-	}
-
-	private CrmActivityMeetingResponseDto toMeetingResponse(Tuple row) {
-		CrmActivityMeetingResponseDto dto = new CrmActivityMeetingResponseDto();
-		dto.setId(row.get(0, Long.class));
-		dto.setName(row.get(1, String.class));
-		dto.setIsScheduled(row.get(2, Boolean.class));
-		dto.setMeetingVenue(row.get(3, CrmActivityMeetingVenue.class));
-		dto.setLocation(row.get(4, String.class));
-		dto.setStartAt(row.get(5, Instant.class));
-		dto.setEndAt(row.get(6, Instant.class));
-		dto.setOwnerId(row.get(7, Long.class));
-		dto.setDealId(row.get(8, Long.class));
-		dto.setCompanyId(row.get(9, Long.class));
-		return dto;
-	}
-
-	private List<Order> buildOrders(CriteriaBuilder cb, boolean sortByOwner, Path<String> ownerFirstName,
-			Path<String> ownerLastName, Path<Instant> dateField, Path<Long> id, CrmActivityListParams params) {
-		boolean ascending = params.getSortOrder().isAscending();
-		List<Order> orders = new ArrayList<>();
-
-		if (sortByOwner) {
-			orders.add(ascending ? cb.asc(ownerFirstName) : cb.desc(ownerFirstName));
-			orders.add(ascending ? cb.asc(ownerLastName) : cb.desc(ownerLastName));
-			orders.add(cb.desc(dateField));
-			orders.add(cb.desc(id));
-		}
-		else {
-			orders.add(ascending ? cb.asc(dateField) : cb.desc(dateField));
-			orders.add(ascending ? cb.asc(id) : cb.desc(id));
-		}
-
-		return orders;
 	}
 
 }
