@@ -57,7 +57,7 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 		Join<CrmActivityMeeting, CrmCompany> company = meeting.join(CrmActivityMeeting_.company, JoinType.LEFT);
 		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 
-		List<Predicate> predicates = CrmActivityScopeUtil.buildScopePredicates(cb, query, ownerId,
+		List<Predicate> predicates = CrmActivityScopeUtil.buildScopePredicates(cb, ownerId,
 				meeting.get(CrmActivityMeeting_.startAt), params);
 		predicates.add(cb.isFalse(meeting.get(CrmActivityMeeting_.isDeleted)));
 
