@@ -12,7 +12,6 @@ import com.skapp.community.crmplanner.repository.CrmActivityCallRepository;
 import com.skapp.community.crmplanner.type.CrmActivityCallFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityCallSort;
 import com.skapp.community.crmplanner.type.CrmActivityListParams;
-import com.skapp.community.crmplanner.util.CrmActivityScopeUtil;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
@@ -48,8 +47,7 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 		Join<CrmActivityCall, CrmCompany> company = call.join(CrmActivityCall_.company, JoinType.LEFT);
 		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 
-		List<Predicate> predicates = CrmActivityScopeUtil.buildScopePredicates(cb, ownerId,
-				call.get(CrmActivityCall_.loggedAt), params);
+		List<Predicate> predicates = buildScopePredicates(cb, ownerId, call.get(CrmActivityCall_.loggedAt), params);
 		predicates.add(cb.isFalse(call.get(CrmActivityCall_.isDeleted)));
 
 		if (params.getSearchPattern() != null) {
@@ -73,6 +71,29 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 					params));
 
 		return entityManager.createQuery(query).getResultList();
+	}
+
+	private List<Predicate> buildScopePredicates(CriteriaBuilder cb, Path<Long> ownerId, Path<Instant> dateField,
+			CrmActivityListParams params) {
+		List<Predicate> predicates = new ArrayList<>();
+
+		if (Boolean.TRUE.equals(params.getIsRestrictedToOwner())) {
+			predicates.add(cb.equal(ownerId, params.getCurrentEmployeeId()));
+		}
+
+		if (params.getOwnerId() != null) {
+			predicates.add(cb.equal(ownerId, params.getOwnerId()));
+		}
+
+		if (params.getRangeStart() != null) {
+			predicates.add(cb.greaterThanOrEqualTo(dateField, params.getRangeStart()));
+		}
+
+		if (params.getRangeEnd() != null) {
+			predicates.add(cb.lessThan(dateField, params.getRangeEnd()));
+		}
+
+		return predicates;
 	}
 
 	private List<Order> buildOrders(CriteriaBuilder cb, boolean sortByOwner, Path<String> ownerFirstName,
