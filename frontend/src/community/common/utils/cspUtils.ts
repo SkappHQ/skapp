@@ -13,8 +13,7 @@ export const buildContentSecurityPolicy = (nonce: string): string =>
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
-    "frame-ancestors 'none'",
-    isDevelopment ? "" : "upgrade-insecure-requests"
+    "frame-ancestors 'none'"
   ]
     .filter(Boolean)
     .join("; ");

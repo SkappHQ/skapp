@@ -507,65 +507,19 @@ function resolveRouteAccess(
   return redirectTo(request, ROUTES.AUTH.SIGNIN);
 }
 
-const GUARDED_PATH_PATTERNS = [
-  // All community routes
-  "/community/:path*",
-  // All enterprise routes
-  "/enterprise/:path*",
-  // Super admin routes
-  "/setup-organization/:path*",
-  "/module-selection",
-  "/payment",
-  // Common routes
-  "/dashboard/:path*",
-  "/configurations/:path*",
-  "/settings/:path*",
-  "/notifications",
-  "/account",
-  "/reset-password",
-  "/unauthorized",
-  "/verify/email",
-  "/verify/success",
-  // Module routes
-  "/leave/:path*",
-  "/people/:path*",
-  "/timesheet/:path*",
-  "/remove-people",
-  "/integrations",
-  "/user-account",
-  // Sign routes
-  "/sign",
-  "/sign/contacts/:path*",
-  "/sign/create/:path*",
-  "/sign/folders/:path*",
-  "/sign/inbox/:path*",
-  "/sign/sent/:path*",
-  "/sign/template/:path*",
-  "/sign/complete/:path*",
-  // Project routes
-  "/projects/:path*",
-  // Invoice routes
-  "/invoice",
-  "/invoice/:path*",
-  "/invoice/create/:path*",
-  // Report module routes
-  "/report",
-  "/report/:path*",
-  // CRM module routes
-  "/crm",
-  "/crm/:path*"
-];
-
 const WILDCARD_SUFFIX = "/:path*";
 
-const isGuardedPath = (pathname: string): boolean =>
-  GUARDED_PATH_PATTERNS.some((pattern) => {
-    if (!pattern.endsWith(WILDCARD_SUFFIX)) return pathname === pattern;
+const isGuardedPath = (pathname: string): boolean => {
+  const path = pathname.toLowerCase();
+
+  return config.matcher.some((pattern) => {
+    if (!pattern.endsWith(WILDCARD_SUFFIX)) return path === pattern;
 
     const base = pattern.slice(0, -WILDCARD_SUFFIX.length);
 
-    return pathname === base || pathname.startsWith(`${base}/`);
+    return path === base || path.startsWith(`${base}/`);
   });
+};
 
 async function resolveGuardedRequest(
   request: NextRequest,
@@ -615,7 +569,6 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set(NONCE_HEADER_NAME, nonce);
-  requestHeaders.set(CSP_HEADER_NAME, contentSecurityPolicy);
 
   const continueRequest: ContinueRequest = () =>
     NextResponse.next({ request: { headers: requestHeaders } });
@@ -631,6 +584,52 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|auth/_next|favicon|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|js|css|map|txt|csv|json|woff2?)$).*)"
+    // All community routes
+    "/community/:path*",
+    // All enterprise routes
+    "/enterprise/:path*",
+    // Super admin routes
+    "/setup-organization/:path*",
+    "/module-selection",
+    "/payment",
+    // Common routes
+    "/dashboard/:path*",
+    "/configurations/:path*",
+    "/settings/:path*",
+    "/notifications",
+    "/account",
+    "/reset-password",
+    "/unauthorized",
+    "/verify/email",
+    "/verify/success",
+    // Module routes
+    "/leave/:path*",
+    "/people/:path*",
+    "/timesheet/:path*",
+    "/remove-people",
+    "/integrations",
+    "/user-account",
+    // Sign routes
+    "/sign",
+    "/sign/contacts/:path*",
+    "/sign/create/:path*",
+    "/sign/folders/:path*",
+    "/sign/inbox/:path*",
+    "/sign/sent/:path*",
+    "/sign/template/:path*",
+    "/sign/complete/:path*",
+    // Project routes
+    "/projects/:path*",
+    // Invoice routes
+    "/invoice",
+    "/invoice/:path*",
+    "/invoice/create/:path*",
+    // Report module routes
+    "/report",
+    "/report/:path*",
+    // CRM module routes
+    "/crm",
+    "/crm/:path*",
+    "/((?!api/|_next/static|_next/image|auth/_next|favicon/|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|js|css|map|txt|csv|json|woff2?)$).*)"
   ]
 };

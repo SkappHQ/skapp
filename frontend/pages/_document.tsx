@@ -18,7 +18,8 @@ class SkappDocument extends Document<SkappDocumentProps> {
     ctx: DocumentContext
   ): Promise<SkappDocumentProps> {
     const initialProps = await Document.getInitialProps(ctx);
-    const nonce = ctx.req?.headers?.[NONCE_HEADER_NAME] as string | undefined;
+    const nonceHeader = ctx.req?.headers?.[NONCE_HEADER_NAME];
+    const nonce = typeof nonceHeader === "string" ? nonceHeader : undefined;
 
     return { ...initialProps, nonce };
   }
