@@ -630,6 +630,6 @@ export const config = {
     // CRM module routes
     "/crm",
     "/crm/:path*",
-    "/((?!api/|_next/static|_next/image|auth/_next|favicon/|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|js|css|map|txt|csv|json|woff2?)$).*)"
+    "/((?!api/|_next/static|_next/image|auth/_next|favicon/|.*[.](?:png|jpg|jpeg|gif|svg|webp|ico|js|css|map|txt|csv|json|woff2?)$).*)"
   ]
 };
