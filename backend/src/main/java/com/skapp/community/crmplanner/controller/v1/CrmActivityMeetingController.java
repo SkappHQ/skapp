@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/crm/activities/meetings")
+@RequestMapping("/v1/crm/activity/meeting")
 @Tag(name = "CRM Activity Meetings Controller", description = "Operations related to CRM activity meetings")
 public class CrmActivityMeetingController {
 

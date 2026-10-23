@@ -13,16 +13,20 @@ import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.payload.response.CrmActivityMeetingResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityMeetingRepository;
 import com.skapp.community.crmplanner.type.CrmActivityContactLink;
+import com.skapp.community.crmplanner.type.CrmActivityListParams;
 import com.skapp.community.crmplanner.type.CrmActivityMeetingFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityMeetingSort;
+import com.skapp.community.crmplanner.type.CrmActivityMeetingVenue;
 import com.skapp.community.crmplanner.util.CrmActivityScopeUtil;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Tuple;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -30,6 +34,8 @@ import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -43,7 +49,7 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 	@Override
 	public List<CrmActivityMeetingResponseDto> findMeetings(CrmActivityMeetingFilterParams params) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmActivityMeetingResponseDto> query = cb.createQuery(CrmActivityMeetingResponseDto.class);
+		CriteriaQuery<Tuple> query = cb.createTupleQuery();
 		Root<CrmActivityMeeting> meeting = query.from(CrmActivityMeeting.class);
 		Join<CrmActivityMeeting, Employee> owner = meeting.join(CrmActivityMeeting_.owner, JoinType.LEFT);
 		Path<Long> ownerId = owner.get(Employee_.employeeId);
@@ -62,30 +68,28 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 			Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
 			contactCompany.on(cb.isFalse(contactCompany.get(CrmCompany_.isDeleted)));
 			contactMatch.select(link.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId))
-				.where(cb.equal(link.get(CrmActivityMeetingContact_.id)
-					.get(CrmActivityMeetingContactId_.meetingId), meeting.get(CrmActivityMeeting_.id)),
-						cb.isFalse(contact.get(CrmContact_.isDeleted)),
-						cb.or(cb.like(cb.lower(contact.get(CrmContact_.name)), params.getSearchPattern(),
-								CrmActivityScopeUtil.LIKE_ESCAPE),
-								cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), params.getSearchPattern(),
-										CrmActivityScopeUtil.LIKE_ESCAPE)));
+				.where(cb.equal(link.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId),
+						meeting.get(CrmActivityMeeting_.id)), cb.isFalse(contact.get(CrmContact_.isDeleted)),
+						cb.or(cb.like(cb.lower(contact.get(CrmContact_.name)), params.getSearchPattern(), '\\'), cb
+							.like(cb.lower(contactCompany.get(CrmCompany_.name)), params.getSearchPattern(), '\\')));
 
-			predicates.add(cb.or(cb.like(cb.lower(meeting.get(CrmActivityMeeting_.name)), params.getSearchPattern(),
-					CrmActivityScopeUtil.LIKE_ESCAPE), cb.exists(contactMatch)));
+			predicates
+				.add(cb.or(cb.like(cb.lower(meeting.get(CrmActivityMeeting_.name)), params.getSearchPattern(), '\\'),
+						cb.exists(contactMatch)));
 		}
 
 		query
-			.select(cb.construct(CrmActivityMeetingResponseDto.class, meeting.get(CrmActivityMeeting_.id),
-					meeting.get(CrmActivityMeeting_.name), meeting.get(CrmActivityMeeting_.isScheduled),
-					meeting.get(CrmActivityMeeting_.meetingVenue), meeting.get(CrmActivityMeeting_.location),
-					meeting.get(CrmActivityMeeting_.startAt), meeting.get(CrmActivityMeeting_.endAt), ownerId,
-					meeting.get(CrmActivityMeeting_.deal).get(CrmDeal_.id), company.get(CrmCompany_.id)))
+			.multiselect(meeting.get(CrmActivityMeeting_.id), meeting.get(CrmActivityMeeting_.name),
+					meeting.get(CrmActivityMeeting_.isScheduled), meeting.get(CrmActivityMeeting_.meetingVenue),
+					meeting.get(CrmActivityMeeting_.location), meeting.get(CrmActivityMeeting_.startAt),
+					meeting.get(CrmActivityMeeting_.endAt), ownerId,
+					meeting.get(CrmActivityMeeting_.deal).get(CrmDeal_.id), company.get(CrmCompany_.id))
 			.where(predicates.toArray(new Predicate[0]))
-			.orderBy(CrmActivityScopeUtil.buildOrders(cb, params.getSortKey() == CrmActivityMeetingSort.OWNER,
+			.orderBy(buildOrders(cb, params.getSortKey() == CrmActivityMeetingSort.OWNER,
 					owner.get(Employee_.firstName), owner.get(Employee_.lastName),
 					meeting.get(CrmActivityMeeting_.startAt), meeting.get(CrmActivityMeeting_.id), params));
 
-		return entityManager.createQuery(query).getResultList();
+		return entityManager.createQuery(query).getResultList().stream().map(this::toMeetingResponse).toList();
 	}
 
 	@Override
@@ -105,6 +109,40 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 			.orderBy(cb.asc(meetingId), cb.asc(contactId));
 
 		return entityManager.createQuery(query).getResultList();
+	}
+
+	private CrmActivityMeetingResponseDto toMeetingResponse(Tuple row) {
+		CrmActivityMeetingResponseDto dto = new CrmActivityMeetingResponseDto();
+		dto.setId(row.get(0, Long.class));
+		dto.setName(row.get(1, String.class));
+		dto.setIsScheduled(row.get(2, Boolean.class));
+		dto.setMeetingVenue(row.get(3, CrmActivityMeetingVenue.class));
+		dto.setLocation(row.get(4, String.class));
+		dto.setStartAt(row.get(5, Instant.class));
+		dto.setEndAt(row.get(6, Instant.class));
+		dto.setOwnerId(row.get(7, Long.class));
+		dto.setDealId(row.get(8, Long.class));
+		dto.setCompanyId(row.get(9, Long.class));
+		return dto;
+	}
+
+	private List<Order> buildOrders(CriteriaBuilder cb, boolean sortByOwner, Path<String> ownerFirstName,
+			Path<String> ownerLastName, Path<Instant> dateField, Path<Long> id, CrmActivityListParams params) {
+		boolean ascending = params.getSortOrder().isAscending();
+		List<Order> orders = new ArrayList<>();
+
+		if (sortByOwner) {
+			orders.add(ascending ? cb.asc(ownerFirstName) : cb.desc(ownerFirstName));
+			orders.add(ascending ? cb.asc(ownerLastName) : cb.desc(ownerLastName));
+			orders.add(cb.desc(dateField));
+			orders.add(cb.desc(id));
+		}
+		else {
+			orders.add(ascending ? cb.asc(dateField) : cb.desc(dateField));
+			orders.add(ascending ? cb.asc(id) : cb.desc(id));
+		}
+
+		return orders;
 	}
 
 }
