@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/crm/activities/emails")
+@RequestMapping("/v1/crm/activity/email")
 @Tag(name = "CRM Activity Emails Controller", description = "Operations related to CRM activity emails")
 public class CrmActivityEmailController {
 
