@@ -12,11 +12,9 @@ import com.skapp.community.crmplanner.model.CrmContact_;
 import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.payload.response.CrmActivityEmailResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityEmailRepository;
-import com.skapp.community.crmplanner.type.CrmActivityContactLink;
 import com.skapp.community.crmplanner.type.CrmActivityEmailFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityEmailSort;
 import com.skapp.community.crmplanner.type.CrmActivityListParams;
-import com.skapp.community.crmplanner.util.CrmActivityScopeUtil;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
@@ -38,6 +36,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -56,8 +56,20 @@ public class CrmActivityEmailRepositoryImpl implements CrmActivityEmailRepositor
 		Join<CrmActivityEmail, CrmCompany> company = email.join(CrmActivityEmail_.company, JoinType.LEFT);
 		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 
-		List<Predicate> predicates = CrmActivityScopeUtil.buildScopePredicates(cb, ownerId,
-				email.get(CrmActivityEmail_.loggedAt), params);
+		Path<Instant> loggedAt = email.get(CrmActivityEmail_.loggedAt);
+		List<Predicate> predicates = new ArrayList<>();
+		if (Boolean.TRUE.equals(params.getIsRestrictedToOwner())) {
+			predicates.add(cb.equal(ownerId, params.getCurrentEmployeeId()));
+		}
+		if (params.getOwnerId() != null) {
+			predicates.add(cb.equal(ownerId, params.getOwnerId()));
+		}
+		if (params.getRangeStart() != null) {
+			predicates.add(cb.greaterThanOrEqualTo(loggedAt, params.getRangeStart()));
+		}
+		if (params.getRangeEnd() != null) {
+			predicates.add(cb.lessThan(loggedAt, params.getRangeEnd()));
+		}
 		predicates.add(cb.isFalse(email.get(CrmActivityEmail_.isDeleted)));
 
 		if (params.getSearchPattern() != null) {
@@ -90,22 +102,24 @@ public class CrmActivityEmailRepositoryImpl implements CrmActivityEmailRepositor
 	}
 
 	@Override
-	public List<CrmActivityContactLink> findContactLinks(Collection<Long> emailIds) {
+	public Map<Long, List<Long>> findContactIdsByEmailId(Collection<Long> emailIds) {
 		if (emailIds == null || emailIds.isEmpty()) {
-			return Collections.emptyList();
+			return Collections.emptyMap();
 		}
 
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmActivityContactLink> query = cb.createQuery(CrmActivityContactLink.class);
+		CriteriaQuery<Tuple> query = cb.createTupleQuery();
 		Root<CrmActivityEmailContact> link = query.from(CrmActivityEmailContact.class);
 		Path<Long> emailId = link.get(CrmActivityEmailContact_.id).get(CrmActivityEmailContactId_.emailId);
 		Path<Long> contactId = link.get(CrmActivityEmailContact_.contact).get(CrmContact_.id);
 
-		query.select(cb.construct(CrmActivityContactLink.class, emailId, contactId))
-			.where(emailId.in(emailIds))
-			.orderBy(cb.asc(emailId), cb.asc(contactId));
+		query.multiselect(emailId, contactId).where(emailId.in(emailIds)).orderBy(cb.asc(emailId), cb.asc(contactId));
 
-		return entityManager.createQuery(query).getResultList();
+		return entityManager.createQuery(query)
+			.getResultList()
+			.stream()
+			.collect(Collectors.groupingBy(row -> row.get(0, Long.class),
+					Collectors.mapping(row -> row.get(1, Long.class), Collectors.toList())));
 	}
 
 	private CrmActivityEmailResponseDto toEmailResponse(Tuple row) {
