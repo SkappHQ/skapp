@@ -1,5 +1,4 @@
 import { DateTime } from "luxon";
-import type { DateRange as PickerDateRange } from "react-day-picker";
 
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import {
@@ -177,14 +176,10 @@ export const validateDateRange = (range: DateRange): boolean => {
   return to.toMillis() >= from.toMillis();
 };
 
-export const toPickerDateRange = (range: DateRange): PickerDateRange => {
-  const pickerRange: Partial<PickerDateRange> = {};
-
-  if (range.from) pickerRange.from = parseDateValue(range.from).toJSDate();
-  if (range.to) pickerRange.to = parseDateValue(range.to).toJSDate();
-
-  return pickerRange as PickerDateRange;
-};
+export const toPickerDateRange = (range: DateRange) => ({
+  ...(range.from ? { from: parseDateValue(range.from).toJSDate() } : {}),
+  ...(range.to ? { to: parseDateValue(range.to).toJSDate() } : {})
+});
 
 export const toDateValue = (date?: Date): string | null =>
   date ? DateTime.fromJSDate(date).toFormat(ACTIVITY_DATE_FORMAT) : null;
