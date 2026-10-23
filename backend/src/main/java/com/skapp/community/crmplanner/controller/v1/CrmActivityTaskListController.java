@@ -3,7 +3,6 @@ package com.skapp.community.crmplanner.controller.v1;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmActivityTaskFilterDto;
 import com.skapp.community.crmplanner.service.CrmActivityTaskListService;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,12 +20,6 @@ public class CrmActivityTaskListController {
 
 	private final CrmActivityTaskListService crmActivityTaskListService;
 
-	@Operation(summary = "List CRM activity tasks",
-			description = "Returns every task visible to the caller. A sales rep sees their own tasks, a sales "
-					+ "manager sees their own and their team's, and an admin sees all. searchKeyword matches the "
-					+ "name, the linked contact's name or that contact's company. ownerId, startDate and "
-					+ "endDate (applied to the due date) are for managers and admins only. sortKey is DUE_AT "
-					+ "(default) or OWNER.")
 	@GetMapping
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getTasks(CrmActivityTaskFilterDto filterDto) {
