@@ -32,8 +32,6 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -108,37 +106,38 @@ public class CrmActivityEmailRepositoryImpl implements CrmActivityEmailRepositor
 			.where(predicates.toArray(new Predicate[0]))
 			.orderBy(orders);
 
-		return entityManager.createQuery(query).getResultList().stream().map(row -> {
-			CrmActivityEmailResponseDto dto = new CrmActivityEmailResponseDto();
-			dto.setId(row.get(0, Long.class));
-			dto.setSubject(row.get(1, String.class));
-			dto.setLoggedAt(row.get(2, Instant.class));
-			dto.setOwnerId(row.get(3, Long.class));
-			dto.setDealId(row.get(4, Long.class));
-			dto.setCompanyId(row.get(5, Long.class));
-			return dto;
-		}).toList();
-	}
+		List<CrmActivityEmailResponseDto> emails = entityManager.createQuery(query)
+			.getResultList()
+			.stream()
+			.map(row -> {
+				CrmActivityEmailResponseDto dto = new CrmActivityEmailResponseDto();
+				dto.setId(row.get(0, Long.class));
+				dto.setSubject(row.get(1, String.class));
+				dto.setLoggedAt(row.get(2, Instant.class));
+				dto.setOwnerId(row.get(3, Long.class));
+				dto.setDealId(row.get(4, Long.class));
+				dto.setCompanyId(row.get(5, Long.class));
+				return dto;
+			})
+			.toList();
 
-	@Override
-	public Map<Long, List<Long>> findContactIdsByEmailId(Collection<Long> emailIds) {
-		if (emailIds == null || emailIds.isEmpty()) {
-			return Collections.emptyMap();
-		}
+		CriteriaQuery<Tuple> contactQuery = cb.createTupleQuery();
+		Root<CrmActivityEmailContact> contactLink = contactQuery.from(CrmActivityEmailContact.class);
+		Path<Long> emailId = contactLink.get(CrmActivityEmailContact_.id).get(CrmActivityEmailContactId_.emailId);
+		Path<Long> contactId = contactLink.get(CrmActivityEmailContact_.contact).get(CrmContact_.id);
 
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Tuple> query = cb.createTupleQuery();
-		Root<CrmActivityEmailContact> link = query.from(CrmActivityEmailContact.class);
-		Path<Long> emailId = link.get(CrmActivityEmailContact_.id).get(CrmActivityEmailContactId_.emailId);
-		Path<Long> contactId = link.get(CrmActivityEmailContact_.contact).get(CrmContact_.id);
+		contactQuery.multiselect(emailId, contactId)
+			.where(emailId.in(emails.stream().map(CrmActivityEmailResponseDto::getId).toList()))
+			.orderBy(cb.asc(emailId), cb.asc(contactId));
 
-		query.multiselect(emailId, contactId).where(emailId.in(emailIds)).orderBy(cb.asc(emailId), cb.asc(contactId));
-
-		return entityManager.createQuery(query)
+		Map<Long, List<Long>> contactIdsByEmail = entityManager.createQuery(contactQuery)
 			.getResultList()
 			.stream()
 			.collect(Collectors.groupingBy(row -> row.get(0, Long.class),
 					Collectors.mapping(row -> row.get(1, Long.class), Collectors.toList())));
+		emails.forEach(e -> e.setContactIds(contactIdsByEmail.getOrDefault(e.getId(), List.of())));
+
+		return emails;
 	}
 
 }

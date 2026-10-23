@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZoneId;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @Slf4j
@@ -69,10 +68,6 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 		}
 
 		List<CrmActivityEmailResponseDto> emails = crmActivityEmailDao.findEmails(params);
-
-		Map<Long, List<Long>> contactIdsByEmail = crmActivityEmailDao
-			.findContactIdsByEmailId(emails.stream().map(CrmActivityEmailResponseDto::getId).toList());
-		emails.forEach(email -> email.setContactIds(contactIdsByEmail.getOrDefault(email.getId(), List.of())));
 
 		log.info("getEmails: execution ended");
 		return new ResponseEntityDto(false, emails);
