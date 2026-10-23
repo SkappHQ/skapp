@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZoneId;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @Slf4j
@@ -69,11 +68,6 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 		}
 
 		List<CrmActivityMeetingResponseDto> meetings = crmActivityMeetingDao.findMeetings(params);
-
-		Map<Long, List<Long>> contactIdsByMeeting = crmActivityMeetingDao
-			.findContactIdsByMeetingIds(meetings.stream().map(CrmActivityMeetingResponseDto::getId).toList());
-		meetings
-			.forEach(meeting -> meeting.setContactIds(contactIdsByMeeting.getOrDefault(meeting.getId(), List.of())));
 
 		log.info("getMeetings: execution ended");
 		return new ResponseEntityDto(false, meetings);

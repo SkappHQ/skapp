@@ -34,7 +34,6 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -115,40 +114,46 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 			.where(predicates.toArray(new Predicate[0]))
 			.orderBy(orders);
 
-		return entityManager.createQuery(query).getResultList().stream().map(row -> {
-			CrmActivityMeetingResponseDto dto = new CrmActivityMeetingResponseDto();
-			dto.setId(row.get(0, Long.class));
-			dto.setName(row.get(1, String.class));
-			dto.setIsScheduled(row.get(2, Boolean.class));
-			dto.setMeetingVenue(row.get(3, CrmActivityMeetingVenue.class));
-			dto.setLocation(row.get(4, String.class));
-			dto.setStartAt(row.get(5, Instant.class));
-			dto.setEndAt(row.get(6, Instant.class));
-			dto.setOwnerId(row.get(7, Long.class));
-			dto.setDealId(row.get(8, Long.class));
-			dto.setCompanyId(row.get(9, Long.class));
-			return dto;
-		}).toList();
-	}
+		List<CrmActivityMeetingResponseDto> meetings = entityManager.createQuery(query)
+			.getResultList()
+			.stream()
+			.map(row -> {
+				CrmActivityMeetingResponseDto dto = new CrmActivityMeetingResponseDto();
+				dto.setId(row.get(0, Long.class));
+				dto.setName(row.get(1, String.class));
+				dto.setIsScheduled(row.get(2, Boolean.class));
+				dto.setMeetingVenue(row.get(3, CrmActivityMeetingVenue.class));
+				dto.setLocation(row.get(4, String.class));
+				dto.setStartAt(row.get(5, Instant.class));
+				dto.setEndAt(row.get(6, Instant.class));
+				dto.setOwnerId(row.get(7, Long.class));
+				dto.setDealId(row.get(8, Long.class));
+				dto.setCompanyId(row.get(9, Long.class));
+				return dto;
+			})
+			.toList();
 
-	@Override
-	public Map<Long, List<Long>> findContactIdsByMeetingIds(Collection<Long> meetingIds) {
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Tuple> query = cb.createTupleQuery();
-		Root<CrmActivityMeetingContact> link = query.from(CrmActivityMeetingContact.class);
-		Path<Long> meetingId = link.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId);
-		Join<CrmActivityMeetingContact, CrmContact> contact = link.join(CrmActivityMeetingContact_.contact);
-		Path<Long> contactId = contact.get(CrmContact_.id);
+		CriteriaQuery<Tuple> contactQuery = cb.createTupleQuery();
+		Root<CrmActivityMeetingContact> contactLink = contactQuery.from(CrmActivityMeetingContact.class);
+		Path<Long> meetingId = contactLink.get(CrmActivityMeetingContact_.id)
+			.get(CrmActivityMeetingContactId_.meetingId);
+		Join<CrmActivityMeetingContact, CrmContact> linkedContact = contactLink
+			.join(CrmActivityMeetingContact_.contact);
+		Path<Long> contactId = linkedContact.get(CrmContact_.id);
 
-		query.multiselect(meetingId, contactId)
-			.where(meetingId.in(meetingIds), cb.isFalse(contact.get(CrmContact_.isDeleted)))
+		contactQuery.multiselect(meetingId, contactId)
+			.where(meetingId.in(meetings.stream().map(CrmActivityMeetingResponseDto::getId).toList()),
+					cb.isFalse(linkedContact.get(CrmContact_.isDeleted)))
 			.orderBy(cb.asc(meetingId), cb.asc(contactId));
 
-		return entityManager.createQuery(query)
+		Map<Long, List<Long>> contactIdsByMeeting = entityManager.createQuery(contactQuery)
 			.getResultList()
 			.stream()
 			.collect(Collectors.groupingBy(row -> row.get(0, Long.class),
 					Collectors.mapping(row -> row.get(1, Long.class), Collectors.toList())));
+		meetings.forEach(m -> m.setContactIds(contactIdsByMeeting.getOrDefault(m.getId(), List.of())));
+
+		return meetings;
 	}
 
 }
