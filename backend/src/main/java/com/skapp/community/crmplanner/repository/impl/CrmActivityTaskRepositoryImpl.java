@@ -48,7 +48,7 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 		Join<CrmActivityTask, CrmCompany> company = task.join(CrmActivityTask_.company, JoinType.LEFT);
 		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 
-		List<Predicate> predicates = CrmActivityScopeUtil.buildScopePredicates(cb, query, ownerId,
+		List<Predicate> predicates = CrmActivityScopeUtil.buildScopePredicates(cb, ownerId,
 				task.get(CrmActivityTask_.dueAt), params);
 		predicates.add(cb.isFalse(task.get(CrmActivityTask_.isDeleted)));
 
