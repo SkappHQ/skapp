@@ -593,6 +593,13 @@
         "description": "Could not update the task status. Please try again."
       }
     },
+    "tabs": {
+      "all": "All activities",
+      "tasks": "Tasks",
+      "calls": "Calls",
+      "meetings": "Meetings",
+      "emails": "Emails"
+    },
     "buckets": {
       "overdue": "Overdue",
       "today": "Today",
@@ -649,7 +656,41 @@
       "search": {
         "label": "Search activities",
         "resultCount_one": "{{count}} activity found",
-        "resultCount_other": "{{count}} activities found"
+        "resultCount_other": "{{count}} activities found",
+        "placeholders": {
+          "all": "Search activities",
+          "tasks": "Search tasks",
+          "calls": "Search calls",
+          "meetings": "Search meetings",
+          "emails": "Search emails"
+        }
+      },
+      "filters": {
+        "title": "Filters",
+        "dateRange": {
+          "label": "Date range",
+          "presets": {
+            "today": "Today",
+            "thisWeek": "This week",
+            "thisMonth": "This month",
+            "last30Days": "Last 30 days"
+          },
+          "from": "From",
+          "to": "To",
+          "fromPlaceholder": "Start date",
+          "toPlaceholder": "End date",
+          "error": "End date must be after start date"
+        },
+        "teamMember": {
+          "label": "Team member",
+          "placeholder": "Search team members",
+          "noMatches": "No team members found",
+          "noTeamMembers": "No team members to show",
+          "loadErrorInline": "Couldn't load team members",
+          "loadError": "Couldn't load team members. Refresh to try again."
+        },
+        "reset": "Reset filters",
+        "apply": "Apply filters"
       }
     }
   }

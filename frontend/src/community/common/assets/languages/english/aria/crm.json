@@ -130,6 +130,7 @@
     }
   },
   "activities": {
+    "tabs": "Activity types",
     "row": {
       "openDetails": "Open {{type}} details for {{subject}}",
       "markComplete": "Mark '{{name}}' complete",
@@ -140,7 +141,14 @@
       "lowPriority": "Low priority"
     },
     "toolbar": {
-      "clearSearch": "Clear search"
+      "clearSearch": "Clear search",
+      "openFilters": "Open filters",
+      "openFiltersActive": "Open filters, filters applied",
+      "closeFilters": "Close filters",
+      "clearTeamMember": "Clear team member filter",
+      "teamMember": "Selected team member",
+      "fromDate": "Filter start date",
+      "toDate": "Filter end date"
     }
   }
 }

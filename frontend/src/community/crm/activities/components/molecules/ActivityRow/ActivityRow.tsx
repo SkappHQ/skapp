@@ -1,4 +1,4 @@
-import { FC, KeyboardEvent } from "react";
+import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import ActivityOwnerAvatar from "~community/crm/activities/components/atoms/ActivityOwnerAvatar/ActivityOwnerAvatar";
@@ -34,45 +34,38 @@ const ActivityRow: FC<ActivityRowProps> = ({
   const isTask = row.type === ActivityType.TASK;
   const isCompletedStyleApplied = isTask && row.isCompleted;
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.target !== event.currentTarget) return;
-
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      onRowClick(row);
-    }
-  };
-
   return (
-    <div
-      id={rowId}
-      role="button"
-      tabIndex={0}
-      aria-label={translateAria(["activities", "row", "openDetails"], {
-        type: translateText([
-          "activities",
-          "types",
-          ACTIVITY_TYPE_LABEL_KEYS[row.type]
-        ]).toLowerCase(),
-        subject: row.subject
-      })}
-      className="relative flex items-center gap-4 p-3 min-w-0 min-h-[63px] bg-white hover:bg-secondary-background overflow-hidden cursor-pointer focus-visible:outline-2 focus-visible:outline-primary-accent"
-      onClick={() => onRowClick(row)}
-      onKeyDown={handleKeyDown}
-    >
+    <div className="relative flex items-center gap-4 p-3 min-w-0 min-h-[63px] bg-white hover:bg-secondary-background overflow-hidden">
+      <button
+        id={rowId}
+        type="button"
+        aria-label={translateAria(["activities", "row", "openDetails"], {
+          type: translateText([
+            "activities",
+            "types",
+            ACTIVITY_TYPE_LABEL_KEYS[row.type]
+          ]).toLowerCase(),
+          subject: row.subject
+        })}
+        className="absolute inset-0 w-full h-full cursor-pointer focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-accent"
+        onClick={() => onRowClick(row)}
+      />
+
       {!isTask && <span aria-hidden="true" className="w-7 shrink-0" />}
 
       {isTask && (
-        <ActivityRowCheckbox
-          id={`${rowId}-checkbox`}
-          subject={row.subject}
-          isCompleted={row.isCompleted}
-          canComplete={row.canComplete}
-          onToggle={(isCompleted) => onToggleComplete(row, isCompleted)}
-        />
+        <div className="relative pointer-events-auto">
+          <ActivityRowCheckbox
+            id={`${rowId}-checkbox`}
+            subject={row.subject}
+            isCompleted={row.isCompleted}
+            canComplete={row.canComplete}
+            onToggle={(isCompleted) => onToggleComplete(row, isCompleted)}
+          />
+        </div>
       )}
 
-      <div className="flex flex-1 items-center gap-3 min-w-0">
+      <div className="relative flex flex-1 items-center gap-3 min-w-0 pointer-events-none">
         <ActivityTypeIcon id={`${rowId}-type`} type={row.type} />
 
         <div className="flex-1 min-w-0">
@@ -97,13 +90,15 @@ const ActivityRow: FC<ActivityRowProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center gap-6 shrink-0">
+      <div className="relative flex items-center gap-6 shrink-0 pointer-events-none">
         {isTask && row.priority && (
           <ActivityPriorityMarker priority={row.priority} />
         )}
 
         {row.owner && (
-          <ActivityOwnerAvatar id={`${rowId}-owner`} owner={row.owner} />
+          <div className="pointer-events-auto">
+            <ActivityOwnerAvatar id={`${rowId}-owner`} owner={row.owner} />
+          </div>
         )}
       </div>
     </div>

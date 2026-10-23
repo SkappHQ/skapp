@@ -16,22 +16,33 @@ const ActivityFeedSkeleton: FC<ActivityFeedSkeletonProps> = ({
   message,
   groupCount = ACTIVITY_SKELETON_CONFIG.groupCount,
   rowCount = ACTIVITY_SKELETON_CONFIG.rowCount
-}) => (
-  <div id={id} role="status" aria-busy={true} aria-live="polite">
-    <span className="sr-only">{message}</span>
-    <div className="flex flex-col gap-4" aria-hidden="true">
-      {Array.from({ length: groupCount }).map((_, groupIndex) => (
-        <div className="flex flex-col" key={groupIndex}>
-          <SkeletonShape circle className="h-3 w-16 mb-2" />
-          <div className="border border-secondary-accent rounded-lg overflow-hidden divide-y divide-secondary-accent">
-            {Array.from({ length: rowCount }).map((_, rowIndex) => (
-              <ActivityRowSkeleton key={rowIndex} />
-            ))}
+}) => {
+  const rowKeys = Array.from(
+    { length: rowCount },
+    (_, rowIndex) => `${id}-row-${rowIndex}`
+  );
+  const groupKeys = Array.from(
+    { length: groupCount },
+    (_, groupIndex) => `${id}-group-${groupIndex}`
+  );
+
+  return (
+    <div id={id} role="status" aria-busy={true} aria-live="polite">
+      <span className="sr-only">{message}</span>
+      <div className="flex flex-col gap-4" aria-hidden="true">
+        {groupKeys.map((groupKey) => (
+          <div className="flex flex-col" key={groupKey}>
+            <SkeletonShape circle className="h-3 w-16 mb-2" />
+            <div className="border border-secondary-accent rounded-lg overflow-hidden divide-y divide-secondary-accent">
+              {rowKeys.map((rowKey) => (
+                <ActivityRowSkeleton key={`${groupKey}-${rowKey}`} />
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default ActivityFeedSkeleton;
