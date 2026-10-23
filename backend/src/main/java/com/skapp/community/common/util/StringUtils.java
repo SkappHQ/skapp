@@ -39,6 +39,13 @@ public class StringUtils {
 		return ValidationConstant.LIKE_WILDCARD_PATTERN.matcher(input).replaceAll("\\\\$1");
 	}
 
+	public static String toContainsLikePattern(String searchKeyword) {
+		if (isNullOrBlank(searchKeyword)) {
+			return null;
+		}
+		return "%" + escapeLikePattern(searchKeyword.toLowerCase()) + "%";
+	}
+
 	public static String normalizeName(String value) {
 		if (isNullOrBlank(value)) {
 			return "";

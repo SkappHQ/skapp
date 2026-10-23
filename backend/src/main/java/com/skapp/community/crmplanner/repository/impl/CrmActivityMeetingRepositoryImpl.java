@@ -13,12 +13,10 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.payload.response.CrmActivityMeetingResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityMeetingRepository;
-import com.skapp.community.crmplanner.type.CrmActivityContactLink;
 import com.skapp.community.crmplanner.type.CrmActivityListParams;
 import com.skapp.community.crmplanner.type.CrmActivityMeetingFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityMeetingSort;
 import com.skapp.community.crmplanner.type.CrmActivityMeetingVenue;
-import com.skapp.community.crmplanner.util.CrmActivityScopeUtil;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
@@ -40,6 +38,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -61,9 +61,21 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 		Join<CrmActivityMeeting, CrmDeal> deal = meeting.join(CrmActivityMeeting_.deal, JoinType.LEFT);
 		deal.on(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
 
-		List<Predicate> predicates = CrmActivityScopeUtil.buildScopePredicates(cb, ownerId,
-				meeting.get(CrmActivityMeeting_.startAt), params);
+		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.isFalse(meeting.get(CrmActivityMeeting_.isDeleted)));
+
+		if (Boolean.TRUE.equals(params.getIsRestrictedToOwner())) {
+			predicates.add(cb.equal(ownerId, params.getCurrentEmployeeId()));
+		}
+		if (params.getOwnerId() != null) {
+			predicates.add(cb.equal(ownerId, params.getOwnerId()));
+		}
+		if (params.getRangeStart() != null) {
+			predicates.add(cb.greaterThanOrEqualTo(meeting.get(CrmActivityMeeting_.startAt), params.getRangeStart()));
+		}
+		if (params.getRangeEnd() != null) {
+			predicates.add(cb.lessThan(meeting.get(CrmActivityMeeting_.startAt), params.getRangeEnd()));
+		}
 
 		if (params.getSearchPattern() != null) {
 			Subquery<Long> contactMatch = query.subquery(Long.class);
@@ -96,23 +108,27 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 	}
 
 	@Override
-	public List<CrmActivityContactLink> findContactLinks(Collection<Long> meetingIds) {
+	public Map<Long, List<Long>> findContactIdsByMeetingIds(Collection<Long> meetingIds) {
 		if (meetingIds == null || meetingIds.isEmpty()) {
-			return Collections.emptyList();
+			return Collections.emptyMap();
 		}
 
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmActivityContactLink> query = cb.createQuery(CrmActivityContactLink.class);
+		CriteriaQuery<Tuple> query = cb.createTupleQuery();
 		Root<CrmActivityMeetingContact> link = query.from(CrmActivityMeetingContact.class);
 		Path<Long> meetingId = link.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId);
 		Join<CrmActivityMeetingContact, CrmContact> contact = link.join(CrmActivityMeetingContact_.contact);
 		Path<Long> contactId = contact.get(CrmContact_.id);
 
-		query.select(cb.construct(CrmActivityContactLink.class, meetingId, contactId))
+		query.multiselect(meetingId, contactId)
 			.where(meetingId.in(meetingIds), cb.isFalse(contact.get(CrmContact_.isDeleted)))
 			.orderBy(cb.asc(meetingId), cb.asc(contactId));
 
-		return entityManager.createQuery(query).getResultList();
+		return entityManager.createQuery(query)
+			.getResultList()
+			.stream()
+			.collect(Collectors.groupingBy(row -> row.get(0, Long.class),
+					Collectors.mapping(row -> row.get(1, Long.class), Collectors.toList())));
 	}
 
 	private CrmActivityMeetingResponseDto toMeetingResponse(Tuple row) {

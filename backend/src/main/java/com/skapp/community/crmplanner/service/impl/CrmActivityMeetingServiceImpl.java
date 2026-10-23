@@ -9,7 +9,6 @@ import com.skapp.community.crmplanner.payload.request.CrmActivityMeetingFilterDt
 import com.skapp.community.crmplanner.payload.response.CrmActivityMeetingResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityMeetingDao;
 import com.skapp.community.crmplanner.service.CrmActivityMeetingService;
-import com.skapp.community.crmplanner.type.CrmActivityContactLink;
 import com.skapp.community.crmplanner.type.CrmActivityMeetingFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityMeetingSort;
 import com.skapp.community.crmplanner.util.CrmUtil;
@@ -23,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -54,7 +52,7 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 		CrmValidations.validateActivityDateRange(filterDto.getStartDate(), filterDto.getEndDate());
 
 		params.setOwnerId(filterDto.getOwnerId());
-		params.setSearchPattern(toSearchPattern(filterDto.getSearchKeyword()));
+		params.setSearchPattern(StringUtils.toContainsLikePattern(filterDto.getSearchKeyword()));
 		Sort.Direction defaultSortOrder = sortKey == CrmActivityMeetingSort.OWNER ? Sort.Direction.ASC
 				: Sort.Direction.DESC;
 		params.setSortOrder(filterDto.getSortOrder() != null ? filterDto.getSortOrder() : defaultSortOrder);
@@ -70,22 +68,12 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 		List<CrmActivityMeetingResponseDto> meetings = crmActivityMeetingDao.findMeetings(params);
 
 		Map<Long, List<Long>> contactIdsByMeeting = crmActivityMeetingDao
-			.findContactLinks(meetings.stream().map(CrmActivityMeetingResponseDto::getId).toList())
-			.stream()
-			.collect(Collectors.groupingBy(CrmActivityContactLink::activityId,
-					Collectors.mapping(CrmActivityContactLink::contactId, Collectors.toList())));
+			.findContactIdsByMeetingIds(meetings.stream().map(CrmActivityMeetingResponseDto::getId).toList());
 		meetings
 			.forEach(meeting -> meeting.setContactIds(contactIdsByMeeting.getOrDefault(meeting.getId(), List.of())));
 
 		log.info("getMeetings: execution ended");
 		return new ResponseEntityDto(false, meetings);
-	}
-
-	private String toSearchPattern(String searchKeyword) {
-		if (StringUtils.isNullOrBlank(searchKeyword)) {
-			return null;
-		}
-		return "%" + StringUtils.escapeLikePattern(searchKeyword.toLowerCase()) + "%";
 	}
 
 }
