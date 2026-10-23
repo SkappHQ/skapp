@@ -4,7 +4,6 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
-import com.skapp.community.common.util.StringUtils;
 import com.skapp.community.crmplanner.payload.request.CrmActivityMeetingFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityMeetingResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityMeetingDao;
@@ -52,7 +51,7 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 		CrmValidations.validateActivityDateRange(filterDto.getStartDate(), filterDto.getEndDate());
 
 		params.setOwnerId(filterDto.getOwnerId());
-		params.setSearchPattern(StringUtils.toContainsLikePattern(filterDto.getSearchKeyword()));
+		params.setSearchPattern(CrmUtil.toSearchPattern(filterDto.getSearchKeyword()));
 		Sort.Direction defaultSortOrder = sortKey == CrmActivityMeetingSort.OWNER ? Sort.Direction.ASC
 				: Sort.Direction.DESC;
 		params.setSortOrder(filterDto.getSortOrder() != null ? filterDto.getSortOrder() : defaultSortOrder);
