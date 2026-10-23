@@ -68,9 +68,9 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 			Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
 			contactCompany.on(cb.isFalse(contactCompany.get(CrmCompany_.isDeleted)));
 
-			predicates.add(cb.or(cb.like(cb.lower(task.get(CrmActivityTask_.name)), params.getSearchPattern(), '\\'),
-					cb.like(cb.lower(contact.get(CrmContact_.name)), params.getSearchPattern(), '\\'),
-					cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), params.getSearchPattern(), '\\')));
+			predicates.add(cb.or(cb.like(cb.lower(task.get(CrmActivityTask_.name)), params.getSearchPattern()),
+					cb.like(cb.lower(contact.get(CrmContact_.name)), params.getSearchPattern()),
+					cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), params.getSearchPattern())));
 		}
 
 		boolean ascending = params.getSortOrder().isAscending();
