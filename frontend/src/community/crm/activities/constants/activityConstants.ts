@@ -1,3 +1,4 @@
+import { daysTypes } from "~community/common/constants/stringConstants";
 import {
   ActivityBucket,
   ActivityDatePreset,
@@ -81,6 +82,16 @@ export const ACTIVITY_DATE_PRESETS: {
 ];
 
 export const ACTIVITY_LAST_DAYS_PRESET_LENGTH = 30;
+
+export const ACTIVITY_WEEK_START_WEEKDAYS: Record<daysTypes, number> = {
+  [daysTypes.MONDAY]: 1,
+  [daysTypes.TUESDAY]: 2,
+  [daysTypes.WEDNESDAY]: 3,
+  [daysTypes.THURSDAY]: 4,
+  [daysTypes.FRIDAY]: 5,
+  [daysTypes.SATURDAY]: 6,
+  [daysTypes.SUNDAY]: 7
+};
 
 const EMPTY_ACTIVITY_DATE_RANGE: DateRange = { from: null, to: null };
 
