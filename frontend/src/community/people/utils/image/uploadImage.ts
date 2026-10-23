@@ -47,28 +47,27 @@ const uploadImage = async ({
             }
           }
         });
-      } else {
-        await uploadFileToS3ByUrl(
-          authPic[0] as File,
+      } else if (
+        typeof thumbnail === "object" &&
+        thumbnail &&
+        thumbnail?.length > 0
+      ) {
+        const originalURL = await uploadFileToS3ByUrl(
+          authPic[0],
           FileCategories.PROFILE_PICTURES_ORIGINAL
         );
+        const thumbnailURL = await uploadFileToS3ByUrl(
+          thumbnail[0],
+          FileCategories.PROFILE_PICTURES_THUMBNAIL,
+          undefined,
+          originalURL
+        );
 
-        if (
-          typeof thumbnail === "object" &&
-          thumbnail &&
-          thumbnail?.length > 0
-        ) {
-          const thumbnailURL = await uploadFileToS3ByUrl(
-            thumbnail[0],
-            FileCategories.PROFILE_PICTURES_THUMBNAIL
-          );
-
-          newAuthPicURL = thumbnailURL.split("/").slice(2).join("/");
-        }
+        newAuthPicURL = thumbnailURL.split("/").slice(2).join("/");
       }
 
       setHasUploadStarted?.(false);
-    } catch (error) {
+    } catch {
       onError();
     }
   } else if (isAnExistingResource) {
