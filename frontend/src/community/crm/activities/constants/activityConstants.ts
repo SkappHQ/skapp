@@ -61,21 +61,6 @@ export const ACTIVITY_TIME_FORMAT = "h:mm a";
 
 export const ACTIVITY_DATE_FORMAT = "yyyy-MM-dd";
 
-export const ACTIVITY_MONTH_ABBREVIATIONS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sept",
-  "Oct",
-  "Nov",
-  "Dec"
-];
-
 export const ACTIVITY_SKELETON_CONFIG = {
   groupCount: 3,
   rowCount: 4
