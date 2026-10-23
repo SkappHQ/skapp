@@ -3,7 +3,6 @@ package com.skapp.community.crmplanner.controller.v1;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmActivityMeetingFilterDto;
 import com.skapp.community.crmplanner.service.CrmActivityMeetingService;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,12 +20,6 @@ public class CrmActivityMeetingController {
 
 	private final CrmActivityMeetingService crmActivityMeetingService;
 
-	@Operation(summary = "List CRM meetings",
-			description = "Returns every meeting visible to the caller. A sales rep sees their own meetings, a "
-					+ "sales manager sees their own and their team's, and an admin sees all. searchKeyword matches "
-					+ "the name, a linked contact's name or that contact's company. ownerId, startDate and "
-					+ "endDate (applied to the start time) are for managers and admins only. sortKey is START_AT "
-					+ "(default) or OWNER.")
 	@GetMapping
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getMeetings(CrmActivityMeetingFilterDto filterDto) {
