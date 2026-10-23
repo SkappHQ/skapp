@@ -56,7 +56,7 @@ public class CrmActivityEmailRepositoryImpl implements CrmActivityEmailRepositor
 		Join<CrmActivityEmail, CrmCompany> company = email.join(CrmActivityEmail_.company, JoinType.LEFT);
 		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 
-		List<Predicate> predicates = CrmActivityScopeUtil.buildScopePredicates(cb, query, ownerId,
+		List<Predicate> predicates = CrmActivityScopeUtil.buildScopePredicates(cb, ownerId,
 				email.get(CrmActivityEmail_.loggedAt), params);
 		predicates.add(cb.isFalse(email.get(CrmActivityEmail_.isDeleted)));
 

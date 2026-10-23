@@ -1,10 +1,10 @@
 package com.skapp.community.crmplanner.service.impl;
 
 import com.skapp.community.common.constant.CommonMessageConstant;
+import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
-import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.StringUtils;
 import com.skapp.community.crmplanner.payload.request.CrmActivityEmailFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityEmailResponseDto;
@@ -13,9 +13,8 @@ import com.skapp.community.crmplanner.service.CrmActivityEmailService;
 import com.skapp.community.crmplanner.type.CrmActivityContactLink;
 import com.skapp.community.crmplanner.type.CrmActivityEmailFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityEmailSort;
+import com.skapp.community.crmplanner.util.CrmUtil;
 import com.skapp.community.crmplanner.util.CrmValidations;
-import com.skapp.community.peopleplanner.model.Employee;
-import com.skapp.community.peopleplanner.model.EmployeeRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
@@ -44,20 +43,18 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 	public ResponseEntityDto getEmails(CrmActivityEmailFilterDto filterDto) {
 		log.info("getEmails: execution started");
 
-		Employee currentEmployee = userService.getCurrentUser().getEmployee();
+		User currentUser = userService.getCurrentUser();
 		CrmActivityEmailSort sortKey = filterDto.getSortKey() != null ? filterDto.getSortKey()
 				: CrmActivityEmailSort.LOGGED_AT;
 
 		CrmActivityEmailFilterParams params = new CrmActivityEmailFilterParams();
 		params.setSortKey(sortKey);
-		EmployeeRole employeeRole = currentEmployee.getEmployeeRole();
-		params.setCurrentEmployeeId(currentEmployee.getEmployeeId());
-		params.setCrmRole(employeeRole.getCrmRole());
-		params.setIsSuperAdmin(employeeRole.getIsSuperAdmin());
+		boolean isRepresentative = CrmUtil.isCrmSalesRepresentative(currentUser);
+		params.setCurrentEmployeeId(currentUser.getEmployee().getEmployeeId());
+		params.setIsRestrictedToOwner(isRepresentative);
 
 		boolean hasDateRange = filterDto.getStartDate() != null || filterDto.getEndDate() != null;
-		if (params.getCrmRole() == Role.CRM_SALES_REPRESENTATIVE && !Boolean.TRUE.equals(params.getIsSuperAdmin())
-				&& (filterDto.getOwnerId() != null || hasDateRange)) {
+		if (isRepresentative && (filterDto.getOwnerId() != null || hasDateRange)) {
 			throw new AccessDeniedException(CommonMessageConstant.COMMON_ERROR_ACCESS_DENIED.name());
 		}
 
