@@ -12,7 +12,6 @@ import com.skapp.community.crmplanner.repository.CrmActivityTaskRepository;
 import com.skapp.community.crmplanner.type.CrmActivityListParams;
 import com.skapp.community.crmplanner.type.CrmActivityTaskFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityTaskSort;
-import com.skapp.community.crmplanner.util.CrmActivityScopeUtil;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
@@ -48,8 +47,20 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 		Join<CrmActivityTask, CrmCompany> company = task.join(CrmActivityTask_.company, JoinType.LEFT);
 		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 
-		List<Predicate> predicates = CrmActivityScopeUtil.buildScopePredicates(cb, ownerId,
-				task.get(CrmActivityTask_.dueAt), params);
+		Path<Instant> dueAt = task.get(CrmActivityTask_.dueAt);
+		List<Predicate> predicates = new ArrayList<>();
+		if (Boolean.TRUE.equals(params.getIsRestrictedToOwner())) {
+			predicates.add(cb.equal(ownerId, params.getCurrentEmployeeId()));
+		}
+		if (params.getOwnerId() != null) {
+			predicates.add(cb.equal(ownerId, params.getOwnerId()));
+		}
+		if (params.getRangeStart() != null) {
+			predicates.add(cb.greaterThanOrEqualTo(dueAt, params.getRangeStart()));
+		}
+		if (params.getRangeEnd() != null) {
+			predicates.add(cb.lessThan(dueAt, params.getRangeEnd()));
+		}
 		predicates.add(cb.isFalse(task.get(CrmActivityTask_.isDeleted)));
 
 		if (params.getSearchPattern() != null) {

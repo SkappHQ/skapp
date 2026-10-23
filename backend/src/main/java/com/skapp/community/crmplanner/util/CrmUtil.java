@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.util;
 
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.type.Role;
+import com.skapp.community.common.util.StringUtils;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
@@ -54,6 +55,13 @@ public class CrmUtil {
 			dto.setCompanyId(null);
 		}
 		return dto;
+	}
+
+	public String toSearchPattern(String searchKeyword) {
+		if (StringUtils.isNullOrBlank(searchKeyword)) {
+			return null;
+		}
+		return "%" + StringUtils.escapeLikePattern(searchKeyword.toLowerCase()) + "%";
 	}
 
 }

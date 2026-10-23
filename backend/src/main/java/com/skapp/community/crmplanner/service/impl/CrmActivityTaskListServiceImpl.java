@@ -1,11 +1,9 @@
 package com.skapp.community.crmplanner.service.impl;
 
-import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
-import com.skapp.community.common.util.StringUtils;
 import com.skapp.community.crmplanner.payload.request.CrmActivityTaskFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityTaskResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityTaskDao;
@@ -17,7 +15,6 @@ import com.skapp.community.crmplanner.util.CrmValidations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,15 +47,10 @@ public class CrmActivityTaskListServiceImpl implements CrmActivityTaskListServic
 		params.setCurrentEmployeeId(currentUser.getEmployee().getEmployeeId());
 		params.setIsRestrictedToOwner(isRepresentative);
 
-		boolean hasDateRange = filterDto.getStartDate() != null || filterDto.getEndDate() != null;
-		if (isRepresentative && (filterDto.getOwnerId() != null || hasDateRange)) {
-			throw new AccessDeniedException(CommonMessageConstant.COMMON_ERROR_ACCESS_DENIED.name());
-		}
-
 		CrmValidations.validateActivityDateRange(filterDto.getStartDate(), filterDto.getEndDate());
 
 		params.setOwnerId(filterDto.getOwnerId());
-		params.setSearchPattern(toSearchPattern(filterDto.getSearchKeyword()));
+		params.setSearchPattern(CrmUtil.toSearchPattern(filterDto.getSearchKeyword()));
 		Sort.Direction defaultSortOrder = sortKey == CrmActivityTaskSort.OWNER ? Sort.Direction.ASC
 				: Sort.Direction.DESC;
 		params.setSortOrder(filterDto.getSortOrder() != null ? filterDto.getSortOrder() : defaultSortOrder);
@@ -75,13 +67,6 @@ public class CrmActivityTaskListServiceImpl implements CrmActivityTaskListServic
 
 		log.info("getTasks: execution ended");
 		return new ResponseEntityDto(false, tasks);
-	}
-
-	private String toSearchPattern(String searchKeyword) {
-		if (StringUtils.isNullOrBlank(searchKeyword)) {
-			return null;
-		}
-		return "%" + StringUtils.escapeLikePattern(searchKeyword.toLowerCase()) + "%";
 	}
 
 }
