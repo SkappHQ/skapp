@@ -14,7 +14,6 @@ import com.skapp.community.crmplanner.payload.response.CrmActivityEmailResponseD
 import com.skapp.community.crmplanner.repository.CrmActivityEmailRepository;
 import com.skapp.community.crmplanner.type.CrmActivityEmailFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityEmailSort;
-import com.skapp.community.crmplanner.type.CrmActivityListParams;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
@@ -89,16 +88,36 @@ public class CrmActivityEmailRepositoryImpl implements CrmActivityEmailRepositor
 						cb.exists(contactMatch)));
 		}
 
+		boolean ascending = params.getSortOrder().isAscending();
+		List<Order> orders = new ArrayList<>();
+		if (params.getSortKey() == CrmActivityEmailSort.OWNER) {
+			orders.add(ascending ? cb.asc(owner.get(Employee_.firstName)) : cb.desc(owner.get(Employee_.firstName)));
+			orders.add(ascending ? cb.asc(owner.get(Employee_.lastName)) : cb.desc(owner.get(Employee_.lastName)));
+			orders.add(cb.desc(loggedAt));
+			orders.add(cb.desc(email.get(CrmActivityEmail_.id)));
+		}
+		else {
+			orders.add(ascending ? cb.asc(loggedAt) : cb.desc(loggedAt));
+			orders.add(ascending ? cb.asc(email.get(CrmActivityEmail_.id)) : cb.desc(email.get(CrmActivityEmail_.id)));
+		}
+
 		query
 			.multiselect(email.get(CrmActivityEmail_.id), email.get(CrmActivityEmail_.subject),
 					email.get(CrmActivityEmail_.loggedAt), ownerId, email.get(CrmActivityEmail_.deal).get(CrmDeal_.id),
 					company.get(CrmCompany_.id))
 			.where(predicates.toArray(new Predicate[0]))
-			.orderBy(buildOrders(cb, params.getSortKey() == CrmActivityEmailSort.OWNER, owner.get(Employee_.firstName),
-					owner.get(Employee_.lastName), email.get(CrmActivityEmail_.loggedAt),
-					email.get(CrmActivityEmail_.id), params));
+			.orderBy(orders);
 
-		return entityManager.createQuery(query).getResultList().stream().map(this::toEmailResponse).toList();
+		return entityManager.createQuery(query).getResultList().stream().map(row -> {
+			CrmActivityEmailResponseDto dto = new CrmActivityEmailResponseDto();
+			dto.setId(row.get(0, Long.class));
+			dto.setSubject(row.get(1, String.class));
+			dto.setLoggedAt(row.get(2, Instant.class));
+			dto.setOwnerId(row.get(3, Long.class));
+			dto.setDealId(row.get(4, Long.class));
+			dto.setCompanyId(row.get(5, Long.class));
+			return dto;
+		}).toList();
 	}
 
 	@Override
@@ -120,36 +139,6 @@ public class CrmActivityEmailRepositoryImpl implements CrmActivityEmailRepositor
 			.stream()
 			.collect(Collectors.groupingBy(row -> row.get(0, Long.class),
 					Collectors.mapping(row -> row.get(1, Long.class), Collectors.toList())));
-	}
-
-	private CrmActivityEmailResponseDto toEmailResponse(Tuple row) {
-		CrmActivityEmailResponseDto dto = new CrmActivityEmailResponseDto();
-		dto.setId(row.get(0, Long.class));
-		dto.setSubject(row.get(1, String.class));
-		dto.setLoggedAt(row.get(2, Instant.class));
-		dto.setOwnerId(row.get(3, Long.class));
-		dto.setDealId(row.get(4, Long.class));
-		dto.setCompanyId(row.get(5, Long.class));
-		return dto;
-	}
-
-	private List<Order> buildOrders(CriteriaBuilder cb, boolean sortByOwner, Path<String> ownerFirstName,
-			Path<String> ownerLastName, Path<Instant> dateField, Path<Long> id, CrmActivityListParams params) {
-		boolean ascending = params.getSortOrder().isAscending();
-		List<Order> orders = new ArrayList<>();
-
-		if (sortByOwner) {
-			orders.add(ascending ? cb.asc(ownerFirstName) : cb.desc(ownerFirstName));
-			orders.add(ascending ? cb.asc(ownerLastName) : cb.desc(ownerLastName));
-			orders.add(cb.desc(dateField));
-			orders.add(cb.desc(id));
-		}
-		else {
-			orders.add(ascending ? cb.asc(dateField) : cb.desc(dateField));
-			orders.add(ascending ? cb.asc(id) : cb.desc(id));
-		}
-
-		return orders;
 	}
 
 }

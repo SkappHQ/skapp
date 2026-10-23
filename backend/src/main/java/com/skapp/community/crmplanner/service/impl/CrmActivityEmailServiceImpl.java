@@ -4,6 +4,7 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.util.StringUtils;
 import com.skapp.community.crmplanner.payload.request.CrmActivityEmailFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityEmailResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityEmailDao;
@@ -51,7 +52,10 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 		CrmValidations.validateActivityDateRange(filterDto.getStartDate(), filterDto.getEndDate());
 
 		params.setOwnerId(filterDto.getOwnerId());
-		params.setSearchPattern(CrmUtil.toSearchPattern(filterDto.getSearchKeyword()));
+		if (!StringUtils.isNullOrBlank(filterDto.getSearchKeyword())) {
+			params.setSearchPattern(
+					"%" + StringUtils.escapeLikePattern(filterDto.getSearchKeyword().toLowerCase()) + "%");
+		}
 		Sort.Direction defaultSortOrder = sortKey == CrmActivityEmailSort.OWNER ? Sort.Direction.ASC
 				: Sort.Direction.DESC;
 		params.setSortOrder(filterDto.getSortOrder() != null ? filterDto.getSortOrder() : defaultSortOrder);
