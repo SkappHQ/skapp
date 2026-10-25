@@ -6,7 +6,6 @@ import com.skapp.community.crmplanner.payload.response.CrmActivityTeamMemberResp
 import com.skapp.community.crmplanner.repository.CrmActivityFeedDao;
 import com.skapp.community.crmplanner.service.CrmActivityScopeResolver;
 import com.skapp.community.crmplanner.service.CrmActivityTeamMemberService;
-import com.skapp.community.crmplanner.type.CrmActivityScope;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,9 +29,8 @@ public class CrmActivityTeamMemberServiceImpl implements CrmActivityTeamMemberSe
 	public ResponseEntityDto getTeamMembers() {
 		log.info("getTeamMembers: execution started");
 
-		CrmActivityScope scope = crmActivityScopeResolver.resolveScope(userService.getCurrentUser());
 		List<CrmActivityTeamMemberResponseDto> members = crmActivityFeedDao
-			.findCrmMembers(scope.orgWide() ? null : scope.ownerIds());
+			.findCrmMembers(crmActivityScopeResolver.resolveOwnerIds(userService.getCurrentUser()));
 
 		log.info("getTeamMembers: execution ended");
 		return new ResponseEntityDto(false, members);

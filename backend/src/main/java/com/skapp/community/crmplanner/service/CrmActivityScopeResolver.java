@@ -1,15 +1,14 @@
 package com.skapp.community.crmplanner.service;
 
 import com.skapp.community.common.model.User;
-import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.common.type.Role;
-import com.skapp.community.crmplanner.type.CrmActivityScope;
+import com.skapp.community.leaveplanner.type.ManagerType;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.repository.EmployeeManagerDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
-import com.skapp.community.leaveplanner.type.ManagerType;
+import com.skapp.community.peopleplanner.type.AccountStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -28,18 +27,17 @@ public class CrmActivityScopeResolver {
 
 	private final TeamDao teamDao;
 
-	public CrmActivityScope resolveScope(User user) {
+	public Set<Long> resolveOwnerIds(User user) {
 		Employee employee = user.getEmployee();
-		Long viewerId = employee.getEmployeeId();
 		EmployeeRole employeeRole = employee.getEmployeeRole();
 
 		if (Boolean.TRUE.equals(employeeRole.getIsSuperAdmin()) || employeeRole.getCrmRole() == Role.CRM_ADMIN) {
-			return new CrmActivityScope(viewerId, true, true, Set.of());
+			return null;
 		}
 		if (employeeRole.getCrmRole() == Role.CRM_SALES_MANAGER) {
-			return new CrmActivityScope(viewerId, true, false, findTeamOwnerIds(employee));
+			return findTeamOwnerIds(employee);
 		}
-		return new CrmActivityScope(viewerId, false, false, Set.of(viewerId));
+		return Set.of(employee.getEmployeeId());
 	}
 
 	private Set<Long> findTeamOwnerIds(Employee manager) {

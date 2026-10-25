@@ -1,6 +1,5 @@
 package com.skapp.community.crmplanner.payload.request;
 
-import com.skapp.community.crmplanner.type.CrmActivityType;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -11,7 +10,7 @@ import java.time.LocalDate;
 @Setter
 public class CrmActivityFeedFilterDto {
 
-	private CrmActivityType type;
+	private String type;
 
 	private String search;
 

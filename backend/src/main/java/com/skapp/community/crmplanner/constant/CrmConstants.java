@@ -6,6 +6,7 @@ import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import lombok.experimental.UtilityClass;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 @UtilityClass
@@ -34,6 +35,17 @@ public class CrmConstants {
 	public static final CrmDealStageType DEFAULT_DEAL_STAGE_TYPE = CrmDealStageType.OPEN;
 
 	public static final int DEALS_PER_STAGE_LIMIT = 20;
+
+	public static final String ACTIVITY_TYPE_TASK = "TASK";
+
+	public static final String ACTIVITY_TYPE_CALL = "CALL";
+
+	public static final String ACTIVITY_TYPE_MEETING = "MEETING";
+
+	public static final String ACTIVITY_TYPE_EMAIL = "EMAIL";
+
+	public static final List<String> ACTIVITY_TYPES = List.of(ACTIVITY_TYPE_TASK, ACTIVITY_TYPE_CALL,
+			ACTIVITY_TYPE_MEETING, ACTIVITY_TYPE_EMAIL);
 
 	public static final Set<Role> ASSIGNABLE_CRM_ROLES = Set.of(Role.CRM_ADMIN, Role.CRM_SALES_MANAGER,
 			Role.CRM_SALES_REPRESENTATIVE);

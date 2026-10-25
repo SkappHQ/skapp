@@ -1,7 +1,6 @@
 package com.skapp.community.crmplanner.payload.response;
 
 import com.skapp.community.crmplanner.type.CrmActivityTaskPriority;
-import com.skapp.community.crmplanner.type.CrmActivityType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,7 +14,7 @@ public class CrmActivityFeedRowResponseDto {
 
 	private Long id;
 
-	private CrmActivityType type;
+	private String type;
 
 	private String subject;
 

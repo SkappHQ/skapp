@@ -30,8 +30,8 @@ import com.skapp.community.crmplanner.payload.response.CrmActivityFeedResponseDt
 import com.skapp.community.crmplanner.payload.response.CrmActivityFeedRowResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityTeamMemberResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityFeedRepository;
-import com.skapp.community.crmplanner.type.CrmActivityFeedCriteria;
-import com.skapp.community.crmplanner.type.CrmActivityType;
+import com.skapp.community.common.util.StringUtils;
+import com.skapp.community.crmplanner.payload.request.CrmActivityFeedFilterDto;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.EmployeeRole_;
@@ -52,15 +52,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 @Repository
 @RequiredArgsConstructor
@@ -75,10 +77,20 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		.thenComparing(ref -> ref.type())
 		.thenComparing(ref -> ref.id(), Comparator.reverseOrder());
 
+	private static final int BY_MONTH_PAGE_SIZE = 25;
+
 	private final EntityManager entityManager;
 
 	@Override
-	public CrmActivityFeedResponseDto findActivityFeed(CrmActivityFeedCriteria criteria) {
+	public CrmActivityFeedResponseDto findActivityFeed(Set<Long> ownerIds, CrmActivityFeedFilterDto filterDto,
+			ZoneId zone) {
+		FeedFilter criteria = new FeedFilter(filterDto.getType(), ownerIds, buildSearchPattern(filterDto.getSearch()),
+				filterDto.getFrom() == null ? null : filterDto.getFrom().atStartOfDay(zone).toInstant(),
+				filterDto.getTo() == null ? null : filterDto.getTo().plusDays(1).atStartOfDay(zone).toInstant(),
+				Instant.now(), LocalDate.now(zone).atStartOfDay(zone).toInstant(),
+				LocalDate.now(zone).plusDays(1).atStartOfDay(zone).toInstant(), Math.max(filterDto.getPage(), 0),
+				BY_MONTH_PAGE_SIZE);
+
 		if (criteria.ownerIds() != null && criteria.ownerIds().isEmpty()) {
 			return new CrmActivityFeedResponseDto(List.of(), List.of(), List.of(),
 					new CrmActivityFeedByMonthResponseDto(List.of(), criteria.page(), false));
@@ -150,23 +162,23 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		return entityManager.createQuery(query).getResultList();
 	}
 
-	private List<FeedRef> collectRefs(CrmActivityFeedCriteria criteria, boolean fixedBuckets, int limit) {
+	private List<FeedRef> collectRefs(FeedFilter criteria, boolean fixedBuckets, int limit) {
 		List<FeedRef> refs = new ArrayList<>();
-		for (CrmActivityType type : CrmActivityType.values()) {
-			if (criteria.type() != null && criteria.type() != type) {
+		for (String type : CrmConstants.ACTIVITY_TYPES) {
+			if (criteria.type() != null && !criteria.type().equals(type)) {
 				continue;
 			}
 			refs.addAll(switch (type) {
-				case TASK -> findTaskRefs(criteria, fixedBuckets, limit);
-				case CALL -> findCallRefs(criteria, fixedBuckets, limit);
-				case MEETING -> findMeetingRefs(criteria, fixedBuckets, limit);
-				case EMAIL -> findEmailRefs(criteria, fixedBuckets, limit);
+				case CrmConstants.ACTIVITY_TYPE_TASK -> findTaskRefs(criteria, fixedBuckets, limit);
+				case CrmConstants.ACTIVITY_TYPE_CALL -> findCallRefs(criteria, fixedBuckets, limit);
+				case CrmConstants.ACTIVITY_TYPE_MEETING -> findMeetingRefs(criteria, fixedBuckets, limit);
+				default -> findEmailRefs(criteria, fixedBuckets, limit);
 			});
 		}
 		return refs;
 	}
 
-	private List<FeedRef> findTaskRefs(CrmActivityFeedCriteria criteria, boolean fixedBuckets, int limit) {
+	private List<FeedRef> findTaskRefs(FeedFilter criteria, boolean fixedBuckets, int limit) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Tuple> query = cb.createTupleQuery();
 		Root<CrmActivityTask> task = query.from(CrmActivityTask.class);
@@ -190,11 +202,11 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					matchesContactOrCompany(cb, contact, contactCompany, criteria.searchPattern())));
 		}
 
-		return fetchRefs(CrmActivityType.TASK, query, task.get(CrmActivityTask_.id), feedAt, predicates, fixedBuckets,
-				limit);
+		return fetchRefs(CrmConstants.ACTIVITY_TYPE_TASK, query, task.get(CrmActivityTask_.id), feedAt, predicates,
+				fixedBuckets, limit);
 	}
 
-	private List<FeedRef> findCallRefs(CrmActivityFeedCriteria criteria, boolean fixedBuckets, int limit) {
+	private List<FeedRef> findCallRefs(FeedFilter criteria, boolean fixedBuckets, int limit) {
 		if (fixedBuckets) {
 			return List.of();
 		}
@@ -215,10 +227,11 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					matchesContactOrCompany(cb, contact, contactCompany, criteria.searchPattern())));
 		}
 
-		return fetchRefs(CrmActivityType.CALL, query, call.get(CrmActivityCall_.id), feedAt, predicates, false, limit);
+		return fetchRefs(CrmConstants.ACTIVITY_TYPE_CALL, query, call.get(CrmActivityCall_.id), feedAt, predicates,
+				false, limit);
 	}
 
-	private List<FeedRef> findMeetingRefs(CrmActivityFeedCriteria criteria, boolean fixedBuckets, int limit) {
+	private List<FeedRef> findMeetingRefs(FeedFilter criteria, boolean fixedBuckets, int limit) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Tuple> query = cb.createTupleQuery();
 		Root<CrmActivityMeeting> meeting = query.from(CrmActivityMeeting.class);
@@ -246,11 +259,11 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					cb.exists(contactMatch)));
 		}
 
-		return fetchRefs(CrmActivityType.MEETING, query, meeting.get(CrmActivityMeeting_.id), feedAt, predicates,
-				fixedBuckets, limit);
+		return fetchRefs(CrmConstants.ACTIVITY_TYPE_MEETING, query, meeting.get(CrmActivityMeeting_.id), feedAt,
+				predicates, fixedBuckets, limit);
 	}
 
-	private List<FeedRef> findEmailRefs(CrmActivityFeedCriteria criteria, boolean fixedBuckets, int limit) {
+	private List<FeedRef> findEmailRefs(FeedFilter criteria, boolean fixedBuckets, int limit) {
 		if (fixedBuckets) {
 			return List.of();
 		}
@@ -278,12 +291,12 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					cb.exists(contactMatch)));
 		}
 
-		return fetchRefs(CrmActivityType.EMAIL, query, email.get(CrmActivityEmail_.id), feedAt, predicates, false,
-				limit);
+		return fetchRefs(CrmConstants.ACTIVITY_TYPE_EMAIL, query, email.get(CrmActivityEmail_.id), feedAt, predicates,
+				false, limit);
 	}
 
 	private List<Predicate> buildCommonPredicates(CriteriaBuilder cb, Path<Long> ownerId, Path<Boolean> isDeleted,
-			Expression<Instant> feedAt, CrmActivityFeedCriteria criteria) {
+			Expression<Instant> feedAt, FeedFilter criteria) {
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.isFalse(isDeleted));
 		if (criteria.ownerIds() != null) {
@@ -298,8 +311,8 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		return predicates;
 	}
 
-	private List<FeedRef> fetchRefs(CrmActivityType type, CriteriaQuery<Tuple> query, Path<Long> id,
-			Expression<Instant> feedAt, List<Predicate> predicates, boolean oldestFirst, int limit) {
+	private List<FeedRef> fetchRefs(String type, CriteriaQuery<Tuple> query, Path<Long> id, Expression<Instant> feedAt,
+			List<Predicate> predicates, boolean oldestFirst, int limit) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		query.multiselect(id, feedAt).where(predicates.toArray(new Predicate[0]));
 		if (oldestFirst) {
@@ -330,16 +343,16 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			return Collections.emptyList();
 		}
 
-		Map<CrmActivityType, List<Long>> idsByType = new EnumMap<>(CrmActivityType.class);
+		Map<String, List<Long>> idsByType = new HashMap<>();
 		refs.forEach(ref -> idsByType.computeIfAbsent(ref.type(), type -> new ArrayList<>()).add(ref.id()));
 
 		Map<String, CrmActivityFeedRowResponseDto> rowsByKey = new HashMap<>();
 		idsByType.forEach((type, ids) -> {
 			switch (type) {
-				case TASK -> loadTaskRows(ids, rowsByKey);
-				case CALL -> loadCallRows(ids, rowsByKey);
-				case MEETING -> loadMeetingRows(ids, rowsByKey);
-				case EMAIL -> loadEmailRows(ids, rowsByKey);
+				case CrmConstants.ACTIVITY_TYPE_TASK -> loadTaskRows(ids, rowsByKey);
+				case CrmConstants.ACTIVITY_TYPE_CALL -> loadCallRows(ids, rowsByKey);
+				case CrmConstants.ACTIVITY_TYPE_MEETING -> loadMeetingRows(ids, rowsByKey);
+				default -> loadEmailRows(ids, rowsByKey);
 			}
 		});
 
@@ -357,8 +370,8 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		query.select(task).where(task.get(CrmActivityTask_.id).in(ids));
 
 		for (CrmActivityTask entity : entityManager.createQuery(query).getResultList()) {
-			CrmActivityFeedRowResponseDto row = newRow(CrmActivityType.TASK, entity.getId(), entity.getName(),
-					entity.getOwner(), entity.getDeal(), entity.getCompany());
+			CrmActivityFeedRowResponseDto row = newRow(CrmConstants.ACTIVITY_TYPE_TASK, entity.getId(),
+					entity.getName(), entity.getOwner(), entity.getDeal(), entity.getCompany());
 			row.setDueAt(entity.getDueAt());
 			row.setCompletedAt(entity.getCompletedAt());
 			row.setIsCompleted(Boolean.TRUE.equals(entity.getIsCompleted()));
@@ -366,7 +379,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			if (entity.getContact() != null) {
 				row.getContacts().add(toLink(entity.getContact()));
 			}
-			rowsByKey.put(rowKey(CrmActivityType.TASK, entity.getId()), row);
+			rowsByKey.put(rowKey(CrmConstants.ACTIVITY_TYPE_TASK, entity.getId()), row);
 		}
 	}
 
@@ -381,13 +394,13 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		query.select(call).where(call.get(CrmActivityCall_.id).in(ids));
 
 		for (CrmActivityCall entity : entityManager.createQuery(query).getResultList()) {
-			CrmActivityFeedRowResponseDto row = newRow(CrmActivityType.CALL, entity.getId(), entity.getSubject(),
-					entity.getOwner(), entity.getDeal(), entity.getCompany());
+			CrmActivityFeedRowResponseDto row = newRow(CrmConstants.ACTIVITY_TYPE_CALL, entity.getId(),
+					entity.getSubject(), entity.getOwner(), entity.getDeal(), entity.getCompany());
 			row.setOccurredAt(entity.getLoggedAt());
 			if (entity.getContact() != null) {
 				row.getContacts().add(toLink(entity.getContact()));
 			}
-			rowsByKey.put(rowKey(CrmActivityType.CALL, entity.getId()), row);
+			rowsByKey.put(rowKey(CrmConstants.ACTIVITY_TYPE_CALL, entity.getId()), row);
 		}
 	}
 
@@ -401,13 +414,13 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		query.select(meeting).where(meeting.get(CrmActivityMeeting_.id).in(ids));
 
 		for (CrmActivityMeeting entity : entityManager.createQuery(query).getResultList()) {
-			CrmActivityFeedRowResponseDto row = newRow(CrmActivityType.MEETING, entity.getId(), entity.getName(),
-					entity.getOwner(), entity.getDeal(), entity.getCompany());
+			CrmActivityFeedRowResponseDto row = newRow(CrmConstants.ACTIVITY_TYPE_MEETING, entity.getId(),
+					entity.getName(), entity.getOwner(), entity.getDeal(), entity.getCompany());
 			row.setOccurredAt(entity.getStartAt());
 			if (Boolean.TRUE.equals(entity.getIsScheduled())) {
 				row.setDueAt(entity.getStartAt());
 			}
-			rowsByKey.put(rowKey(CrmActivityType.MEETING, entity.getId()), row);
+			rowsByKey.put(rowKey(CrmConstants.ACTIVITY_TYPE_MEETING, entity.getId()), row);
 		}
 
 		CriteriaQuery<CrmActivityMeetingContact> linkQuery = cb.createQuery(CrmActivityMeetingContact.class);
@@ -419,7 +432,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 
 		for (CrmActivityMeetingContact entity : entityManager.createQuery(linkQuery).getResultList()) {
 			CrmActivityFeedRowResponseDto row = rowsByKey
-				.get(rowKey(CrmActivityType.MEETING, entity.getId().getMeetingId()));
+				.get(rowKey(CrmConstants.ACTIVITY_TYPE_MEETING, entity.getId().getMeetingId()));
 			if (row != null) {
 				row.getContacts().add(toLink(entity.getContact()));
 			}
@@ -436,10 +449,10 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		query.select(email).where(email.get(CrmActivityEmail_.id).in(ids));
 
 		for (CrmActivityEmail entity : entityManager.createQuery(query).getResultList()) {
-			CrmActivityFeedRowResponseDto row = newRow(CrmActivityType.EMAIL, entity.getId(), entity.getSubject(),
-					entity.getOwner(), entity.getDeal(), entity.getCompany());
+			CrmActivityFeedRowResponseDto row = newRow(CrmConstants.ACTIVITY_TYPE_EMAIL, entity.getId(),
+					entity.getSubject(), entity.getOwner(), entity.getDeal(), entity.getCompany());
 			row.setOccurredAt(entity.getLoggedAt());
-			rowsByKey.put(rowKey(CrmActivityType.EMAIL, entity.getId()), row);
+			rowsByKey.put(rowKey(CrmConstants.ACTIVITY_TYPE_EMAIL, entity.getId()), row);
 		}
 
 		CriteriaQuery<CrmActivityEmailContact> linkQuery = cb.createQuery(CrmActivityEmailContact.class);
@@ -451,20 +464,20 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 
 		for (CrmActivityEmailContact entity : entityManager.createQuery(linkQuery).getResultList()) {
 			CrmActivityFeedRowResponseDto row = rowsByKey
-				.get(rowKey(CrmActivityType.EMAIL, entity.getId().getEmailId()));
+				.get(rowKey(CrmConstants.ACTIVITY_TYPE_EMAIL, entity.getId().getEmailId()));
 			if (row != null) {
 				row.getContacts().add(toLink(entity.getContact()));
 			}
 		}
 	}
 
-	private CrmActivityFeedRowResponseDto newRow(CrmActivityType type, Long id, String subject, Employee owner,
-			CrmDeal deal, CrmCompany company) {
+	private CrmActivityFeedRowResponseDto newRow(String type, Long id, String subject, Employee owner, CrmDeal deal,
+			CrmCompany company) {
 		CrmActivityFeedRowResponseDto row = new CrmActivityFeedRowResponseDto();
 		row.setId(id);
 		row.setType(type);
 		row.setSubject(subject);
-		row.setCanComplete(type == CrmActivityType.TASK);
+		row.setCanComplete(type == CrmConstants.ACTIVITY_TYPE_TASK);
 		if (owner != null) {
 			row.setOwner(
 					new CrmActivityFeedOwnerResponseDto(owner.getEmployeeId(),
@@ -488,11 +501,22 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 				Boolean.TRUE.equals(contact.getIsDeleted()));
 	}
 
-	private String rowKey(CrmActivityType type, Long id) {
+	private String rowKey(String type, Long id) {
 		return type + ":" + id;
 	}
 
-	private record FeedRef(CrmActivityType type, Long id, Instant feedAt) {
+	private String buildSearchPattern(String search) {
+		if (search == null || search.isBlank()) {
+			return null;
+		}
+		return "%" + StringUtils.escapeLikePattern(search.trim().toLowerCase()) + "%";
+	}
+
+	private record FeedRef(String type, Long id, Instant feedAt) {
+	}
+
+	private record FeedFilter(String type, Set<Long> ownerIds, String searchPattern, Instant rangeStart,
+			Instant rangeEnd, Instant now, Instant todayStart, Instant tomorrowStart, int page, int pageSize) {
 	}
 
 }
