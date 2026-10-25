@@ -1,12 +1,8 @@
 package com.skapp.community.crmplanner.repository;
 
-import com.skapp.community.crmplanner.model.CrmActivityFeedItem;
-import com.skapp.community.crmplanner.model.CrmActivityFeedItemId;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import com.skapp.community.crmplanner.model.CrmActivityTask;
+import org.springframework.data.repository.Repository;
 
-@Repository
-public interface CrmActivityFeedDao
-		extends JpaRepository<CrmActivityFeedItem, CrmActivityFeedItemId>, CrmActivityFeedRepository {
+public interface CrmActivityFeedDao extends Repository<CrmActivityTask, Long>, CrmActivityFeedRepository {
 
 }

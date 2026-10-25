@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.repository.impl;
 
+import com.skapp.community.common.model.Auditable_;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.User_;
 import com.skapp.community.crmplanner.constant.CrmConstants;
@@ -10,9 +11,6 @@ import com.skapp.community.crmplanner.model.CrmActivityEmailContact;
 import com.skapp.community.crmplanner.model.CrmActivityEmailContactId_;
 import com.skapp.community.crmplanner.model.CrmActivityEmailContact_;
 import com.skapp.community.crmplanner.model.CrmActivityEmail_;
-import com.skapp.community.crmplanner.model.CrmActivityFeedItem;
-import com.skapp.community.crmplanner.model.CrmActivityFeedItemId_;
-import com.skapp.community.crmplanner.model.CrmActivityFeedItem_;
 import com.skapp.community.crmplanner.model.CrmActivityMeeting;
 import com.skapp.community.crmplanner.model.CrmActivityMeetingContact;
 import com.skapp.community.crmplanner.model.CrmActivityMeetingContactId_;
@@ -39,9 +37,11 @@ import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.EmployeeRole_;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Path;
@@ -51,9 +51,11 @@ import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -64,6 +66,15 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository {
 
+	private static final Comparator<FeedRef> OLDEST_FIRST = Comparator.comparing((FeedRef ref) -> ref.feedAt())
+		.thenComparing(ref -> ref.type())
+		.thenComparing(ref -> ref.id());
+
+	private static final Comparator<FeedRef> NEWEST_FIRST = Comparator
+		.comparing((FeedRef ref) -> ref.feedAt(), Comparator.reverseOrder())
+		.thenComparing(ref -> ref.type())
+		.thenComparing(ref -> ref.id(), Comparator.reverseOrder());
+
 	private final EntityManager entityManager;
 
 	@Override
@@ -73,23 +84,27 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					new CrmActivityFeedByMonthResponseDto(List.of(), criteria.page(), false));
 		}
 
-		List<CrmActivityFeedItem> fixedItems = criteria.page() == 0 ? findItems(criteria, true, 0, 0)
-				: Collections.emptyList();
-		List<CrmActivityFeedItem> monthItems = findItems(criteria, false, criteria.page() * criteria.pageSize(),
-				criteria.pageSize() + 1);
-		boolean hasMore = monthItems.size() > criteria.pageSize();
+		int offset = criteria.page() * criteria.pageSize();
+		List<FeedRef> fixedRefs = criteria.page() == 0
+				? collectRefs(criteria, true, 0).stream().sorted(OLDEST_FIRST).toList() : List.of();
+		List<FeedRef> monthRefs = collectRefs(criteria, false, offset + criteria.pageSize() + 1).stream()
+			.sorted(NEWEST_FIRST)
+			.skip(offset)
+			.limit(criteria.pageSize() + 1L)
+			.toList();
+		boolean hasMore = monthRefs.size() > criteria.pageSize();
 		if (hasMore) {
-			monthItems = monthItems.subList(0, criteria.pageSize());
+			monthRefs = monthRefs.subList(0, criteria.pageSize());
 		}
 
-		List<CrmActivityFeedItem> allItems = new ArrayList<>(fixedItems);
-		allItems.addAll(monthItems);
-		List<CrmActivityFeedRowResponseDto> rows = loadRows(allItems);
+		List<FeedRef> allRefs = new ArrayList<>(fixedRefs);
+		allRefs.addAll(monthRefs);
+		List<CrmActivityFeedRowResponseDto> rows = loadRows(allRefs);
 
 		List<CrmActivityFeedRowResponseDto> overdue = new ArrayList<>();
 		List<CrmActivityFeedRowResponseDto> today = new ArrayList<>();
 		List<CrmActivityFeedRowResponseDto> upcoming = new ArrayList<>();
-		int fixedCount = Math.min(fixedItems.size(), rows.size());
+		int fixedCount = Math.min(fixedRefs.size(), rows.size());
 		rows.subList(0, fixedCount).forEach(row -> {
 			if (row.getDueAt().isBefore(criteria.todayStart())) {
 				overdue.add(row);
@@ -105,31 +120,6 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 
 		return new CrmActivityFeedResponseDto(overdue, today, upcoming, new CrmActivityFeedByMonthResponseDto(
 				new ArrayList<>(rows.subList(fixedCount, rows.size())), criteria.page(), hasMore));
-	}
-
-	private List<CrmActivityFeedRowResponseDto> loadRows(List<CrmActivityFeedItem> items) {
-		if (items.isEmpty()) {
-			return Collections.emptyList();
-		}
-
-		Map<CrmActivityType, List<Long>> idsByType = new EnumMap<>(CrmActivityType.class);
-		items.forEach(item -> idsByType.computeIfAbsent(item.getId().getActivityType(), type -> new ArrayList<>())
-			.add(item.getId().getActivityId()));
-
-		Map<String, CrmActivityFeedRowResponseDto> rowsByKey = new HashMap<>();
-		idsByType.forEach((type, ids) -> {
-			switch (type) {
-				case TASK -> loadTaskRows(ids, rowsByKey);
-				case CALL -> loadCallRows(ids, rowsByKey);
-				case MEETING -> loadMeetingRows(ids, rowsByKey);
-				case EMAIL -> loadEmailRows(ids, rowsByKey);
-			}
-		});
-
-		return items.stream()
-			.map(item -> rowsByKey.get(rowKey(item.getId().getActivityType(), item.getId().getActivityId())))
-			.filter(Objects::nonNull)
-			.toList();
 	}
 
 	@Override
@@ -160,103 +150,200 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		return entityManager.createQuery(query).getResultList();
 	}
 
-	private List<CrmActivityFeedItem> findItems(CrmActivityFeedCriteria criteria, boolean fixedBuckets, int offset,
-			int limit) {
+	private List<FeedRef> collectRefs(CrmActivityFeedCriteria criteria, boolean fixedBuckets, int limit) {
+		List<FeedRef> refs = new ArrayList<>();
+		for (CrmActivityType type : CrmActivityType.values()) {
+			if (criteria.type() != null && criteria.type() != type) {
+				continue;
+			}
+			refs.addAll(switch (type) {
+				case TASK -> findTaskRefs(criteria, fixedBuckets, limit);
+				case CALL -> findCallRefs(criteria, fixedBuckets, limit);
+				case MEETING -> findMeetingRefs(criteria, fixedBuckets, limit);
+				case EMAIL -> findEmailRefs(criteria, fixedBuckets, limit);
+			});
+		}
+		return refs;
+	}
+
+	private List<FeedRef> findTaskRefs(CrmActivityFeedCriteria criteria, boolean fixedBuckets, int limit) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmActivityFeedItem> query = cb.createQuery(CrmActivityFeedItem.class);
-		Root<CrmActivityFeedItem> item = query.from(CrmActivityFeedItem.class);
+		CriteriaQuery<Tuple> query = cb.createTupleQuery();
+		Root<CrmActivityTask> task = query.from(CrmActivityTask.class);
+		Join<CrmActivityTask, CrmContact> contact = task.join(CrmActivityTask_.contact, JoinType.LEFT);
+		Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
 
-		List<Predicate> predicates = buildPredicates(cb, query, item, criteria);
-		Predicate fixed = buildFixedBucketPredicate(cb, item, criteria);
+		Expression<Instant> createdDate = task.get(Auditable_.createdDate);
+		Expression<Boolean> completed = cb.coalesce(task.get(CrmActivityTask_.isCompleted), false);
+		Expression<Instant> feedAt = cb.<Instant>selectCase()
+			.when(cb.equal(completed, true), cb.coalesce(task.get(CrmActivityTask_.completedAt), createdDate))
+			.when(cb.isNull(task.get(CrmActivityTask_.dueAt)), createdDate)
+			.otherwise(task.get(CrmActivityTask_.dueAt));
+		Predicate fixed = cb.and(cb.equal(completed, false), cb.isNotNull(task.get(CrmActivityTask_.dueAt)));
+
+		List<Predicate> predicates = buildCommonPredicates(cb,
+				task.get(CrmActivityTask_.owner).get(Employee_.employeeId), task.get(CrmActivityTask_.isDeleted),
+				feedAt, criteria);
 		predicates.add(fixedBuckets ? fixed : cb.not(fixed));
+		if (criteria.searchPattern() != null) {
+			predicates.add(cb.or(cb.like(cb.lower(task.get(CrmActivityTask_.name)), criteria.searchPattern()),
+					matchesContactOrCompany(cb, contact, contactCompany, criteria.searchPattern())));
+		}
 
-		Path<CrmActivityType> typePath = item.get(CrmActivityFeedItem_.id).get(CrmActivityFeedItemId_.activityType);
-		Path<Long> idPath = item.get(CrmActivityFeedItem_.id).get(CrmActivityFeedItemId_.activityId);
+		return fetchRefs(CrmActivityType.TASK, query, task.get(CrmActivityTask_.id), feedAt, predicates, fixedBuckets,
+				limit);
+	}
 
-		query.select(item).where(predicates.toArray(new Predicate[0]));
+	private List<FeedRef> findCallRefs(CrmActivityFeedCriteria criteria, boolean fixedBuckets, int limit) {
 		if (fixedBuckets) {
-			query.orderBy(cb.asc(item.get(CrmActivityFeedItem_.feedAt)), cb.asc(typePath), cb.asc(idPath));
-		}
-		else {
-			query.orderBy(cb.desc(item.get(CrmActivityFeedItem_.feedAt)), cb.asc(typePath), cb.desc(idPath));
+			return List.of();
 		}
 
-		TypedQuery<CrmActivityFeedItem> typedQuery = entityManager.createQuery(query);
-		if (limit > 0) {
-			typedQuery.setFirstResult(offset).setMaxResults(limit);
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Tuple> query = cb.createTupleQuery();
+		Root<CrmActivityCall> call = query.from(CrmActivityCall.class);
+		Join<CrmActivityCall, CrmContact> contact = call.join(CrmActivityCall_.contact, JoinType.LEFT);
+		Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
+
+		Expression<Instant> feedAt = cb.coalesce(call.get(CrmActivityCall_.loggedAt), call.get(Auditable_.createdDate));
+
+		List<Predicate> predicates = buildCommonPredicates(cb,
+				call.get(CrmActivityCall_.owner).get(Employee_.employeeId), call.get(CrmActivityCall_.isDeleted),
+				feedAt, criteria);
+		if (criteria.searchPattern() != null) {
+			predicates.add(cb.or(cb.like(cb.lower(call.get(CrmActivityCall_.subject)), criteria.searchPattern()),
+					matchesContactOrCompany(cb, contact, contactCompany, criteria.searchPattern())));
 		}
-		return typedQuery.getResultList();
+
+		return fetchRefs(CrmActivityType.CALL, query, call.get(CrmActivityCall_.id), feedAt, predicates, false, limit);
 	}
 
-	private Predicate buildFixedBucketPredicate(CriteriaBuilder cb, Root<CrmActivityFeedItem> item,
-			CrmActivityFeedCriteria criteria) {
-		Path<CrmActivityType> type = item.get(CrmActivityFeedItem_.id).get(CrmActivityFeedItemId_.activityType);
-		return cb.and(cb.isTrue(item.get(CrmActivityFeedItem_.isDueKind)), cb.or(cb.equal(type, CrmActivityType.TASK),
-				cb.greaterThanOrEqualTo(item.get(CrmActivityFeedItem_.feedAt), criteria.now())));
+	private List<FeedRef> findMeetingRefs(CrmActivityFeedCriteria criteria, boolean fixedBuckets, int limit) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Tuple> query = cb.createTupleQuery();
+		Root<CrmActivityMeeting> meeting = query.from(CrmActivityMeeting.class);
+
+		Expression<Instant> feedAt = cb.coalesce(meeting.get(CrmActivityMeeting_.startAt),
+				meeting.get(Auditable_.createdDate));
+		Predicate fixed = cb.and(cb.equal(cb.coalesce(meeting.get(CrmActivityMeeting_.isScheduled), false), true),
+				cb.isNotNull(meeting.get(CrmActivityMeeting_.startAt)),
+				cb.greaterThanOrEqualTo(meeting.get(CrmActivityMeeting_.startAt), criteria.now()));
+
+		List<Predicate> predicates = buildCommonPredicates(cb,
+				meeting.get(CrmActivityMeeting_.owner).get(Employee_.employeeId),
+				meeting.get(CrmActivityMeeting_.isDeleted), feedAt, criteria);
+		predicates.add(fixedBuckets ? fixed : cb.not(fixed));
+		if (criteria.searchPattern() != null) {
+			Subquery<Long> contactMatch = query.subquery(Long.class);
+			Root<CrmActivityMeetingContact> link = contactMatch.from(CrmActivityMeetingContact.class);
+			Join<CrmActivityMeetingContact, CrmContact> contact = link.join(CrmActivityMeetingContact_.contact);
+			Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
+			contactMatch.select(contact.get(CrmContact_.id))
+				.where(cb.equal(link.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId),
+						meeting.get(CrmActivityMeeting_.id)),
+						matchesContactOrCompany(cb, contact, contactCompany, criteria.searchPattern()));
+			predicates.add(cb.or(cb.like(cb.lower(meeting.get(CrmActivityMeeting_.name)), criteria.searchPattern()),
+					cb.exists(contactMatch)));
+		}
+
+		return fetchRefs(CrmActivityType.MEETING, query, meeting.get(CrmActivityMeeting_.id), feedAt, predicates,
+				fixedBuckets, limit);
 	}
 
-	private List<Predicate> buildPredicates(CriteriaBuilder cb, CriteriaQuery<?> query, Root<CrmActivityFeedItem> item,
-			CrmActivityFeedCriteria criteria) {
+	private List<FeedRef> findEmailRefs(CrmActivityFeedCriteria criteria, boolean fixedBuckets, int limit) {
+		if (fixedBuckets) {
+			return List.of();
+		}
+
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Tuple> query = cb.createTupleQuery();
+		Root<CrmActivityEmail> email = query.from(CrmActivityEmail.class);
+
+		Expression<Instant> feedAt = cb.coalesce(email.get(CrmActivityEmail_.loggedAt),
+				email.get(Auditable_.createdDate));
+
+		List<Predicate> predicates = buildCommonPredicates(cb,
+				email.get(CrmActivityEmail_.owner).get(Employee_.employeeId), email.get(CrmActivityEmail_.isDeleted),
+				feedAt, criteria);
+		if (criteria.searchPattern() != null) {
+			Subquery<Long> contactMatch = query.subquery(Long.class);
+			Root<CrmActivityEmailContact> link = contactMatch.from(CrmActivityEmailContact.class);
+			Join<CrmActivityEmailContact, CrmContact> contact = link.join(CrmActivityEmailContact_.contact);
+			Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
+			contactMatch.select(contact.get(CrmContact_.id))
+				.where(cb.equal(link.get(CrmActivityEmailContact_.id).get(CrmActivityEmailContactId_.emailId),
+						email.get(CrmActivityEmail_.id)),
+						matchesContactOrCompany(cb, contact, contactCompany, criteria.searchPattern()));
+			predicates.add(cb.or(cb.like(cb.lower(email.get(CrmActivityEmail_.subject)), criteria.searchPattern()),
+					cb.exists(contactMatch)));
+		}
+
+		return fetchRefs(CrmActivityType.EMAIL, query, email.get(CrmActivityEmail_.id), feedAt, predicates, false,
+				limit);
+	}
+
+	private List<Predicate> buildCommonPredicates(CriteriaBuilder cb, Path<Long> ownerId, Path<Boolean> isDeleted,
+			Expression<Instant> feedAt, CrmActivityFeedCriteria criteria) {
 		List<Predicate> predicates = new ArrayList<>();
-		predicates.add(cb.isFalse(item.get(CrmActivityFeedItem_.isDeleted)));
-
-		if (criteria.type() != null) {
-			predicates.add(cb.equal(item.get(CrmActivityFeedItem_.id).get(CrmActivityFeedItemId_.activityType),
-					criteria.type()));
-		}
+		predicates.add(cb.isFalse(isDeleted));
 		if (criteria.ownerIds() != null) {
-			predicates.add(item.get(CrmActivityFeedItem_.ownerId).in(criteria.ownerIds()));
+			predicates.add(ownerId.in(criteria.ownerIds()));
 		}
 		if (criteria.rangeStart() != null) {
-			predicates.add(cb.greaterThanOrEqualTo(item.get(CrmActivityFeedItem_.feedAt), criteria.rangeStart()));
+			predicates.add(cb.greaterThanOrEqualTo(feedAt, criteria.rangeStart()));
 		}
 		if (criteria.rangeEnd() != null) {
-			predicates.add(cb.lessThan(item.get(CrmActivityFeedItem_.feedAt), criteria.rangeEnd()));
-		}
-		if (criteria.searchPattern() != null) {
-			predicates.add(buildSearchPredicate(cb, query, item, criteria.searchPattern()));
+			predicates.add(cb.lessThan(feedAt, criteria.rangeEnd()));
 		}
 		return predicates;
 	}
 
-	private Predicate buildSearchPredicate(CriteriaBuilder cb, CriteriaQuery<?> query, Root<CrmActivityFeedItem> item,
-			String pattern) {
-		Path<CrmActivityType> type = item.get(CrmActivityFeedItem_.id).get(CrmActivityFeedItemId_.activityType);
-		Path<Long> activityId = item.get(CrmActivityFeedItem_.id).get(CrmActivityFeedItemId_.activityId);
+	private List<FeedRef> fetchRefs(CrmActivityType type, CriteriaQuery<Tuple> query, Path<Long> id,
+			Expression<Instant> feedAt, List<Predicate> predicates, boolean oldestFirst, int limit) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		query.multiselect(id, feedAt).where(predicates.toArray(new Predicate[0]));
+		if (oldestFirst) {
+			query.orderBy(cb.asc(feedAt), cb.asc(id));
+		}
+		else {
+			query.orderBy(cb.desc(feedAt), cb.desc(id));
+		}
 
-		Subquery<Long> directContact = query.subquery(Long.class);
-		Root<CrmContact> contact = directContact.from(CrmContact.class);
-		Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
-		directContact.select(contact.get(CrmContact_.id))
-			.where(cb.equal(contact.get(CrmContact_.id), item.get(CrmActivityFeedItem_.contactId)),
-					matchesContactOrCompany(cb, contact, contactCompany, pattern));
-
-		Subquery<Long> meetingContact = query.subquery(Long.class);
-		Root<CrmActivityMeetingContact> meetingLink = meetingContact.from(CrmActivityMeetingContact.class);
-		Join<CrmActivityMeetingContact, CrmContact> meetingContactJoin = meetingLink
-			.join(CrmActivityMeetingContact_.contact);
-		Join<CrmContact, CrmCompany> meetingCompany = meetingContactJoin.join(CrmContact_.company, JoinType.LEFT);
-		meetingContact.select(meetingContactJoin.get(CrmContact_.id))
-			.where(cb.equal(meetingLink.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId),
-					activityId), matchesContactOrCompany(cb, meetingContactJoin, meetingCompany, pattern));
-
-		Subquery<Long> emailContact = query.subquery(Long.class);
-		Root<CrmActivityEmailContact> emailLink = emailContact.from(CrmActivityEmailContact.class);
-		Join<CrmActivityEmailContact, CrmContact> emailContactJoin = emailLink.join(CrmActivityEmailContact_.contact);
-		Join<CrmContact, CrmCompany> emailCompany = emailContactJoin.join(CrmContact_.company, JoinType.LEFT);
-		emailContact.select(emailContactJoin.get(CrmContact_.id))
-			.where(cb.equal(emailLink.get(CrmActivityEmailContact_.id).get(CrmActivityEmailContactId_.emailId),
-					activityId), matchesContactOrCompany(cb, emailContactJoin, emailCompany, pattern));
-
-		return cb.or(cb.like(cb.lower(item.get(CrmActivityFeedItem_.subject)), pattern), cb.exists(directContact),
-				cb.and(cb.equal(type, CrmActivityType.MEETING), cb.exists(meetingContact)),
-				cb.and(cb.equal(type, CrmActivityType.EMAIL), cb.exists(emailContact)));
+		TypedQuery<Tuple> typedQuery = entityManager.createQuery(query);
+		if (limit > 0) {
+			typedQuery.setMaxResults(limit);
+		}
+		return typedQuery.getResultList()
+			.stream()
+			.map(tuple -> new FeedRef(type, tuple.get(0, Long.class), tuple.get(1, Instant.class)))
+			.toList();
 	}
 
 	private Predicate matchesContactOrCompany(CriteriaBuilder cb, Path<CrmContact> contact, Path<CrmCompany> company,
 			String pattern) {
 		return cb.or(cb.like(cb.lower(contact.get(CrmContact_.name)), pattern),
 				cb.like(cb.lower(company.get(CrmCompany_.name)), pattern));
+	}
+
+	private List<CrmActivityFeedRowResponseDto> loadRows(List<FeedRef> refs) {
+		if (refs.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		Map<CrmActivityType, List<Long>> idsByType = new EnumMap<>(CrmActivityType.class);
+		refs.forEach(ref -> idsByType.computeIfAbsent(ref.type(), type -> new ArrayList<>()).add(ref.id()));
+
+		Map<String, CrmActivityFeedRowResponseDto> rowsByKey = new HashMap<>();
+		idsByType.forEach((type, ids) -> {
+			switch (type) {
+				case TASK -> loadTaskRows(ids, rowsByKey);
+				case CALL -> loadCallRows(ids, rowsByKey);
+				case MEETING -> loadMeetingRows(ids, rowsByKey);
+				case EMAIL -> loadEmailRows(ids, rowsByKey);
+			}
+		});
+
+		return refs.stream().map(ref -> rowsByKey.get(rowKey(ref.type(), ref.id()))).filter(Objects::nonNull).toList();
 	}
 
 	private void loadTaskRows(List<Long> ids, Map<String, CrmActivityFeedRowResponseDto> rowsByKey) {
@@ -403,6 +490,9 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 
 	private String rowKey(CrmActivityType type, Long id) {
 		return type + ":" + id;
+	}
+
+	private record FeedRef(CrmActivityType type, Long id, Instant feedAt) {
 	}
 
 }

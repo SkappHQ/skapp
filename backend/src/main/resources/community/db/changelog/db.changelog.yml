@@ -90,5 +90,3 @@ databaseChangeLog:
       file: classpath:community/db/changelog/ddl-script/crm-ddl-script-v1-create-table-crm-activity-meeting.sql
   - include:
       file: classpath:community/db/changelog/ddl-script/crm-ddl-script-v1-create-table-crm-activity-meeting-contact.sql
-  - include:
-      file: classpath:community/db/changelog/ddl-script/crm-ddl-script-v1-create-index-crm-activity-feed.sql
