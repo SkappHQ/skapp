@@ -35,6 +35,14 @@ public class CrmConstants {
 
 	public static final int DEALS_PER_STAGE_LIMIT = 20;
 
+	public static final String ACTIVITY_TYPE_TASK = "TASK";
+
+	public static final String ACTIVITY_TYPE_CALL = "CALL";
+
+	public static final String ACTIVITY_TYPE_MEETING = "MEETING";
+
+	public static final String ACTIVITY_TYPE_EMAIL = "EMAIL";
+
 	public static final Set<Role> ASSIGNABLE_CRM_ROLES = Set.of(Role.CRM_ADMIN, Role.CRM_SALES_MANAGER,
 			Role.CRM_SALES_REPRESENTATIVE);
 
