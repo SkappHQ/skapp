@@ -11,11 +11,6 @@ import org.hibernate.annotations.Synchronize;
 
 import java.time.Instant;
 
-/**
- * Read-only view over the four activity tables so the feed can filter, order and page
- * across all of them in one query. Only the columns the feed filters and orders on live
- * here; row details are loaded per type afterwards.
- */
 @Entity
 @Immutable
 @Getter

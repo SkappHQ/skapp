@@ -101,7 +101,6 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 				upcoming.add(row);
 			}
 		});
-		// Fixed rows load soonest first; overdue lists the most recently due first.
 		Collections.reverse(overdue);
 
 		return new CrmActivityFeedResponseDto(overdue, today, upcoming, new CrmActivityFeedByMonthResponseDto(
@@ -378,8 +377,6 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		row.setId(id);
 		row.setType(type);
 		row.setSubject(subject);
-		// Every row returned is already inside the viewer's scope, so any task can be
-		// completed.
 		row.setCanComplete(type == CrmActivityType.TASK);
 		if (owner != null) {
 			row.setOwner(

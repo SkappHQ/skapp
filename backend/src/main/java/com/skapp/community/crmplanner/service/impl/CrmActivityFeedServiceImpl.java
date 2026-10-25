@@ -74,10 +74,6 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 		return "%" + StringUtils.escapeLikePattern(search.trim().toLowerCase()) + "%";
 	}
 
-	/**
-	 * Returns the owner ids the query is limited to, or null when it spans the whole
-	 * organisation.
-	 */
 	private Set<Long> resolveOwnerIds(CrmActivityScope scope, Long requestedOwnerId) {
 		if (!scope.canFilter() || requestedOwnerId == null) {
 			return scope.orgWide() ? null : scope.ownerIds();

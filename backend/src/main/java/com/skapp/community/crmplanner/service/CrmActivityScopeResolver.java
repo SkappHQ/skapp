@@ -17,10 +17,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Works out whose activities a CRM user may see. Shared by the activity feed and the team
- * member list so both apply the same rules.
- */
 @Component
 @RequiredArgsConstructor
 public class CrmActivityScopeResolver {
