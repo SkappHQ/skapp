@@ -27,7 +27,6 @@ import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.service.CrmActivityFeedService;
-import com.skapp.community.crmplanner.service.CrmActivityScopeResolver;
 import com.skapp.community.crmplanner.type.CrmActivityCallFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityCallSort;
 import com.skapp.community.crmplanner.type.CrmActivityEmailFilterParams;
@@ -82,8 +81,6 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 
 	private final TimeZoneService timeZoneService;
 
-	private final CrmActivityScopeResolver crmActivityScopeResolver;
-
 	private final CrmActivityTaskDao crmActivityTaskDao;
 
 	private final CrmActivityCallDao crmActivityCallDao;
@@ -113,52 +110,30 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 		}
 		CrmValidations.validateActivityDateRange(filterDto.getFrom(), filterDto.getTo());
 
-		Set<Long> scopeOwnerIds = crmActivityScopeResolver.resolveOwnerIds(currentUser);
 		int page = Math.max(filterDto.getPage(), 0);
-		if (filterDto.getOwnerId() != null && !isInScope(scopeOwnerIds, filterDto.getOwnerId())) {
-			log.info("getActivities: execution ended");
-			return new ResponseEntityDto(false, new CrmActivityFeedResponseDto(List.of(), List.of(), List.of(),
-					new CrmActivityFeedByMonthResponseDto(List.of(), page, false)));
-		}
 
 		List<CrmActivityFeedRowResponseDto> rows = new ArrayList<>();
 		if (isRequested(filterDto, CrmConstants.ACTIVITY_TYPE_TASK)) {
 			CrmActivityTaskFilterParams params = applyParams(new CrmActivityTaskFilterParams(), currentUser, filterDto);
 			params.setSortKey(CrmActivityTaskSort.DUE_AT);
-			crmActivityTaskDao.findTasks(params)
-				.stream()
-				.filter(task -> isInScope(scopeOwnerIds, task.getOwnerId()))
-				.map(this::toTaskRow)
-				.forEach(rows::add);
+			crmActivityTaskDao.findTasks(params).stream().map(this::toTaskRow).forEach(rows::add);
 		}
 		if (isRequested(filterDto, CrmConstants.ACTIVITY_TYPE_CALL)) {
 			CrmActivityCallFilterParams params = applyParams(new CrmActivityCallFilterParams(), currentUser, filterDto);
 			params.setSortKey(CrmActivityCallSort.LOGGED_AT);
-			crmActivityCallDao.findCalls(params)
-				.stream()
-				.filter(call -> isInScope(scopeOwnerIds, call.getOwnerId()))
-				.map(this::toCallRow)
-				.forEach(rows::add);
+			crmActivityCallDao.findCalls(params).stream().map(this::toCallRow).forEach(rows::add);
 		}
 		if (isRequested(filterDto, CrmConstants.ACTIVITY_TYPE_MEETING)) {
 			CrmActivityMeetingFilterParams params = applyParams(new CrmActivityMeetingFilterParams(), currentUser,
 					filterDto);
 			params.setSortKey(CrmActivityMeetingSort.START_AT);
-			crmActivityMeetingDao.findMeetings(params)
-				.stream()
-				.filter(meeting -> isInScope(scopeOwnerIds, meeting.getOwnerId()))
-				.map(this::toMeetingRow)
-				.forEach(rows::add);
+			crmActivityMeetingDao.findMeetings(params).stream().map(this::toMeetingRow).forEach(rows::add);
 		}
 		if (isRequested(filterDto, CrmConstants.ACTIVITY_TYPE_EMAIL)) {
 			CrmActivityEmailFilterParams params = applyParams(new CrmActivityEmailFilterParams(), currentUser,
 					filterDto);
 			params.setSortKey(CrmActivityEmailSort.LOGGED_AT);
-			crmActivityEmailDao.findEmails(params)
-				.stream()
-				.filter(email -> isInScope(scopeOwnerIds, email.getOwnerId()))
-				.map(this::toEmailRow)
-				.forEach(rows::add);
+			crmActivityEmailDao.findEmails(params).stream().map(this::toEmailRow).forEach(rows::add);
 		}
 
 		CrmActivityFeedResponseDto response = buildResponse(rows, page);
@@ -230,10 +205,6 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 
 	private boolean isRequested(CrmActivityFeedFilterDto filterDto, String type) {
 		return filterDto.getType() == null || filterDto.getType().equals(type);
-	}
-
-	private boolean isInScope(Set<Long> scopeOwnerIds, Long ownerId) {
-		return scopeOwnerIds == null || scopeOwnerIds.contains(ownerId);
 	}
 
 	private boolean isFixedBucket(CrmActivityFeedRowResponseDto row, Instant now) {
