@@ -12,6 +12,7 @@ import {
   ActivityTeamMember,
   DateRange
 } from "~community/crm/activities/types/activityTypes";
+import { CrmOwnerEntity } from "~community/crm/types/CrmCommonTypes";
 
 const formatDateValue = (dateTime: DateTime): string =>
   dateTime.toFormat(ACTIVITY_DATE_FORMAT);
@@ -75,6 +76,15 @@ export const countActiveFilters = (filters: ActivityFilterValues): number => {
 
 export const hasActiveFilters = (filters: ActivityFilterValues): boolean =>
   countActiveFilters(filters) > 0;
+
+export const toActivityTeamMembers = (
+  owners: CrmOwnerEntity[]
+): ActivityTeamMember[] =>
+  owners.map((owner) => ({
+    id: owner.employeeId,
+    name: [owner.firstName, owner.lastName].filter(Boolean).join(" "),
+    avatar: owner.authPic
+  }));
 
 export const filterTeamMembers = (
   members: ActivityTeamMember[],

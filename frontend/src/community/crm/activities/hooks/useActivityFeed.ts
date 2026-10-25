@@ -6,10 +6,7 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useCommonStore } from "~community/common/stores/commonStore";
-import {
-  useGetActivityFeedInfinite,
-  useGetActivityTeamMembers
-} from "~community/crm/activities/api/ActivityApi";
+import { useGetActivityFeedInfinite } from "~community/crm/activities/api/ActivityApi";
 import {
   ActivityFeedQuery,
   countActivityFeedRows,
@@ -24,6 +21,9 @@ import {
   ActivityTab,
   ActivityTeamMember
 } from "~community/crm/activities/types/activityTypes";
+import { toActivityTeamMembers } from "~community/crm/activities/utils/activityFilterUtil";
+import { useGetOwnerLookup } from "~community/crm/api/ContactApi";
+import { DEFAULT_LOOKUP_PAGE_SIZE } from "~community/crm/constants/commonConstants";
 
 export interface UseActivityFeedResult {
   isManager: boolean;
@@ -47,7 +47,6 @@ export interface UseActivityFeedResult {
 }
 
 const NO_PAGES: ActivityFeedResponse[] = [];
-const NO_TEAM_MEMBERS: ActivityTeamMember[] = [];
 
 export const useActivityFeed = (): UseActivityFeedResult => {
   const translateText = useTranslator("crmModule");
@@ -97,8 +96,15 @@ export const useActivityFeed = (): UseActivityFeedResult => {
     fetchNextPage
   } = useGetActivityFeedInfinite(query);
 
-  const { data: teamMembers, isError: isTeamMembersError } =
-    useGetActivityTeamMembers(isManager);
+  const { data: ownerLookup, isError: isTeamMembersError } = useGetOwnerLookup(
+    "",
+    DEFAULT_LOOKUP_PAGE_SIZE,
+    isManager
+  );
+  const teamMembers = useMemo(
+    () => toActivityTeamMembers(ownerLookup?.items ?? []),
+    [ownerLookup]
+  );
 
   useEffect(() => {
     if (!isError) return;
@@ -156,7 +162,7 @@ export const useActivityFeed = (): UseActivityFeedResult => {
     hasNextPage,
     isFetchingNextPage,
     loadMore,
-    teamMembers: teamMembers ?? NO_TEAM_MEMBERS,
+    teamMembers,
     isTeamMembersError
   };
 };

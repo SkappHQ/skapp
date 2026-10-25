@@ -13,6 +13,5 @@ export const crmActivityQueryKeys = {
       from: query.from,
       to: query.to
     }
-  ],
-  TEAM_MEMBERS: [CRM_ACTIVITIES, "team-members"]
+  ]
 };

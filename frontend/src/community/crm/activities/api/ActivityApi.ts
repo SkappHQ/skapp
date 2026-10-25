@@ -1,9 +1,7 @@
 import {
   InfiniteData,
   UseInfiniteQueryResult,
-  UseQueryResult,
-  useInfiniteQuery,
-  useQuery
+  useInfiniteQuery
 } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 
@@ -17,10 +15,7 @@ import {
   getNextActivityFeedPage,
   getViewerTimezone
 } from "~community/crm/activities/api/utils/activityFeedParams";
-import {
-  ActivityFeedResponse,
-  ActivityTeamMember
-} from "~community/crm/activities/types/activityTypes";
+import { ActivityFeedResponse } from "~community/crm/activities/types/activityTypes";
 
 const fetchActivityFeed = async (
   query: ActivityFeedQuery,
@@ -49,20 +44,5 @@ export const useGetActivityFeedInfinite = (
     initialPageParam: 0,
     getNextPageParam: (lastPage) => getNextActivityFeedPage(lastPage),
     enabled,
-    refetchOnWindowFocus: false
-  });
-
-const fetchActivityTeamMembers = async (): Promise<ActivityTeamMember[]> => {
-  const response = await authFetch.get(crmActivityEndpoints.GET_TEAM_MEMBERS);
-  return response?.data?.results ?? [];
-};
-
-export const useGetActivityTeamMembers = (
-  isManager: boolean
-): UseQueryResult<ActivityTeamMember[], AxiosError> =>
-  useQuery({
-    queryKey: crmActivityQueryKeys.TEAM_MEMBERS,
-    queryFn: fetchActivityTeamMembers,
-    enabled: isManager,
     refetchOnWindowFocus: false
   });
