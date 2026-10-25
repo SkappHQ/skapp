@@ -2,7 +2,6 @@ package com.skapp.community.crmplanner.payload.request;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 
@@ -16,10 +15,8 @@ public class CrmActivityFeedFilterDto {
 
 	private Long ownerId;
 
-	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
 	private LocalDate from;
 
-	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
 	private LocalDate to;
 
 	private int page = 0;
