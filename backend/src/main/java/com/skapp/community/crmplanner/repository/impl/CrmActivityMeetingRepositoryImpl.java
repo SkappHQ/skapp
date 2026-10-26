@@ -13,8 +13,7 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.payload.response.CrmActivityMeetingResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityMeetingRepository;
-import com.skapp.community.common.util.StringUtils;
-import com.skapp.community.crmplanner.payload.request.CrmActivityMeetingFilterDto;
+import com.skapp.community.crmplanner.type.CrmActivityMeetingFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityMeetingSort;
 import com.skapp.community.crmplanner.type.CrmActivityMeetingVenue;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -31,11 +30,9 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -48,19 +45,7 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 	private final EntityManager entityManager;
 
 	@Override
-	public List<CrmActivityMeetingResponseDto> findMeetings(CrmActivityMeetingFilterDto filterDto,
-			Long currentEmployeeId, boolean isRestrictedToOwner, ZoneId zone) {
-		CrmActivityMeetingSort sortKey = filterDto.getSortKey() != null ? filterDto.getSortKey()
-				: CrmActivityMeetingSort.START_AT;
-		Sort.Direction sortOrder = filterDto.getSortOrder() != null ? filterDto.getSortOrder()
-				: sortKey == CrmActivityMeetingSort.OWNER ? Sort.Direction.ASC : Sort.Direction.DESC;
-		String searchPattern = StringUtils.isNullOrBlank(filterDto.getSearchKeyword()) ? null
-				: "%" + StringUtils.escapeLikePattern(filterDto.getSearchKeyword().toLowerCase()) + "%";
-		Instant rangeStart = filterDto.getStartDate() == null ? null
-				: filterDto.getStartDate().atStartOfDay(zone).toInstant();
-		Instant rangeEnd = filterDto.getEndDate() == null ? null
-				: filterDto.getEndDate().plusDays(1).atStartOfDay(zone).toInstant();
-
+	public List<CrmActivityMeetingResponseDto> findMeetings(CrmActivityMeetingFilterParams params) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Tuple> query = cb.createTupleQuery();
 		Root<CrmActivityMeeting> meeting = query.from(CrmActivityMeeting.class);
@@ -76,20 +61,20 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.isFalse(meeting.get(CrmActivityMeeting_.isDeleted)));
 
-		if (isRestrictedToOwner) {
-			predicates.add(cb.equal(ownerId, currentEmployeeId));
+		if (Boolean.TRUE.equals(params.getIsRestrictedToOwner())) {
+			predicates.add(cb.equal(ownerId, params.getCurrentEmployeeId()));
 		}
-		if (filterDto.getOwnerId() != null) {
-			predicates.add(cb.equal(ownerId, filterDto.getOwnerId()));
+		if (params.getOwnerId() != null) {
+			predicates.add(cb.equal(ownerId, params.getOwnerId()));
 		}
-		if (rangeStart != null) {
-			predicates.add(cb.greaterThanOrEqualTo(meeting.get(CrmActivityMeeting_.startAt), rangeStart));
+		if (params.getRangeStart() != null) {
+			predicates.add(cb.greaterThanOrEqualTo(meeting.get(CrmActivityMeeting_.startAt), params.getRangeStart()));
 		}
-		if (rangeEnd != null) {
-			predicates.add(cb.lessThan(meeting.get(CrmActivityMeeting_.startAt), rangeEnd));
+		if (params.getRangeEnd() != null) {
+			predicates.add(cb.lessThan(meeting.get(CrmActivityMeeting_.startAt), params.getRangeEnd()));
 		}
 
-		if (searchPattern != null) {
+		if (params.getSearchPattern() != null) {
 			Subquery<Long> contactMatch = query.subquery(Long.class);
 			Root<CrmActivityMeetingContact> link = contactMatch.from(CrmActivityMeetingContact.class);
 			Join<CrmActivityMeetingContact, CrmContact> contact = link.join(CrmActivityMeetingContact_.contact);
@@ -98,16 +83,16 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 			contactMatch.select(link.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId))
 				.where(cb.equal(link.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId),
 						meeting.get(CrmActivityMeeting_.id)), cb.isFalse(contact.get(CrmContact_.isDeleted)),
-						cb.or(cb.like(cb.lower(contact.get(CrmContact_.name)), searchPattern),
-								cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), searchPattern)));
+						cb.or(cb.like(cb.lower(contact.get(CrmContact_.name)), params.getSearchPattern()),
+								cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), params.getSearchPattern())));
 
-			predicates.add(cb.or(cb.like(cb.lower(meeting.get(CrmActivityMeeting_.name)), searchPattern),
+			predicates.add(cb.or(cb.like(cb.lower(meeting.get(CrmActivityMeeting_.name)), params.getSearchPattern()),
 					cb.exists(contactMatch)));
 		}
 
-		boolean ascending = sortOrder.isAscending();
+		boolean ascending = params.getSortOrder().isAscending();
 		List<Order> orders = new ArrayList<>();
-		if (sortKey == CrmActivityMeetingSort.OWNER) {
+		if (params.getSortKey() == CrmActivityMeetingSort.OWNER) {
 			orders.add(ascending ? cb.asc(owner.get(Employee_.firstName)) : cb.desc(owner.get(Employee_.firstName)));
 			orders.add(ascending ? cb.asc(owner.get(Employee_.lastName)) : cb.desc(owner.get(Employee_.lastName)));
 			orders.add(cb.desc(meeting.get(CrmActivityMeeting_.startAt)));
