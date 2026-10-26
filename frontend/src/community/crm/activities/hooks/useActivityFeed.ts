@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -6,10 +6,9 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useCommonStore } from "~community/common/stores/commonStore";
-import { useGetActivityFeedInfinite } from "~community/crm/activities/api/ActivityApi";
+import { useGetActivityFeed } from "~community/crm/activities/api/ActivityApi";
 import {
   ActivityFeedQuery,
-  countActivityFeedRows,
   resolveViewerTimezone,
   shouldShowActivityControls
 } from "~community/crm/activities/api/utils/activityFeedParams";
@@ -35,18 +34,15 @@ export interface UseActivityFeedResult {
   setActiveTab: (tab: ActivityTab) => void;
   setSearch: (search: string) => void;
   applyFilters: (filters: ActivityFilterValues) => void;
-  pages: ActivityFeedResponse[];
+  rows: ActivityFeedResponse;
   resultCount: number | null;
   isLoading: boolean;
   isError: boolean;
-  hasNextPage: boolean;
-  isFetchingNextPage: boolean;
-  loadMore: () => void;
   teamMembers: ActivityTeamMember[];
   isTeamMembersError: boolean;
 }
 
-const NO_PAGES: ActivityFeedResponse[] = [];
+const NO_ROWS: ActivityFeedResponse = [];
 
 export const useActivityFeed = (): UseActivityFeedResult => {
   const translateText = useTranslator("crmModule");
@@ -86,15 +82,8 @@ export const useActivityFeed = (): UseActivityFeedResult => {
     [activeTab, search, isManager, appliedFilters]
   );
 
-  const {
-    data,
-    isLoading,
-    isError,
-    errorUpdatedAt,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage
-  } = useGetActivityFeedInfinite(query);
+  const { data, isLoading, isError, errorUpdatedAt } =
+    useGetActivityFeed(query);
 
   const { data: ownerLookup, isError: isTeamMembersError } = useGetOwnerLookup(
     "",
@@ -123,10 +112,9 @@ export const useActivityFeed = (): UseActivityFeedResult => {
     });
   }, [isError, errorUpdatedAt]);
 
-  const pages = data?.pages ?? NO_PAGES;
+  const rows = data ?? NO_ROWS;
 
-  const resultCount =
-    isLoading || isError ? null : countActivityFeedRows(pages);
+  const resultCount = isLoading || isError ? null : rows.length;
 
   const showControls = shouldShowActivityControls({
     hasActiveFilters:
@@ -139,12 +127,6 @@ export const useActivityFeed = (): UseActivityFeedResult => {
     isEmpty: resultCount === 0
   });
 
-  const loadMore = useCallback(() => {
-    if (hasNextPage && !isFetchingNextPage) {
-      void fetchNextPage();
-    }
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-
   return {
     isManager,
     timeZone,
@@ -155,13 +137,10 @@ export const useActivityFeed = (): UseActivityFeedResult => {
     setActiveTab,
     setSearch,
     applyFilters,
-    pages,
+    rows,
     resultCount,
     isLoading,
     isError,
-    hasNextPage,
-    isFetchingNextPage,
-    loadMore,
     teamMembers,
     isTeamMembersError
   };

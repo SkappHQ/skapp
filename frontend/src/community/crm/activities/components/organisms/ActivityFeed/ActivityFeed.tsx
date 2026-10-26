@@ -1,7 +1,6 @@
 import { EmptyDataView, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { FC, useMemo } from "react";
 
-import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import ActivityBucketSection from "~community/crm/activities/components/molecules/ActivityBucketSection/ActivityBucketSection";
 import ActivityFeedSkeleton from "~community/crm/activities/components/molecules/ActivityFeedSkeleton/ActivityFeedSkeleton";
@@ -25,14 +24,11 @@ import {
 export interface ActivityFeedProps {
   id?: string;
   activeTab: ActivityTab;
-  pages: ActivityFeedResponse[];
+  rows: ActivityFeedResponse;
   searchTerm: string;
   isLoading: boolean;
   isError: boolean;
-  hasNextPage: boolean;
-  isFetchingNextPage: boolean;
   timeZone?: string;
-  onLoadMore: () => void;
   onRowClick: (row: ActivityRow) => void;
   onToggleComplete: (row: ActivityRow, isCompleted: boolean) => void;
 }
@@ -44,29 +40,20 @@ const EMPTY_STATE_CLASSES = {
 const ActivityFeed: FC<ActivityFeedProps> = ({
   id = ACTIVITY_FEED_ID,
   activeTab,
-  pages,
+  rows,
   searchTerm,
   isLoading,
   isError,
-  hasNextPage,
-  isFetchingNextPage,
   timeZone,
-  onLoadMore,
   onRowClick,
   onToggleComplete
 }) => {
   const translateText = useTranslator("crmModule");
 
   const buckets = useMemo(
-    () => getVisibleBuckets(pages, timeZone),
-    [pages, timeZone]
+    () => getVisibleBuckets(rows, timeZone),
+    [rows, timeZone]
   );
-
-  const { loadingRef } = useInfiniteScroll({
-    hasNextPage,
-    isLoading: isFetchingNextPage,
-    onLoadMore
-  });
 
   const getBucketTitle = (group: ActivityBucketGroup): string =>
     group.bucket === ActivityBucket.BY_MONTH && group.monthKey
@@ -158,16 +145,6 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
             onToggleComplete={onToggleComplete}
           />
         ))}
-
-        {isFetchingNextPage && (
-          <ActivityFeedSkeleton
-            id={`${id}-loading-more`}
-            message={translateText(["activities", "feed", "loadingMore"])}
-            groupCount={1}
-            rowCount={2}
-            showCheckbox={showCheckbox}
-          />
-        )}
       </div>
     );
   };
@@ -175,7 +152,6 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
   return (
     <div id={id} className="flex flex-col flex-1 min-h-0 overflow-y-auto pb-4">
       {renderContent()}
-      <div id={`${id}-load-more-trigger`} ref={loadingRef} aria-hidden="true" />
     </div>
   );
 };

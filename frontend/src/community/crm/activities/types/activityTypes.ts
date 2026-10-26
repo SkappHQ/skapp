@@ -50,18 +50,7 @@ export interface ActivityRow {
   canComplete: boolean;
 }
 
-interface ActivityByMonthPage {
-  items: ActivityRow[];
-  page: number;
-  hasMore: boolean;
-}
-
-export interface ActivityFeedResponse {
-  overdue: ActivityRow[];
-  today: ActivityRow[];
-  upcoming: ActivityRow[];
-  byMonth: ActivityByMonthPage;
-}
+export type ActivityFeedResponse = ActivityRow[];
 
 export interface ActivityFeedFilters {
   type?: ActivityType;
@@ -69,7 +58,6 @@ export interface ActivityFeedFilters {
   ownerId?: number;
   from?: string;
   to?: string;
-  page?: number;
 }
 
 export interface DateRange {

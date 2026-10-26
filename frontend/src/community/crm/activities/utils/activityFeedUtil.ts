@@ -8,7 +8,6 @@ import {
 } from "~community/common/utils/dateTimeUtils";
 import {
   ACTIVITY_BUCKET_ORDER,
-  ACTIVITY_FIXED_BUCKET_KEYS,
   ACTIVITY_MONTH_HEADING_FORMAT,
   ACTIVITY_MONTH_KEY_FORMAT,
   ACTIVITY_TIME_FORMAT
@@ -30,49 +29,82 @@ export const getActivityRowKey = (row: ActivityRow): string =>
 const getMonthAnchor = (row: ActivityRow): string | null =>
   row.occurredAt ?? row.completedAt ?? row.dueAt;
 
+const getDueBucket = (
+  row: ActivityRow,
+  zone?: string
+): ActivityBucket | null => {
+  if (!row.dueAt || row.isCompleted) return null;
+
+  if (row.type !== ActivityType.TASK && !isInFuture(row.dueAt)) return null;
+
+  if (isOverdue(row.dueAt, zone)) return ActivityBucket.OVERDUE;
+
+  return isDueToday(row.dueAt, zone)
+    ? ActivityBucket.TODAY
+    : ActivityBucket.UPCOMING;
+};
+
+const getDueMillis = (row: ActivityRow): number =>
+  row.dueAt ? toMillis(row.dueAt) : 0;
+
+const sortByDueDate = (
+  rows: ActivityRow[],
+  bucket: ActivityBucket
+): ActivityRow[] =>
+  [...rows].sort((first, second) =>
+    bucket === ActivityBucket.OVERDUE
+      ? getDueMillis(second) - getDueMillis(first)
+      : getDueMillis(first) - getDueMillis(second)
+  );
+
 const groupByMonth = (
-  pages: ActivityFeedResponse[],
+  rows: ActivityRow[],
   zone?: string
 ): ActivityMonthGroup[] => {
-  const seenKeys = new Set<string>();
   const groups = new Map<string, ActivityRow[]>();
 
-  for (const page of pages) {
-    for (const row of page.byMonth?.items ?? []) {
-      const rowKey = getActivityRowKey(row);
+  rows
+    .flatMap((row) => {
       const anchor = getMonthAnchor(row);
 
-      if (seenKeys.has(rowKey) || !anchor) continue;
-
-      seenKeys.add(rowKey);
-
+      return anchor ? [{ row, anchor }] : [];
+    })
+    .sort((first, second) => toMillis(second.anchor) - toMillis(first.anchor))
+    .forEach(({ row, anchor }) => {
       const monthKey = instantInZone(anchor, zone).toFormat(
         ACTIVITY_MONTH_KEY_FORMAT
       );
-      const monthRows = groups.get(monthKey) ?? [];
 
-      monthRows.push(row);
-      groups.set(monthKey, monthRows);
-    }
-  }
+      groups.set(monthKey, [...(groups.get(monthKey) ?? []), row]);
+    });
 
-  return Array.from(groups, ([monthKey, rows]) => ({
+  return Array.from(groups, ([monthKey, monthRows]) => ({
     monthKey,
-    rows
+    rows: monthRows
   })).sort((first, second) => second.monthKey.localeCompare(first.monthKey));
 };
 
 export const getVisibleBuckets = (
-  pages: ActivityFeedResponse[],
+  rows: ActivityFeedResponse,
   zone?: string
 ): ActivityBucketGroup[] => {
-  const [firstPage] = pages;
+  const dueRows = new Map<ActivityBucket, ActivityRow[]>();
+  const monthRows: ActivityRow[] = [];
 
-  if (!firstPage) return [];
+  rows.forEach((row) => {
+    const bucket = getDueBucket(row, zone);
+
+    if (!bucket) {
+      monthRows.push(row);
+      return;
+    }
+
+    dueRows.set(bucket, [...(dueRows.get(bucket) ?? []), row]);
+  });
 
   return ACTIVITY_BUCKET_ORDER.flatMap((bucket): ActivityBucketGroup[] => {
     if (bucket === ActivityBucket.BY_MONTH) {
-      return groupByMonth(pages, zone).map((group) => ({
+      return groupByMonth(monthRows, zone).map((group) => ({
         id: `month-${group.monthKey}`,
         bucket,
         monthKey: group.monthKey,
@@ -85,7 +117,7 @@ export const getVisibleBuckets = (
         id: bucket.toLowerCase(),
         bucket,
         monthKey: null,
-        rows: firstPage[ACTIVITY_FIXED_BUCKET_KEYS[bucket]] ?? []
+        rows: sortByDueDate(dueRows.get(bucket) ?? [], bucket)
       }
     ];
   }).filter((group) => group.rows.length > 0);

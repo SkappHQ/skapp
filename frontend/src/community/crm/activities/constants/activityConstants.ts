@@ -2,7 +2,6 @@ import { daysTypes } from "~community/common/constants/stringConstants";
 import {
   ActivityBucket,
   ActivityDatePreset,
-  ActivityFeedResponse,
   ActivityFilterValues,
   ActivityTab,
   ActivityTabConfig,
@@ -30,15 +29,6 @@ export const ACTIVITY_BUCKET_ORDER: ActivityBucket[] = [
   ActivityBucket.UPCOMING,
   ActivityBucket.BY_MONTH
 ];
-
-export const ACTIVITY_FIXED_BUCKET_KEYS: Record<
-  Exclude<ActivityBucket, ActivityBucket.BY_MONTH>,
-  keyof Pick<ActivityFeedResponse, "overdue" | "today" | "upcoming">
-> = {
-  [ActivityBucket.OVERDUE]: "overdue",
-  [ActivityBucket.TODAY]: "today",
-  [ActivityBucket.UPCOMING]: "upcoming"
-};
 
 export const ACTIVITY_BUCKET_LABEL_KEYS: Record<ActivityBucket, string> = {
   [ActivityBucket.OVERDUE]: "overdue",

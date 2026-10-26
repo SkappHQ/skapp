@@ -2,7 +2,6 @@ import { getRequestTimezone } from "~community/common/utils/requestTimezoneUtils
 import { ACTIVITY_TABS } from "~community/crm/activities/constants/activityConstants";
 import {
   ActivityFeedFilters,
-  ActivityFeedResponse,
   ActivityTab,
   ActivityType
 } from "~community/crm/activities/types/activityTypes";
@@ -19,10 +18,9 @@ const getActivityTypeForTab = (tab: ActivityTab): ActivityType | null =>
   ACTIVITY_TABS.find((tabConfig) => tabConfig.id === tab)?.type ?? null;
 
 export const buildActivityFeedParams = (
-  query: ActivityFeedQuery,
-  page: number
+  query: ActivityFeedQuery
 ): ActivityFeedFilters => {
-  const params: ActivityFeedFilters = { page };
+  const params: ActivityFeedFilters = {};
   const type = getActivityTypeForTab(query.tab);
   const search = query.search.trim();
 
@@ -40,29 +38,6 @@ export const resolveViewerTimezone = (requestTimezone?: string): string =>
 
 export const getViewerTimezone = (): string =>
   resolveViewerTimezone(getRequestTimezone());
-
-export const getNextActivityFeedPage = (
-  lastPage: ActivityFeedResponse | null
-): number | null =>
-  lastPage?.byMonth?.hasMore ? lastPage.byMonth.page + 1 : null;
-
-export const countActivityFeedRows = (
-  pages: ActivityFeedResponse[]
-): number => {
-  const [firstPage] = pages;
-
-  if (!firstPage) return 0;
-
-  const datedRowCount =
-    (firstPage.overdue?.length ?? 0) +
-    (firstPage.today?.length ?? 0) +
-    (firstPage.upcoming?.length ?? 0);
-
-  return pages.reduce(
-    (total, page) => total + (page?.byMonth?.items?.length ?? 0),
-    datedRowCount
-  );
-};
 
 export const shouldShowActivityControls = ({
   hasActiveFilters,

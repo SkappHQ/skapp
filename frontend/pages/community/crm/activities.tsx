@@ -27,13 +27,10 @@ const Activities: NextPage = () => {
     setActiveTab,
     setSearch,
     applyFilters,
-    pages,
+    rows,
     resultCount,
     isLoading,
     isError,
-    hasNextPage,
-    isFetchingNextPage,
-    loadMore,
     teamMembers,
     isTeamMembersError
   } = useActivityFeed();
@@ -68,14 +65,11 @@ const Activities: NextPage = () => {
         />
         <ActivityFeed
           activeTab={activeTab}
-          pages={pages}
+          rows={rows}
           searchTerm={search}
           isLoading={isLoading}
           isError={isError}
-          hasNextPage={hasNextPage}
-          isFetchingNextPage={isFetchingNextPage}
           timeZone={timeZone}
-          onLoadMore={loadMore}
           onRowClick={handleRowClick}
           onToggleComplete={handleToggleComplete}
         />
