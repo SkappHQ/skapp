@@ -21,8 +21,8 @@ import {
   ActivityBucket,
   ActivityBucketGroup,
   ActivityFeedResponse,
-  ActivityLink,
   ActivityMonthGroup,
+  ActivityRelatedAssociation,
   ActivityRow,
   ActivityType,
   DateRange
@@ -160,12 +160,14 @@ export const getRowSubtitle = (
   });
 };
 
-export const getLinkLabel = (
-  link: ActivityLink,
+export const getRelatedAssociationLabel = (
+  link: ActivityRelatedAssociation,
   translate: TranslatorFunctionType
 ): string =>
   link.deleted
-    ? translate(["activities", "row", "deletedLink"], { name: link.name })
+    ? translate(["activities", "row", "deletedAssociation"], {
+        name: link.name
+      })
     : link.name;
 
 const parseDateValue = (value: string): DateTime =>

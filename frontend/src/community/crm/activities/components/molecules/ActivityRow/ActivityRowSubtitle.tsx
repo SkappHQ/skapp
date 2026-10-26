@@ -2,11 +2,11 @@ import { FC, Fragment, ReactNode } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
-  ActivityLink,
+  ActivityRelatedAssociation,
   ActivityRow
 } from "~community/crm/activities/types/activityTypes";
 import {
-  getLinkLabel,
+  getRelatedAssociationLabel,
   getRowSubtitle,
   isRowOverdue
 } from "~community/crm/activities/utils/activityFeedUtil";
@@ -37,8 +37,8 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
     ? "text-secondary-icon"
     : "text-secondary-text";
 
-  const renderLink = (link: ActivityLink, linkId: string) => {
-    const label = getLinkLabel(link, translateText);
+  const renderLink = (link: ActivityRelatedAssociation, linkId: string) => {
+    const label = getRelatedAssociationLabel(link, translateText);
 
     return (
       <span

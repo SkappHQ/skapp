@@ -2,10 +2,10 @@ import {
   ActivityCallListItem,
   ActivityEmailListItem,
   ActivityFeedResponse,
-  ActivityLink,
   ActivityListItem,
   ActivityMeetingListItem,
   ActivityOwner,
+  ActivityRelatedAssociation,
   ActivityRow,
   ActivityTaskListItem,
   ActivityType
@@ -46,7 +46,9 @@ const toLinkedContacts = (
     return contact?.name ? [contact] : [];
   });
 
-const toContactLinks = (linkedContacts: CrmContactEntity[]): ActivityLink[] =>
+const toContactLinks = (
+  linkedContacts: CrmContactEntity[]
+): ActivityRelatedAssociation[] =>
   linkedContacts.map((contact) => ({
     id: contact.id ?? 0,
     name: contact.name ?? "",
@@ -56,7 +58,7 @@ const toContactLinks = (linkedContacts: CrmContactEntity[]): ActivityLink[] =>
 const toCompanyLink = (
   companyId: number | null,
   linkedContacts: CrmContactEntity[]
-): ActivityLink | null => {
+): ActivityRelatedAssociation | null => {
   if (companyId === null) return null;
 
   const contact = linkedContacts.find(
