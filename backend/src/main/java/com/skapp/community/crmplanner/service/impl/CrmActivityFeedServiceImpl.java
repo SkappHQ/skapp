@@ -24,7 +24,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -95,7 +94,6 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 		params.setCurrentEmployeeId(currentUser.getEmployee().getEmployeeId());
 		params.setIsRestrictedToOwner(isRepresentative);
 		params.setOwnerId(filterDto.getOwnerId());
-		params.setSortOrder(Sort.Direction.DESC);
 		if (!StringUtils.isNullOrBlank(filterDto.getSearch())) {
 			params.setSearchPattern(
 					"%" + StringUtils.escapeLikePattern(filterDto.getSearch().trim().toLowerCase()) + "%");
