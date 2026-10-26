@@ -121,7 +121,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			row.setId(call.getId());
 			row.setType(CrmActivityType.CALL);
 			row.setTitle(call.getSubject());
-			row.setOccurredAt(call.getLoggedAt());
+			row.setLoggedAt(call.getLoggedAt());
 			row.setOwnerId(call.getOwnerId());
 			row.setDealId(call.getDealId());
 			row.setCompanyId(call.getCompanyId());
@@ -135,8 +135,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			row.setId(meeting.getId());
 			row.setType(CrmActivityType.MEETING);
 			row.setTitle(meeting.getName());
-			row.setOccurredAt(meeting.getStartAt());
-			row.setDueAt(Boolean.TRUE.equals(meeting.getIsScheduled()) ? meeting.getStartAt() : null);
+			row.setStartAt(meeting.getStartAt());
 			row.setOwnerId(meeting.getOwnerId());
 			row.setDealId(meeting.getDealId());
 			row.setCompanyId(meeting.getCompanyId());
@@ -148,7 +147,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			row.setId(email.getId());
 			row.setType(CrmActivityType.EMAIL);
 			row.setTitle(email.getSubject());
-			row.setOccurredAt(email.getLoggedAt());
+			row.setLoggedAt(email.getLoggedAt());
 			row.setOwnerId(email.getOwnerId());
 			row.setDealId(email.getDealId());
 			row.setCompanyId(email.getCompanyId());
@@ -157,7 +156,8 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		});
 
 		Function<CrmActivityFeedRowResponseDto, Instant> feedAt = row -> row.getType() == CrmActivityType.TASK
-				? (row.getIsCompleted() ? row.getCompletedAt() : row.getDueAt()) : row.getOccurredAt();
+				? (row.getIsCompleted() ? row.getCompletedAt() : row.getDueAt())
+				: (row.getType() == CrmActivityType.MEETING ? row.getStartAt() : row.getLoggedAt());
 		rows.sort(Comparator.comparing(feedAt, Comparator.nullsLast(Comparator.reverseOrder()))
 			.thenComparing(CrmActivityFeedRowResponseDto::getType)
 			.thenComparing(CrmActivityFeedRowResponseDto::getId, Comparator.reverseOrder()));

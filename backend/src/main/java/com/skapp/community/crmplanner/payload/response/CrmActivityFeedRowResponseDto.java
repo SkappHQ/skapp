@@ -21,7 +21,9 @@ public class CrmActivityFeedRowResponseDto {
 
 	private Instant dueAt;
 
-	private Instant occurredAt;
+	private Instant loggedAt;
+
+	private Instant startAt;
 
 	private Instant completedAt;
 
