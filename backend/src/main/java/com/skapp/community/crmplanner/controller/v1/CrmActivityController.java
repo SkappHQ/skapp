@@ -4,6 +4,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmActivityFeedFilterDto;
 import com.skapp.community.crmplanner.service.CrmActivityFeedService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,7 @@ public class CrmActivityController {
 
 	@GetMapping
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
-	public ResponseEntity<ResponseEntityDto> getActivities(CrmActivityFeedFilterDto filterDto) {
+	public ResponseEntity<ResponseEntityDto> getActivities(@Valid CrmActivityFeedFilterDto filterDto) {
 		ResponseEntityDto response = crmActivityFeedService.getActivities(filterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
