@@ -13,7 +13,6 @@ import {
 } from "~community/common/utils/dateTimeUtils";
 import { ACTIVITY_SECTION_ORDER } from "~community/crm/activities/constants/activityConstants";
 import {
-  ActivityRelatedAssociation,
   ActivityRow,
   ActivitySection,
   ActivitySectionGroup,
@@ -153,13 +152,3 @@ export const getRowSubtitle = (
     time: zoned.toFormat(TIME_FORMAT_12_HOUR)
   });
 };
-
-export const getRelatedAssociationLabel = (
-  link: ActivityRelatedAssociation,
-  translate: TranslatorFunctionType
-): string =>
-  link.isDeleted
-    ? translate(["activities", "row", "deletedAssociation"], {
-        name: link.name
-      })
-    : link.name;

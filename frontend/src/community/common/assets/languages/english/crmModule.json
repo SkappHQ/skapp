@@ -602,8 +602,7 @@
         "dueOn": "Due on {{date}}",
         "scheduledOn": "Scheduled on {{date}}",
         "occurredAt": "{{date}} at {{time}}"
-      },
-      "deletedAssociation": "{{name}} (deleted)"
+      }
     }
   }
 }

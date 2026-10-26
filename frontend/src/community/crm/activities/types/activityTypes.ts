@@ -29,12 +29,6 @@ export enum ActivityDatePreset {
   LAST_30_DAYS = "LAST_30_DAYS"
 }
 
-export interface ActivityRelatedAssociation {
-  id: number;
-  name: string;
-  isDeleted: boolean;
-}
-
 export interface ActivityRow {
   id: number;
   type: ActivityType;
@@ -45,9 +39,9 @@ export interface ActivityRow {
   isCompleted: boolean;
   priority: CrmPriorityEnum | null;
   ownerId: number | null;
-  contacts: ActivityRelatedAssociation[];
-  deal: ActivityRelatedAssociation | null;
-  company: ActivityRelatedAssociation | null;
+  dealId: number | null;
+  companyId: number | null;
+  contactIds: number[];
   canComplete: boolean;
 }
 
