@@ -34,7 +34,8 @@ export interface ActivityRow {
   type: ActivityType;
   title: string;
   dueAt: string | null;
-  occurredAt: string | null;
+  loggedAt: string | null;
+  startAt: string | null;
   completedAt: string | null;
   isCompleted: boolean;
   priority: CrmPriorityEnum | null;

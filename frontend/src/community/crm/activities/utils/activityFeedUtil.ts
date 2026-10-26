@@ -38,10 +38,16 @@ const isRowOverdue = (row: ActivityRow, zone?: string): boolean =>
 const getRowSection = (row: ActivityRow, zone?: string): ActivitySection => {
   if (isRowOverdue(row, zone)) return ActivitySection.OVERDUE;
 
-  if (!row.isCompleted && row.dueAt) {
-    if (isDueToday(row.dueAt, zone)) return ActivitySection.TODAY;
+  let scheduledAt = row.dueAt;
 
-    if (isInFuture(row.dueAt)) return ActivitySection.UPCOMING;
+  if (row.type === ActivityType.MEETING) {
+    scheduledAt = row.startAt && isInFuture(row.startAt) ? row.startAt : null;
+  }
+
+  if (!row.isCompleted && scheduledAt) {
+    if (isDueToday(scheduledAt, zone)) return ActivitySection.TODAY;
+
+    if (isInFuture(scheduledAt)) return ActivitySection.UPCOMING;
   }
 
   return ActivitySection.BY_MONTH;
@@ -67,7 +73,7 @@ export const getActivitySections = (
       continue;
     }
 
-    const anchor = row.occurredAt ?? row.completedAt ?? row.dueAt;
+    const anchor = row.loggedAt ?? row.startAt ?? row.completedAt ?? row.dueAt;
 
     if (!anchor) continue;
 
@@ -130,15 +136,19 @@ export const getRowSubtitle = (
     });
   }
 
-  if (row.type === ActivityType.MEETING && row.dueAt && isInFuture(row.dueAt)) {
+  if (
+    row.type === ActivityType.MEETING &&
+    row.startAt &&
+    isInFuture(row.startAt)
+  ) {
     return translate(["activities", "row", "subtitle", "scheduledOn"], {
       date: formatDateTimeWithOrdinalIndicatorWithoutYear(
-        instantInZone(row.dueAt, zone)
+        instantInZone(row.startAt, zone)
       )
     });
   }
 
-  const happenedAt = row.occurredAt ?? row.dueAt;
+  const happenedAt = row.loggedAt ?? row.startAt;
 
   if (!happenedAt) return "";
 
