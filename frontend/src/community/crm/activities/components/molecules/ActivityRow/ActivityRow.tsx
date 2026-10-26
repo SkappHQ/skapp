@@ -47,7 +47,7 @@ const ActivityRow: FC<ActivityRowProps> = ({
             "types",
             ACTIVITY_TYPE_LABEL_KEYS[row.type]
           ]).toLowerCase(),
-          subject: row.subject
+          subject: row.title
         })}
         className="absolute inset-0 w-full h-full cursor-pointer focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-accent"
         onClick={() => onRowClick(row)}
@@ -57,7 +57,7 @@ const ActivityRow: FC<ActivityRowProps> = ({
         <div className="relative pointer-events-auto">
           <ActivityRowCheckbox
             id={`${rowId}-checkbox`}
-            subject={row.subject}
+            subject={row.title}
             isCompleted={row.isCompleted}
             canComplete={row.canComplete}
             onToggle={(isCompleted) => onToggleComplete(row, isCompleted)}
@@ -76,9 +76,9 @@ const ActivityRow: FC<ActivityRowProps> = ({
                 ? "line-through text-secondary-icon"
                 : "text-black"
             }`}
-            title={row.subject}
+            title={row.title}
           >
-            {row.subject}
+            {row.title}
           </p>
 
           <ActivityRowSubtitle
