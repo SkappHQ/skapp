@@ -23,9 +23,6 @@ import { isDueToday, isOverdue } from "~community/crm/utils/taskValidations";
 export const getActivityRowKey = (row: ActivityRow): string =>
   `${row.type}-${row.id}`;
 
-const getMonthAnchor = (row: ActivityRow): string | null =>
-  row.occurredAt ?? row.completedAt ?? row.dueAt;
-
 const toMillis = (isoInstant: string): number =>
   parseInstant(isoInstant).toMillis();
 
@@ -70,7 +67,7 @@ export const getActivitySections = (
       continue;
     }
 
-    const anchor = getMonthAnchor(row);
+    const anchor = row.occurredAt ?? row.completedAt ?? row.dueAt;
 
     if (!anchor) continue;
 
