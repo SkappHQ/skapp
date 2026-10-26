@@ -132,15 +132,10 @@
   "activities": {
     "row": {
       "openDetails": "Open {{type}} details for {{subject}}",
-      "markComplete": "Mark '{{name}}' complete",
-      "markIncomplete": "Mark '{{name}}' incomplete",
-      "owner": "Owner: {{name}}",
-      "highPriority": "High priority",
-      "mediumPriority": "Medium priority",
-      "lowPriority": "Low priority"
+      "markComplete": "Mark '{{subject}}' complete",
+      "markIncomplete": "Mark '{{subject}}' incomplete",
+      "owner": "Owner: {{name}}"
     },
-    "toolbar": {
-      "clearSearch": "Clear search"
-    }
+    "toolbar": { "clearSearch": "Clear search" }
   }
 }

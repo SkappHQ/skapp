@@ -1,18 +1,14 @@
 import { DateTime } from "luxon";
-import type { DateRange as PickerDateRange } from "react-day-picker";
 
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import {
-  getOrdinalIndicator,
+  formatDateTimeWithOrdinalIndicatorWithoutYear,
   instantInZone,
-  nowInZone,
   parseInstant
 } from "~community/common/utils/dateTimeUtils";
 import {
   ACTIVITY_BUCKET_ORDER,
-  ACTIVITY_DATE_FORMAT,
   ACTIVITY_FIXED_BUCKET_KEYS,
-  ACTIVITY_MONTH_ABBREVIATIONS,
   ACTIVITY_MONTH_HEADING_FORMAT,
   ACTIVITY_MONTH_KEY_FORMAT,
   ACTIVITY_TIME_FORMAT
@@ -24,16 +20,15 @@ import {
   ActivityLink,
   ActivityMonthGroup,
   ActivityRow,
-  ActivityType,
-  DateRange
+  ActivityType
 } from "~community/crm/activities/types/activityTypes";
+import { isDueToday, isOverdue } from "~community/crm/utils/taskValidations";
 
 export const getActivityRowKey = (row: ActivityRow): string =>
   `${row.type}-${row.id}`;
 
-export const getMonthAnchor = (row: ActivityRow): string | null => {
-  return row.occurredAt ?? row.completedAt ?? row.dueAt;
-};
+const getMonthAnchor = (row: ActivityRow): string | null =>
+  row.occurredAt ?? row.completedAt ?? row.dueAt;
 
 const groupByMonth = (
   pages: ActivityFeedResponse[],
@@ -101,25 +96,17 @@ export const formatMonthHeading = (monthKey: string): string =>
     ACTIVITY_MONTH_HEADING_FORMAT
   );
 
-const formatActivityDate = (dateTime: DateTime): string =>
-  `${dateTime.day}${getOrdinalIndicator(dateTime.day)} ${
-    ACTIVITY_MONTH_ABBREVIATIONS[dateTime.month - 1]
-  }`;
-
 const toMillis = (isoInstant: string): number =>
   parseInstant(isoInstant).toMillis();
 
 const isInFuture = (isoInstant: string): boolean =>
   toMillis(isoInstant) >= DateTime.now().toMillis();
 
-const isDueToday = (dueAt: string, zone?: string): boolean =>
-  instantInZone(dueAt, zone).hasSame(nowInZone(zone), "day");
-
 export const isRowOverdue = (row: ActivityRow, zone?: string): boolean =>
   row.type === ActivityType.TASK &&
+  !row.isCompleted &&
   row.dueAt !== null &&
-  instantInZone(row.dueAt, zone).startOf("day") <
-    nowInZone(zone).startOf("day");
+  isOverdue(row.dueAt, zone);
 
 export const getRowSubtitle = (
   row: ActivityRow,
@@ -138,13 +125,17 @@ export const getRowSubtitle = (
     }
 
     return translate(["activities", "row", "subtitle", "dueOn"], {
-      date: formatActivityDate(instantInZone(row.dueAt, zone))
+      date: formatDateTimeWithOrdinalIndicatorWithoutYear(
+        instantInZone(row.dueAt, zone)
+      )
     });
   }
 
   if (row.type === ActivityType.MEETING && row.dueAt && isInFuture(row.dueAt)) {
     return translate(["activities", "row", "subtitle", "scheduledOn"], {
-      date: formatActivityDate(instantInZone(row.dueAt, zone))
+      date: formatDateTimeWithOrdinalIndicatorWithoutYear(
+        instantInZone(row.dueAt, zone)
+      )
     });
   }
 
@@ -155,7 +146,7 @@ export const getRowSubtitle = (
   const zoned = instantInZone(happenedAt, zone);
 
   return translate(["activities", "row", "subtitle", "occurredAt"], {
-    date: formatActivityDate(zoned),
+    date: formatDateTimeWithOrdinalIndicatorWithoutYear(zoned),
     time: zoned.toFormat(ACTIVITY_TIME_FORMAT)
   });
 };
@@ -167,29 +158,3 @@ export const getLinkLabel = (
   link.deleted
     ? translate(["activities", "row", "deletedLink"], { name: link.name })
     : link.name;
-
-const parseDateValue = (value: string): DateTime =>
-  DateTime.fromFormat(value, ACTIVITY_DATE_FORMAT);
-
-export const validateDateRange = (range: DateRange): boolean => {
-  if (!range.from || !range.to) return true;
-
-  const from = parseDateValue(range.from);
-  const to = parseDateValue(range.to);
-
-  if (!from.isValid || !to.isValid) return false;
-
-  return to.toMillis() >= from.toMillis();
-};
-
-export const toPickerDateRange = (range: DateRange): PickerDateRange => {
-  const pickerRange: Partial<PickerDateRange> = {};
-
-  if (range.from) pickerRange.from = parseDateValue(range.from).toJSDate();
-  if (range.to) pickerRange.to = parseDateValue(range.to).toJSDate();
-
-  return pickerRange as PickerDateRange;
-};
-
-export const toDateValue = (date?: Date): string | null =>
-  date ? DateTime.fromJSDate(date).toFormat(ACTIVITY_DATE_FORMAT) : null;
