@@ -16,8 +16,8 @@ import {
   ActivityBucket,
   ActivityBucketGroup,
   ActivityFeedResponse,
-  ActivityLink,
   ActivityMonthGroup,
+  ActivityRelatedAssociation,
   ActivityRow,
   ActivityType
 } from "~community/crm/activities/types/activityTypes";
@@ -183,10 +183,12 @@ export const getRowSubtitle = (
   });
 };
 
-export const getLinkLabel = (
-  link: ActivityLink,
+export const getRelatedAssociationLabel = (
+  link: ActivityRelatedAssociation,
   translate: TranslatorFunctionType
 ): string =>
   link.deleted
-    ? translate(["activities", "row", "deletedLink"], { name: link.name })
+    ? translate(["activities", "row", "deletedAssociation"], {
+        name: link.name
+      })
     : link.name;
