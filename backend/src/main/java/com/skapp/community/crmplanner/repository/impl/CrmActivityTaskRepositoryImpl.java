@@ -14,10 +14,8 @@ import com.skapp.community.crmplanner.type.CrmActivityTaskSort;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Order;
@@ -83,13 +81,6 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 			orders.add(cb.desc(dueAt));
 			orders.add(cb.desc(task.get(CrmActivityTask_.id)));
 		}
-		else if (params.getSortKey() == CrmActivityTaskSort.FEED_AT) {
-			Expression<Instant> feedAt = cb.<Instant>selectCase()
-				.when(cb.isTrue(task.get(CrmActivityTask_.isCompleted)), task.get(CrmActivityTask_.completedAt))
-				.otherwise(dueAt);
-			orders.add(ascending ? cb.asc(feedAt) : cb.desc(feedAt));
-			orders.add(ascending ? cb.asc(task.get(CrmActivityTask_.id)) : cb.desc(task.get(CrmActivityTask_.id)));
-		}
 		else {
 			orders.add(ascending ? cb.asc(dueAt) : cb.desc(dueAt));
 			orders.add(ascending ? cb.asc(task.get(CrmActivityTask_.id)) : cb.desc(task.get(CrmActivityTask_.id)));
@@ -103,11 +94,7 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 			.where(predicates.toArray(new Predicate[0]))
 			.orderBy(orders);
 
-		TypedQuery<CrmActivityTaskResponseDto> typedQuery = entityManager.createQuery(query);
-		if (params.getMaxResults() != null) {
-			typedQuery.setMaxResults(params.getMaxResults());
-		}
-		return typedQuery.getResultList();
+		return entityManager.createQuery(query).getResultList();
 	}
 
 }

@@ -56,7 +56,6 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 				: filterDto.getFromDate().atStartOfDay(zone).toInstant();
 		Instant rangeEnd = filterDto.getToDate() == null ? null
 				: filterDto.getToDate().plusDays(1).atStartOfDay(zone).toInstant();
-		int fetchCount = (int) pageable.getOffset() + pageable.getPageSize() + 1;
 
 		CrmActivityTaskFilterParams taskParams = new CrmActivityTaskFilterParams();
 		taskParams.setCurrentEmployeeId(currentEmployeeId);
@@ -65,9 +64,8 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		taskParams.setSearchPattern(searchPattern);
 		taskParams.setRangeStart(rangeStart);
 		taskParams.setRangeEnd(rangeEnd);
-		taskParams.setSortKey(CrmActivityTaskSort.FEED_AT);
+		taskParams.setSortKey(CrmActivityTaskSort.DUE_AT);
 		taskParams.setSortOrder(Sort.Direction.DESC);
-		taskParams.setMaxResults(fetchCount);
 
 		CrmActivityCallFilterParams callParams = new CrmActivityCallFilterParams();
 		callParams.setCurrentEmployeeId(currentEmployeeId);
@@ -78,7 +76,6 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		callParams.setRangeEnd(rangeEnd);
 		callParams.setSortKey(CrmActivityCallSort.LOGGED_AT);
 		callParams.setSortOrder(Sort.Direction.DESC);
-		callParams.setMaxResults(fetchCount);
 
 		CrmActivityMeetingFilterParams meetingParams = new CrmActivityMeetingFilterParams();
 		meetingParams.setCurrentEmployeeId(currentEmployeeId);
@@ -89,7 +86,6 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		meetingParams.setRangeEnd(rangeEnd);
 		meetingParams.setSortKey(CrmActivityMeetingSort.START_AT);
 		meetingParams.setSortOrder(Sort.Direction.DESC);
-		meetingParams.setMaxResults(fetchCount);
 
 		CrmActivityEmailFilterParams emailParams = new CrmActivityEmailFilterParams();
 		emailParams.setCurrentEmployeeId(currentEmployeeId);
@@ -100,7 +96,6 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		emailParams.setRangeEnd(rangeEnd);
 		emailParams.setSortKey(CrmActivityEmailSort.LOGGED_AT);
 		emailParams.setSortOrder(Sort.Direction.DESC);
-		emailParams.setMaxResults(fetchCount);
 
 		List<CrmActivityFeedRowResponseDto> rows = new ArrayList<>();
 		crmActivityTaskDao.findTasks(taskParams).forEach(task -> {
