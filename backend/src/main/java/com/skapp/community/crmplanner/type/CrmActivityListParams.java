@@ -24,4 +24,6 @@ public class CrmActivityListParams {
 
 	private Sort.Direction sortOrder;
 
+	private Integer maxResults;
+
 }

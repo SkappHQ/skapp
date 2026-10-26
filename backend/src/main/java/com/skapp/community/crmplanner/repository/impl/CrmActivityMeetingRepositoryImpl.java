@@ -19,6 +19,7 @@ import com.skapp.community.crmplanner.type.CrmActivityMeetingVenue;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import jakarta.persistence.Tuple;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -113,24 +114,24 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 			.where(predicates.toArray(new Predicate[0]))
 			.orderBy(orders);
 
-		List<CrmActivityMeetingResponseDto> meetings = entityManager.createQuery(query)
-			.getResultList()
-			.stream()
-			.map(row -> {
-				CrmActivityMeetingResponseDto dto = new CrmActivityMeetingResponseDto();
-				dto.setId(row.get(0, Long.class));
-				dto.setName(row.get(1, String.class));
-				dto.setIsScheduled(row.get(2, Boolean.class));
-				dto.setMeetingVenue(row.get(3, CrmActivityMeetingVenue.class));
-				dto.setLocation(row.get(4, String.class));
-				dto.setStartAt(row.get(5, Instant.class));
-				dto.setEndAt(row.get(6, Instant.class));
-				dto.setOwnerId(row.get(7, Long.class));
-				dto.setDealId(row.get(8, Long.class));
-				dto.setCompanyId(row.get(9, Long.class));
-				return dto;
-			})
-			.toList();
+		TypedQuery<Tuple> typedQuery = entityManager.createQuery(query);
+		if (params.getMaxResults() != null) {
+			typedQuery.setMaxResults(params.getMaxResults());
+		}
+		List<CrmActivityMeetingResponseDto> meetings = typedQuery.getResultList().stream().map(row -> {
+			CrmActivityMeetingResponseDto dto = new CrmActivityMeetingResponseDto();
+			dto.setId(row.get(0, Long.class));
+			dto.setName(row.get(1, String.class));
+			dto.setIsScheduled(row.get(2, Boolean.class));
+			dto.setMeetingVenue(row.get(3, CrmActivityMeetingVenue.class));
+			dto.setLocation(row.get(4, String.class));
+			dto.setStartAt(row.get(5, Instant.class));
+			dto.setEndAt(row.get(6, Instant.class));
+			dto.setOwnerId(row.get(7, Long.class));
+			dto.setDealId(row.get(8, Long.class));
+			dto.setCompanyId(row.get(9, Long.class));
+			return dto;
+		}).toList();
 
 		CriteriaQuery<Tuple> contactQuery = cb.createTupleQuery();
 		Root<CrmActivityMeetingContact> contactLink = contactQuery.from(CrmActivityMeetingContact.class);

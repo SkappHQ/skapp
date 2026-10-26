@@ -17,6 +17,7 @@ import com.skapp.community.crmplanner.type.CrmActivityEmailSort;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import jakarta.persistence.Tuple;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -105,20 +106,20 @@ public class CrmActivityEmailRepositoryImpl implements CrmActivityEmailRepositor
 			.where(predicates.toArray(new Predicate[0]))
 			.orderBy(orders);
 
-		List<CrmActivityEmailResponseDto> emails = entityManager.createQuery(query)
-			.getResultList()
-			.stream()
-			.map(row -> {
-				CrmActivityEmailResponseDto dto = new CrmActivityEmailResponseDto();
-				dto.setId(row.get(0, Long.class));
-				dto.setSubject(row.get(1, String.class));
-				dto.setLoggedAt(row.get(2, Instant.class));
-				dto.setOwnerId(row.get(3, Long.class));
-				dto.setDealId(row.get(4, Long.class));
-				dto.setCompanyId(row.get(5, Long.class));
-				return dto;
-			})
-			.toList();
+		TypedQuery<Tuple> typedQuery = entityManager.createQuery(query);
+		if (params.getMaxResults() != null) {
+			typedQuery.setMaxResults(params.getMaxResults());
+		}
+		List<CrmActivityEmailResponseDto> emails = typedQuery.getResultList().stream().map(row -> {
+			CrmActivityEmailResponseDto dto = new CrmActivityEmailResponseDto();
+			dto.setId(row.get(0, Long.class));
+			dto.setSubject(row.get(1, String.class));
+			dto.setLoggedAt(row.get(2, Instant.class));
+			dto.setOwnerId(row.get(3, Long.class));
+			dto.setDealId(row.get(4, Long.class));
+			dto.setCompanyId(row.get(5, Long.class));
+			return dto;
+		}).toList();
 
 		CriteriaQuery<Tuple> contactQuery = cb.createTupleQuery();
 		Root<CrmActivityEmailContact> contactLink = contactQuery.from(CrmActivityEmailContact.class);
