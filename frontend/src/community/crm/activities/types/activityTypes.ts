@@ -62,10 +62,10 @@ export interface ActivityFeedFilters {
   size?: number;
 }
 
-export type ActivityDateRange = Pick<
-  ActivityFeedFilters,
-  "fromDate" | "toDate"
->;
+export interface ActivityDateRange {
+  fromDate?: string;
+  toDate?: string;
+}
 
 export interface ActivitySectionGroup {
   id: string;
