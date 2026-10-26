@@ -43,8 +43,6 @@ public class CrmConstants {
 
 	public static final String ACTIVITY_TYPE_EMAIL = "EMAIL";
 
-	public static final int ACTIVITY_FEED_BY_MONTH_PAGE_SIZE = 25;
-
 	public static final Set<Role> ASSIGNABLE_CRM_ROLES = Set.of(Role.CRM_ADMIN, Role.CRM_SALES_MANAGER,
 			Role.CRM_SALES_REPRESENTATIVE);
 

@@ -12,10 +12,8 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.payload.request.CrmActivityFeedFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityCallResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityEmailResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmActivityFeedByMonthResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityFeedLinkResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityFeedOwnerResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmActivityFeedResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityFeedRowResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityMeetingResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityTaskResponseDto;
@@ -49,10 +47,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -66,11 +62,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
-
-	private static final Comparator<CrmActivityFeedRowResponseDto> SOONEST_FIRST = Comparator
-		.comparing(CrmActivityFeedRowResponseDto::getDueAt)
-		.thenComparing(CrmActivityFeedRowResponseDto::getType)
-		.thenComparing(CrmActivityFeedRowResponseDto::getId);
 
 	private static final Comparator<CrmActivityFeedRowResponseDto> NEWEST_FIRST = Comparator
 		.comparing(CrmActivityFeedServiceImpl::resolveFeedAt, Comparator.nullsLast(Comparator.reverseOrder()))
@@ -134,58 +125,17 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 			crmActivityEmailDao.findEmails(params).stream().map(this::toEmailRow).forEach(rows::add);
 		}
 
-		CrmActivityFeedResponseDto response = buildResponse(rows, feedParams.getPage());
+		rows.sort(NEWEST_FIRST);
+		fillNames(rows);
 
 		log.info("getActivities: execution ended");
-		return new ResponseEntityDto(false, response);
-	}
-
-	private CrmActivityFeedResponseDto buildResponse(List<CrmActivityFeedRowResponseDto> rows, int page) {
-		ZoneId zone = timeZoneService.requestTimezone();
-		Instant now = Instant.now();
-		Instant todayStart = LocalDate.now(zone).atStartOfDay(zone).toInstant();
-		Instant tomorrowStart = LocalDate.now(zone).plusDays(1).atStartOfDay(zone).toInstant();
-
-		List<CrmActivityFeedRowResponseDto> fixedRows = page == 0
-				? rows.stream().filter(row -> isFixedBucket(row, now)).sorted(SOONEST_FIRST).toList() : List.of();
-		List<CrmActivityFeedRowResponseDto> monthRows = rows.stream()
-			.filter(row -> !isFixedBucket(row, now))
-			.sorted(NEWEST_FIRST)
-			.toList();
-
-		int fromIndex = Math.min(page * CrmConstants.ACTIVITY_FEED_BY_MONTH_PAGE_SIZE, monthRows.size());
-		int toIndex = Math.min(fromIndex + CrmConstants.ACTIVITY_FEED_BY_MONTH_PAGE_SIZE, monthRows.size());
-		List<CrmActivityFeedRowResponseDto> pageRows = new ArrayList<>(monthRows.subList(fromIndex, toIndex));
-
-		List<CrmActivityFeedRowResponseDto> overdue = new ArrayList<>();
-		List<CrmActivityFeedRowResponseDto> today = new ArrayList<>();
-		List<CrmActivityFeedRowResponseDto> upcoming = new ArrayList<>();
-		fixedRows.forEach(row -> {
-			if (row.getDueAt().isBefore(todayStart)) {
-				overdue.add(row);
-			}
-			else if (row.getDueAt().isBefore(tomorrowStart)) {
-				today.add(row);
-			}
-			else {
-				upcoming.add(row);
-			}
-		});
-		Collections.reverse(overdue);
-
-		List<CrmActivityFeedRowResponseDto> visibleRows = new ArrayList<>(fixedRows);
-		visibleRows.addAll(pageRows);
-		fillNames(visibleRows);
-
-		return new CrmActivityFeedResponseDto(overdue, today, upcoming,
-				new CrmActivityFeedByMonthResponseDto(pageRows, page, toIndex < monthRows.size()));
+		return new ResponseEntityDto(false, rows);
 	}
 
 	private CrmActivityFeedParams buildFeedParams(User currentUser, CrmActivityFeedFilterDto filterDto) {
 		ZoneId zone = timeZoneService.requestTimezone();
 		CrmActivityFeedParams params = new CrmActivityFeedParams();
 		params.setType(filterDto.getType());
-		params.setPage(Math.max(filterDto.getPage(), 0));
 		params.setCurrentEmployeeId(currentUser.getEmployee().getEmployeeId());
 		params.setIsRestrictedToOwner(CrmUtil.isCrmSalesRepresentative(currentUser));
 		params.setOwnerId(filterDto.getOwnerId());
@@ -210,13 +160,6 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 
 	private boolean isRequested(CrmActivityFeedParams feedParams, String type) {
 		return feedParams.getType() == null || feedParams.getType().equals(type);
-	}
-
-	private boolean isFixedBucket(CrmActivityFeedRowResponseDto row, Instant now) {
-		if (row.getDueAt() == null || Boolean.TRUE.equals(row.getIsCompleted())) {
-			return false;
-		}
-		return CrmConstants.ACTIVITY_TYPE_TASK.equals(row.getType()) || !row.getDueAt().isBefore(now);
 	}
 
 	private static Instant resolveFeedAt(CrmActivityFeedRowResponseDto row) {

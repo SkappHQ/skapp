@@ -9,6 +9,4 @@ public class CrmActivityFeedParams extends CrmActivityListParams {
 
 	private String type;
 
-	private int page;
-
 }

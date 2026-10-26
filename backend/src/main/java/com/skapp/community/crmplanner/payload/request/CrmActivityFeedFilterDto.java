@@ -19,6 +19,4 @@ public class CrmActivityFeedFilterDto {
 
 	private LocalDate to;
 
-	private int page = 0;
-
 }
