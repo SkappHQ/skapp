@@ -53,10 +53,8 @@ import org.springframework.stereotype.Repository;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Repository
@@ -71,8 +69,6 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 	public Page<CrmActivityFeedRowResponseDto> findActivities(CrmActivityFeedFilterDto filterDto,
 			Long currentEmployeeId, boolean isRestrictedToOwner, Pageable pageable) {
 		ZoneId zone = timeZoneService.requestTimezone();
-		Set<CrmActivityType> types = filterDto.getType() == null ? EnumSet.allOf(CrmActivityType.class)
-				: EnumSet.of(filterDto.getType());
 		String searchPattern = StringUtils.isNullOrBlank(filterDto.getSearch()) ? null
 				: "%" + StringUtils.escapeLikePattern(filterDto.getSearch().trim().toLowerCase()) + "%";
 		Instant rangeStart = filterDto.getFromDate() == null ? null
@@ -84,216 +80,211 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		JpaCriteriaQuery<Tuple> query = cb.createTupleQuery();
 		List<JpaSubQuery<Tuple>> branches = new ArrayList<>();
 
-		if (types.contains(CrmActivityType.TASK)) {
-			JpaSubQuery<Tuple> taskQuery = query.subquery(Tuple.class);
-			Root<CrmActivityTask> task = taskQuery.from(CrmActivityTask.class);
-			Join<CrmActivityTask, Employee> owner = task.join(CrmActivityTask_.owner, JoinType.LEFT);
-			Path<Long> ownerId = owner.get(Employee_.employeeId);
-			Join<CrmActivityTask, CrmCompany> company = task.join(CrmActivityTask_.company, JoinType.LEFT);
-			company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
-			Join<CrmActivityTask, CrmDeal> deal = task.join(CrmActivityTask_.deal, JoinType.LEFT);
-			deal.on(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
-			Join<CrmActivityTask, CrmContact> contact = task.join(CrmActivityTask_.contact, JoinType.LEFT);
-			contact.on(cb.isFalse(contact.get(CrmContact_.isDeleted)));
-			Path<Instant> dueAt = task.get(CrmActivityTask_.dueAt);
+		JpaSubQuery<Tuple> taskQuery = query.subquery(Tuple.class);
+		Root<CrmActivityTask> task = taskQuery.from(CrmActivityTask.class);
+		Join<CrmActivityTask, Employee> taskOwner = task.join(CrmActivityTask_.owner, JoinType.LEFT);
+		Path<Long> taskOwnerId = taskOwner.get(Employee_.employeeId);
+		Join<CrmActivityTask, CrmCompany> taskCompany = task.join(CrmActivityTask_.company, JoinType.LEFT);
+		taskCompany.on(cb.isFalse(taskCompany.get(CrmCompany_.isDeleted)));
+		Join<CrmActivityTask, CrmDeal> taskDeal = task.join(CrmActivityTask_.deal, JoinType.LEFT);
+		taskDeal.on(cb.isFalse(taskDeal.get(CrmDeal_.isDeleted)));
+		Join<CrmActivityTask, CrmContact> taskContact = task.join(CrmActivityTask_.contact, JoinType.LEFT);
+		taskContact.on(cb.isFalse(taskContact.get(CrmContact_.isDeleted)));
+		Path<Instant> taskDueAt = task.get(CrmActivityTask_.dueAt);
 
-			List<Predicate> predicates = new ArrayList<>();
-			predicates.add(cb.isFalse(task.get(CrmActivityTask_.isDeleted)));
-			if (isRestrictedToOwner) {
-				predicates.add(cb.equal(ownerId, currentEmployeeId));
-			}
-			if (filterDto.getOwnerId() != null) {
-				predicates.add(cb.equal(ownerId, filterDto.getOwnerId()));
-			}
-			if (rangeStart != null) {
-				predicates.add(cb.greaterThanOrEqualTo(dueAt, rangeStart));
-			}
-			if (rangeEnd != null) {
-				predicates.add(cb.lessThan(dueAt, rangeEnd));
-			}
-			if (searchPattern != null) {
-				Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
-				contactCompany.on(cb.isFalse(contactCompany.get(CrmCompany_.isDeleted)));
-				predicates.add(cb.or(cb.like(cb.lower(task.get(CrmActivityTask_.name)), searchPattern),
-						cb.like(cb.lower(contact.get(CrmContact_.name)), searchPattern),
-						cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), searchPattern)));
-			}
-
-			CriteriaBuilder.Case<Instant> feedAt = cb.selectCase();
-			feedAt.when(cb.isTrue(task.get(CrmActivityTask_.isCompleted)), task.get(CrmActivityTask_.completedAt))
-				.otherwise(dueAt);
-
-			taskQuery
-				.multiselect(task.get(CrmActivityTask_.id).alias("id"), cb.literal("TASK").alias("type"),
-						task.get(CrmActivityTask_.name).alias("title"), feedAt.alias("feedAt"), dueAt.alias("dueAt"),
-						task.get(CrmActivityTask_.completedAt).alias("completedAt"),
-						task.get(CrmActivityTask_.isCompleted).alias("isCompleted"),
-						task.get(CrmActivityTask_.priority).as(String.class).alias("priority"),
-						ownerId.alias("ownerId"), deal.get(CrmDeal_.id).alias("dealId"),
-						company.get(CrmCompany_.id).alias("companyId"), contact.get(CrmContact_.id).alias("contactId"))
-				.where(predicates.toArray(new Predicate[0]));
-			branches.add(taskQuery);
+		List<Predicate> taskPredicates = new ArrayList<>();
+		taskPredicates.add(cb.isFalse(task.get(CrmActivityTask_.isDeleted)));
+		if (isRestrictedToOwner) {
+			taskPredicates.add(cb.equal(taskOwnerId, currentEmployeeId));
+		}
+		if (filterDto.getOwnerId() != null) {
+			taskPredicates.add(cb.equal(taskOwnerId, filterDto.getOwnerId()));
+		}
+		if (rangeStart != null) {
+			taskPredicates.add(cb.greaterThanOrEqualTo(taskDueAt, rangeStart));
+		}
+		if (rangeEnd != null) {
+			taskPredicates.add(cb.lessThan(taskDueAt, rangeEnd));
+		}
+		if (searchPattern != null) {
+			Join<CrmContact, CrmCompany> taskContactCompany = taskContact.join(CrmContact_.company, JoinType.LEFT);
+			taskContactCompany.on(cb.isFalse(taskContactCompany.get(CrmCompany_.isDeleted)));
+			taskPredicates.add(cb.or(cb.like(cb.lower(task.get(CrmActivityTask_.name)), searchPattern),
+					cb.like(cb.lower(taskContact.get(CrmContact_.name)), searchPattern),
+					cb.like(cb.lower(taskContactCompany.get(CrmCompany_.name)), searchPattern)));
 		}
 
-		if (types.contains(CrmActivityType.CALL)) {
-			JpaSubQuery<Tuple> callQuery = query.subquery(Tuple.class);
-			Root<CrmActivityCall> call = callQuery.from(CrmActivityCall.class);
-			Join<CrmActivityCall, Employee> owner = call.join(CrmActivityCall_.owner, JoinType.LEFT);
-			Path<Long> ownerId = owner.get(Employee_.employeeId);
-			Join<CrmActivityCall, CrmCompany> company = call.join(CrmActivityCall_.company, JoinType.LEFT);
-			company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
-			Join<CrmActivityCall, CrmDeal> deal = call.join(CrmActivityCall_.deal, JoinType.LEFT);
-			deal.on(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
-			Join<CrmActivityCall, CrmContact> contact = call.join(CrmActivityCall_.contact, JoinType.LEFT);
-			contact.on(cb.isFalse(contact.get(CrmContact_.isDeleted)));
-			Path<Instant> loggedAt = call.get(CrmActivityCall_.loggedAt);
+		CriteriaBuilder.Case<Instant> taskFeedAt = cb.selectCase();
+		taskFeedAt.when(cb.isTrue(task.get(CrmActivityTask_.isCompleted)), task.get(CrmActivityTask_.completedAt))
+			.otherwise(taskDueAt);
 
-			List<Predicate> predicates = new ArrayList<>();
-			predicates.add(cb.isFalse(call.get(CrmActivityCall_.isDeleted)));
-			if (isRestrictedToOwner) {
-				predicates.add(cb.equal(ownerId, currentEmployeeId));
-			}
-			if (filterDto.getOwnerId() != null) {
-				predicates.add(cb.equal(ownerId, filterDto.getOwnerId()));
-			}
-			if (rangeStart != null) {
-				predicates.add(cb.greaterThanOrEqualTo(loggedAt, rangeStart));
-			}
-			if (rangeEnd != null) {
-				predicates.add(cb.lessThan(loggedAt, rangeEnd));
-			}
-			if (searchPattern != null) {
-				Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
-				contactCompany.on(cb.isFalse(contactCompany.get(CrmCompany_.isDeleted)));
-				predicates.add(cb.or(cb.like(cb.lower(call.get(CrmActivityCall_.subject)), searchPattern),
-						cb.like(cb.lower(contact.get(CrmContact_.name)), searchPattern),
-						cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), searchPattern)));
-			}
+		taskQuery.multiselect(task.get(CrmActivityTask_.id).alias("id"), cb.literal("TASK").alias("type"),
+				task.get(CrmActivityTask_.name).alias("title"), taskFeedAt.alias("feedAt"), taskDueAt.alias("dueAt"),
+				task.get(CrmActivityTask_.completedAt).alias("completedAt"),
+				task.get(CrmActivityTask_.isCompleted).alias("isCompleted"),
+				task.get(CrmActivityTask_.priority).as(String.class).alias("priority"), taskOwnerId.alias("ownerId"),
+				taskDeal.get(CrmDeal_.id).alias("dealId"), taskCompany.get(CrmCompany_.id).alias("companyId"),
+				taskContact.get(CrmContact_.id).alias("contactId"))
+			.where(taskPredicates.toArray(new Predicate[0]));
+		branches.add(taskQuery);
 
-			callQuery
-				.multiselect(call.get(CrmActivityCall_.id).alias("id"), cb.literal("CALL").alias("type"),
-						call.get(CrmActivityCall_.subject).alias("title"), loggedAt.alias("feedAt"),
-						cb.nullLiteral(Instant.class).cast(Instant.class).alias("dueAt"),
-						cb.nullLiteral(Instant.class).cast(Instant.class).alias("completedAt"),
-						cb.nullLiteral(Boolean.class).cast(Boolean.class).alias("isCompleted"),
-						cb.nullLiteral(String.class).cast(String.class).alias("priority"), ownerId.alias("ownerId"),
-						deal.get(CrmDeal_.id).alias("dealId"), company.get(CrmCompany_.id).alias("companyId"),
-						contact.get(CrmContact_.id).alias("contactId"))
-				.where(predicates.toArray(new Predicate[0]));
-			branches.add(callQuery);
+		JpaSubQuery<Tuple> callQuery = query.subquery(Tuple.class);
+		Root<CrmActivityCall> call = callQuery.from(CrmActivityCall.class);
+		Join<CrmActivityCall, Employee> callOwner = call.join(CrmActivityCall_.owner, JoinType.LEFT);
+		Path<Long> callOwnerId = callOwner.get(Employee_.employeeId);
+		Join<CrmActivityCall, CrmCompany> callCompany = call.join(CrmActivityCall_.company, JoinType.LEFT);
+		callCompany.on(cb.isFalse(callCompany.get(CrmCompany_.isDeleted)));
+		Join<CrmActivityCall, CrmDeal> callDeal = call.join(CrmActivityCall_.deal, JoinType.LEFT);
+		callDeal.on(cb.isFalse(callDeal.get(CrmDeal_.isDeleted)));
+		Join<CrmActivityCall, CrmContact> callContact = call.join(CrmActivityCall_.contact, JoinType.LEFT);
+		callContact.on(cb.isFalse(callContact.get(CrmContact_.isDeleted)));
+		Path<Instant> callLoggedAt = call.get(CrmActivityCall_.loggedAt);
+
+		List<Predicate> callPredicates = new ArrayList<>();
+		callPredicates.add(cb.isFalse(call.get(CrmActivityCall_.isDeleted)));
+		if (isRestrictedToOwner) {
+			callPredicates.add(cb.equal(callOwnerId, currentEmployeeId));
+		}
+		if (filterDto.getOwnerId() != null) {
+			callPredicates.add(cb.equal(callOwnerId, filterDto.getOwnerId()));
+		}
+		if (rangeStart != null) {
+			callPredicates.add(cb.greaterThanOrEqualTo(callLoggedAt, rangeStart));
+		}
+		if (rangeEnd != null) {
+			callPredicates.add(cb.lessThan(callLoggedAt, rangeEnd));
+		}
+		if (searchPattern != null) {
+			Join<CrmContact, CrmCompany> callContactCompany = callContact.join(CrmContact_.company, JoinType.LEFT);
+			callContactCompany.on(cb.isFalse(callContactCompany.get(CrmCompany_.isDeleted)));
+			callPredicates.add(cb.or(cb.like(cb.lower(call.get(CrmActivityCall_.subject)), searchPattern),
+					cb.like(cb.lower(callContact.get(CrmContact_.name)), searchPattern),
+					cb.like(cb.lower(callContactCompany.get(CrmCompany_.name)), searchPattern)));
 		}
 
-		if (types.contains(CrmActivityType.MEETING)) {
-			JpaSubQuery<Tuple> meetingQuery = query.subquery(Tuple.class);
-			Root<CrmActivityMeeting> meeting = meetingQuery.from(CrmActivityMeeting.class);
-			Join<CrmActivityMeeting, Employee> owner = meeting.join(CrmActivityMeeting_.owner, JoinType.LEFT);
-			Path<Long> ownerId = owner.get(Employee_.employeeId);
-			Join<CrmActivityMeeting, CrmCompany> company = meeting.join(CrmActivityMeeting_.company, JoinType.LEFT);
-			company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
-			Join<CrmActivityMeeting, CrmDeal> deal = meeting.join(CrmActivityMeeting_.deal, JoinType.LEFT);
-			deal.on(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
-			Path<Instant> startAt = meeting.get(CrmActivityMeeting_.startAt);
+		callQuery
+			.multiselect(call.get(CrmActivityCall_.id).alias("id"), cb.literal("CALL").alias("type"),
+					call.get(CrmActivityCall_.subject).alias("title"), callLoggedAt.alias("feedAt"),
+					cb.nullLiteral(Instant.class).cast(Instant.class).alias("dueAt"),
+					cb.nullLiteral(Instant.class).cast(Instant.class).alias("completedAt"),
+					cb.nullLiteral(Boolean.class).cast(Boolean.class).alias("isCompleted"),
+					cb.nullLiteral(String.class).cast(String.class).alias("priority"), callOwnerId.alias("ownerId"),
+					callDeal.get(CrmDeal_.id).alias("dealId"), callCompany.get(CrmCompany_.id).alias("companyId"),
+					callContact.get(CrmContact_.id).alias("contactId"))
+			.where(callPredicates.toArray(new Predicate[0]));
+		branches.add(callQuery);
 
-			List<Predicate> predicates = new ArrayList<>();
-			predicates.add(cb.isFalse(meeting.get(CrmActivityMeeting_.isDeleted)));
-			if (isRestrictedToOwner) {
-				predicates.add(cb.equal(ownerId, currentEmployeeId));
-			}
-			if (filterDto.getOwnerId() != null) {
-				predicates.add(cb.equal(ownerId, filterDto.getOwnerId()));
-			}
-			if (rangeStart != null) {
-				predicates.add(cb.greaterThanOrEqualTo(startAt, rangeStart));
-			}
-			if (rangeEnd != null) {
-				predicates.add(cb.lessThan(startAt, rangeEnd));
-			}
-			if (searchPattern != null) {
-				Subquery<Long> contactMatch = meetingQuery.subquery(Long.class);
-				Root<CrmActivityMeetingContact> link = contactMatch.from(CrmActivityMeetingContact.class);
-				Join<CrmActivityMeetingContact, CrmContact> contact = link.join(CrmActivityMeetingContact_.contact);
-				Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
-				contactCompany.on(cb.isFalse(contactCompany.get(CrmCompany_.isDeleted)));
-				contactMatch.select(link.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId))
-					.where(cb.equal(link.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId),
-							meeting.get(CrmActivityMeeting_.id)), cb.isFalse(contact.get(CrmContact_.isDeleted)),
-							cb.or(cb.like(cb.lower(contact.get(CrmContact_.name)), searchPattern),
-									cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), searchPattern)));
-				predicates.add(cb.or(cb.like(cb.lower(meeting.get(CrmActivityMeeting_.name)), searchPattern),
-						cb.exists(contactMatch)));
-			}
+		JpaSubQuery<Tuple> meetingQuery = query.subquery(Tuple.class);
+		Root<CrmActivityMeeting> meeting = meetingQuery.from(CrmActivityMeeting.class);
+		Join<CrmActivityMeeting, Employee> meetingOwner = meeting.join(CrmActivityMeeting_.owner, JoinType.LEFT);
+		Path<Long> meetingOwnerId = meetingOwner.get(Employee_.employeeId);
+		Join<CrmActivityMeeting, CrmCompany> meetingCompany = meeting.join(CrmActivityMeeting_.company, JoinType.LEFT);
+		meetingCompany.on(cb.isFalse(meetingCompany.get(CrmCompany_.isDeleted)));
+		Join<CrmActivityMeeting, CrmDeal> meetingDeal = meeting.join(CrmActivityMeeting_.deal, JoinType.LEFT);
+		meetingDeal.on(cb.isFalse(meetingDeal.get(CrmDeal_.isDeleted)));
+		Path<Instant> meetingStartAt = meeting.get(CrmActivityMeeting_.startAt);
 
-			CriteriaBuilder.Case<Instant> dueAt = cb.selectCase();
-			dueAt.when(cb.isTrue(meeting.get(CrmActivityMeeting_.isScheduled)), startAt)
-				.otherwise(cb.nullLiteral(Instant.class).cast(Instant.class));
-
-			meetingQuery
-				.multiselect(meeting.get(CrmActivityMeeting_.id).alias("id"), cb.literal("MEETING").alias("type"),
-						meeting.get(CrmActivityMeeting_.name).alias("title"), startAt.alias("feedAt"),
-						dueAt.alias("dueAt"), cb.nullLiteral(Instant.class).cast(Instant.class).alias("completedAt"),
-						cb.nullLiteral(Boolean.class).cast(Boolean.class).alias("isCompleted"),
-						cb.nullLiteral(String.class).cast(String.class).alias("priority"), ownerId.alias("ownerId"),
-						deal.get(CrmDeal_.id).alias("dealId"), company.get(CrmCompany_.id).alias("companyId"),
-						cb.nullLiteral(Long.class).cast(Long.class).alias("contactId"))
-				.where(predicates.toArray(new Predicate[0]));
-			branches.add(meetingQuery);
+		List<Predicate> meetingPredicates = new ArrayList<>();
+		meetingPredicates.add(cb.isFalse(meeting.get(CrmActivityMeeting_.isDeleted)));
+		if (isRestrictedToOwner) {
+			meetingPredicates.add(cb.equal(meetingOwnerId, currentEmployeeId));
+		}
+		if (filterDto.getOwnerId() != null) {
+			meetingPredicates.add(cb.equal(meetingOwnerId, filterDto.getOwnerId()));
+		}
+		if (rangeStart != null) {
+			meetingPredicates.add(cb.greaterThanOrEqualTo(meetingStartAt, rangeStart));
+		}
+		if (rangeEnd != null) {
+			meetingPredicates.add(cb.lessThan(meetingStartAt, rangeEnd));
+		}
+		if (searchPattern != null) {
+			Subquery<Long> meetingContactMatch = meetingQuery.subquery(Long.class);
+			Root<CrmActivityMeetingContact> meetingLink = meetingContactMatch.from(CrmActivityMeetingContact.class);
+			Join<CrmActivityMeetingContact, CrmContact> meetingContact = meetingLink
+				.join(CrmActivityMeetingContact_.contact);
+			Join<CrmContact, CrmCompany> meetingContactCompany = meetingContact.join(CrmContact_.company,
+					JoinType.LEFT);
+			meetingContactCompany.on(cb.isFalse(meetingContactCompany.get(CrmCompany_.isDeleted)));
+			meetingContactMatch
+				.select(meetingLink.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId))
+				.where(cb.equal(
+						meetingLink.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId),
+						meeting.get(CrmActivityMeeting_.id)), cb.isFalse(meetingContact.get(CrmContact_.isDeleted)),
+						cb.or(cb.like(cb.lower(meetingContact.get(CrmContact_.name)), searchPattern),
+								cb.like(cb.lower(meetingContactCompany.get(CrmCompany_.name)), searchPattern)));
+			meetingPredicates.add(cb.or(cb.like(cb.lower(meeting.get(CrmActivityMeeting_.name)), searchPattern),
+					cb.exists(meetingContactMatch)));
 		}
 
-		if (types.contains(CrmActivityType.EMAIL)) {
-			JpaSubQuery<Tuple> emailQuery = query.subquery(Tuple.class);
-			Root<CrmActivityEmail> email = emailQuery.from(CrmActivityEmail.class);
-			Join<CrmActivityEmail, Employee> owner = email.join(CrmActivityEmail_.owner, JoinType.LEFT);
-			Path<Long> ownerId = owner.get(Employee_.employeeId);
-			Join<CrmActivityEmail, CrmCompany> company = email.join(CrmActivityEmail_.company, JoinType.LEFT);
-			company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
-			Join<CrmActivityEmail, CrmDeal> deal = email.join(CrmActivityEmail_.deal, JoinType.LEFT);
-			deal.on(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
-			Path<Instant> loggedAt = email.get(CrmActivityEmail_.loggedAt);
+		CriteriaBuilder.Case<Instant> meetingDueAt = cb.selectCase();
+		meetingDueAt.when(cb.isTrue(meeting.get(CrmActivityMeeting_.isScheduled)), meetingStartAt)
+			.otherwise(cb.nullLiteral(Instant.class).cast(Instant.class));
 
-			List<Predicate> predicates = new ArrayList<>();
-			predicates.add(cb.isFalse(email.get(CrmActivityEmail_.isDeleted)));
-			if (isRestrictedToOwner) {
-				predicates.add(cb.equal(ownerId, currentEmployeeId));
-			}
-			if (filterDto.getOwnerId() != null) {
-				predicates.add(cb.equal(ownerId, filterDto.getOwnerId()));
-			}
-			if (rangeStart != null) {
-				predicates.add(cb.greaterThanOrEqualTo(loggedAt, rangeStart));
-			}
-			if (rangeEnd != null) {
-				predicates.add(cb.lessThan(loggedAt, rangeEnd));
-			}
-			if (searchPattern != null) {
-				Subquery<Long> contactMatch = emailQuery.subquery(Long.class);
-				Root<CrmActivityEmailContact> link = contactMatch.from(CrmActivityEmailContact.class);
-				Join<CrmActivityEmailContact, CrmContact> contact = link.join(CrmActivityEmailContact_.contact);
-				Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
-				contactCompany.on(cb.isFalse(contactCompany.get(CrmCompany_.isDeleted)));
-				contactMatch.select(link.get(CrmActivityEmailContact_.id).get(CrmActivityEmailContactId_.emailId))
-					.where(cb.equal(link.get(CrmActivityEmailContact_.id).get(CrmActivityEmailContactId_.emailId),
-							email.get(CrmActivityEmail_.id)), cb.isFalse(contact.get(CrmContact_.isDeleted)),
-							cb.or(cb.like(cb.lower(contact.get(CrmContact_.name)), searchPattern),
-									cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), searchPattern)));
-				predicates.add(cb.or(cb.like(cb.lower(email.get(CrmActivityEmail_.subject)), searchPattern),
-						cb.exists(contactMatch)));
-			}
+		meetingQuery
+			.multiselect(meeting.get(CrmActivityMeeting_.id).alias("id"), cb.literal("MEETING").alias("type"),
+					meeting.get(CrmActivityMeeting_.name).alias("title"), meetingStartAt.alias("feedAt"),
+					meetingDueAt.alias("dueAt"), cb.nullLiteral(Instant.class).cast(Instant.class).alias("completedAt"),
+					cb.nullLiteral(Boolean.class).cast(Boolean.class).alias("isCompleted"),
+					cb.nullLiteral(String.class).cast(String.class).alias("priority"), meetingOwnerId.alias("ownerId"),
+					meetingDeal.get(CrmDeal_.id).alias("dealId"), meetingCompany.get(CrmCompany_.id).alias("companyId"),
+					cb.nullLiteral(Long.class).cast(Long.class).alias("contactId"))
+			.where(meetingPredicates.toArray(new Predicate[0]));
+		branches.add(meetingQuery);
 
-			emailQuery
-				.multiselect(email.get(CrmActivityEmail_.id).alias("id"), cb.literal("EMAIL").alias("type"),
-						email.get(CrmActivityEmail_.subject).alias("title"), loggedAt.alias("feedAt"),
-						cb.nullLiteral(Instant.class).cast(Instant.class).alias("dueAt"),
-						cb.nullLiteral(Instant.class).cast(Instant.class).alias("completedAt"),
-						cb.nullLiteral(Boolean.class).cast(Boolean.class).alias("isCompleted"),
-						cb.nullLiteral(String.class).cast(String.class).alias("priority"), ownerId.alias("ownerId"),
-						deal.get(CrmDeal_.id).alias("dealId"), company.get(CrmCompany_.id).alias("companyId"),
-						cb.nullLiteral(Long.class).cast(Long.class).alias("contactId"))
-				.where(predicates.toArray(new Predicate[0]));
-			branches.add(emailQuery);
+		JpaSubQuery<Tuple> emailQuery = query.subquery(Tuple.class);
+		Root<CrmActivityEmail> email = emailQuery.from(CrmActivityEmail.class);
+		Join<CrmActivityEmail, Employee> emailOwner = email.join(CrmActivityEmail_.owner, JoinType.LEFT);
+		Path<Long> emailOwnerId = emailOwner.get(Employee_.employeeId);
+		Join<CrmActivityEmail, CrmCompany> emailCompany = email.join(CrmActivityEmail_.company, JoinType.LEFT);
+		emailCompany.on(cb.isFalse(emailCompany.get(CrmCompany_.isDeleted)));
+		Join<CrmActivityEmail, CrmDeal> emailDeal = email.join(CrmActivityEmail_.deal, JoinType.LEFT);
+		emailDeal.on(cb.isFalse(emailDeal.get(CrmDeal_.isDeleted)));
+		Path<Instant> emailLoggedAt = email.get(CrmActivityEmail_.loggedAt);
+
+		List<Predicate> emailPredicates = new ArrayList<>();
+		emailPredicates.add(cb.isFalse(email.get(CrmActivityEmail_.isDeleted)));
+		if (isRestrictedToOwner) {
+			emailPredicates.add(cb.equal(emailOwnerId, currentEmployeeId));
+		}
+		if (filterDto.getOwnerId() != null) {
+			emailPredicates.add(cb.equal(emailOwnerId, filterDto.getOwnerId()));
+		}
+		if (rangeStart != null) {
+			emailPredicates.add(cb.greaterThanOrEqualTo(emailLoggedAt, rangeStart));
+		}
+		if (rangeEnd != null) {
+			emailPredicates.add(cb.lessThan(emailLoggedAt, rangeEnd));
+		}
+		if (searchPattern != null) {
+			Subquery<Long> emailContactMatch = emailQuery.subquery(Long.class);
+			Root<CrmActivityEmailContact> emailLink = emailContactMatch.from(CrmActivityEmailContact.class);
+			Join<CrmActivityEmailContact, CrmContact> emailContact = emailLink.join(CrmActivityEmailContact_.contact);
+			Join<CrmContact, CrmCompany> emailContactCompany = emailContact.join(CrmContact_.company, JoinType.LEFT);
+			emailContactCompany.on(cb.isFalse(emailContactCompany.get(CrmCompany_.isDeleted)));
+			emailContactMatch.select(emailLink.get(CrmActivityEmailContact_.id).get(CrmActivityEmailContactId_.emailId))
+				.where(cb.equal(emailLink.get(CrmActivityEmailContact_.id).get(CrmActivityEmailContactId_.emailId),
+						email.get(CrmActivityEmail_.id)), cb.isFalse(emailContact.get(CrmContact_.isDeleted)),
+						cb.or(cb.like(cb.lower(emailContact.get(CrmContact_.name)), searchPattern),
+								cb.like(cb.lower(emailContactCompany.get(CrmCompany_.name)), searchPattern)));
+			emailPredicates.add(cb.or(cb.like(cb.lower(email.get(CrmActivityEmail_.subject)), searchPattern),
+					cb.exists(emailContactMatch)));
 		}
 
-		JpaSubQuery<Tuple> union = branches.size() == 1 ? branches.get(0)
-				: cb.union(true, branches.get(0), branches.subList(1, branches.size()).toArray(new Subquery<?>[0]));
+		emailQuery
+			.multiselect(email.get(CrmActivityEmail_.id).alias("id"), cb.literal("EMAIL").alias("type"),
+					email.get(CrmActivityEmail_.subject).alias("title"), emailLoggedAt.alias("feedAt"),
+					cb.nullLiteral(Instant.class).cast(Instant.class).alias("dueAt"),
+					cb.nullLiteral(Instant.class).cast(Instant.class).alias("completedAt"),
+					cb.nullLiteral(Boolean.class).cast(Boolean.class).alias("isCompleted"),
+					cb.nullLiteral(String.class).cast(String.class).alias("priority"), emailOwnerId.alias("ownerId"),
+					emailDeal.get(CrmDeal_.id).alias("dealId"), emailCompany.get(CrmCompany_.id).alias("companyId"),
+					cb.nullLiteral(Long.class).cast(Long.class).alias("contactId"))
+			.where(emailPredicates.toArray(new Predicate[0]));
+		branches.add(emailQuery);
+
+		JpaSubQuery<Tuple> union = cb.union(true, branches.get(0),
+				branches.subList(1, branches.size()).toArray(new Subquery<?>[0]));
 		JpaDerivedRoot<Tuple> feed = query.from(union);
 
 		query
