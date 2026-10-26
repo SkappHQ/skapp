@@ -17,7 +17,7 @@ public class CrmActivityFeedRowResponseDto {
 
 	private CrmActivityType type;
 
-	private String subject;
+	private String title;
 
 	private Instant dueAt;
 

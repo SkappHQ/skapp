@@ -126,7 +126,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 
 			taskQuery
 				.multiselect(task.get(CrmActivityTask_.id).alias("id"), cb.literal("TASK").alias("type"),
-						task.get(CrmActivityTask_.name).alias("subject"), feedAt.alias("feedAt"), dueAt.alias("dueAt"),
+						task.get(CrmActivityTask_.name).alias("title"), feedAt.alias("feedAt"), dueAt.alias("dueAt"),
 						task.get(CrmActivityTask_.completedAt).alias("completedAt"),
 						task.get(CrmActivityTask_.isCompleted).alias("isCompleted"),
 						task.get(CrmActivityTask_.priority).as(String.class).alias("priority"),
@@ -178,7 +178,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 
 			callQuery
 				.multiselect(call.get(CrmActivityCall_.id).alias("id"), cb.literal("CALL").alias("type"),
-						call.get(CrmActivityCall_.subject).alias("subject"), loggedAt.alias("feedAt"),
+						call.get(CrmActivityCall_.subject).alias("title"), loggedAt.alias("feedAt"),
 						cb.nullLiteral(Instant.class).cast(Instant.class).alias("dueAt"),
 						cb.nullLiteral(Instant.class).cast(Instant.class).alias("completedAt"),
 						cb.nullLiteral(Boolean.class).cast(Boolean.class).alias("isCompleted"),
@@ -239,7 +239,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 
 			meetingQuery
 				.multiselect(meeting.get(CrmActivityMeeting_.id).alias("id"), cb.literal("MEETING").alias("type"),
-						meeting.get(CrmActivityMeeting_.name).alias("subject"), startAt.alias("feedAt"),
+						meeting.get(CrmActivityMeeting_.name).alias("title"), startAt.alias("feedAt"),
 						dueAt.alias("dueAt"), cb.nullLiteral(Instant.class).cast(Instant.class).alias("completedAt"),
 						cb.nullLiteral(Boolean.class).cast(Boolean.class).alias("isCompleted"),
 						cb.nullLiteral(String.class).cast(String.class).alias("priority"), ownerId.alias("ownerId"),
@@ -295,7 +295,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 
 			emailQuery
 				.multiselect(email.get(CrmActivityEmail_.id).alias("id"), cb.literal("EMAIL").alias("type"),
-						email.get(CrmActivityEmail_.subject).alias("subject"), loggedAt.alias("feedAt"),
+						email.get(CrmActivityEmail_.subject).alias("title"), loggedAt.alias("feedAt"),
 						cb.nullLiteral(Instant.class).cast(Instant.class).alias("dueAt"),
 						cb.nullLiteral(Instant.class).cast(Instant.class).alias("completedAt"),
 						cb.nullLiteral(Boolean.class).cast(Boolean.class).alias("isCompleted"),
@@ -316,7 +316,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		JpaDerivedRoot<Tuple> feed = query.from(union);
 
 		query
-			.multiselect(feed.get("id"), feed.get("type"), feed.get("subject"), feed.get("feedAt"), feed.get("dueAt"),
+			.multiselect(feed.get("id"), feed.get("type"), feed.get("title"), feed.get("feedAt"), feed.get("dueAt"),
 					feed.get("completedAt"), feed.get("isCompleted"), feed.get("priority"), feed.get("ownerId"),
 					feed.get("dealId"), feed.get("companyId"), feed.get("contactId"), feed.get("dealName"),
 					feed.get("dealIsDeleted"), feed.get("companyName"), feed.get("companyIsDeleted"),
@@ -335,7 +335,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			CrmActivityFeedRowResponseDto row = new CrmActivityFeedRowResponseDto();
 			row.setId(tuple.get(0, Long.class));
 			row.setType(CrmActivityType.valueOf(tuple.get(1, String.class)));
-			row.setSubject(tuple.get(2, String.class));
+			row.setTitle(tuple.get(2, String.class));
 			row.setDueAt(tuple.get(4, Instant.class));
 			row.setOccurredAt(row.getType() == CrmActivityType.TASK ? null : tuple.get(3, Instant.class));
 			row.setCompletedAt(tuple.get(5, Instant.class));
