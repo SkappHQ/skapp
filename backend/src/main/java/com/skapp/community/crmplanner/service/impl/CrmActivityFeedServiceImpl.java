@@ -67,8 +67,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 
-	private static final int BY_MONTH_PAGE_SIZE = 25;
-
 	private static final Comparator<CrmActivityFeedRowResponseDto> SOONEST_FIRST = Comparator
 		.comparing(CrmActivityFeedRowResponseDto::getDueAt)
 		.thenComparing(CrmActivityFeedRowResponseDto::getType)
@@ -155,8 +153,8 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 			.sorted(NEWEST_FIRST)
 			.toList();
 
-		int fromIndex = Math.min(page * BY_MONTH_PAGE_SIZE, monthRows.size());
-		int toIndex = Math.min(fromIndex + BY_MONTH_PAGE_SIZE, monthRows.size());
+		int fromIndex = Math.min(page * CrmConstants.ACTIVITY_FEED_BY_MONTH_PAGE_SIZE, monthRows.size());
+		int toIndex = Math.min(fromIndex + CrmConstants.ACTIVITY_FEED_BY_MONTH_PAGE_SIZE, monthRows.size());
 		List<CrmActivityFeedRowResponseDto> pageRows = new ArrayList<>(monthRows.subList(fromIndex, toIndex));
 
 		List<CrmActivityFeedRowResponseDto> overdue = new ArrayList<>();
