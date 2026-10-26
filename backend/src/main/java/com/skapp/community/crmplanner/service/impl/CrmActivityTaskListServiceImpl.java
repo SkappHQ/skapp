@@ -12,7 +12,6 @@ import com.skapp.community.crmplanner.service.CrmActivityTaskListService;
 import com.skapp.community.crmplanner.type.CrmActivityTaskFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityTaskSort;
 import com.skapp.community.crmplanner.util.CrmUtil;
-import com.skapp.community.crmplanner.util.CrmValidations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
@@ -47,8 +46,6 @@ public class CrmActivityTaskListServiceImpl implements CrmActivityTaskListServic
 		boolean isRepresentative = CrmUtil.isCrmSalesRepresentative(currentUser);
 		params.setCurrentEmployeeId(currentUser.getEmployee().getEmployeeId());
 		params.setIsRestrictedToOwner(isRepresentative);
-
-		CrmValidations.validateActivityDateRange(filterDto.getStartDate(), filterDto.getEndDate());
 
 		params.setOwnerId(filterDto.getOwnerId());
 		if (!StringUtils.isNullOrBlank(filterDto.getSearchKeyword())) {

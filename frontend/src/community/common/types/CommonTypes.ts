@@ -27,6 +27,8 @@ export type TranslatorFunctionType = (
 export interface MyAppPropsType extends AppProps {
   initialI18nStore: ResourcesType;
   initialLanguage: string;
+  gtmId?: string;
+  nonce?: string;
 }
 
 export type StyleProps = Record<string, SxProps>;
