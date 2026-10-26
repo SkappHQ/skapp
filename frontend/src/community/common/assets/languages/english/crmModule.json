@@ -619,7 +619,7 @@
         "scheduledOn": "Scheduled on {{date}}",
         "occurredAt": "{{date}} at {{time}}"
       },
-      "deletedLink": "{{name}} (deleted)"
+      "deletedAssociation": "{{name}} (deleted)"
     },
     "feed": {
       "loading": "Loading activities",
