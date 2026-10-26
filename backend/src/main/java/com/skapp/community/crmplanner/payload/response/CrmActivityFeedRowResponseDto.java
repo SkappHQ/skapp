@@ -1,6 +1,7 @@
 package com.skapp.community.crmplanner.payload.response;
 
 import com.skapp.community.crmplanner.type.CrmActivityTaskPriority;
+import com.skapp.community.crmplanner.type.CrmActivityType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,7 +15,7 @@ public class CrmActivityFeedRowResponseDto {
 
 	private Long id;
 
-	private String type;
+	private CrmActivityType type;
 
 	private String subject;
 
@@ -28,7 +29,7 @@ public class CrmActivityFeedRowResponseDto {
 
 	private CrmActivityTaskPriority priority;
 
-	private CrmActivityFeedOwnerResponseDto owner;
+	private Long ownerId;
 
 	private List<CrmActivityFeedLinkResponseDto> contacts = new ArrayList<>();
 

@@ -13,6 +13,6 @@ public class CrmActivityFeedLinkResponseDto {
 
 	private String name;
 
-	private boolean deleted;
+	private Boolean isDeleted;
 
 }

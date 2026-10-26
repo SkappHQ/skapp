@@ -5,7 +5,6 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.StringUtils;
-import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
@@ -13,7 +12,6 @@ import com.skapp.community.crmplanner.payload.request.CrmActivityFeedFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityCallResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityEmailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityFeedLinkResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmActivityFeedOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityFeedRowResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityMeetingResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityTaskResponseDto;
@@ -29,19 +27,16 @@ import com.skapp.community.crmplanner.type.CrmActivityCallFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityCallSort;
 import com.skapp.community.crmplanner.type.CrmActivityEmailFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityEmailSort;
-import com.skapp.community.crmplanner.type.CrmActivityFeedParams;
 import com.skapp.community.crmplanner.type.CrmActivityListParams;
 import com.skapp.community.crmplanner.type.CrmActivityMeetingFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityMeetingSort;
 import com.skapp.community.crmplanner.type.CrmActivityTaskFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityTaskSort;
+import com.skapp.community.crmplanner.type.CrmActivityType;
 import com.skapp.community.crmplanner.util.CrmUtil;
 import com.skapp.community.crmplanner.util.CrmValidations;
-import com.skapp.community.peopleplanner.model.Employee;
-import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,7 +48,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -62,11 +56,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
-
-	private static final Comparator<CrmActivityFeedRowResponseDto> NEWEST_FIRST = Comparator
-		.comparing(CrmActivityFeedServiceImpl::resolveFeedAt, Comparator.nullsLast(Comparator.reverseOrder()))
-		.thenComparing(CrmActivityFeedRowResponseDto::getType)
-		.thenComparing(CrmActivityFeedRowResponseDto::getId, Comparator.reverseOrder());
 
 	private final UserService userService;
 
@@ -80,8 +69,6 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 
 	private final CrmActivityEmailDao crmActivityEmailDao;
 
-	private final EmployeeDao employeeDao;
-
 	private final CrmContactDao crmContactDao;
 
 	private final CrmDealDao crmDealDao;
@@ -94,83 +81,82 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 		log.info("getActivities: execution started");
 
 		User currentUser = userService.getCurrentUser();
-		if (CrmUtil.isCrmSalesRepresentative(currentUser)) {
+		boolean isRepresentative = CrmUtil.isCrmSalesRepresentative(currentUser);
+		if (isRepresentative) {
 			filterDto.setOwnerId(null);
-			filterDto.setFrom(null);
-			filterDto.setTo(null);
+			filterDto.setFromDate(null);
+			filterDto.setToDate(null);
 		}
-		CrmValidations.validateActivityDateRange(filterDto.getFrom(), filterDto.getTo());
-
-		CrmActivityFeedParams feedParams = buildFeedParams(currentUser, filterDto);
+		CrmValidations.validateActivityDateRange(filterDto.getFromDate(), filterDto.getToDate());
 
 		List<CrmActivityFeedRowResponseDto> rows = new ArrayList<>();
-		if (isRequested(feedParams, CrmConstants.ACTIVITY_TYPE_TASK)) {
-			CrmActivityTaskFilterParams params = copyParams(new CrmActivityTaskFilterParams(), feedParams);
+		if (isRequested(filterDto, CrmActivityType.TASK)) {
+			CrmActivityTaskFilterParams params = buildParams(new CrmActivityTaskFilterParams(), currentUser,
+					isRepresentative, filterDto);
 			params.setSortKey(CrmActivityTaskSort.DUE_AT);
 			crmActivityTaskDao.findTasks(params).stream().map(this::toTaskRow).forEach(rows::add);
 		}
-		if (isRequested(feedParams, CrmConstants.ACTIVITY_TYPE_CALL)) {
-			CrmActivityCallFilterParams params = copyParams(new CrmActivityCallFilterParams(), feedParams);
+		if (isRequested(filterDto, CrmActivityType.CALL)) {
+			CrmActivityCallFilterParams params = buildParams(new CrmActivityCallFilterParams(), currentUser,
+					isRepresentative, filterDto);
 			params.setSortKey(CrmActivityCallSort.LOGGED_AT);
 			crmActivityCallDao.findCalls(params).stream().map(this::toCallRow).forEach(rows::add);
 		}
-		if (isRequested(feedParams, CrmConstants.ACTIVITY_TYPE_MEETING)) {
-			CrmActivityMeetingFilterParams params = copyParams(new CrmActivityMeetingFilterParams(), feedParams);
+		if (isRequested(filterDto, CrmActivityType.MEETING)) {
+			CrmActivityMeetingFilterParams params = buildParams(new CrmActivityMeetingFilterParams(), currentUser,
+					isRepresentative, filterDto);
 			params.setSortKey(CrmActivityMeetingSort.START_AT);
 			crmActivityMeetingDao.findMeetings(params).stream().map(this::toMeetingRow).forEach(rows::add);
 		}
-		if (isRequested(feedParams, CrmConstants.ACTIVITY_TYPE_EMAIL)) {
-			CrmActivityEmailFilterParams params = copyParams(new CrmActivityEmailFilterParams(), feedParams);
+		if (isRequested(filterDto, CrmActivityType.EMAIL)) {
+			CrmActivityEmailFilterParams params = buildParams(new CrmActivityEmailFilterParams(), currentUser,
+					isRepresentative, filterDto);
 			params.setSortKey(CrmActivityEmailSort.LOGGED_AT);
 			crmActivityEmailDao.findEmails(params).stream().map(this::toEmailRow).forEach(rows::add);
 		}
 
-		rows.sort(NEWEST_FIRST);
+		rows.sort(Comparator.comparing(this::resolveFeedAt, Comparator.nullsLast(Comparator.reverseOrder()))
+			.thenComparing(CrmActivityFeedRowResponseDto::getType)
+			.thenComparing(CrmActivityFeedRowResponseDto::getId, Comparator.reverseOrder()));
 		fillNames(rows);
 
 		log.info("getActivities: execution ended");
 		return new ResponseEntityDto(false, rows);
 	}
 
-	private CrmActivityFeedParams buildFeedParams(User currentUser, CrmActivityFeedFilterDto filterDto) {
+	private <T extends CrmActivityListParams> T buildParams(T params, User currentUser, boolean isRepresentative,
+			CrmActivityFeedFilterDto filterDto) {
 		ZoneId zone = timeZoneService.requestTimezone();
-		CrmActivityFeedParams params = new CrmActivityFeedParams();
-		params.setType(filterDto.getType());
 		params.setCurrentEmployeeId(currentUser.getEmployee().getEmployeeId());
-		params.setIsRestrictedToOwner(CrmUtil.isCrmSalesRepresentative(currentUser));
+		params.setIsRestrictedToOwner(isRepresentative);
 		params.setOwnerId(filterDto.getOwnerId());
 		params.setSortOrder(Sort.Direction.DESC);
 		if (!StringUtils.isNullOrBlank(filterDto.getSearch())) {
 			params.setSearchPattern(
 					"%" + StringUtils.escapeLikePattern(filterDto.getSearch().trim().toLowerCase()) + "%");
 		}
-		if (filterDto.getFrom() != null) {
-			params.setRangeStart(filterDto.getFrom().atStartOfDay(zone).toInstant());
+		if (filterDto.getFromDate() != null) {
+			params.setRangeStart(filterDto.getFromDate().atStartOfDay(zone).toInstant());
 		}
-		if (filterDto.getTo() != null) {
-			params.setRangeEnd(filterDto.getTo().plusDays(1).atStartOfDay(zone).toInstant());
+		if (filterDto.getToDate() != null) {
+			params.setRangeEnd(filterDto.getToDate().plusDays(1).atStartOfDay(zone).toInstant());
 		}
 		return params;
 	}
 
-	private <T extends CrmActivityListParams> T copyParams(T params, CrmActivityFeedParams feedParams) {
-		BeanUtils.copyProperties(feedParams, params);
-		return params;
+	private boolean isRequested(CrmActivityFeedFilterDto filterDto, CrmActivityType type) {
+		return filterDto.getType() == null || filterDto.getType() == type;
 	}
 
-	private boolean isRequested(CrmActivityFeedParams feedParams, String type) {
-		return feedParams.getType() == null || feedParams.getType().equals(type);
-	}
-
-	private static Instant resolveFeedAt(CrmActivityFeedRowResponseDto row) {
-		if (CrmConstants.ACTIVITY_TYPE_TASK.equals(row.getType())) {
+	private Instant resolveFeedAt(CrmActivityFeedRowResponseDto row) {
+		if (row.getType() == CrmActivityType.TASK) {
 			return Boolean.TRUE.equals(row.getIsCompleted()) ? row.getCompletedAt() : row.getDueAt();
 		}
 		return row.getOccurredAt();
 	}
 
 	private CrmActivityFeedRowResponseDto toTaskRow(CrmActivityTaskResponseDto task) {
-		CrmActivityFeedRowResponseDto row = newRow(CrmConstants.ACTIVITY_TYPE_TASK, task.getId(), task.getName(),
+		CrmActivityFeedRowResponseDto row = newRow(CrmActivityType.TASK, task.getId(), task.getName(),
 				task.getOwnerId(), task.getDealId(), task.getCompanyId());
 		row.setDueAt(task.getDueAt());
 		row.setCompletedAt(task.getCompletedAt());
@@ -184,7 +170,7 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 	}
 
 	private CrmActivityFeedRowResponseDto toCallRow(CrmActivityCallResponseDto call) {
-		CrmActivityFeedRowResponseDto row = newRow(CrmConstants.ACTIVITY_TYPE_CALL, call.getId(), call.getSubject(),
+		CrmActivityFeedRowResponseDto row = newRow(CrmActivityType.CALL, call.getId(), call.getSubject(),
 				call.getOwnerId(), call.getDealId(), call.getCompanyId());
 		row.setOccurredAt(call.getLoggedAt());
 		if (call.getContactId() != null) {
@@ -194,8 +180,8 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 	}
 
 	private CrmActivityFeedRowResponseDto toMeetingRow(CrmActivityMeetingResponseDto meeting) {
-		CrmActivityFeedRowResponseDto row = newRow(CrmConstants.ACTIVITY_TYPE_MEETING, meeting.getId(),
-				meeting.getName(), meeting.getOwnerId(), meeting.getDealId(), meeting.getCompanyId());
+		CrmActivityFeedRowResponseDto row = newRow(CrmActivityType.MEETING, meeting.getId(), meeting.getName(),
+				meeting.getOwnerId(), meeting.getDealId(), meeting.getCompanyId());
 		row.setOccurredAt(meeting.getStartAt());
 		if (Boolean.TRUE.equals(meeting.getIsScheduled())) {
 			row.setDueAt(meeting.getStartAt());
@@ -205,22 +191,20 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 	}
 
 	private CrmActivityFeedRowResponseDto toEmailRow(CrmActivityEmailResponseDto email) {
-		CrmActivityFeedRowResponseDto row = newRow(CrmConstants.ACTIVITY_TYPE_EMAIL, email.getId(), email.getSubject(),
+		CrmActivityFeedRowResponseDto row = newRow(CrmActivityType.EMAIL, email.getId(), email.getSubject(),
 				email.getOwnerId(), email.getDealId(), email.getCompanyId());
 		row.setOccurredAt(email.getLoggedAt());
 		addContacts(row, email.getContactIds());
 		return row;
 	}
 
-	private CrmActivityFeedRowResponseDto newRow(String type, Long id, String subject, Long ownerId, Long dealId,
-			Long companyId) {
+	private CrmActivityFeedRowResponseDto newRow(CrmActivityType type, Long id, String subject, Long ownerId,
+			Long dealId, Long companyId) {
 		CrmActivityFeedRowResponseDto row = new CrmActivityFeedRowResponseDto();
 		row.setId(id);
 		row.setType(type);
 		row.setSubject(subject);
-		if (ownerId != null) {
-			row.setOwner(new CrmActivityFeedOwnerResponseDto(ownerId, null, null));
-		}
+		row.setOwnerId(ownerId);
 		if (dealId != null) {
 			row.setDeal(new CrmActivityFeedLinkResponseDto(dealId, null, false));
 		}
@@ -238,14 +222,10 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 	}
 
 	private void fillNames(List<CrmActivityFeedRowResponseDto> rows) {
-		Set<Long> ownerIds = new HashSet<>();
 		Set<Long> contactIds = new HashSet<>();
 		Set<Long> dealIds = new HashSet<>();
 		Set<Long> companyIds = new HashSet<>();
 		rows.forEach(row -> {
-			if (row.getOwner() != null) {
-				ownerIds.add(row.getOwner().getId());
-			}
 			row.getContacts().forEach(contact -> contactIds.add(contact.getId()));
 			if (row.getDeal() != null) {
 				dealIds.add(row.getDeal().getId());
@@ -255,9 +235,6 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 			}
 		});
 
-		Map<Long, Employee> owners = employeeDao.findAllById(ownerIds)
-			.stream()
-			.collect(Collectors.toMap(Employee::getEmployeeId, Function.identity()));
 		Map<Long, CrmContact> contacts = crmContactDao.findAllById(contactIds)
 			.stream()
 			.collect(Collectors.toMap(CrmContact::getId, Function.identity()));
@@ -269,34 +246,24 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 			.collect(Collectors.toMap(CrmCompany::getId, Function.identity()));
 
 		rows.forEach(row -> {
-			Employee owner = row.getOwner() == null ? null : owners.get(row.getOwner().getId());
-			if (owner != null) {
-				row.getOwner().setName(toFullName(owner));
-				row.getOwner().setAvatar(owner.getAuthPic());
-			}
 			row.getContacts().forEach(link -> {
 				CrmContact contact = contacts.get(link.getId());
 				if (contact != null) {
 					link.setName(contact.getName());
-					link.setDeleted(Boolean.TRUE.equals(contact.getIsDeleted()));
+					link.setIsDeleted(Boolean.TRUE.equals(contact.getIsDeleted()));
 				}
 			});
 			CrmDeal deal = row.getDeal() == null ? null : deals.get(row.getDeal().getId());
 			if (deal != null) {
 				row.getDeal().setName(deal.getName());
-				row.getDeal().setDeleted(Boolean.TRUE.equals(deal.getIsDeleted()));
+				row.getDeal().setIsDeleted(Boolean.TRUE.equals(deal.getIsDeleted()));
 			}
 			CrmCompany company = row.getCompany() == null ? null : companies.get(row.getCompany().getId());
 			if (company != null) {
 				row.getCompany().setName(company.getName());
-				row.getCompany().setDeleted(Boolean.TRUE.equals(company.getIsDeleted()));
+				row.getCompany().setIsDeleted(Boolean.TRUE.equals(company.getIsDeleted()));
 			}
 		});
-	}
-
-	private String toFullName(Employee employee) {
-		return Objects.toString(employee.getFirstName(), "")
-				+ (employee.getLastName() == null ? "" : " " + employee.getLastName());
 	}
 
 }

@@ -6,7 +6,6 @@ import com.skapp.community.crmplanner.service.CrmActivityFeedService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,7 +20,7 @@ public class CrmActivityController {
 
 	private final CrmActivityFeedService crmActivityFeedService;
 
-	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getActivities(CrmActivityFeedFilterDto filterDto) {
 		ResponseEntityDto response = crmActivityFeedService.getActivities(filterDto);

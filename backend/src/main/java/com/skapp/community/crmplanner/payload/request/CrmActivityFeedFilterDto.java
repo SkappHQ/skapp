@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.payload.request;
 
+import com.skapp.community.crmplanner.type.CrmActivityType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,14 +10,14 @@ import java.time.LocalDate;
 @Setter
 public class CrmActivityFeedFilterDto {
 
-	private String type;
+	private CrmActivityType type;
 
 	private String search;
 
 	private Long ownerId;
 
-	private LocalDate from;
+	private LocalDate fromDate;
 
-	private LocalDate to;
+	private LocalDate toDate;
 
 }
