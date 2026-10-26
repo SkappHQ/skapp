@@ -28,7 +28,7 @@ export interface ActivityOwner {
   avatar: string | null;
 }
 
-export interface ActivityLink {
+export interface ActivityRelatedAssociation {
   id: number;
   name: string;
   deleted: boolean;
@@ -44,9 +44,9 @@ export interface ActivityRow {
   isCompleted: boolean;
   priority: CrmPriorityEnum | null;
   owner: ActivityOwner | null;
-  contacts: ActivityLink[];
-  deal: ActivityLink | null;
-  company: ActivityLink | null;
+  contacts: ActivityRelatedAssociation[];
+  deal: ActivityRelatedAssociation | null;
+  company: ActivityRelatedAssociation | null;
   canComplete: boolean;
 }
 
