@@ -34,6 +34,7 @@ export interface ActivityFeedProps {
   timeZone?: string;
   onLoadMore: () => void;
   onRowClick: (row: ActivityRow) => void;
+  onToggleComplete: (row: ActivityRow, isCompleted: boolean) => void;
 }
 
 const EMPTY_STATE_CLASSES = {
@@ -51,7 +52,8 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
   isFetchingNextPage,
   timeZone,
   onLoadMore,
-  onRowClick
+  onRowClick,
+  onToggleComplete
 }) => {
   const translateText = useTranslator("crmModule");
 
@@ -80,12 +82,15 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
     ACTIVITY_TABS.find((tab) => tab.id === activeTab)?.labelKey ??
     ACTIVITY_TABS[0].labelKey;
 
+  const showCheckbox = activeTab === ActivityTab.TASKS;
+
   const renderContent = () => {
     if (isLoading) {
       return (
         <ActivityFeedSkeleton
           id={`${id}-loading`}
           message={translateText(["activities", "feed", "loading"])}
+          showCheckbox={showCheckbox}
         />
       );
     }
@@ -148,7 +153,9 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
             title={getBucketTitle(group)}
             rows={group.rows}
             timeZone={timeZone}
+            showCheckbox={showCheckbox}
             onRowClick={onRowClick}
+            onToggleComplete={onToggleComplete}
           />
         ))}
 
@@ -158,6 +165,7 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
             message={translateText(["activities", "feed", "loadingMore"])}
             groupCount={1}
             rowCount={2}
+            showCheckbox={showCheckbox}
           />
         )}
       </div>

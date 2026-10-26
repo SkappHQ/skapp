@@ -133,6 +133,8 @@
     "tabs": "Activity types",
     "row": {
       "openDetails": "Open {{type}} details for {{subject}}",
+      "markComplete": "Mark '{{subject}}' complete",
+      "markIncomplete": "Mark '{{subject}}' incomplete",
       "owner": "Owner: {{name}}"
     },
     "toolbar": {

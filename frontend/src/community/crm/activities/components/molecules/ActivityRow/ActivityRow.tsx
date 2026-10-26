@@ -11,15 +11,24 @@ import {
 import { getActivityRowKey } from "~community/crm/activities/utils/activityFeedUtil";
 import PriorityLabel from "~community/crm/components/atoms/PriorityLabel/PriorityLabel";
 
+import ActivityRowCheckbox from "./ActivityRowCheckbox";
 import ActivityRowSubtitle from "./ActivityRowSubtitle";
 
 export interface ActivityRowProps {
   row: ActivityRowData;
   timeZone?: string;
+  showCheckbox: boolean;
   onRowClick: (row: ActivityRowData) => void;
+  onToggleComplete: (row: ActivityRowData, isCompleted: boolean) => void;
 }
 
-const ActivityRow: FC<ActivityRowProps> = ({ row, timeZone, onRowClick }) => {
+const ActivityRow: FC<ActivityRowProps> = ({
+  row,
+  timeZone,
+  showCheckbox,
+  onRowClick,
+  onToggleComplete
+}) => {
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
 
@@ -43,6 +52,18 @@ const ActivityRow: FC<ActivityRowProps> = ({ row, timeZone, onRowClick }) => {
         className="absolute inset-0 w-full h-full cursor-pointer focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-accent"
         onClick={() => onRowClick(row)}
       />
+
+      {showCheckbox && isTask && (
+        <div className="relative pointer-events-auto">
+          <ActivityRowCheckbox
+            id={`${rowId}-checkbox`}
+            subject={row.subject}
+            isCompleted={row.isCompleted}
+            canComplete={row.canComplete}
+            onToggle={(isCompleted) => onToggleComplete(row, isCompleted)}
+          />
+        </div>
+      )}
 
       <div className="relative flex flex-1 items-center gap-3 min-w-0 pointer-events-none">
         <ActivityTypeIcon id={`${rowId}-type`} type={row.type} />

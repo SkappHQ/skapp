@@ -9,13 +9,15 @@ interface ActivityFeedSkeletonProps {
   message: string;
   groupCount?: number;
   rowCount?: number;
+  showCheckbox?: boolean;
 }
 
 const ActivityFeedSkeleton: FC<ActivityFeedSkeletonProps> = ({
   id,
   message,
   groupCount = ACTIVITY_SKELETON_CONFIG.groupCount,
-  rowCount = ACTIVITY_SKELETON_CONFIG.rowCount
+  rowCount = ACTIVITY_SKELETON_CONFIG.rowCount,
+  showCheckbox = false
 }) => {
   const rowKeys = Array.from(
     { length: rowCount },
@@ -35,7 +37,10 @@ const ActivityFeedSkeleton: FC<ActivityFeedSkeletonProps> = ({
             <SkeletonShape circle className="h-3 w-16 mb-2" />
             <div className="border border-secondary-accent rounded-lg overflow-hidden divide-y divide-secondary-accent">
               {rowKeys.map((rowKey) => (
-                <ActivityRowSkeleton key={`${groupKey}-${rowKey}`} />
+                <ActivityRowSkeleton
+                  key={`${groupKey}-${rowKey}`}
+                  showCheckbox={showCheckbox}
+                />
               ))}
             </div>
           </div>
