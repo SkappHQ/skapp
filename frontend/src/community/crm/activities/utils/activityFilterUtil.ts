@@ -117,7 +117,7 @@ export const countActiveFilters = (filters: ActivityFeedFilters): number => {
 export const hasActiveFilters = (filters: ActivityFeedFilters): boolean =>
   countActiveFilters(filters) > 0;
 
-export const filterTeamMembers = (
+export const filterCRMEmployees = (
   members: CrmOwnerEntity[],
   searchTerm: string
 ): CrmOwnerEntity[] => {
