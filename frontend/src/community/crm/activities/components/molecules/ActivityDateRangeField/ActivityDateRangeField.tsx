@@ -10,13 +10,11 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { ACTIVITY_DATE_PRESETS } from "~community/crm/activities/constants/activityConstants";
 import { DateRange } from "~community/crm/activities/types/activityTypes";
 import {
+  getMatchingPreset,
+  getPresetDateRange,
   toDateValue,
   toPickerDateRange,
   validateDateRange
-} from "~community/crm/activities/utils/activityFeedUtil";
-import {
-  getMatchingPreset,
-  getPresetDateRange
 } from "~community/crm/activities/utils/activityFilterUtil";
 
 export interface ActivityDateRangeFieldProps {

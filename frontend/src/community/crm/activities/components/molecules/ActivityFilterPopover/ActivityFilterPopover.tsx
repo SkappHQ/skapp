@@ -9,8 +9,10 @@ import {
   ActivityFilterValues,
   ActivityTeamMember
 } from "~community/crm/activities/types/activityTypes";
-import { validateDateRange } from "~community/crm/activities/utils/activityFeedUtil";
-import { areFilterValuesEqual } from "~community/crm/activities/utils/activityFilterUtil";
+import {
+  areFilterValuesEqual,
+  validateDateRange
+} from "~community/crm/activities/utils/activityFilterUtil";
 
 export interface ActivityFilterPopoverProps {
   id: string;

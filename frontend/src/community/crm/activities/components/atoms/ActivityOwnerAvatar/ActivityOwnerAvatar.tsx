@@ -28,7 +28,7 @@ const ActivityOwnerAvatar: FC<ActivityOwnerAvatarProps> = ({ id, owner }) => {
         lastName={otherNames.join(" ")}
         title={owner.name}
         ariaHidden
-        {...(imageUrl ? { src: imageUrl } : {})}
+        src={imageUrl ?? ""}
       />
     </span>
   );

@@ -58,7 +58,7 @@ const ActivityRowCheckbox: FC<ActivityRowCheckboxProps> = ({
             "row",
             isCompleted ? "markIncomplete" : "markComplete"
           ],
-          { name: subject }
+          { subject }
         )}
       />
     </div>
