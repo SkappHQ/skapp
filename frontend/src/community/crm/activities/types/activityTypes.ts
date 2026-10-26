@@ -37,7 +37,7 @@ export interface ActivityRelatedAssociation {
 export interface ActivityRow {
   id: number;
   type: ActivityType;
-  subject: string;
+  title: string;
   dueAt: string | null;
   occurredAt: string | null;
   completedAt: string | null;

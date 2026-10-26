@@ -54,7 +54,7 @@ const ActivityRow: FC<ActivityRowProps> = ({
           "types",
           ACTIVITY_TYPE_LABEL_KEYS[row.type]
         ]).toLowerCase(),
-        subject: row.subject
+        subject: row.title
       })}
       className="relative flex items-center gap-4 p-3 min-w-0 min-h-[63px] bg-white hover:bg-secondary-background overflow-hidden cursor-pointer focus-visible:outline-2 focus-visible:outline-primary-accent"
       onClick={() => onRowClick(row)}
@@ -65,7 +65,7 @@ const ActivityRow: FC<ActivityRowProps> = ({
       {isTask && (
         <ActivityRowCheckbox
           id={`${rowId}-checkbox`}
-          subject={row.subject}
+          subject={row.title}
           isCompleted={row.isCompleted}
           canComplete={row.canComplete}
           onToggle={(isCompleted) => onToggleComplete(row, isCompleted)}
@@ -83,9 +83,9 @@ const ActivityRow: FC<ActivityRowProps> = ({
                 ? "line-through text-secondary-icon"
                 : "text-black"
             }`}
-            title={row.subject}
+            title={row.title}
           >
-            {row.subject}
+            {row.title}
           </p>
 
           <ActivityRowSubtitle

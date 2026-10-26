@@ -94,7 +94,7 @@ const toCallRow = (
 ): ActivityRow => ({
   ...toRowBase(item, item.contactId === null ? [] : [item.contactId], lookups),
   type: ActivityType.CALL,
-  subject: item.subject ?? "",
+  title: item.subject ?? "",
   dueAt: null,
   occurredAt: item.loggedAt,
   completedAt: null,
@@ -108,7 +108,7 @@ const toMeetingRow = (
 ): ActivityRow => ({
   ...toRowBase(item, item.contactIds, lookups),
   type: ActivityType.MEETING,
-  subject: item.name ?? "",
+  title: item.name ?? "",
   dueAt: item.isScheduled ? item.startAt : null,
   occurredAt: item.startAt,
   completedAt: null,
@@ -122,7 +122,7 @@ const toEmailRow = (
 ): ActivityRow => ({
   ...toRowBase(item, item.contactIds, lookups),
   type: ActivityType.EMAIL,
-  subject: item.subject ?? "",
+  title: item.subject ?? "",
   dueAt: null,
   occurredAt: item.loggedAt,
   completedAt: null,
@@ -136,7 +136,7 @@ const toTaskRow = (
 ): ActivityRow => ({
   ...toRowBase(item, item.contactId === null ? [] : [item.contactId], lookups),
   type: ActivityType.TASK,
-  subject: item.name ?? "",
+  title: item.name ?? "",
   dueAt: item.dueAt,
   occurredAt: null,
   completedAt: item.completedAt,
