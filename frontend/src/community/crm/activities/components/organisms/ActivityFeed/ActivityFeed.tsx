@@ -34,6 +34,7 @@ export interface ActivityFeedProps {
   timeZone?: string;
   onLoadMore: () => void;
   onRowClick: (row: ActivityRow) => void;
+  onToggleComplete: (row: ActivityRow, isCompleted: boolean) => void;
 }
 
 const EMPTY_STATE_CLASSES = {
@@ -51,7 +52,8 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
   isFetchingNextPage,
   timeZone,
   onLoadMore,
-  onRowClick
+  onRowClick,
+  onToggleComplete
 }) => {
   const translateText = useTranslator("crmModule");
 
@@ -149,6 +151,7 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
             rows={group.rows}
             timeZone={timeZone}
             onRowClick={onRowClick}
+            onToggleComplete={onToggleComplete}
           />
         ))}
 
