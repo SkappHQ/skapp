@@ -31,6 +31,7 @@ import com.skapp.community.crmplanner.type.CrmActivityCallFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityCallSort;
 import com.skapp.community.crmplanner.type.CrmActivityEmailFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityEmailSort;
+import com.skapp.community.crmplanner.type.CrmActivityFeedParams;
 import com.skapp.community.crmplanner.type.CrmActivityListParams;
 import com.skapp.community.crmplanner.type.CrmActivityMeetingFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityMeetingSort;
@@ -42,6 +43,7 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -110,33 +112,31 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 		}
 		CrmValidations.validateActivityDateRange(filterDto.getFrom(), filterDto.getTo());
 
-		int page = Math.max(filterDto.getPage(), 0);
+		CrmActivityFeedParams feedParams = buildFeedParams(currentUser, filterDto);
 
 		List<CrmActivityFeedRowResponseDto> rows = new ArrayList<>();
-		if (isRequested(filterDto, CrmConstants.ACTIVITY_TYPE_TASK)) {
-			CrmActivityTaskFilterParams params = applyParams(new CrmActivityTaskFilterParams(), currentUser, filterDto);
+		if (isRequested(feedParams, CrmConstants.ACTIVITY_TYPE_TASK)) {
+			CrmActivityTaskFilterParams params = copyParams(new CrmActivityTaskFilterParams(), feedParams);
 			params.setSortKey(CrmActivityTaskSort.DUE_AT);
 			crmActivityTaskDao.findTasks(params).stream().map(this::toTaskRow).forEach(rows::add);
 		}
-		if (isRequested(filterDto, CrmConstants.ACTIVITY_TYPE_CALL)) {
-			CrmActivityCallFilterParams params = applyParams(new CrmActivityCallFilterParams(), currentUser, filterDto);
+		if (isRequested(feedParams, CrmConstants.ACTIVITY_TYPE_CALL)) {
+			CrmActivityCallFilterParams params = copyParams(new CrmActivityCallFilterParams(), feedParams);
 			params.setSortKey(CrmActivityCallSort.LOGGED_AT);
 			crmActivityCallDao.findCalls(params).stream().map(this::toCallRow).forEach(rows::add);
 		}
-		if (isRequested(filterDto, CrmConstants.ACTIVITY_TYPE_MEETING)) {
-			CrmActivityMeetingFilterParams params = applyParams(new CrmActivityMeetingFilterParams(), currentUser,
-					filterDto);
+		if (isRequested(feedParams, CrmConstants.ACTIVITY_TYPE_MEETING)) {
+			CrmActivityMeetingFilterParams params = copyParams(new CrmActivityMeetingFilterParams(), feedParams);
 			params.setSortKey(CrmActivityMeetingSort.START_AT);
 			crmActivityMeetingDao.findMeetings(params).stream().map(this::toMeetingRow).forEach(rows::add);
 		}
-		if (isRequested(filterDto, CrmConstants.ACTIVITY_TYPE_EMAIL)) {
-			CrmActivityEmailFilterParams params = applyParams(new CrmActivityEmailFilterParams(), currentUser,
-					filterDto);
+		if (isRequested(feedParams, CrmConstants.ACTIVITY_TYPE_EMAIL)) {
+			CrmActivityEmailFilterParams params = copyParams(new CrmActivityEmailFilterParams(), feedParams);
 			params.setSortKey(CrmActivityEmailSort.LOGGED_AT);
 			crmActivityEmailDao.findEmails(params).stream().map(this::toEmailRow).forEach(rows::add);
 		}
 
-		CrmActivityFeedResponseDto response = buildResponse(rows, page);
+		CrmActivityFeedResponseDto response = buildResponse(rows, feedParams.getPage());
 
 		log.info("getActivities: execution ended");
 		return new ResponseEntityDto(false, response);
@@ -183,9 +183,11 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 				new CrmActivityFeedByMonthResponseDto(pageRows, page, toIndex < monthRows.size()));
 	}
 
-	private <T extends CrmActivityListParams> T applyParams(T params, User currentUser,
-			CrmActivityFeedFilterDto filterDto) {
+	private CrmActivityFeedParams buildFeedParams(User currentUser, CrmActivityFeedFilterDto filterDto) {
 		ZoneId zone = timeZoneService.requestTimezone();
+		CrmActivityFeedParams params = new CrmActivityFeedParams();
+		params.setType(filterDto.getType());
+		params.setPage(Math.max(filterDto.getPage(), 0));
 		params.setCurrentEmployeeId(currentUser.getEmployee().getEmployeeId());
 		params.setIsRestrictedToOwner(CrmUtil.isCrmSalesRepresentative(currentUser));
 		params.setOwnerId(filterDto.getOwnerId());
@@ -203,8 +205,13 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 		return params;
 	}
 
-	private boolean isRequested(CrmActivityFeedFilterDto filterDto, String type) {
-		return filterDto.getType() == null || filterDto.getType().equals(type);
+	private <T extends CrmActivityListParams> T copyParams(T params, CrmActivityFeedParams feedParams) {
+		BeanUtils.copyProperties(feedParams, params);
+		return params;
+	}
+
+	private boolean isRequested(CrmActivityFeedParams feedParams, String type) {
+		return feedParams.getType() == null || feedParams.getType().equals(type);
 	}
 
 	private boolean isFixedBucket(CrmActivityFeedRowResponseDto row, Instant now) {
