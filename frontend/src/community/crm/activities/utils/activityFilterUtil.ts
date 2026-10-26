@@ -1,60 +1,66 @@
 import { DateTime } from "luxon";
 
 import { daysTypes } from "~community/common/constants/stringConstants";
+import {
+  DATE_FORMAT,
+  daysOfWeek
+} from "~community/common/constants/timeConstants";
 import { nowInZone } from "~community/common/utils/dateTimeUtils";
 import {
-  ACTIVITY_DATE_FORMAT,
   ACTIVITY_DATE_PRESETS,
-  ACTIVITY_LAST_DAYS_PRESET_LENGTH,
-  ACTIVITY_WEEK_START_WEEKDAYS
+  ACTIVITY_LAST_DAYS_PRESET_LENGTH
 } from "~community/crm/activities/constants/activityConstants";
 import {
   ActivityDatePreset,
-  ActivityFilterValues,
-  ActivityTeamMember,
-  DateRange
+  ActivityDateRange,
+  ActivityFeedFilters
 } from "~community/crm/activities/types/activityTypes";
+import { CrmOwnerEntity } from "~community/crm/types/CrmCommonTypes";
 
 const formatDateValue = (dateTime: DateTime): string =>
-  dateTime.toFormat(ACTIVITY_DATE_FORMAT);
+  dateTime.toFormat(DATE_FORMAT);
 
 const parseDateValue = (value: string): DateTime =>
-  DateTime.fromFormat(value, ACTIVITY_DATE_FORMAT);
+  DateTime.fromFormat(value, DATE_FORMAT);
 
-export const validateDateRange = (range: DateRange): boolean => {
-  if (!range.from || !range.to) return true;
+export const validateDateRange = (range: ActivityDateRange): boolean => {
+  if (!range.fromDate || !range.toDate) return true;
 
-  const from = parseDateValue(range.from);
-  const to = parseDateValue(range.to);
+  const from = parseDateValue(range.fromDate);
+  const to = parseDateValue(range.toDate);
 
   if (!from.isValid || !to.isValid) return false;
 
   return to.toMillis() >= from.toMillis();
 };
 
-export const toPickerDateRange = (range: DateRange) => ({
-  ...(range.from ? { from: parseDateValue(range.from).toJSDate() } : {}),
-  ...(range.to ? { to: parseDateValue(range.to).toJSDate() } : {})
+export const toPickerDateRange = (range: ActivityDateRange) => ({
+  ...(range.fromDate
+    ? { from: parseDateValue(range.fromDate).toJSDate() }
+    : {}),
+  ...(range.toDate ? { to: parseDateValue(range.toDate).toJSDate() } : {})
 });
 
-export const toDateValue = (date?: Date): string | null =>
-  date ? formatDateValue(DateTime.fromJSDate(date)) : null;
+export const toDateValue = (date: Date): string =>
+  formatDateValue(DateTime.fromJSDate(date));
 
-const toRange = (from: DateTime, to: DateTime): DateRange => ({
-  from: formatDateValue(from),
-  to: formatDateValue(to)
+const toRange = (from: DateTime, to: DateTime): ActivityDateRange => ({
+  fromDate: formatDateValue(from),
+  toDate: formatDateValue(to)
 });
 
-const getStartOfWeek = (today: DateTime, weekStartDay: daysTypes): DateTime =>
-  today.minus({
-    days: (today.weekday - ACTIVITY_WEEK_START_WEEKDAYS[weekStartDay] + 7) % 7
-  });
+const getStartOfWeek = (today: DateTime, weekStartDay: daysTypes): DateTime => {
+  const weekStartWeekday =
+    daysOfWeek.findIndex((day) => day.toUpperCase() === weekStartDay) + 1;
+
+  return today.minus({ days: (today.weekday - weekStartWeekday + 7) % 7 });
+};
 
 export const getPresetDateRange = (
   preset: ActivityDatePreset,
-  zone?: string,
-  weekStartDay: daysTypes = daysTypes.MONDAY
-): DateRange => {
+  weekStartDay: daysTypes,
+  zone?: string
+): ActivityDateRange => {
   const today = nowInZone(zone).startOf("day");
 
   switch (preset) {
@@ -75,48 +81,55 @@ export const getPresetDateRange = (
   }
 };
 
-const isSameDateRange = (first: DateRange, second: DateRange): boolean =>
-  first.from === second.from && first.to === second.to;
+const isSameDateRange = (
+  first: ActivityDateRange,
+  second: ActivityDateRange
+): boolean =>
+  first.fromDate === second.fromDate && first.toDate === second.toDate;
 
 export const getMatchingPreset = (
-  range: DateRange,
-  zone?: string,
-  weekStartDay: daysTypes = daysTypes.MONDAY
+  range: ActivityDateRange,
+  weekStartDay: daysTypes,
+  zone?: string
 ): ActivityDatePreset | null => {
-  if (!range.from || !range.to) return null;
+  if (!range.fromDate || !range.toDate) return null;
 
   const match = ACTIVITY_DATE_PRESETS.find((preset) =>
-    isSameDateRange(getPresetDateRange(preset.id, zone, weekStartDay), range)
+    isSameDateRange(getPresetDateRange(preset.id, weekStartDay, zone), range)
   );
 
   return match ? match.id : null;
 };
 
 export const areFilterValuesEqual = (
-  first: ActivityFilterValues,
-  second: ActivityFilterValues
+  first: ActivityFeedFilters,
+  second: ActivityFeedFilters
 ): boolean =>
-  first.ownerId === second.ownerId &&
-  isSameDateRange(first.dateRange, second.dateRange);
+  first.ownerId === second.ownerId && isSameDateRange(first, second);
 
-export const countActiveFilters = (filters: ActivityFilterValues): number => {
-  const isOwnerActive = filters.ownerId !== null;
-  const isDateRangeActive =
-    filters.dateRange.from !== null || filters.dateRange.to !== null;
+export const countActiveFilters = (filters: ActivityFeedFilters): number => {
+  const isOwnerActive = Boolean(filters.ownerId);
+  const isDateRangeActive = Boolean(filters.fromDate || filters.toDate);
 
   return Number(isOwnerActive) + Number(isDateRangeActive);
 };
 
-export const hasActiveFilters = (filters: ActivityFilterValues): boolean =>
+export const hasActiveFilters = (filters: ActivityFeedFilters): boolean =>
   countActiveFilters(filters) > 0;
 
 export const filterTeamMembers = (
-  members: ActivityTeamMember[],
+  members: CrmOwnerEntity[],
   searchTerm: string
-): ActivityTeamMember[] => {
+): CrmOwnerEntity[] => {
   const term = searchTerm.trim().toLowerCase();
 
   if (!term) return members;
 
-  return members.filter((member) => member.name.toLowerCase().includes(term));
+  return members.filter((member) =>
+    [member.firstName, member.lastName]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+      .includes(term)
+  );
 };

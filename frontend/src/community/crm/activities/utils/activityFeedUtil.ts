@@ -1,25 +1,22 @@
 import { DateTime } from "luxon";
 
+import {
+  FULL_MONTH_YEAR_FORMAT,
+  TIME_FORMAT_12_HOUR,
+  YEAR_MONTH_FORMAT
+} from "~community/common/constants/timeConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import {
   formatDateTimeWithOrdinalIndicatorWithoutYear,
   instantInZone,
   parseInstant
 } from "~community/common/utils/dateTimeUtils";
+import { ACTIVITY_SECTION_ORDER } from "~community/crm/activities/constants/activityConstants";
 import {
-  ACTIVITY_BUCKET_ORDER,
-  ACTIVITY_FIXED_BUCKET_KEYS,
-  ACTIVITY_MONTH_HEADING_FORMAT,
-  ACTIVITY_MONTH_KEY_FORMAT,
-  ACTIVITY_TIME_FORMAT
-} from "~community/crm/activities/constants/activityConstants";
-import {
-  ActivityBucket,
-  ActivityBucketGroup,
-  ActivityFeedResponse,
-  ActivityLink,
-  ActivityMonthGroup,
+  ActivityRelatedAssociation,
   ActivityRow,
+  ActivitySection,
+  ActivitySectionGroup,
   ActivityType
 } from "~community/crm/activities/types/activityTypes";
 import { isDueToday, isOverdue } from "~community/crm/utils/taskValidations";
@@ -30,83 +27,89 @@ export const getActivityRowKey = (row: ActivityRow): string =>
 const getMonthAnchor = (row: ActivityRow): string | null =>
   row.occurredAt ?? row.completedAt ?? row.dueAt;
 
-const groupByMonth = (
-  pages: ActivityFeedResponse[],
-  zone?: string
-): ActivityMonthGroup[] => {
-  const seenKeys = new Set<string>();
-  const groups = new Map<string, ActivityRow[]>();
-
-  for (const page of pages) {
-    for (const row of page.byMonth?.items ?? []) {
-      const rowKey = getActivityRowKey(row);
-      const anchor = getMonthAnchor(row);
-
-      if (seenKeys.has(rowKey) || !anchor) continue;
-
-      seenKeys.add(rowKey);
-
-      const monthKey = instantInZone(anchor, zone).toFormat(
-        ACTIVITY_MONTH_KEY_FORMAT
-      );
-      const monthRows = groups.get(monthKey) ?? [];
-
-      monthRows.push(row);
-      groups.set(monthKey, monthRows);
-    }
-  }
-
-  return Array.from(groups, ([monthKey, rows]) => ({
-    monthKey,
-    rows
-  })).sort((first, second) => second.monthKey.localeCompare(first.monthKey));
-};
-
-export const getVisibleBuckets = (
-  pages: ActivityFeedResponse[],
-  zone?: string
-): ActivityBucketGroup[] => {
-  const [firstPage] = pages;
-
-  if (!firstPage) return [];
-
-  return ACTIVITY_BUCKET_ORDER.flatMap((bucket): ActivityBucketGroup[] => {
-    if (bucket === ActivityBucket.BY_MONTH) {
-      return groupByMonth(pages, zone).map((group) => ({
-        id: `month-${group.monthKey}`,
-        bucket,
-        monthKey: group.monthKey,
-        rows: group.rows
-      }));
-    }
-
-    return [
-      {
-        id: bucket.toLowerCase(),
-        bucket,
-        monthKey: null,
-        rows: firstPage[ACTIVITY_FIXED_BUCKET_KEYS[bucket]] ?? []
-      }
-    ];
-  }).filter((group) => group.rows.length > 0);
-};
-
-export const formatMonthHeading = (monthKey: string): string =>
-  DateTime.fromFormat(monthKey, ACTIVITY_MONTH_KEY_FORMAT).toFormat(
-    ACTIVITY_MONTH_HEADING_FORMAT
-  );
-
 const toMillis = (isoInstant: string): number =>
   parseInstant(isoInstant).toMillis();
 
 const isInFuture = (isoInstant: string): boolean =>
   toMillis(isoInstant) >= DateTime.now().toMillis();
 
-export const isRowOverdue = (row: ActivityRow, zone?: string): boolean =>
+const isRowOverdue = (row: ActivityRow, zone?: string): boolean =>
   row.type === ActivityType.TASK &&
   !row.isCompleted &&
   row.dueAt !== null &&
   isOverdue(row.dueAt, zone);
+
+const getRowSection = (row: ActivityRow, zone?: string): ActivitySection => {
+  if (isRowOverdue(row, zone)) return ActivitySection.OVERDUE;
+
+  if (!row.isCompleted && row.dueAt) {
+    if (isDueToday(row.dueAt, zone)) return ActivitySection.TODAY;
+
+    if (isInFuture(row.dueAt)) return ActivitySection.UPCOMING;
+  }
+
+  return ActivitySection.BY_MONTH;
+};
+
+export const getActivitySections = (
+  rows: ActivityRow[],
+  zone?: string
+): ActivitySectionGroup[] => {
+  const fixedSectionRows: Record<ActivitySection, ActivityRow[]> = {
+    [ActivitySection.OVERDUE]: [],
+    [ActivitySection.TODAY]: [],
+    [ActivitySection.UPCOMING]: [],
+    [ActivitySection.BY_MONTH]: []
+  };
+  const monthGroups = new Map<string, ActivityRow[]>();
+
+  for (const row of rows) {
+    const section = getRowSection(row, zone);
+
+    if (section !== ActivitySection.BY_MONTH) {
+      fixedSectionRows[section].push(row);
+      continue;
+    }
+
+    const anchor = getMonthAnchor(row);
+
+    if (!anchor) continue;
+
+    const monthKey = instantInZone(anchor, zone).toFormat(YEAR_MONTH_FORMAT);
+    const monthRows = monthGroups.get(monthKey);
+
+    if (monthRows) {
+      monthRows.push(row);
+    } else {
+      monthGroups.set(monthKey, [row]);
+    }
+  }
+
+  return ACTIVITY_SECTION_ORDER.flatMap((section): ActivitySectionGroup[] => {
+    if (section === ActivitySection.BY_MONTH) {
+      return Array.from(monthGroups, ([monthKey, monthRows]) => ({
+        id: `month-${monthKey}`,
+        section,
+        monthKey,
+        rows: monthRows
+      }));
+    }
+
+    return [
+      {
+        id: section.toLowerCase(),
+        section,
+        monthKey: null,
+        rows: fixedSectionRows[section]
+      }
+    ];
+  }).filter((group) => group.rows.length > 0);
+};
+
+export const formatMonthHeading = (monthKey: string): string =>
+  DateTime.fromFormat(monthKey, YEAR_MONTH_FORMAT).toFormat(
+    FULL_MONTH_YEAR_FORMAT
+  );
 
 export const getRowSubtitle = (
   row: ActivityRow,
@@ -147,14 +150,16 @@ export const getRowSubtitle = (
 
   return translate(["activities", "row", "subtitle", "occurredAt"], {
     date: formatDateTimeWithOrdinalIndicatorWithoutYear(zoned),
-    time: zoned.toFormat(ACTIVITY_TIME_FORMAT)
+    time: zoned.toFormat(TIME_FORMAT_12_HOUR)
   });
 };
 
-export const getLinkLabel = (
-  link: ActivityLink,
+export const getRelatedAssociationLabel = (
+  link: ActivityRelatedAssociation,
   translate: TranslatorFunctionType
 ): string =>
-  link.deleted
-    ? translate(["activities", "row", "deletedLink"], { name: link.name })
+  link.isDeleted
+    ? translate(["activities", "row", "deletedAssociation"], {
+        name: link.name
+      })
     : link.name;
