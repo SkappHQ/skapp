@@ -1,4 +1,5 @@
 import { Theme, ThemeProvider } from "@mui/material/styles";
+import { GoogleTagManager } from "@next/third-parties/google";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { onValue, ref } from "firebase/database";
 import App, { AppContext } from "next/app";
@@ -20,6 +21,7 @@ import { theme } from "~community/common/theme/theme";
 import { themeSelector } from "~community/common/theme/themeSelector";
 import { MyAppPropsType } from "~community/common/types/CommonTypes";
 import { getDataFromLocalStorage } from "~community/common/utils/accessLocalStorage";
+import { NONCE_HEADER_NAME } from "~community/common/utils/cspUtils";
 import "~enterprise/common/components/atoms/driverJsPopover/styles.css";
 import AnnouncementWrapper from "~enterprise/common/components/organisms/AnnouncementWrapper/AnnouncementWrapper";
 import {
@@ -54,9 +56,12 @@ function MyApp({
   Component,
   pageProps,
   initialI18nStore,
-  initialLanguage
+  initialLanguage,
+  gtmId,
+  nonce
 }: MyAppPropsType) {
   const [newTheme, setNewTheme] = useState<Theme>(theme);
+  const [googleTagManager] = useState({ gtmId, nonce });
   useSSR(initialI18nStore, initialLanguage);
   const router = useRouter();
 
@@ -104,6 +109,12 @@ function MyApp({
 
   return (
     <div className={`${inter.className} ${notoColorEmoji.variable}`}>
+      {googleTagManager.gtmId && (
+        <GoogleTagManager
+          gtmId={googleTagManager.gtmId}
+          nonce={googleTagManager.nonce}
+        />
+      )}
       <AuthProvider>
         {shouldUseWebSocketProvider ? (
           <WebSocketProvider>
@@ -153,10 +164,14 @@ MyApp.getInitialProps = async (appContext: AppContext) => {
   const appProps = await App.getInitialProps(appContext);
 
   if (typeof window === "undefined") {
+    const nonceHeader = appContext.ctx.req?.headers?.[NONCE_HEADER_NAME];
+
     return {
       ...appProps,
       initialI18nStore: i18n.store.data,
-      initialLanguage: i18n.language
+      initialLanguage: i18n.language,
+      gtmId: process.env.GOOGLE_ANALYTICS_GTM_ID,
+      nonce: typeof nonceHeader === "string" ? nonceHeader : undefined
     };
   }
 
