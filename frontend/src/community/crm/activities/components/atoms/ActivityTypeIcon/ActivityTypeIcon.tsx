@@ -24,8 +24,7 @@ const ActivityTypeIcon: FC<ActivityTypeIconProps> = ({ id, type }) => {
   return (
     <Tooltip id={`${id}-tooltip`} content={label}>
       <span id={id} className="inline-flex shrink-0">
-        <Icon aria-hidden="true" focusable="false" />
-        <span className="sr-only">{label}</span>
+        <Icon role="img" aria-label={label} />
       </span>
     </Tooltip>
   );
