@@ -10,7 +10,6 @@ export interface ActivityBucketSectionProps {
   rows: ActivityRowData[];
   timeZone?: string;
   onRowClick: (row: ActivityRowData) => void;
-  onToggleComplete: (row: ActivityRowData, isCompleted: boolean) => void;
 }
 
 const ActivityBucketSection: FC<ActivityBucketSectionProps> = ({
@@ -18,8 +17,7 @@ const ActivityBucketSection: FC<ActivityBucketSectionProps> = ({
   title,
   rows,
   timeZone,
-  onRowClick,
-  onToggleComplete
+  onRowClick
 }) => (
   <section id={id} aria-labelledby={`${id}-heading`} className="flex flex-col">
     <h2
@@ -31,12 +29,7 @@ const ActivityBucketSection: FC<ActivityBucketSectionProps> = ({
     <ul className="border border-secondary-accent rounded-lg overflow-hidden divide-y divide-secondary-accent">
       {rows.map((row) => (
         <li key={getActivityRowKey(row)}>
-          <ActivityRow
-            row={row}
-            timeZone={timeZone}
-            onRowClick={onRowClick}
-            onToggleComplete={onToggleComplete}
-          />
+          <ActivityRow row={row} timeZone={timeZone} onRowClick={onRowClick} />
         </li>
       ))}
     </ul>
