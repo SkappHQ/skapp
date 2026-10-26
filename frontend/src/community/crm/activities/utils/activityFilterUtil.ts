@@ -18,6 +18,28 @@ import {
 const formatDateValue = (dateTime: DateTime): string =>
   dateTime.toFormat(ACTIVITY_DATE_FORMAT);
 
+const parseDateValue = (value: string): DateTime =>
+  DateTime.fromFormat(value, ACTIVITY_DATE_FORMAT);
+
+export const validateDateRange = (range: DateRange): boolean => {
+  if (!range.from || !range.to) return true;
+
+  const from = parseDateValue(range.from);
+  const to = parseDateValue(range.to);
+
+  if (!from.isValid || !to.isValid) return false;
+
+  return to.toMillis() >= from.toMillis();
+};
+
+export const toPickerDateRange = (range: DateRange) => ({
+  ...(range.from ? { from: parseDateValue(range.from).toJSDate() } : {}),
+  ...(range.to ? { to: parseDateValue(range.to).toJSDate() } : {})
+});
+
+export const toDateValue = (date?: Date): string | null =>
+  date ? formatDateValue(DateTime.fromJSDate(date)) : null;
+
 const toRange = (from: DateTime, to: DateTime): DateRange => ({
   from: formatDateValue(from),
   to: formatDateValue(to)

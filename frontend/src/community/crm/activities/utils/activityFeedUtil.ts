@@ -8,7 +8,6 @@ import {
 } from "~community/common/utils/dateTimeUtils";
 import {
   ACTIVITY_BUCKET_ORDER,
-  ACTIVITY_DATE_FORMAT,
   ACTIVITY_FIXED_BUCKET_KEYS,
   ACTIVITY_MONTH_HEADING_FORMAT,
   ACTIVITY_MONTH_KEY_FORMAT,
@@ -21,17 +20,15 @@ import {
   ActivityLink,
   ActivityMonthGroup,
   ActivityRow,
-  ActivityType,
-  DateRange
+  ActivityType
 } from "~community/crm/activities/types/activityTypes";
 import { isDueToday, isOverdue } from "~community/crm/utils/taskValidations";
 
 export const getActivityRowKey = (row: ActivityRow): string =>
   `${row.type}-${row.id}`;
 
-export const getMonthAnchor = (row: ActivityRow): string | null => {
-  return row.occurredAt ?? row.completedAt ?? row.dueAt;
-};
+const getMonthAnchor = (row: ActivityRow): string | null =>
+  row.occurredAt ?? row.completedAt ?? row.dueAt;
 
 const groupByMonth = (
   pages: ActivityFeedResponse[],
@@ -161,25 +158,3 @@ export const getLinkLabel = (
   link.deleted
     ? translate(["activities", "row", "deletedLink"], { name: link.name })
     : link.name;
-
-const parseDateValue = (value: string): DateTime =>
-  DateTime.fromFormat(value, ACTIVITY_DATE_FORMAT);
-
-export const validateDateRange = (range: DateRange): boolean => {
-  if (!range.from || !range.to) return true;
-
-  const from = parseDateValue(range.from);
-  const to = parseDateValue(range.to);
-
-  if (!from.isValid || !to.isValid) return false;
-
-  return to.toMillis() >= from.toMillis();
-};
-
-export const toPickerDateRange = (range: DateRange) => ({
-  ...(range.from ? { from: parseDateValue(range.from).toJSDate() } : {}),
-  ...(range.to ? { to: parseDateValue(range.to).toJSDate() } : {})
-});
-
-export const toDateValue = (date?: Date): string | null =>
-  date ? DateTime.fromJSDate(date).toFormat(ACTIVITY_DATE_FORMAT) : null;
