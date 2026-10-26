@@ -118,13 +118,14 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		taskFeedAt.when(cb.isTrue(task.get(CrmActivityTask_.isCompleted)), task.get(CrmActivityTask_.completedAt))
 			.otherwise(taskDueAt);
 
-		taskQuery.multiselect(task.get(CrmActivityTask_.id).alias("id"), cb.literal("TASK").alias("type"),
-				task.get(CrmActivityTask_.name).alias("title"), taskFeedAt.alias("feedAt"), taskDueAt.alias("dueAt"),
-				task.get(CrmActivityTask_.completedAt).alias("completedAt"),
-				task.get(CrmActivityTask_.isCompleted).alias("isCompleted"),
-				task.get(CrmActivityTask_.priority).as(String.class).alias("priority"), taskOwnerId.alias("ownerId"),
-				taskDeal.get(CrmDeal_.id).alias("dealId"), taskCompany.get(CrmCompany_.id).alias("companyId"),
-				taskContact.get(CrmContact_.id).alias("contactId"))
+		taskQuery.multiselect(task.get(CrmActivityTask_.id).alias(CrmActivityTask_.ID),
+				cb.literal("TASK").alias("type"), task.get(CrmActivityTask_.name).alias("title"),
+				taskFeedAt.alias("feedAt"), taskDueAt.alias(CrmActivityTask_.DUE_AT),
+				task.get(CrmActivityTask_.completedAt).alias(CrmActivityTask_.COMPLETED_AT),
+				task.get(CrmActivityTask_.isCompleted).alias(CrmActivityTask_.IS_COMPLETED),
+				task.get(CrmActivityTask_.priority).as(String.class).alias(CrmActivityTask_.PRIORITY),
+				taskOwnerId.alias("ownerId"), taskDeal.get(CrmDeal_.id).alias("dealId"),
+				taskCompany.get(CrmCompany_.id).alias("companyId"), taskContact.get(CrmContact_.id).alias("contactId"))
 			.where(taskPredicates.toArray(new Predicate[0]));
 		branches.add(taskQuery);
 
@@ -163,13 +164,14 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		}
 
 		callQuery
-			.multiselect(call.get(CrmActivityCall_.id).alias("id"), cb.literal("CALL").alias("type"),
+			.multiselect(call.get(CrmActivityCall_.id).alias(CrmActivityCall_.ID), cb.literal("CALL").alias("type"),
 					call.get(CrmActivityCall_.subject).alias("title"), callLoggedAt.alias("feedAt"),
-					cb.nullLiteral(Instant.class).cast(Instant.class).alias("dueAt"),
-					cb.nullLiteral(Instant.class).cast(Instant.class).alias("completedAt"),
-					cb.nullLiteral(Boolean.class).cast(Boolean.class).alias("isCompleted"),
-					cb.nullLiteral(String.class).cast(String.class).alias("priority"), callOwnerId.alias("ownerId"),
-					callDeal.get(CrmDeal_.id).alias("dealId"), callCompany.get(CrmCompany_.id).alias("companyId"),
+					cb.nullLiteral(Instant.class).cast(Instant.class).alias(CrmActivityTask_.DUE_AT),
+					cb.nullLiteral(Instant.class).cast(Instant.class).alias(CrmActivityTask_.COMPLETED_AT),
+					cb.nullLiteral(Boolean.class).cast(Boolean.class).alias(CrmActivityTask_.IS_COMPLETED),
+					cb.nullLiteral(String.class).cast(String.class).alias(CrmActivityTask_.PRIORITY),
+					callOwnerId.alias("ownerId"), callDeal.get(CrmDeal_.id).alias("dealId"),
+					callCompany.get(CrmCompany_.id).alias("companyId"),
 					callContact.get(CrmContact_.id).alias("contactId"))
 			.where(callPredicates.toArray(new Predicate[0]));
 		branches.add(callQuery);
@@ -222,12 +224,14 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			.otherwise(cb.nullLiteral(Instant.class).cast(Instant.class));
 
 		meetingQuery
-			.multiselect(meeting.get(CrmActivityMeeting_.id).alias("id"), cb.literal("MEETING").alias("type"),
-					meeting.get(CrmActivityMeeting_.name).alias("title"), meetingStartAt.alias("feedAt"),
-					meetingDueAt.alias("dueAt"), cb.nullLiteral(Instant.class).cast(Instant.class).alias("completedAt"),
-					cb.nullLiteral(Boolean.class).cast(Boolean.class).alias("isCompleted"),
-					cb.nullLiteral(String.class).cast(String.class).alias("priority"), meetingOwnerId.alias("ownerId"),
-					meetingDeal.get(CrmDeal_.id).alias("dealId"), meetingCompany.get(CrmCompany_.id).alias("companyId"),
+			.multiselect(meeting.get(CrmActivityMeeting_.id).alias(CrmActivityMeeting_.ID),
+					cb.literal("MEETING").alias("type"), meeting.get(CrmActivityMeeting_.name).alias("title"),
+					meetingStartAt.alias("feedAt"), meetingDueAt.alias(CrmActivityTask_.DUE_AT),
+					cb.nullLiteral(Instant.class).cast(Instant.class).alias(CrmActivityTask_.COMPLETED_AT),
+					cb.nullLiteral(Boolean.class).cast(Boolean.class).alias(CrmActivityTask_.IS_COMPLETED),
+					cb.nullLiteral(String.class).cast(String.class).alias(CrmActivityTask_.PRIORITY),
+					meetingOwnerId.alias("ownerId"), meetingDeal.get(CrmDeal_.id).alias("dealId"),
+					meetingCompany.get(CrmCompany_.id).alias("companyId"),
 					cb.nullLiteral(Long.class).cast(Long.class).alias("contactId"))
 			.where(meetingPredicates.toArray(new Predicate[0]));
 		branches.add(meetingQuery);
@@ -272,13 +276,14 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		}
 
 		emailQuery
-			.multiselect(email.get(CrmActivityEmail_.id).alias("id"), cb.literal("EMAIL").alias("type"),
+			.multiselect(email.get(CrmActivityEmail_.id).alias(CrmActivityEmail_.ID), cb.literal("EMAIL").alias("type"),
 					email.get(CrmActivityEmail_.subject).alias("title"), emailLoggedAt.alias("feedAt"),
-					cb.nullLiteral(Instant.class).cast(Instant.class).alias("dueAt"),
-					cb.nullLiteral(Instant.class).cast(Instant.class).alias("completedAt"),
-					cb.nullLiteral(Boolean.class).cast(Boolean.class).alias("isCompleted"),
-					cb.nullLiteral(String.class).cast(String.class).alias("priority"), emailOwnerId.alias("ownerId"),
-					emailDeal.get(CrmDeal_.id).alias("dealId"), emailCompany.get(CrmCompany_.id).alias("companyId"),
+					cb.nullLiteral(Instant.class).cast(Instant.class).alias(CrmActivityTask_.DUE_AT),
+					cb.nullLiteral(Instant.class).cast(Instant.class).alias(CrmActivityTask_.COMPLETED_AT),
+					cb.nullLiteral(Boolean.class).cast(Boolean.class).alias(CrmActivityTask_.IS_COMPLETED),
+					cb.nullLiteral(String.class).cast(String.class).alias(CrmActivityTask_.PRIORITY),
+					emailOwnerId.alias("ownerId"), emailDeal.get(CrmDeal_.id).alias("dealId"),
+					emailCompany.get(CrmCompany_.id).alias("companyId"),
 					cb.nullLiteral(Long.class).cast(Long.class).alias("contactId"))
 			.where(emailPredicates.toArray(new Predicate[0]));
 		branches.add(emailQuery);
@@ -288,11 +293,12 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		JpaDerivedRoot<Tuple> feed = query.from(union);
 
 		query
-			.multiselect(feed.get("id"), feed.get("type"), feed.get("title"), feed.get("feedAt"), feed.get("dueAt"),
-					feed.get("completedAt"), feed.get("isCompleted"), feed.get("priority"), feed.get("ownerId"),
+			.multiselect(feed.get(CrmActivityTask_.ID), feed.get("type"), feed.get("title"), feed.get("feedAt"),
+					feed.get(CrmActivityTask_.DUE_AT), feed.get(CrmActivityTask_.COMPLETED_AT),
+					feed.get(CrmActivityTask_.IS_COMPLETED), feed.get(CrmActivityTask_.PRIORITY), feed.get("ownerId"),
 					feed.get("dealId"), feed.get("companyId"), feed.get("contactId"))
 			.orderBy(cb.desc(feed.get("feedAt")).nullPrecedence(Nulls.LAST), cb.asc(feed.get("type")),
-					cb.desc(feed.get("id")));
+					cb.desc(feed.get(CrmActivityTask_.ID)));
 
 		List<Tuple> tuples = entityManager.createQuery(query)
 			.setFirstResult((int) pageable.getOffset())
