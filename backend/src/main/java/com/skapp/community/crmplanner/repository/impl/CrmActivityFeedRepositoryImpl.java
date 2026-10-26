@@ -19,7 +19,7 @@ import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmContact_;
 import com.skapp.community.crmplanner.model.CrmDeal_;
-import com.skapp.community.crmplanner.payload.response.CrmActivityFeedLinkResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmActivityFeedAssociationResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityFeedRowResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityFeedRepository;
 import com.skapp.community.crmplanner.type.CrmActivityFeedFilterParams;
@@ -303,15 +303,15 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			row.setOwnerId(tuple.get(8, Long.class));
 			Long dealId = tuple.get(9, Long.class);
 			if (dealId != null) {
-				row.setDeal(new CrmActivityFeedLinkResponseDto(dealId, null, false));
+				row.setDeal(new CrmActivityFeedAssociationResponseDto(dealId, null, false));
 			}
 			Long companyId = tuple.get(10, Long.class);
 			if (companyId != null) {
-				row.setCompany(new CrmActivityFeedLinkResponseDto(companyId, null, false));
+				row.setCompany(new CrmActivityFeedAssociationResponseDto(companyId, null, false));
 			}
 			Long contactId = tuple.get(11, Long.class);
 			if (contactId != null) {
-				row.getContacts().add(new CrmActivityFeedLinkResponseDto(contactId, null, false));
+				row.getContacts().add(new CrmActivityFeedAssociationResponseDto(contactId, null, false));
 			}
 			return row;
 		}).toList();
@@ -339,7 +339,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			rows.stream()
 				.filter(row -> row.getType() == CrmActivityType.MEETING)
 				.forEach(row -> contactIdsByMeeting.getOrDefault(row.getId(), List.of())
-					.forEach(id -> row.getContacts().add(new CrmActivityFeedLinkResponseDto(id, null, false))));
+					.forEach(id -> row.getContacts().add(new CrmActivityFeedAssociationResponseDto(id, null, false))));
 		}
 
 		List<Long> emailIds = rows.stream()
@@ -364,7 +364,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			rows.stream()
 				.filter(row -> row.getType() == CrmActivityType.EMAIL)
 				.forEach(row -> contactIdsByEmail.getOrDefault(row.getId(), List.of())
-					.forEach(id -> row.getContacts().add(new CrmActivityFeedLinkResponseDto(id, null, false))));
+					.forEach(id -> row.getContacts().add(new CrmActivityFeedAssociationResponseDto(id, null, false))));
 		}
 
 		long total = pageable.getOffset() + rows.size() + (hasNext ? 1 : 0);

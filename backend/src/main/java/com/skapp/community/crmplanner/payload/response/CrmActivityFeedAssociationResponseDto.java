@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class CrmActivityFeedLinkResponseDto {
+public class CrmActivityFeedAssociationResponseDto {
 
 	private Long id;
 
