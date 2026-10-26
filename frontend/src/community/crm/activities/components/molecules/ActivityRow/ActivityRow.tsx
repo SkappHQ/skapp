@@ -17,6 +17,7 @@ import ActivityRowSubtitle from "./ActivityRowSubtitle";
 export interface ActivityRowProps {
   row: ActivityRowData;
   timeZone?: string;
+  showCheckbox: boolean;
   onRowClick: (row: ActivityRowData) => void;
   onToggleComplete: (row: ActivityRowData, isCompleted: boolean) => void;
 }
@@ -24,6 +25,7 @@ export interface ActivityRowProps {
 const ActivityRow: FC<ActivityRowProps> = ({
   row,
   timeZone,
+  showCheckbox,
   onRowClick,
   onToggleComplete
 }) => {
@@ -60,9 +62,7 @@ const ActivityRow: FC<ActivityRowProps> = ({
       onClick={() => onRowClick(row)}
       onKeyDown={handleKeyDown}
     >
-      {!isTask && <span aria-hidden="true" className="w-7 shrink-0" />}
-
-      {isTask && (
+      {showCheckbox && isTask && (
         <ActivityRowCheckbox
           id={`${rowId}-checkbox`}
           subject={row.subject}
