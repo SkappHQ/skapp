@@ -10,6 +10,7 @@ import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.payload.request.CrmActivityFeedFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmActivityMeetingFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityCallResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityEmailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityFeedByMonthResponseDto;
@@ -32,7 +33,6 @@ import com.skapp.community.crmplanner.type.CrmActivityCallSort;
 import com.skapp.community.crmplanner.type.CrmActivityEmailFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityEmailSort;
 import com.skapp.community.crmplanner.type.CrmActivityListParams;
-import com.skapp.community.crmplanner.type.CrmActivityMeetingFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityMeetingSort;
 import com.skapp.community.crmplanner.type.CrmActivityTaskFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityTaskSort;
@@ -124,10 +124,19 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 			crmActivityCallDao.findCalls(params).stream().map(this::toCallRow).forEach(rows::add);
 		}
 		if (isRequested(filterDto, CrmConstants.ACTIVITY_TYPE_MEETING)) {
-			CrmActivityMeetingFilterParams params = applyParams(new CrmActivityMeetingFilterParams(), currentUser,
-					filterDto);
-			params.setSortKey(CrmActivityMeetingSort.START_AT);
-			crmActivityMeetingDao.findMeetings(params).stream().map(this::toMeetingRow).forEach(rows::add);
+			CrmActivityMeetingFilterDto meetingFilter = new CrmActivityMeetingFilterDto();
+			meetingFilter.setSearchKeyword(filterDto.getSearch() == null ? null : filterDto.getSearch().trim());
+			meetingFilter.setOwnerId(filterDto.getOwnerId());
+			meetingFilter.setStartDate(filterDto.getFrom());
+			meetingFilter.setEndDate(filterDto.getTo());
+			meetingFilter.setSortKey(CrmActivityMeetingSort.START_AT);
+			meetingFilter.setSortOrder(Sort.Direction.DESC);
+			crmActivityMeetingDao
+				.findMeetings(meetingFilter, currentUser.getEmployee().getEmployeeId(),
+						CrmUtil.isCrmSalesRepresentative(currentUser), timeZoneService.requestTimezone())
+				.stream()
+				.map(this::toMeetingRow)
+				.forEach(rows::add);
 		}
 		if (isRequested(filterDto, CrmConstants.ACTIVITY_TYPE_EMAIL)) {
 			CrmActivityEmailFilterParams params = applyParams(new CrmActivityEmailFilterParams(), currentUser,
