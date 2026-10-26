@@ -21,7 +21,6 @@ import com.skapp.community.crmplanner.model.CrmContact_;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.payload.request.CrmActivityFeedFilterDto;
-import com.skapp.community.crmplanner.payload.response.CrmActivityFeedAssociationResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityFeedRowResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityFeedRepository;
 import com.skapp.community.crmplanner.type.CrmActivityTaskPriority;
@@ -93,7 +92,9 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			Join<CrmActivityTask, CrmCompany> company = task.join(CrmActivityTask_.company, JoinType.LEFT);
 			company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 			Join<CrmActivityTask, CrmDeal> deal = task.join(CrmActivityTask_.deal, JoinType.LEFT);
+			deal.on(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
 			Join<CrmActivityTask, CrmContact> contact = task.join(CrmActivityTask_.contact, JoinType.LEFT);
+			contact.on(cb.isFalse(contact.get(CrmContact_.isDeleted)));
 			Path<Instant> dueAt = task.get(CrmActivityTask_.dueAt);
 
 			List<Predicate> predicates = new ArrayList<>();
@@ -113,11 +114,9 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			if (searchPattern != null) {
 				Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
 				contactCompany.on(cb.isFalse(contactCompany.get(CrmCompany_.isDeleted)));
-				Predicate contactNotDeleted = cb.isFalse(contact.get(CrmContact_.isDeleted));
 				predicates.add(cb.or(cb.like(cb.lower(task.get(CrmActivityTask_.name)), searchPattern),
-						cb.and(contactNotDeleted, cb.like(cb.lower(contact.get(CrmContact_.name)), searchPattern)),
-						cb.and(contactNotDeleted,
-								cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), searchPattern))));
+						cb.like(cb.lower(contact.get(CrmContact_.name)), searchPattern),
+						cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), searchPattern)));
 			}
 
 			CriteriaBuilder.Case<Instant> feedAt = cb.selectCase();
@@ -131,12 +130,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 						task.get(CrmActivityTask_.isCompleted).alias("isCompleted"),
 						task.get(CrmActivityTask_.priority).as(String.class).alias("priority"),
 						ownerId.alias("ownerId"), deal.get(CrmDeal_.id).alias("dealId"),
-						company.get(CrmCompany_.id).alias("companyId"), contact.get(CrmContact_.id).alias("contactId"),
-						deal.get(CrmDeal_.name).alias("dealName"), deal.get(CrmDeal_.isDeleted).alias("dealIsDeleted"),
-						company.get(CrmCompany_.name).alias("companyName"),
-						company.get(CrmCompany_.isDeleted).alias("companyIsDeleted"),
-						contact.get(CrmContact_.name).alias("contactName"),
-						contact.get(CrmContact_.isDeleted).alias("contactIsDeleted"))
+						company.get(CrmCompany_.id).alias("companyId"), contact.get(CrmContact_.id).alias("contactId"))
 				.where(predicates.toArray(new Predicate[0]));
 			branches.add(taskQuery);
 		}
@@ -149,7 +143,9 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			Join<CrmActivityCall, CrmCompany> company = call.join(CrmActivityCall_.company, JoinType.LEFT);
 			company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 			Join<CrmActivityCall, CrmDeal> deal = call.join(CrmActivityCall_.deal, JoinType.LEFT);
+			deal.on(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
 			Join<CrmActivityCall, CrmContact> contact = call.join(CrmActivityCall_.contact, JoinType.LEFT);
+			contact.on(cb.isFalse(contact.get(CrmContact_.isDeleted)));
 			Path<Instant> loggedAt = call.get(CrmActivityCall_.loggedAt);
 
 			List<Predicate> predicates = new ArrayList<>();
@@ -169,11 +165,9 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			if (searchPattern != null) {
 				Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
 				contactCompany.on(cb.isFalse(contactCompany.get(CrmCompany_.isDeleted)));
-				Predicate contactNotDeleted = cb.isFalse(contact.get(CrmContact_.isDeleted));
 				predicates.add(cb.or(cb.like(cb.lower(call.get(CrmActivityCall_.subject)), searchPattern),
-						cb.and(contactNotDeleted, cb.like(cb.lower(contact.get(CrmContact_.name)), searchPattern)),
-						cb.and(contactNotDeleted,
-								cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), searchPattern))));
+						cb.like(cb.lower(contact.get(CrmContact_.name)), searchPattern),
+						cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), searchPattern)));
 			}
 
 			callQuery
@@ -184,12 +178,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 						cb.nullLiteral(Boolean.class).cast(Boolean.class).alias("isCompleted"),
 						cb.nullLiteral(String.class).cast(String.class).alias("priority"), ownerId.alias("ownerId"),
 						deal.get(CrmDeal_.id).alias("dealId"), company.get(CrmCompany_.id).alias("companyId"),
-						contact.get(CrmContact_.id).alias("contactId"), deal.get(CrmDeal_.name).alias("dealName"),
-						deal.get(CrmDeal_.isDeleted).alias("dealIsDeleted"),
-						company.get(CrmCompany_.name).alias("companyName"),
-						company.get(CrmCompany_.isDeleted).alias("companyIsDeleted"),
-						contact.get(CrmContact_.name).alias("contactName"),
-						contact.get(CrmContact_.isDeleted).alias("contactIsDeleted"))
+						contact.get(CrmContact_.id).alias("contactId"))
 				.where(predicates.toArray(new Predicate[0]));
 			branches.add(callQuery);
 		}
@@ -202,6 +191,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			Join<CrmActivityMeeting, CrmCompany> company = meeting.join(CrmActivityMeeting_.company, JoinType.LEFT);
 			company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 			Join<CrmActivityMeeting, CrmDeal> deal = meeting.join(CrmActivityMeeting_.deal, JoinType.LEFT);
+			deal.on(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
 			Path<Instant> startAt = meeting.get(CrmActivityMeeting_.startAt);
 
 			List<Predicate> predicates = new ArrayList<>();
@@ -244,12 +234,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 						cb.nullLiteral(Boolean.class).cast(Boolean.class).alias("isCompleted"),
 						cb.nullLiteral(String.class).cast(String.class).alias("priority"), ownerId.alias("ownerId"),
 						deal.get(CrmDeal_.id).alias("dealId"), company.get(CrmCompany_.id).alias("companyId"),
-						cb.nullLiteral(Long.class).cast(Long.class).alias("contactId"),
-						deal.get(CrmDeal_.name).alias("dealName"), deal.get(CrmDeal_.isDeleted).alias("dealIsDeleted"),
-						company.get(CrmCompany_.name).alias("companyName"),
-						company.get(CrmCompany_.isDeleted).alias("companyIsDeleted"),
-						cb.nullLiteral(String.class).cast(String.class).alias("contactName"),
-						cb.nullLiteral(Boolean.class).cast(Boolean.class).alias("contactIsDeleted"))
+						cb.nullLiteral(Long.class).cast(Long.class).alias("contactId"))
 				.where(predicates.toArray(new Predicate[0]));
 			branches.add(meetingQuery);
 		}
@@ -262,6 +247,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			Join<CrmActivityEmail, CrmCompany> company = email.join(CrmActivityEmail_.company, JoinType.LEFT);
 			company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 			Join<CrmActivityEmail, CrmDeal> deal = email.join(CrmActivityEmail_.deal, JoinType.LEFT);
+			deal.on(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
 			Path<Instant> loggedAt = email.get(CrmActivityEmail_.loggedAt);
 
 			List<Predicate> predicates = new ArrayList<>();
@@ -301,12 +287,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 						cb.nullLiteral(Boolean.class).cast(Boolean.class).alias("isCompleted"),
 						cb.nullLiteral(String.class).cast(String.class).alias("priority"), ownerId.alias("ownerId"),
 						deal.get(CrmDeal_.id).alias("dealId"), company.get(CrmCompany_.id).alias("companyId"),
-						cb.nullLiteral(Long.class).cast(Long.class).alias("contactId"),
-						deal.get(CrmDeal_.name).alias("dealName"), deal.get(CrmDeal_.isDeleted).alias("dealIsDeleted"),
-						company.get(CrmCompany_.name).alias("companyName"),
-						company.get(CrmCompany_.isDeleted).alias("companyIsDeleted"),
-						cb.nullLiteral(String.class).cast(String.class).alias("contactName"),
-						cb.nullLiteral(Boolean.class).cast(Boolean.class).alias("contactIsDeleted"))
+						cb.nullLiteral(Long.class).cast(Long.class).alias("contactId"))
 				.where(predicates.toArray(new Predicate[0]));
 			branches.add(emailQuery);
 		}
@@ -318,9 +299,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		query
 			.multiselect(feed.get("id"), feed.get("type"), feed.get("title"), feed.get("feedAt"), feed.get("dueAt"),
 					feed.get("completedAt"), feed.get("isCompleted"), feed.get("priority"), feed.get("ownerId"),
-					feed.get("dealId"), feed.get("companyId"), feed.get("contactId"), feed.get("dealName"),
-					feed.get("dealIsDeleted"), feed.get("companyName"), feed.get("companyIsDeleted"),
-					feed.get("contactName"), feed.get("contactIsDeleted"))
+					feed.get("dealId"), feed.get("companyId"), feed.get("contactId"))
 			.orderBy(cb.desc(feed.get("feedAt")).nullPrecedence(Nulls.LAST), cb.asc(feed.get("type")),
 					cb.desc(feed.get("id")));
 
@@ -346,19 +325,15 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			row.setOwnerId(tuple.get(8, Long.class));
 			Long dealId = tuple.get(9, Long.class);
 			if (dealId != null) {
-				row.setDeal(new CrmActivityFeedAssociationResponseDto(dealId, tuple.get(12, String.class),
-						Boolean.TRUE.equals(tuple.get(13, Boolean.class))));
+				row.setDealId(dealId);
 			}
 			Long companyId = tuple.get(10, Long.class);
 			if (companyId != null) {
-				row.setCompany(new CrmActivityFeedAssociationResponseDto(companyId, tuple.get(14, String.class),
-						Boolean.TRUE.equals(tuple.get(15, Boolean.class))));
+				row.setCompanyId(companyId);
 			}
 			Long contactId = tuple.get(11, Long.class);
 			if (contactId != null) {
-				row.getContacts()
-					.add(new CrmActivityFeedAssociationResponseDto(contactId, tuple.get(16, String.class),
-							Boolean.TRUE.equals(tuple.get(17, Boolean.class))));
+				row.getContactIds().add(contactId);
 			}
 			return row;
 		}).toList();
@@ -375,23 +350,17 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			Join<CrmActivityMeetingContact, CrmContact> linkedContact = contactLink
 				.join(CrmActivityMeetingContact_.contact);
 			Path<Long> contactId = linkedContact.get(CrmContact_.id);
-			contactQuery
-				.multiselect(meetingId, contactId, linkedContact.get(CrmContact_.name),
-						linkedContact.get(CrmContact_.isDeleted))
+			contactQuery.multiselect(meetingId, contactId)
 				.where(meetingId.in(meetingIds), cb.isFalse(linkedContact.get(CrmContact_.isDeleted)))
 				.orderBy(cb.asc(meetingId), cb.asc(contactId));
-			Map<Long, List<CrmActivityFeedAssociationResponseDto>> contactsByMeeting = entityManager
-				.createQuery(contactQuery)
+			Map<Long, List<Long>> contactsByMeeting = entityManager.createQuery(contactQuery)
 				.getResultList()
 				.stream()
 				.collect(Collectors.groupingBy(tuple -> tuple.get(0, Long.class),
-						Collectors.mapping(
-								tuple -> new CrmActivityFeedAssociationResponseDto(tuple.get(1, Long.class),
-										tuple.get(2, String.class), Boolean.TRUE.equals(tuple.get(3, Boolean.class))),
-								Collectors.toList())));
+						Collectors.mapping(tuple -> tuple.get(1, Long.class), Collectors.toList())));
 			rows.stream()
 				.filter(row -> row.getType() == CrmActivityType.MEETING)
-				.forEach(row -> row.getContacts().addAll(contactsByMeeting.getOrDefault(row.getId(), List.of())));
+				.forEach(row -> row.getContactIds().addAll(contactsByMeeting.getOrDefault(row.getId(), List.of())));
 		}
 
 		List<Long> emailIds = rows.stream()
@@ -405,23 +374,17 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			Join<CrmActivityEmailContact, CrmContact> linkedContact = contactLink
 				.join(CrmActivityEmailContact_.contact);
 			Path<Long> contactId = linkedContact.get(CrmContact_.id);
-			contactQuery
-				.multiselect(emailId, contactId, linkedContact.get(CrmContact_.name),
-						linkedContact.get(CrmContact_.isDeleted))
+			contactQuery.multiselect(emailId, contactId)
 				.where(emailId.in(emailIds), cb.isFalse(linkedContact.get(CrmContact_.isDeleted)))
 				.orderBy(cb.asc(emailId), cb.asc(contactId));
-			Map<Long, List<CrmActivityFeedAssociationResponseDto>> contactsByEmail = entityManager
-				.createQuery(contactQuery)
+			Map<Long, List<Long>> contactsByEmail = entityManager.createQuery(contactQuery)
 				.getResultList()
 				.stream()
 				.collect(Collectors.groupingBy(tuple -> tuple.get(0, Long.class),
-						Collectors.mapping(
-								tuple -> new CrmActivityFeedAssociationResponseDto(tuple.get(1, Long.class),
-										tuple.get(2, String.class), Boolean.TRUE.equals(tuple.get(3, Boolean.class))),
-								Collectors.toList())));
+						Collectors.mapping(tuple -> tuple.get(1, Long.class), Collectors.toList())));
 			rows.stream()
 				.filter(row -> row.getType() == CrmActivityType.EMAIL)
-				.forEach(row -> row.getContacts().addAll(contactsByEmail.getOrDefault(row.getId(), List.of())));
+				.forEach(row -> row.getContactIds().addAll(contactsByEmail.getOrDefault(row.getId(), List.of())));
 		}
 
 		long total = pageable.getOffset() + rows.size() + (hasNext ? 1 : 0);

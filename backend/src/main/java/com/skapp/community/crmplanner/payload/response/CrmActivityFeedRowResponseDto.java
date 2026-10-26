@@ -31,11 +31,11 @@ public class CrmActivityFeedRowResponseDto {
 
 	private Long ownerId;
 
-	private List<CrmActivityFeedAssociationResponseDto> contacts = new ArrayList<>();
+	private Long dealId;
 
-	private CrmActivityFeedAssociationResponseDto deal;
+	private Long companyId;
 
-	private CrmActivityFeedAssociationResponseDto company;
+	private List<Long> contactIds = new ArrayList<>();
 
 	private Boolean canComplete = false;
 
