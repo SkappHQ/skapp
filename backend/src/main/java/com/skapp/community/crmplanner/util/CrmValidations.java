@@ -22,6 +22,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -359,6 +360,12 @@ public class CrmValidations {
 			if (!ids.add(stage.getId()) || !orderIndexes.add(stage.getOrderIndex())) {
 				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_DUPLICATE_VALUES);
 			}
+		}
+	}
+
+	public static void validateActivityDateRange(LocalDate startDate, LocalDate endDate) {
+		if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_DATE_RANGE_INVALID);
 		}
 	}
 
