@@ -300,8 +300,11 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					activity.get(CrmActivityTask_.CONTACT), activity.get(CrmActivityMeeting_.START_AT),
 					activity.get(CrmActivityCall_.LOGGED_AT), activity.get(CrmConstants.ACTIVITY_FEED_TYPE_ALIAS),
 					cb.count(activityId, cb.createWindow()))
-			.orderBy(params.getSortOrder().isAscending() ? List.<Order>of(cb.asc(feedAt, false), cb.asc(activityId))
-					: List.<Order>of(cb.desc(feedAt, false), cb.desc(activityId)))
+			.orderBy(params.getSortOrder().isAscending()
+					? List.<Order>of(cb.asc(feedAt, false), cb.asc(activityId),
+							cb.asc(activity.get(CrmConstants.ACTIVITY_FEED_TYPE_ALIAS)))
+					: List.<Order>of(cb.desc(feedAt, false), cb.desc(activityId),
+							cb.desc(activity.get(CrmConstants.ACTIVITY_FEED_TYPE_ALIAS))))
 			.offset(pageable.getOffset())
 			.fetch(pageable.getPageSize());
 
