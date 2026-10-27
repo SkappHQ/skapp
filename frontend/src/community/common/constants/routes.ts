@@ -80,7 +80,7 @@ const ROUTES = {
         SYNCING: "/people/directory/import-google/syncing",
         REVIEW: "/people/directory/import-google/review"
       },
-      MICROSOFT: {
+      MICROSOFT_ENTRA: {
         SYNCING: "/people/directory/import-microsoft/syncing",
         REVIEW: "/people/directory/import-microsoft/review"
       }
@@ -218,8 +218,8 @@ export const employeeRestrictedRoutes = [
 export const nonSuperAdminRestrictedRoutes = [
   ROUTES.PEOPLE.IMPORT.GOOGLE.SYNCING,
   ROUTES.PEOPLE.IMPORT.GOOGLE.REVIEW,
-  ROUTES.PEOPLE.IMPORT.MICROSOFT.SYNCING,
-  ROUTES.PEOPLE.IMPORT.MICROSOFT.REVIEW,
+  ROUTES.PEOPLE.IMPORT.MICROSOFT_ENTRA.SYNCING,
+  ROUTES.PEOPLE.IMPORT.MICROSOFT_ENTRA.REVIEW,
   ROUTES.PEOPLE.SYNC_CHANGES
 ];
 
