@@ -134,8 +134,7 @@
     "row": {
       "openDetails": "Open {{type}} details for {{subject}}",
       "markComplete": "Mark '{{subject}}' complete",
-      "markIncomplete": "Mark '{{subject}}' incomplete",
-      "owner": "Owner: {{name}}"
+      "markIncomplete": "Mark '{{subject}}' incomplete"
     },
     "toolbar": {
       "clearSearch": "Clear search",
@@ -143,9 +142,7 @@
       "openFiltersActive": "Open filters, filters applied",
       "closeFilters": "Close filters",
       "clearTeamMember": "Clear team member filter",
-      "teamMember": "Selected team member",
-      "fromDate": "Filter start date",
-      "toDate": "Filter end date"
+      "teamMember": "Team member, selected"
     }
   }
 }

@@ -7,22 +7,32 @@ import {
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { convertToYYYYMMDDFromDate } from "~community/common/utils/dateTimeUtils";
 import { ACTIVITY_DATE_PRESETS } from "~community/crm/activities/constants/activityConstants";
-import { DateRange } from "~community/crm/activities/types/activityTypes";
 import {
+  ActivityDatePreset,
+  ActivityDateRange
+} from "~community/crm/activities/types/activityTypes";
+import {
+  getDateRangeForPreset,
   getMatchingPreset,
-  getPresetDateRange,
-  toDateValue,
   toPickerDateRange,
   validateDateRange
 } from "~community/crm/activities/utils/activityFilterUtil";
 
 export interface ActivityDateRangeFieldProps {
   id: string;
-  value: DateRange;
-  onChange: (range: DateRange) => void;
+  value: ActivityDateRange;
+  onChange: (range: ActivityDateRange) => void;
   timeZone?: string;
 }
+
+const PRESET_LABEL_KEYS: Record<ActivityDatePreset, string> = {
+  [ActivityDatePreset.TODAY]: "today",
+  [ActivityDatePreset.THIS_WEEK]: "thisWeek",
+  [ActivityDatePreset.THIS_MONTH]: "thisMonth",
+  [ActivityDatePreset.LAST_30_DAYS]: "last30Days"
+};
 
 const ActivityDateRangeField: FC<ActivityDateRangeFieldProps> = ({
   id,
@@ -31,19 +41,25 @@ const ActivityDateRangeField: FC<ActivityDateRangeFieldProps> = ({
   timeZone
 }) => {
   const translateText = useTranslator("crmModule");
-  const translateAria = useTranslator("crmAria");
 
   const pickerRange = toPickerDateRange(value);
   const selectedPreset = getMatchingPreset(value, timeZone);
   const isValid = validateDateRange(value);
   const errorId = `${id}-error`;
+  const describedBy = isValid ? {} : { "aria-describedby": errorId };
 
-  const handleFromSelect = (date?: Date) => {
-    onChange({ ...value, from: toDateValue(date) });
+  const handleFromSelect = (date?: Date): void => {
+    onChange({
+      ...(date ? { fromDate: convertToYYYYMMDDFromDate(date) } : {}),
+      ...(value.toDate ? { toDate: value.toDate } : {})
+    });
   };
 
-  const handleToSelect = (date?: Date) => {
-    onChange({ ...value, to: toDateValue(date) });
+  const handleToSelect = (date?: Date): void => {
+    onChange({
+      ...(value.fromDate ? { fromDate: value.fromDate } : {}),
+      ...(date ? { toDate: convertToYYYYMMDDFromDate(date) } : {})
+    });
   };
 
   return (
@@ -66,7 +82,7 @@ const ActivityDateRangeField: FC<ActivityDateRangeFieldProps> = ({
       <div className="flex flex-wrap gap-2">
         {ACTIVITY_DATE_PRESETS.map((preset) => (
           <Chip
-            key={preset.id}
+            key={preset}
             size="sm"
             label={translateText([
               "activities",
@@ -74,10 +90,10 @@ const ActivityDateRangeField: FC<ActivityDateRangeFieldProps> = ({
               "filters",
               "dateRange",
               "presets",
-              preset.labelKey
+              PRESET_LABEL_KEYS[preset]
             ])}
-            isSelected={selectedPreset === preset.id}
-            onClick={() => onChange(getPresetDateRange(preset.id, timeZone))}
+            isSelected={selectedPreset === preset}
+            onClick={() => onChange(getDateRangeForPreset(preset, timeZone))}
           />
         ))}
       </div>
@@ -107,12 +123,10 @@ const ActivityDateRangeField: FC<ActivityDateRangeFieldProps> = ({
                   "dateRange",
                   "fromPlaceholder"
                 ])}
-                aria-label={translateAria([
-                  "activities",
-                  "toolbar",
-                  "fromDate"
-                ])}
-                value={pickerRange.from?.toLocaleDateString() ?? ""}
+                {...describedBy}
+                value={
+                  pickerRange.from ? pickerRange.from.toLocaleDateString() : ""
+                }
                 rightIcon={<CalendarIcon />}
                 state={isValid ? "default" : "error"}
                 aria-invalid={!isValid}
@@ -147,9 +161,10 @@ const ActivityDateRangeField: FC<ActivityDateRangeFieldProps> = ({
                   "dateRange",
                   "toPlaceholder"
                 ])}
-                aria-label={translateAria(["activities", "toolbar", "toDate"])}
-                aria-describedby={isValid ? "" : errorId}
-                value={pickerRange.to?.toLocaleDateString() ?? ""}
+                {...describedBy}
+                value={
+                  pickerRange.to ? pickerRange.to.toLocaleDateString() : ""
+                }
                 rightIcon={<CalendarIcon />}
                 state={isValid ? "default" : "error"}
                 aria-invalid={!isValid}

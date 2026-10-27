@@ -5,14 +5,10 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import ActivityFilterControl from "~community/crm/activities/components/molecules/ActivityFilterControl/ActivityFilterControl";
 import ActivitySearchField from "~community/crm/activities/components/molecules/ActivitySearchField/ActivitySearchField";
 import {
-  ACTIVITY_TABS,
-  ACTIVITY_TOOLBAR_ID
-} from "~community/crm/activities/constants/activityConstants";
-import {
   ActivityFilterValues,
-  ActivityTab,
-  ActivityTeamMember
+  ActivityTab
 } from "~community/crm/activities/types/activityTypes";
+import { CrmOwnerEntity } from "~community/crm/types/CrmCommonTypes";
 
 export interface ActivityToolbarProps {
   id?: string;
@@ -24,11 +20,15 @@ export interface ActivityToolbarProps {
   isManager: boolean;
   filters: ActivityFilterValues;
   onApplyFilters: (filters: ActivityFilterValues) => void;
-  teamMembers: ActivityTeamMember[];
+  teamMembers: CrmOwnerEntity[];
   isTeamMembersError: boolean;
   timeZone?: string;
   showControls?: boolean;
 }
+
+const ACTIVITY_TOOLBAR_ID = "crm-activity-toolbar";
+
+const ACTIVITY_TABS = Object.values(ActivityTab);
 
 const ActivityToolbar: FC<ActivityToolbarProps> = ({
   id = ACTIVITY_TOOLBAR_ID,
@@ -49,13 +49,15 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
   const translateAria = useTranslator("crmAria");
 
   const tabs = ACTIVITY_TABS.map((tab) => ({
-    id: tab.id,
-    label: translateText(["activities", "tabs", tab.labelKey])
+    id: tab,
+    label: translateText(["activities", "tabs", tab.toLowerCase()])
   }));
 
-  const searchPlaceholderKey =
-    ACTIVITY_TABS.find((tab) => tab.id === activeTab)?.labelKey ??
-    ACTIVITY_TABS[0].labelKey;
+  const handleTabChange = (tabId: string): void => {
+    const tab = ACTIVITY_TABS.find((item) => item === tabId);
+
+    if (tab) onTabChange(tab);
+  };
 
   return (
     <div id={id} className="flex flex-col gap-4">
@@ -64,7 +66,7 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
           tabs={tabs}
           activeTabId={activeTab}
           ariaLabel={translateAria(["activities", "tabs"])}
-          onTabChange={(tabId: string) => onTabChange(tabId as ActivityTab)}
+          onTabChange={handleTabChange}
         />
       </div>
 
@@ -88,7 +90,7 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
               "toolbar",
               "search",
               "placeholders",
-              searchPlaceholderKey
+              activeTab.toLowerCase()
             ])}
             searchTerm={searchTerm}
             onSearchChange={onSearchChange}

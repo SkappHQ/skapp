@@ -19,28 +19,25 @@ const ActivityFeedSkeleton: FC<ActivityFeedSkeletonProps> = ({
   rowCount = ACTIVITY_SKELETON_CONFIG.rowCount,
   showCheckbox = false
 }) => {
-  const rowKeys = Array.from(
-    { length: rowCount },
-    (_, rowIndex) => `${id}-row-${rowIndex}`
-  );
-  const groupKeys = Array.from(
+  const groupIds = Array.from(
     { length: groupCount },
     (_, groupIndex) => `${id}-group-${groupIndex}`
+  );
+  const rowIds = Array.from(
+    { length: rowCount },
+    (_, rowIndex) => `${id}-row-${rowIndex}`
   );
 
   return (
     <div id={id} role="status" aria-busy={true} aria-live="polite">
       <span className="sr-only">{message}</span>
       <div className="flex flex-col gap-4" aria-hidden="true">
-        {groupKeys.map((groupKey) => (
-          <div className="flex flex-col" key={groupKey}>
+        {groupIds.map((groupId) => (
+          <div className="flex flex-col" key={groupId}>
             <SkeletonShape circle className="h-3 w-16 mb-2" />
             <div className="border border-secondary-accent rounded-lg overflow-hidden divide-y divide-secondary-accent">
-              {rowKeys.map((rowKey) => (
-                <ActivityRowSkeleton
-                  key={`${groupKey}-${rowKey}`}
-                  showCheckbox={showCheckbox}
-                />
+              {rowIds.map((rowId) => (
+                <ActivityRowSkeleton key={rowId} showCheckbox={showCheckbox} />
               ))}
             </div>
           </div>

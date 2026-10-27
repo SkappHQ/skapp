@@ -1,9 +1,7 @@
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import ActivityOwnerAvatar from "~community/crm/activities/components/atoms/ActivityOwnerAvatar/ActivityOwnerAvatar";
 import ActivityTypeIcon from "~community/crm/activities/components/atoms/ActivityTypeIcon/ActivityTypeIcon";
-import { ACTIVITY_TYPE_LABEL_KEYS } from "~community/crm/activities/constants/activityConstants";
 import {
   ActivityRow as ActivityRowData,
   ActivityType
@@ -37,24 +35,27 @@ const ActivityRow: FC<ActivityRowProps> = ({
   const isCompletedStyleApplied = isTask && row.isCompleted;
 
   return (
-    <div className="relative flex items-center gap-4 p-3 min-w-0 min-h-[63px] bg-white hover:bg-secondary-background overflow-hidden">
+    <div
+      id={rowId}
+      className="relative flex items-center gap-4 p-3 min-w-0 min-h-[63px] bg-white hover:bg-secondary-background overflow-hidden"
+    >
       <button
-        id={rowId}
+        id={`${rowId}-open`}
         type="button"
         aria-label={translateAria(["activities", "row", "openDetails"], {
           type: translateText([
             "activities",
             "types",
-            ACTIVITY_TYPE_LABEL_KEYS[row.type]
+            row.type.toLowerCase()
           ]).toLowerCase(),
           subject: row.title
         })}
-        className="absolute inset-0 w-full h-full cursor-pointer focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-accent"
+        className="absolute inset-0 cursor-pointer focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-accent"
         onClick={() => onRowClick(row)}
       />
 
       {showCheckbox && isTask && (
-        <div className="relative pointer-events-auto">
+        <div className="relative z-10">
           <ActivityRowCheckbox
             id={`${rowId}-checkbox`}
             subject={row.title}
@@ -65,7 +66,7 @@ const ActivityRow: FC<ActivityRowProps> = ({
         </div>
       )}
 
-      <div className="relative flex flex-1 items-center gap-3 min-w-0 pointer-events-none">
+      <div className="flex flex-1 items-center gap-3 min-w-0">
         <ActivityTypeIcon id={`${rowId}-type`} type={row.type} />
 
         <div className="flex-1 min-w-0">
@@ -90,14 +91,8 @@ const ActivityRow: FC<ActivityRowProps> = ({
         </div>
       </div>
 
-      <div className="relative flex items-center gap-6 shrink-0 pointer-events-none">
+      <div className="flex items-center gap-6 shrink-0">
         {isTask && row.priority && <PriorityLabel priority={row.priority} />}
-
-        {row.owner && (
-          <div className="pointer-events-auto">
-            <ActivityOwnerAvatar id={`${rowId}-owner`} owner={row.owner} />
-          </div>
-        )}
       </div>
     </div>
   );

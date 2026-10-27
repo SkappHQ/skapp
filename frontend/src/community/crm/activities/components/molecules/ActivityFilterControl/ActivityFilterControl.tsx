@@ -3,17 +3,14 @@ import { FC, MouseEvent, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import ActivityFilterPopover from "~community/crm/activities/components/molecules/ActivityFilterPopover/ActivityFilterPopover";
-import {
-  ActivityFilterValues,
-  ActivityTeamMember
-} from "~community/crm/activities/types/activityTypes";
-import { countActiveFilters } from "~community/crm/activities/utils/activityFilterUtil";
+import { ActivityFilterValues } from "~community/crm/activities/types/activityTypes";
+import { CrmOwnerEntity } from "~community/crm/types/CrmCommonTypes";
 
 interface ActivityFilterControlProps {
   id: string;
   filters: ActivityFilterValues;
   onApplyFilters: (filters: ActivityFilterValues) => void;
-  teamMembers: ActivityTeamMember[];
+  teamMembers: CrmOwnerEntity[];
   isTeamMembersError: boolean;
   timeZone?: string;
 }
@@ -36,14 +33,15 @@ const ActivityFilterControl: FC<ActivityFilterControlProps> = ({
   const isFilterOpen = filterAnchorEl !== null;
   const filterButtonId = `${id}-button`;
   const filterPopoverId = `${id}-popover`;
-  const activeFilterCount = countActiveFilters(filters);
+  const activeFilterCount =
+    Number(Boolean(filters.ownerId)) +
+    Number(Boolean(filters.fromDate || filters.toDate));
 
-  const handleCloseFilters = () => {
+  const handleCloseFilters = (): void => {
     setFilterAnchorEl(null);
-    document.getElementById(filterButtonId)?.focus();
   };
 
-  const handleToggleFilters = (event: MouseEvent<HTMLElement>) => {
+  const handleToggleFilters = (event: MouseEvent<HTMLElement>): void => {
     setFilterAnchorEl(isFilterOpen ? null : event.currentTarget);
   };
 
@@ -62,7 +60,7 @@ const ActivityFilterControl: FC<ActivityFilterControlProps> = ({
         ])}
         aria-haspopup="dialog"
         aria-expanded={isFilterOpen}
-        aria-controls={isFilterOpen ? filterPopoverId : ""}
+        {...(isFilterOpen ? { "aria-controls": filterPopoverId } : {})}
         badge={{ count: activeFilterCount, show: activeFilterCount > 0 }}
         onClick={handleToggleFilters}
       />
