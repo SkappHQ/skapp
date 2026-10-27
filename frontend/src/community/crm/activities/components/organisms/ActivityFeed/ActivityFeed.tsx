@@ -5,10 +5,7 @@ import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import ActivityBucketSection from "~community/crm/activities/components/molecules/ActivityBucketSection/ActivityBucketSection";
 import ActivityFeedSkeleton from "~community/crm/activities/components/molecules/ActivityFeedSkeleton/ActivityFeedSkeleton";
-import {
-  ACTIVITY_FEED_ID,
-  ACTIVITY_SECTION_LABEL_KEYS
-} from "~community/crm/activities/constants/activityConstants";
+import { ACTIVITY_SECTION_LABEL_KEYS } from "~community/crm/activities/constants/activityConstants";
 import {
   ActivityFeedResponse,
   ActivityRow,
@@ -20,6 +17,13 @@ import {
   formatMonthHeading,
   getActivitySections
 } from "~community/crm/activities/utils/activityFeedUtil";
+
+const ACTIVITY_FEED_ID = "crm-activity-feed";
+
+const ACTIVITY_LOAD_MORE_SKELETON_CONFIG = {
+  groupCount: 1,
+  rowCount: 2
+};
 
 export interface ActivityFeedProps {
   id?: string;
@@ -56,7 +60,7 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
 }) => {
   const translateText = useTranslator("crmModule");
 
-  const buckets = useMemo(
+  const sections = useMemo(
     () =>
       getActivitySections(
         pages.flatMap((page) => page.items),
@@ -71,7 +75,7 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
     onLoadMore
   });
 
-  const getBucketTitle = (group: ActivitySectionGroup): string =>
+  const getSectionTitle = (group: ActivitySectionGroup): string =>
     group.section === ActivitySection.BY_MONTH && group.monthKey
       ? formatMonthHeading(group.monthKey)
       : translateText([
@@ -108,7 +112,7 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
       );
     }
 
-    if (buckets.length === 0) {
+    if (sections.length === 0) {
       return trimmedSearchTerm ? (
         <EmptyDataView
           icon={<SearchIcon />}
@@ -147,11 +151,11 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
 
     return (
       <div className="flex flex-col gap-4">
-        {buckets.map((group) => (
+        {sections.map((group) => (
           <ActivityBucketSection
             key={group.id}
             id={`${id}-bucket-${group.id}`}
-            title={getBucketTitle(group)}
+            title={getSectionTitle(group)}
             rows={group.rows}
             timeZone={timeZone}
             showCheckbox={showCheckbox}
@@ -164,8 +168,8 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
           <ActivityFeedSkeleton
             id={`${id}-loading-more`}
             message={translateText(["activities", "feed", "loadingMore"])}
-            groupCount={1}
-            rowCount={2}
+            groupCount={ACTIVITY_LOAD_MORE_SKELETON_CONFIG.groupCount}
+            rowCount={ACTIVITY_LOAD_MORE_SKELETON_CONFIG.rowCount}
             showCheckbox={showCheckbox}
           />
         )}

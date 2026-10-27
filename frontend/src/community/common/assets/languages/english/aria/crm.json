@@ -133,8 +133,12 @@
     "tabs": "Activity types",
     "row": {
       "openDetails": "Open {{type}} details for {{subject}}",
-      "markComplete": "Mark '{{subject}}' complete",
-      "markIncomplete": "Mark '{{subject}}' incomplete"
+      "markComplete": "Mark '{{name}}' complete",
+      "markIncomplete": "Mark '{{name}}' incomplete",
+      "owner": "Owner: {{name}}",
+      "highPriority": "High priority",
+      "mediumPriority": "Medium priority",
+      "lowPriority": "Low priority"
     },
     "toolbar": {
       "clearSearch": "Clear search",

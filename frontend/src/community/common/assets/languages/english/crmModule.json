@@ -614,7 +614,8 @@
         "dueOn": "Due on {{date}}",
         "scheduledOn": "Scheduled on {{date}}",
         "occurredAt": "{{date}} at {{time}}"
-      }
+      },
+      "deletedLink": "{{name}} (deleted)"
     },
     "feed": {
       "loading": "Loading activities",

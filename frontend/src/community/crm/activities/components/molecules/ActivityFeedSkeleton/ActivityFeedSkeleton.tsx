@@ -1,8 +1,12 @@
 import { FC } from "react";
 
 import ActivityRowSkeleton from "~community/crm/activities/components/molecules/ActivityRow/ActivityRowSkeleton";
-import { ACTIVITY_SKELETON_CONFIG } from "~community/crm/activities/constants/activityConstants";
 import SkeletonShape from "~community/crm/components/atoms/SkeletonShape/SkeletonShape";
+
+const ACTIVITY_SKELETON_CONFIG = {
+  groupCount: 3,
+  rowCount: 4
+};
 
 interface ActivityFeedSkeletonProps {
   id: string;
