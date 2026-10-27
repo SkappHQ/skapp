@@ -1,7 +1,6 @@
 import { FC, KeyboardEvent } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import ActivityOwnerAvatar from "~community/crm/activities/components/atoms/ActivityOwnerAvatar/ActivityOwnerAvatar";
 import ActivityTypeIcon from "~community/crm/activities/components/atoms/ActivityTypeIcon/ActivityTypeIcon";
 import { ACTIVITY_TYPE_LABEL_KEYS } from "~community/crm/activities/constants/activityConstants";
 import {
@@ -99,10 +98,6 @@ const ActivityRow: FC<ActivityRowProps> = ({
 
       <div className="flex items-center gap-6 shrink-0">
         {isTask && row.priority && <PriorityLabel priority={row.priority} />}
-
-        {row.owner && (
-          <ActivityOwnerAvatar id={`${rowId}-owner`} owner={row.owner} />
-        )}
       </div>
     </div>
   );
