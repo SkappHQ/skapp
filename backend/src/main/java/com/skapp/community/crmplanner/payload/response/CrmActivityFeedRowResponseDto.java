@@ -6,8 +6,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -37,7 +37,7 @@ public class CrmActivityFeedRowResponseDto {
 
 	private Long companyId;
 
-	private List<Long> contactIds = new ArrayList<>();
+	private Set<Long> contactIds = new LinkedHashSet<>();
 
 	private Boolean canComplete = false;
 
