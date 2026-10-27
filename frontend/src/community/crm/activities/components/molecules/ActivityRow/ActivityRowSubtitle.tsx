@@ -1,4 +1,5 @@
 import { FC, Fragment, ReactNode } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -12,6 +13,7 @@ import { isOverdue } from "~community/crm/utils/taskValidations";
 
 interface SubtitlePart {
   key: string;
+  isVisible: boolean;
   content: ReactNode;
 }
 
@@ -31,15 +33,19 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
   timeZone
 }) => {
   const translateText = useTranslator("crmModule");
-  const contacts = useCrmStore((state) => state.contacts);
-  const deals = useCrmStore((state) => state.deals);
+  const { contacts, deals } = useCrmStore(
+    useShallow((state) => ({
+      contacts: state.contacts,
+      deals: state.deals
+    }))
+  );
 
   const contactLinks = row.contactIds.flatMap((contactId) => {
     const name = getContactDisplayName(contacts[contactId]);
 
     return name ? [{ id: contactId, name }] : [];
   });
-  const dealName = row.dealId != null ? deals[row.dealId]?.name : undefined;
+  const dealName = deals[row.dealId ?? 0]?.name ?? "";
 
   const isRowOverdue =
     row.type === ActivityType.TASK &&
@@ -49,14 +55,10 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
 
   const status = getRowSubtitle(row, translateText, timeZone);
   const strikeClass = isStrikethroughApplied ? "line-through" : "";
-  const statusColor = isRowOverdue
-    ? "text-semantic-red-text"
-    : isCompletedStyleApplied
-      ? "text-secondary-icon"
-      : "text-secondary-text";
   const nameColor = isCompletedStyleApplied
     ? "text-secondary-icon"
     : "text-secondary-text";
+  const statusColor = isRowOverdue ? "text-semantic-red-text" : nameColor;
 
   const renderLink = (name: string, linkId: string) => (
     <span
@@ -68,11 +70,10 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
     </span>
   );
 
-  const parts: SubtitlePart[] = [];
-
-  if (status) {
-    parts.push({
+  const parts: SubtitlePart[] = [
+    {
       key: "status",
+      isVisible: Boolean(status),
       content: (
         <span
           id={`${id}-status`}
@@ -81,12 +82,10 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
           {status}
         </span>
       )
-    });
-  }
-
-  if (contactLinks.length > 0) {
-    parts.push({
+    },
+    {
       key: "contacts",
+      isVisible: contactLinks.length > 0,
       content: (
         <span className="flex min-w-0 items-center gap-1">
           {contactLinks.map((contact, index) => (
@@ -99,24 +98,23 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
           ))}
         </span>
       )
-    });
-  }
-
-  if (dealName) {
-    parts.push({
+    },
+    {
       key: "deal",
+      isVisible: Boolean(dealName),
       content: renderLink(dealName, `${id}-deal-${row.dealId}`)
-    });
-  }
+    }
+  ];
+  const visibleParts = parts.filter((part) => part.isVisible);
 
-  if (parts.length === 0) return null;
+  if (visibleParts.length === 0) return null;
 
   return (
-    <div
+    <span
       id={id}
       className="body3 leading-none mt-0.5 flex min-w-0 items-center gap-2"
     >
-      {parts.map((part, index) => (
+      {visibleParts.map((part, index) => (
         <Fragment key={part.key}>
           {index > 0 && (
             <span
@@ -127,7 +125,7 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
           {part.content}
         </Fragment>
       ))}
-    </div>
+    </span>
   );
 };
 

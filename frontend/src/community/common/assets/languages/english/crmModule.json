@@ -618,8 +618,6 @@
       "deletedLink": "{{name}} (deleted)"
     },
     "feed": {
-      "loading": "Loading activities",
-      "loadingMore": "Loading more activities...",
       "emptyState": {
         "all": {
           "title": "No activities logged",

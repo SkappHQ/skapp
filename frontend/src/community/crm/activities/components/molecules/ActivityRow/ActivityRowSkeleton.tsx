@@ -3,14 +3,14 @@ import { FC } from "react";
 import SkeletonShape from "~community/crm/components/atoms/SkeletonShape/SkeletonShape";
 
 interface ActivityRowSkeletonProps {
-  showCheckbox?: boolean;
+  isShowCheckbox?: boolean;
 }
 
 const ActivityRowSkeleton: FC<ActivityRowSkeletonProps> = ({
-  showCheckbox = false
+  isShowCheckbox = false
 }) => (
   <div className="flex items-center gap-4 p-3 min-h-[63px] bg-white">
-    {showCheckbox && <SkeletonShape circle className="h-5 w-5 shrink-0" />}
+    {isShowCheckbox && <SkeletonShape circle className="h-5 w-5 shrink-0" />}
     <div className="flex-1 min-w-0 flex flex-col gap-2">
       <SkeletonShape className="h-3 w-1/3" />
       <SkeletonShape className="h-2 w-1/4" />
