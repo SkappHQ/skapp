@@ -109,11 +109,11 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					taskDueAt.alias(CrmActivityFeedColumn.DUE_AT.name()),
 					taskCompletedAt.alias(CrmActivityFeedColumn.COMPLETED_AT.name()),
 					taskIsCompleted.alias(CrmActivityFeedColumn.IS_COMPLETED.name()),
-					task.get(CrmActivityTask_.priority).as(String.class).alias(CrmActivityFeedColumn.PRIORITY.name()),
+					task.get(CrmActivityTask_.priority).cast(String.class).alias(CrmActivityFeedColumn.PRIORITY.name()),
 					taskOwnerId.alias(CrmActivityFeedColumn.OWNER_ID.name()),
 					taskDeal.get(CrmDeal_.id).alias(CrmActivityFeedColumn.DEAL_ID.name()),
 					taskCompany.get(CrmCompany_.id).alias(CrmActivityFeedColumn.COMPANY_ID.name()),
-					taskContact.get(CrmContact_.id).as(String.class).alias(CrmActivityFeedColumn.CONTACT_IDS.name()),
+					taskContact.get(CrmContact_.id).cast(String.class).alias(CrmActivityFeedColumn.CONTACT_IDS.name()),
 					taskFeedAt.alias(CrmActivityFeedColumn.FEED_AT.name()))
 			.where(taskPredicates.toArray(new Predicate[0]));
 
@@ -159,7 +159,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					callOwnerId.alias(CrmActivityFeedColumn.OWNER_ID.name()),
 					callDeal.get(CrmDeal_.id).alias(CrmActivityFeedColumn.DEAL_ID.name()),
 					callCompany.get(CrmCompany_.id).alias(CrmActivityFeedColumn.COMPANY_ID.name()),
-					callContact.get(CrmContact_.id).as(String.class).alias(CrmActivityFeedColumn.CONTACT_IDS.name()),
+					callContact.get(CrmContact_.id).cast(String.class).alias(CrmActivityFeedColumn.CONTACT_IDS.name()),
 					callLoggedAt.alias(CrmActivityFeedColumn.FEED_AT.name()))
 			.where(callPredicates.toArray(new Predicate[0]));
 
@@ -206,7 +206,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			.join(CrmActivityMeetingContact_.contact);
 		Path<Long> meetingContactId = meetingContact.get(CrmContact_.id);
 		meetingContactIds
-			.select(cb.listagg(cb.asc(meetingContactId), meetingContactId.as(String.class),
+			.select(cb.listagg(cb.asc(meetingContactId), meetingContactId.cast(String.class),
 					StringUtils.COMMA_DELIMITER))
 			.where(cb.equal(meetingLink.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId),
 					meeting.get(CrmActivityMeeting_.id)), cb.isFalse(meetingContact.get(CrmContact_.isDeleted)));
@@ -267,7 +267,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		Join<CrmActivityEmailContact, CrmContact> emailContact = emailLink.join(CrmActivityEmailContact_.contact);
 		Path<Long> emailContactId = emailContact.get(CrmContact_.id);
 		emailContactIds
-			.select(cb.listagg(cb.asc(emailContactId), emailContactId.as(String.class), StringUtils.COMMA_DELIMITER))
+			.select(cb.listagg(cb.asc(emailContactId), emailContactId.cast(String.class), StringUtils.COMMA_DELIMITER))
 			.where(cb.equal(emailLink.get(CrmActivityEmailContact_.id).get(CrmActivityEmailContactId_.emailId),
 					email.get(CrmActivityEmail_.id)), cb.isFalse(emailContact.get(CrmContact_.isDeleted)));
 		emailRows
