@@ -50,7 +50,7 @@ const getStartOfWeek = (today: DateTime, weekStartDay: daysTypes): DateTime => {
   return today.minus({ days: (today.weekday - weekStartWeekday + 7) % 7 });
 };
 
-export const getPresetDateRange = (
+export const getDateRangeForPreset = (
   preset: ActivityDatePreset,
   weekStartDay: daysTypes,
   zone?: string
@@ -89,7 +89,7 @@ export const getMatchingPreset = (
   if (!range.fromDate || !range.toDate) return null;
 
   const match = ACTIVITY_DATE_PRESETS.find((preset) =>
-    isSameDateRange(getPresetDateRange(preset.id, weekStartDay, zone), range)
+    isSameDateRange(getDateRangeForPreset(preset.id, weekStartDay, zone), range)
   );
 
   return match ? match.id : null;
