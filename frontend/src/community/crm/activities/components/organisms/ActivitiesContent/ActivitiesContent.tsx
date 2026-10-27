@@ -37,7 +37,9 @@ import { getMissingDealIds, mergeDeals } from "~community/crm/utils/dealUtil";
 const NO_PAGES: ActivityFeedResponse[] = [];
 const NO_TEAM_MEMBERS: CrmOwnerEntity[] = [];
 
-const toRowBase = (item: ActivityListItemBase) => ({
+const toRowBase = (
+  item: ActivityListItemBase
+): Omit<ActivityRow, "type" | "title" | "contactIds"> => ({
   id: item.id,
   ownerId: item.ownerId,
   dealId: item.dealId,
@@ -92,12 +94,14 @@ const toSinglePage = (items: ActivityRow[]): ActivityFeedResponse[] => [
 
 const ActivitiesContent: FC = () => {
   const displayZone = useDisplayZone();
-  const { isCrmSalesManager, isCrmAdmin, isSuperAdmin } = useSessionData();
-  const isManager = Boolean(isCrmSalesManager || isCrmAdmin || isSuperAdmin);
+  const { isCrmSalesManager } = useSessionData();
+  const isManager = Boolean(isCrmSalesManager);
 
   const [activeTab, setActiveTab] = useState<ActivityTab>(DEFAULT_ACTIVITY_TAB);
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<ActivityFilterValues>({});
+
+  const isAllTab = activeTab === ActivityTab.ALL;
 
   const { deals, setDeals } = useCrmStore(
     useShallow((store) => ({ deals: store.deals, setDeals: store.setDeals }))
@@ -118,7 +122,7 @@ const ActivitiesContent: FC = () => {
     [searchTerm, filters]
   );
 
-  const feed = useGetActivityFeed(feedFilters, activeTab === ActivityTab.ALL);
+  const feed = useGetActivityFeed(feedFilters, isAllTab);
   const calls = useGetActivityCalls(
     listFilters,
     activeTab === ActivityTab.CALLS
@@ -151,7 +155,7 @@ const ActivitiesContent: FC = () => {
   }[activeTab];
 
   const pages = useMemo(() => {
-    if (activeTab === ActivityTab.ALL && feed.data) return feed.data.pages;
+    if (isAllTab && feed.data) return feed.data.pages;
     if (activeTab === ActivityTab.CALLS && calls.data)
       return toSinglePage(calls.data.map(toCallRow));
     if (activeTab === ActivityTab.EMAILS && emails.data)
@@ -163,6 +167,7 @@ const ActivitiesContent: FC = () => {
     return NO_PAGES;
   }, [
     activeTab,
+    isAllTab,
     feed.data,
     calls.data,
     emails.data,
@@ -192,7 +197,9 @@ const ActivitiesContent: FC = () => {
     setDeals(mergeDeals(deals, fetchedDeals));
   }, [fetchedDeals]);
 
-  const resultCount = isLoading || isError ? null : rows.length;
+  const totalCount =
+    isAllTab && feed.data ? feed.data.pages[0].totalItems : rows.length;
+  const resultCount = isLoading || isError ? null : totalCount;
   const hasActiveFilters =
     searchTerm.length > 0 || Object.keys(filters).length > 0;
 
@@ -224,8 +231,8 @@ const ActivitiesContent: FC = () => {
         searchTerm={searchTerm}
         isLoading={isLoading}
         isError={isError}
-        hasNextPage={feed.hasNextPage}
-        isFetchingNextPage={feed.isFetchingNextPage}
+        hasNextPage={isAllTab && feed.hasNextPage}
+        isFetchingNextPage={isAllTab && feed.isFetchingNextPage}
         timeZone={displayZone}
         onLoadMore={feed.fetchNextPage}
         onRowClick={handleRowClick}
