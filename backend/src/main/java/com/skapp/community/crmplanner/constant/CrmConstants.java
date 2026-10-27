@@ -69,4 +69,6 @@ public class CrmConstants {
 
 	public static final String ACTIVITY_FEED_TYPE_ALIAS = "type";
 
+	public static final String ACTIVITY_FEED_TOTAL_ALIAS = "total";
+
 }

@@ -52,6 +52,7 @@ import org.springframework.stereotype.Repository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @Repository
 @RequiredArgsConstructor
@@ -64,7 +65,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		HibernateCriteriaBuilder cb = entityManager.unwrap(Session.class).getCriteriaBuilder();
 		JpaCriteriaQuery<Tuple> query = cb.createTupleQuery();
 		String searchPattern = StringUtils.isNullOrBlank(params.getSearchPattern()) ? null
-				: "%" + StringUtils.escapeLikePattern(params.getSearchPattern().toLowerCase()) + "%";
+				: "%" + StringUtils.escapeLikePattern(params.getSearchPattern().toLowerCase(Locale.ROOT)) + "%";
 
 		JpaDerivedRoot<Tuple> activity = query
 			.from(cb.union(true, callRows(cb, query, params, searchPattern), taskRows(cb, query, params, searchPattern),
@@ -76,13 +77,14 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					activity.get(CrmActivityTask_.COMPLETED_AT), activity.get(CrmActivityTask_.DUE_AT)));
 		Path<Long> activityId = activity.get(CrmActivityTask_.ID);
 		Path<String> activityType = activity.get(CrmConstants.ACTIVITY_FEED_TYPE_ALIAS);
-		query
-			.multiselect(activityId, activity.get(CrmActivityTask_.NAME), activity.get(CrmActivityTask_.DUE_AT),
-					activity.get(CrmActivityTask_.COMPLETED_AT), activity.get(CrmActivityTask_.IS_COMPLETED),
-					activity.get(CrmActivityTask_.PRIORITY), activity.get(CrmActivityTask_.OWNER),
-					activity.get(CrmActivityTask_.DEAL), activity.get(CrmActivityTask_.COMPANY),
-					activity.get(CrmActivityTask_.CONTACT), activity.get(CrmActivityMeeting_.START_AT),
-					activity.get(CrmActivityCall_.LOGGED_AT), activityType, cb.count(activityId, cb.createWindow()))
+		query.multiselect(activityId.alias(CrmActivityTask_.ID), feedColumn(activity, CrmActivityTask_.NAME),
+				feedColumn(activity, CrmActivityTask_.DUE_AT), feedColumn(activity, CrmActivityTask_.COMPLETED_AT),
+				feedColumn(activity, CrmActivityTask_.IS_COMPLETED), feedColumn(activity, CrmActivityTask_.PRIORITY),
+				feedColumn(activity, CrmActivityTask_.OWNER), feedColumn(activity, CrmActivityTask_.DEAL),
+				feedColumn(activity, CrmActivityTask_.COMPANY), feedColumn(activity, CrmActivityTask_.CONTACT),
+				feedColumn(activity, CrmActivityMeeting_.START_AT), feedColumn(activity, CrmActivityCall_.LOGGED_AT),
+				activityType.alias(CrmConstants.ACTIVITY_FEED_TYPE_ALIAS),
+				cb.count(activityId, cb.createWindow()).alias(CrmConstants.ACTIVITY_FEED_TOTAL_ALIAS))
 			.orderBy(params.getSortOrder().isAscending()
 					? List.<Order>of(cb.asc(feedAt, false), cb.asc(activityId), cb.asc(activityType))
 					: List.<Order>of(cb.desc(feedAt, false), cb.desc(activityId), cb.desc(activityType)))
@@ -90,7 +92,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			.fetch(pageable.getPageSize());
 
 		List<Tuple> results = entityManager.createQuery(query).getResultList();
-		long total = results.isEmpty() ? 0 : results.getFirst().get(13, Long.class);
+		long total = results.isEmpty() ? 0 : results.getFirst().get(CrmConstants.ACTIVITY_FEED_TOTAL_ALIAS, Long.class);
 		return new PageImpl<>(results.stream().map(this::toFeedRow).toList(), pageable, total);
 	}
 
@@ -283,27 +285,31 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 				startAt.alias(CrmActivityMeeting_.START_AT), loggedAt.alias(CrmActivityCall_.LOGGED_AT));
 	}
 
+	private Selection<?> feedColumn(JpaDerivedRoot<Tuple> activity, String alias) {
+		return activity.get(alias).alias(alias);
+	}
+
 	private CrmActivityFeedRowResponseDto toFeedRow(Tuple result) {
 		CrmActivityFeedRowResponseDto row = new CrmActivityFeedRowResponseDto();
-		row.setId(result.get(0, Long.class));
-		row.setTitle(result.get(1, String.class));
-		row.setDueAt(result.get(2, Instant.class));
-		row.setCompletedAt(result.get(3, Instant.class));
-		row.setIsCompleted(result.get(4, Boolean.class));
-		String priority = result.get(5, String.class);
+		row.setId(result.get(CrmActivityTask_.ID, Long.class));
+		row.setTitle(result.get(CrmActivityTask_.NAME, String.class));
+		row.setDueAt(result.get(CrmActivityTask_.DUE_AT, Instant.class));
+		row.setCompletedAt(result.get(CrmActivityTask_.COMPLETED_AT, Instant.class));
+		row.setIsCompleted(result.get(CrmActivityTask_.IS_COMPLETED, Boolean.class));
+		String priority = result.get(CrmActivityTask_.PRIORITY, String.class);
 		if (priority != null) {
 			row.setPriority(CrmActivityTaskPriority.valueOf(priority));
 		}
-		row.setOwnerId(result.get(6, Long.class));
-		row.setDealId(result.get(7, Long.class));
-		row.setCompanyId(result.get(8, Long.class));
-		StringUtils.convertToList(result.get(9, String.class))
+		row.setOwnerId(result.get(CrmActivityTask_.OWNER, Long.class));
+		row.setDealId(result.get(CrmActivityTask_.DEAL, Long.class));
+		row.setCompanyId(result.get(CrmActivityTask_.COMPANY, Long.class));
+		StringUtils.convertToList(result.get(CrmActivityTask_.CONTACT, String.class))
 			.stream()
 			.map(Long::valueOf)
 			.forEach(row.getContactIds()::add);
-		row.setStartAt(result.get(10, Instant.class));
-		row.setLoggedAt(result.get(11, Instant.class));
-		row.setType(CrmActivityType.valueOf(result.get(12, String.class)));
+		row.setStartAt(result.get(CrmActivityMeeting_.START_AT, Instant.class));
+		row.setLoggedAt(result.get(CrmActivityCall_.LOGGED_AT, Instant.class));
+		row.setType(CrmActivityType.valueOf(result.get(CrmConstants.ACTIVITY_FEED_TYPE_ALIAS, String.class)));
 		return row;
 	}
 
