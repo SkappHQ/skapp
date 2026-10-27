@@ -107,8 +107,6 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					task.get(CrmActivityTask_.id).alias(CrmActivityFeedColumn.ID.name()),
 					task.get(CrmActivityTask_.name).alias(CrmActivityFeedColumn.TITLE.name()),
 					taskDueAt.alias(CrmActivityFeedColumn.DUE_AT.name()),
-					cb.nullLiteral(Instant.class).alias(CrmActivityFeedColumn.LOGGED_AT.name()),
-					cb.nullLiteral(Instant.class).alias(CrmActivityFeedColumn.START_AT.name()),
 					taskCompletedAt.alias(CrmActivityFeedColumn.COMPLETED_AT.name()),
 					taskIsCompleted.alias(CrmActivityFeedColumn.IS_COMPLETED.name()),
 					task.get(CrmActivityTask_.priority).alias(CrmActivityFeedColumn.PRIORITY.name()),
@@ -155,8 +153,6 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					call.get(CrmActivityCall_.id).alias(CrmActivityFeedColumn.ID.name()),
 					call.get(CrmActivityCall_.subject).alias(CrmActivityFeedColumn.TITLE.name()),
 					cb.nullLiteral(Instant.class).alias(CrmActivityFeedColumn.DUE_AT.name()),
-					callLoggedAt.alias(CrmActivityFeedColumn.LOGGED_AT.name()),
-					cb.nullLiteral(Instant.class).alias(CrmActivityFeedColumn.START_AT.name()),
 					cb.nullLiteral(Instant.class).alias(CrmActivityFeedColumn.COMPLETED_AT.name()),
 					cb.nullLiteral(Boolean.class).alias(CrmActivityFeedColumn.IS_COMPLETED.name()),
 					cb.nullLiteral(CrmActivityTaskPriority.class).alias(CrmActivityFeedColumn.PRIORITY.name()),
@@ -219,8 +215,6 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					meeting.get(CrmActivityMeeting_.id).alias(CrmActivityFeedColumn.ID.name()),
 					meeting.get(CrmActivityMeeting_.name).alias(CrmActivityFeedColumn.TITLE.name()),
 					cb.nullLiteral(Instant.class).alias(CrmActivityFeedColumn.DUE_AT.name()),
-					cb.nullLiteral(Instant.class).alias(CrmActivityFeedColumn.LOGGED_AT.name()),
-					meetingStartAt.alias(CrmActivityFeedColumn.START_AT.name()),
 					cb.nullLiteral(Instant.class).alias(CrmActivityFeedColumn.COMPLETED_AT.name()),
 					cb.nullLiteral(Boolean.class).alias(CrmActivityFeedColumn.IS_COMPLETED.name()),
 					cb.nullLiteral(CrmActivityTaskPriority.class).alias(CrmActivityFeedColumn.PRIORITY.name()),
@@ -281,8 +275,6 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					email.get(CrmActivityEmail_.id).alias(CrmActivityFeedColumn.ID.name()),
 					email.get(CrmActivityEmail_.subject).alias(CrmActivityFeedColumn.TITLE.name()),
 					cb.nullLiteral(Instant.class).alias(CrmActivityFeedColumn.DUE_AT.name()),
-					emailLoggedAt.alias(CrmActivityFeedColumn.LOGGED_AT.name()),
-					cb.nullLiteral(Instant.class).alias(CrmActivityFeedColumn.START_AT.name()),
 					cb.nullLiteral(Instant.class).alias(CrmActivityFeedColumn.COMPLETED_AT.name()),
 					cb.nullLiteral(Boolean.class).alias(CrmActivityFeedColumn.IS_COMPLETED.name()),
 					cb.nullLiteral(CrmActivityTaskPriority.class).alias(CrmActivityFeedColumn.PRIORITY.name()),
@@ -319,8 +311,13 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			row.setType(type);
 			row.setTitle(result.get(CrmActivityFeedColumn.TITLE.name(), String.class));
 			row.setDueAt(result.get(CrmActivityFeedColumn.DUE_AT.name(), Instant.class));
-			row.setLoggedAt(result.get(CrmActivityFeedColumn.LOGGED_AT.name(), Instant.class));
-			row.setStartAt(result.get(CrmActivityFeedColumn.START_AT.name(), Instant.class));
+			Instant feedAt = result.get(CrmActivityFeedColumn.FEED_AT.name(), Instant.class);
+			if (type == CrmActivityType.MEETING) {
+				row.setStartAt(feedAt);
+			}
+			else if (type != CrmActivityType.TASK) {
+				row.setLoggedAt(feedAt);
+			}
 			row.setCompletedAt(result.get(CrmActivityFeedColumn.COMPLETED_AT.name(), Instant.class));
 			row.setIsCompleted(result.get(CrmActivityFeedColumn.IS_COMPLETED.name(), Boolean.class));
 			row.setPriority(result.get(CrmActivityFeedColumn.PRIORITY.name(), CrmActivityTaskPriority.class));
