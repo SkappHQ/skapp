@@ -16,15 +16,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/v1/crm/activities")
 @Tag(name = "CRM Activities Controller", description = "Operations related to the CRM activity feed")
-public class CrmActivityController {
+public class CrmActivityFeedController {
 
 	private final CrmActivityFeedService crmActivityFeedService;
 
 	@GetMapping
-	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getActivities(CrmActivityFeedFilterDto filterDto) {
-		ResponseEntityDto response = crmActivityFeedService.getActivities(filterDto);
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		return new ResponseEntity<>(crmActivityFeedService.getActivities(filterDto), HttpStatus.OK);
 	}
 
 }

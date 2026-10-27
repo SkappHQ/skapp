@@ -67,4 +67,8 @@ public class CrmConstants {
 	public static final Set<CrmDealStageType> NON_DELETABLE_STAGES = EnumSet.of(CrmDealStageType.INITIAL,
 			CrmDealStageType.WON, CrmDealStageType.LOST);
 
+	public static final int ACTIVITY_FEED_DEFAULT_PAGE_SIZE = 25;
+
+	public static final int ACTIVITY_FEED_MAX_PAGE_SIZE = 100;
+
 }

@@ -27,7 +27,7 @@ public class CrmActivityFeedRowResponseDto {
 
 	private Instant completedAt;
 
-	private Boolean isCompleted = false;
+	private Boolean isCompleted;
 
 	private CrmActivityTaskPriority priority;
 
@@ -39,6 +39,6 @@ public class CrmActivityFeedRowResponseDto {
 
 	private Set<Long> contactIds = new LinkedHashSet<>();
 
-	private Boolean canComplete = false;
+	private Boolean canComplete;
 
 }

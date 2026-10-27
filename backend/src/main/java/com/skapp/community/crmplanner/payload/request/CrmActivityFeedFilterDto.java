@@ -1,24 +1,15 @@
 package com.skapp.community.crmplanner.payload.request;
 
+import com.skapp.community.crmplanner.constant.CrmConstants;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
-
 @Getter
 @Setter
-public class CrmActivityFeedFilterDto {
-
-	private String search;
-
-	private Long ownerId;
-
-	private LocalDate fromDate;
-
-	private LocalDate toDate;
+public class CrmActivityFeedFilterDto extends CrmActivityListFilterDto {
 
 	private int page = 0;
 
-	private int size = 25;
+	private int size = CrmConstants.ACTIVITY_FEED_DEFAULT_PAGE_SIZE;
 
 }
