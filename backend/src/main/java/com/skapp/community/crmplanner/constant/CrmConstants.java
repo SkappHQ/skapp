@@ -67,4 +67,6 @@ public class CrmConstants {
 	public static final Set<CrmDealStageType> NON_DELETABLE_STAGES = EnumSet.of(CrmDealStageType.INITIAL,
 			CrmDealStageType.WON, CrmDealStageType.LOST);
 
+	public static final String ACTIVITY_FEED_CONTACT_IDS_SEPARATOR = ",";
+
 }
