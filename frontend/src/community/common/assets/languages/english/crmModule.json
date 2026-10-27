@@ -584,10 +584,6 @@
       "pageHead": "Activities | Skapp"
     },
     "toasts": {
-      "loadError": {
-        "title": "Oops! Something went wrong",
-        "description": "Failed to load activities"
-      },
       "updateTaskStatusError": {
         "title": "Failed to update task",
         "description": "Could not update the task status. Please try again."
@@ -619,7 +615,7 @@
         "scheduledOn": "Scheduled on {{date}}",
         "occurredAt": "{{date}} at {{time}}"
       },
-      "deletedAssociation": "{{name}} (deleted)"
+      "deletedLink": "{{name}} (deleted)"
     },
     "feed": {
       "loading": "Loading activities",
@@ -679,15 +675,14 @@
           "to": "To",
           "fromPlaceholder": "Start date",
           "toPlaceholder": "End date",
-          "error": "End date must be after start date"
+          "error": "End date must be on or after the start date"
         },
         "teamMember": {
           "label": "Team member",
           "placeholder": "Search team members",
           "noMatches": "No team members found",
           "noTeamMembers": "No team members to show",
-          "loadErrorInline": "Couldn't load team members",
-          "loadError": "Couldn't load team members. Refresh to try again."
+          "loadErrorInline": "Couldn't load team members. Refresh to try again."
         },
         "reset": "Reset filters",
         "apply": "Apply filters"

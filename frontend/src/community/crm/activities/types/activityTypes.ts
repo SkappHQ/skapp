@@ -80,54 +80,43 @@ export interface ActivitySectionGroup {
   rows: ActivityRow[];
 }
 
-export interface ActivityListParams {
+export interface ActivityListFilters {
   searchKeyword?: string;
   ownerId?: number;
   startDate?: string;
   endDate?: string;
 }
 
-interface ActivityListItemBase {
+export interface ActivityListItemBase {
   id: number;
   ownerId: number | null;
   dealId: number | null;
   companyId: number | null;
 }
 
-export interface ActivityCallListItem extends ActivityListItemBase {
-  subject: string | null;
-  durationMinutes: number | null;
+export interface ActivityCallResponse extends ActivityListItemBase {
+  subject: string;
   loggedAt: string | null;
   contactId: number | null;
 }
 
-export interface ActivityMeetingListItem extends ActivityListItemBase {
-  name: string | null;
-  isScheduled: boolean;
-  meetingVenue: string | null;
-  location: string | null;
-  startAt: string | null;
-  endAt: string | null;
-  contactIds: number[];
-}
-
-export interface ActivityEmailListItem extends ActivityListItemBase {
-  subject: string | null;
+export interface ActivityEmailResponse extends ActivityListItemBase {
+  subject: string;
   loggedAt: string | null;
   contactIds: number[];
 }
 
-export interface ActivityTaskListItem extends ActivityListItemBase {
-  name: string | null;
+export interface ActivityMeetingResponse extends ActivityListItemBase {
+  name: string;
+  startAt: string | null;
+  contactIds: number[];
+}
+
+export interface ActivityTaskResponse extends ActivityListItemBase {
+  name: string;
   dueAt: string | null;
   priority: CrmPriorityEnum | null;
   isCompleted: boolean;
   completedAt: string | null;
   contactId: number | null;
 }
-
-export type ActivityListItem =
-  | ActivityCallListItem
-  | ActivityMeetingListItem
-  | ActivityEmailListItem
-  | ActivityTaskListItem;

@@ -11,6 +11,7 @@ import {
 import { getActivityRowKey } from "~community/crm/activities/utils/activityFeedUtil";
 import PriorityLabel from "~community/crm/components/atoms/PriorityLabel/PriorityLabel";
 import { useCrmStore } from "~community/crm/store/store";
+import { getContactDisplayName } from "~community/crm/utils/contactUtil";
 
 import ActivityRowCheckbox from "./ActivityRowCheckbox";
 import ActivityRowSubtitle from "./ActivityRowSubtitle";
