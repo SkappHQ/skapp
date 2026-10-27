@@ -33,10 +33,6 @@ export interface ActivityFeedProps {
   onToggleComplete: (row: ActivityRow, isCompleted: boolean) => void;
 }
 
-const EMPTY_STATE_CLASSES = {
-  wrapper: "bg-secondary-background rounded-lg"
-};
-
 const ActivityFeed: FC<ActivityFeedProps> = ({
   id = "crm-activity-feed",
   activeTab,
@@ -122,7 +118,7 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
             ...emptyStateKeys,
             "description"
           ])}
-          className={EMPTY_STATE_CLASSES}
+          className={{ wrapper: "bg-secondary-background rounded-lg" }}
         />
       );
     }
