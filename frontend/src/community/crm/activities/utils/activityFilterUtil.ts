@@ -33,7 +33,9 @@ export const toPickerDateRange = (range: ActivityDateRange) => ({
   ...(range.fromDate
     ? { from: convertYYYYMMDDToDateTime(range.fromDate).toJSDate() }
     : {}),
-  ...(range.toDate ? { to: convertYYYYMMDDToDateTime(range.toDate).toJSDate() } : {})
+  ...(range.toDate
+    ? { to: convertYYYYMMDDToDateTime(range.toDate).toJSDate() }
+    : {})
 });
 
 const toRange = (from: DateTime, to: DateTime): ActivityDateRange => ({
