@@ -6,7 +6,6 @@ import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
-import com.skapp.community.common.util.StringUtils;
 import com.skapp.community.crmplanner.payload.request.CrmActivityFeedFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityFeedRowResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityFeedRepository;
@@ -23,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZoneId;
-import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
@@ -53,10 +51,7 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 		params.setIsRestrictedToOwner(isRepresentative);
 		params.setOwnerId(filterDto.getOwnerId());
 		params.setSortOrder(filterDto.getSortOrder() != null ? filterDto.getSortOrder() : Sort.Direction.DESC);
-		if (!StringUtils.isNullOrBlank(filterDto.getSearchKeyword())) {
-			params.setSearchPattern(
-					"%" + StringUtils.escapeLikePattern(filterDto.getSearchKeyword().toLowerCase(Locale.ROOT)) + "%");
-		}
+		params.setSearchPattern(filterDto.getSearchKeyword());
 		ZoneId zone = timeZoneService.requestTimezone();
 		if (filterDto.getStartDate() != null) {
 			params.setRangeStart(filterDto.getStartDate().atStartOfDay(zone).toInstant());

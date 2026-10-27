@@ -64,7 +64,8 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 	public Page<CrmActivityFeedRowResponseDto> findActivities(CrmActivityListParams params, Pageable pageable) {
 		HibernateCriteriaBuilder cb = entityManager.unwrap(Session.class).getCriteriaBuilder();
 		JpaCriteriaQuery<Tuple> query = cb.createTupleQuery();
-		String searchPattern = params.getSearchPattern();
+		String searchPattern = StringUtils.isNullOrBlank(params.getSearchPattern()) ? null
+				: "%" + StringUtils.escapeLikePattern(params.getSearchPattern().toLowerCase()) + "%";
 
 		JpaSubQuery<Tuple> taskRows = query.subquery(Tuple.class);
 		Root<CrmActivityTask> task = taskRows.from(CrmActivityTask.class);
