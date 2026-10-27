@@ -2,8 +2,7 @@ import { moduleAPIPath } from "~community/common/constants/configs";
 import { ActivityType } from "~community/crm/activities/types/activityTypes";
 
 export const crmActivityEndpoints = {
-  GET_ACTIVITY_FEED: `${moduleAPIPath.CRM}/activities`,
-  GET_TEAM_MEMBERS: `${moduleAPIPath.CRM}/activities/team-members`
+  GET_ACTIVITY_FEED: `${moduleAPIPath.CRM}/activities`
 };
 
 export const crmActivityListEndpoints: Record<ActivityType, string> = {

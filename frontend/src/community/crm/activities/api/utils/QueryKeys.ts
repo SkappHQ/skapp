@@ -21,6 +21,5 @@ export const crmActivityQueryKeys = {
     "list",
     query.tab,
     toFilterKey(query)
-  ],
-  TEAM_MEMBERS: [CRM_ACTIVITIES, "team-members"]
+  ]
 };

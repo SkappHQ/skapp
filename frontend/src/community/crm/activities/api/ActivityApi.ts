@@ -24,8 +24,7 @@ import {
 } from "~community/crm/activities/api/utils/activityFeedParams";
 import {
   ActivityFeedResponse,
-  ActivityListItem,
-  ActivityTeamMember
+  ActivityListItem
 } from "~community/crm/activities/types/activityTypes";
 
 const fetchActivityFeed = async (
@@ -55,21 +54,6 @@ export const useGetActivityFeedInfinite = (
     initialPageParam: 0,
     getNextPageParam: (lastPage) => getNextActivityFeedPage(lastPage),
     enabled,
-    refetchOnWindowFocus: false
-  });
-
-const fetchActivityTeamMembers = async (): Promise<ActivityTeamMember[]> => {
-  const response = await authFetch.get(crmActivityEndpoints.GET_TEAM_MEMBERS);
-  return response?.data?.results ?? [];
-};
-
-export const useGetActivityTeamMembers = (
-  isManager: boolean
-): UseQueryResult<ActivityTeamMember[], AxiosError> =>
-  useQuery({
-    queryKey: crmActivityQueryKeys.TEAM_MEMBERS,
-    queryFn: fetchActivityTeamMembers,
-    enabled: isManager,
     refetchOnWindowFocus: false
   });
 

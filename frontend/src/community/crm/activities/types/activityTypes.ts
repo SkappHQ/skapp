@@ -80,14 +80,6 @@ export interface ActivitySectionGroup {
   rows: ActivityRow[];
 }
 
-export interface ActivityOwner {
-  id: number;
-  name: string;
-  avatar: string | null;
-}
-
-export type ActivityTeamMember = ActivityOwner;
-
 export interface ActivityListParams {
   searchKeyword?: string;
   ownerId?: number;
