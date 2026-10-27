@@ -27,13 +27,6 @@ export interface ActivityDateRangeFieldProps {
   timeZone?: string;
 }
 
-const PRESET_LABEL_KEYS: Record<ActivityDatePreset, string> = {
-  [ActivityDatePreset.TODAY]: "today",
-  [ActivityDatePreset.THIS_WEEK]: "thisWeek",
-  [ActivityDatePreset.THIS_MONTH]: "thisMonth",
-  [ActivityDatePreset.LAST_30_DAYS]: "last30Days"
-};
-
 const ActivityDateRangeField: FC<ActivityDateRangeFieldProps> = ({
   id,
   value,
@@ -42,11 +35,16 @@ const ActivityDateRangeField: FC<ActivityDateRangeFieldProps> = ({
 }) => {
   const translateText = useTranslator("crmModule");
 
+  const PRESET_LABEL_KEYS: Record<ActivityDatePreset, string> = {
+    [ActivityDatePreset.TODAY]: "today",
+    [ActivityDatePreset.THIS_WEEK]: "thisWeek",
+    [ActivityDatePreset.THIS_MONTH]: "thisMonth",
+    [ActivityDatePreset.LAST_30_DAYS]: "last30Days"
+  };
+
   const pickerRange = toPickerDateRange(value);
   const selectedPreset = getMatchingPreset(value, timeZone);
   const isValid = validateDateRange(value);
-  const errorId = `${id}-error`;
-  const describedBy = isValid ? {} : { "aria-describedby": errorId };
 
   const handleFromSelect = (date?: Date): void => {
     onChange({
@@ -123,7 +121,7 @@ const ActivityDateRangeField: FC<ActivityDateRangeFieldProps> = ({
                   "dateRange",
                   "fromPlaceholder"
                 ])}
-                {...describedBy}
+                {...(isValid ? {} : { "aria-describedby": `${id}-error` })}
                 value={
                   pickerRange.from ? pickerRange.from.toLocaleDateString() : ""
                 }
@@ -161,7 +159,7 @@ const ActivityDateRangeField: FC<ActivityDateRangeFieldProps> = ({
                   "dateRange",
                   "toPlaceholder"
                 ])}
-                {...describedBy}
+                {...(isValid ? {} : { "aria-describedby": `${id}-error` })}
                 value={
                   pickerRange.to ? pickerRange.to.toLocaleDateString() : ""
                 }
@@ -177,7 +175,11 @@ const ActivityDateRangeField: FC<ActivityDateRangeFieldProps> = ({
       </div>
 
       {!isValid && (
-        <p id={errorId} role="alert" className="body3 text-semantic-red-accent">
+        <p
+          id={`${id}-error`}
+          role="alert"
+          className="body3 text-semantic-red-accent"
+        >
           {translateText([
             "activities",
             "toolbar",
