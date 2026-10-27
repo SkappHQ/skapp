@@ -61,11 +61,10 @@ const ActivityDateRangeField: FC<ActivityDateRangeFieldProps> = ({
   };
 
   return (
-    <div
+    <fieldset
       id={id}
-      role="group"
       aria-labelledby={`${id}-label`}
-      className="flex flex-col gap-3"
+      className="flex min-w-0 flex-col gap-3"
     >
       <p id={`${id}-label`} className="subtitle1">
         {translateText([
@@ -189,7 +188,7 @@ const ActivityDateRangeField: FC<ActivityDateRangeFieldProps> = ({
           ])}
         </p>
       )}
-    </div>
+    </fieldset>
   );
 };
 
