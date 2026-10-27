@@ -4,21 +4,22 @@ import { FC, useState } from "react";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import ActivityDateRangeField from "~community/crm/activities/components/molecules/ActivityDateRangeField/ActivityDateRangeField";
 import ActivityTeamMemberField from "~community/crm/activities/components/molecules/ActivityTeamMemberField/ActivityTeamMemberField";
-import { EMPTY_ACTIVITY_FILTERS } from "~community/crm/activities/constants/activityConstants";
 import {
-  ActivityFilterValues,
+  ActivityFeedFilters,
   ActivityTeamMember
 } from "~community/crm/activities/types/activityTypes";
-import { validateDateRange } from "~community/crm/activities/utils/activityFeedUtil";
-import { areFilterValuesEqual } from "~community/crm/activities/utils/activityFilterUtil";
+import {
+  areFilterValuesEqual,
+  validateDateRange
+} from "~community/crm/activities/utils/activityFilterUtil";
 
 export interface ActivityFilterPopoverProps {
   id: string;
-  filters: ActivityFilterValues;
+  filters: ActivityFeedFilters;
   teamMembers: ActivityTeamMember[];
   isTeamMembersError: boolean;
   timeZone?: string;
-  onApply: (filters: ActivityFilterValues) => void;
+  onApply: (filters: ActivityFeedFilters) => void;
   onClose: () => void;
 }
 
@@ -34,9 +35,9 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
 
-  const [draft, setDraft] = useState<ActivityFilterValues>(filters);
+  const [draft, setDraft] = useState<ActivityFeedFilters>(filters);
 
-  const isRangeValid = validateDateRange(draft.dateRange);
+  const isRangeValid = validateDateRange(draft);
   const isChanged = !areFilterValuesEqual(draft, filters);
   const isApplyDisabled = !isChanged || !isRangeValid;
 
@@ -46,8 +47,8 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
   };
 
   const handleReset = () => {
-    setDraft(EMPTY_ACTIVITY_FILTERS);
-    onApply(EMPTY_ACTIVITY_FILTERS);
+    setDraft({});
+    onApply({});
   };
 
   return (
@@ -76,17 +77,21 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
 
         <ActivityDateRangeField
           id={`${id}-date-range`}
-          value={draft.dateRange}
+          value={draft}
           timeZone={timeZone}
-          onChange={(dateRange) => setDraft({ ...draft, dateRange })}
+          onChange={({ fromDate, toDate }) =>
+            setDraft({ ...draft, fromDate, toDate })
+          }
         />
 
         <ActivityTeamMemberField
           id={`${id}-team-member`}
           teamMembers={teamMembers}
-          selectedOwnerId={draft.ownerId}
+          selectedOwnerId={draft.ownerId ?? null}
           isError={isTeamMembersError}
-          onChange={(ownerId) => setDraft({ ...draft, ownerId })}
+          onChange={(ownerId) =>
+            setDraft({ ...draft, ownerId: ownerId ?? undefined })
+          }
         />
       </div>
 

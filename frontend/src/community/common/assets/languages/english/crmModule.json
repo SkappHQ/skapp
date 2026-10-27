@@ -587,6 +587,10 @@
       "loadError": {
         "title": "Oops! Something went wrong",
         "description": "Failed to load activities"
+      },
+      "updateTaskStatusError": {
+        "title": "Failed to update task",
+        "description": "Could not update the task status. Please try again."
       }
     },
     "tabs": {

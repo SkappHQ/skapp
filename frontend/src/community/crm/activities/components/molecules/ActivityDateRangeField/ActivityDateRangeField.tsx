@@ -6,23 +6,31 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
+import { convertToYYYYMMDDFromDate } from "~community/common/utils/dateTimeUtils";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { ACTIVITY_DATE_PRESETS } from "~community/crm/activities/constants/activityConstants";
-import { DateRange } from "~community/crm/activities/types/activityTypes";
 import {
-  toDateValue,
+  ActivityDatePreset,
+  ActivityDateRange
+} from "~community/crm/activities/types/activityTypes";
+import {
+  getDateRangeForPreset,
+  getMatchingPreset,
   toPickerDateRange,
   validateDateRange
-} from "~community/crm/activities/utils/activityFeedUtil";
-import {
-  getMatchingPreset,
-  getPresetDateRange
 } from "~community/crm/activities/utils/activityFilterUtil";
+
+const PRESET_LABEL_KEYS: Record<ActivityDatePreset, string> = {
+  [ActivityDatePreset.TODAY]: "today",
+  [ActivityDatePreset.THIS_WEEK]: "thisWeek",
+  [ActivityDatePreset.THIS_MONTH]: "thisMonth",
+  [ActivityDatePreset.LAST_30_DAYS]: "last30Days"
+};
 
 export interface ActivityDateRangeFieldProps {
   id: string;
-  value: DateRange;
-  onChange: (range: DateRange) => void;
+  value: ActivityDateRange;
+  onChange: (range: ActivityDateRange) => void;
   timeZone?: string;
 }
 
@@ -41,11 +49,17 @@ const ActivityDateRangeField: FC<ActivityDateRangeFieldProps> = ({
   const errorId = `${id}-error`;
 
   const handleFromSelect = (date?: Date) => {
-    onChange({ ...value, from: toDateValue(date) });
+    onChange({
+      ...value,
+      fromDate: date ? convertToYYYYMMDDFromDate(date) : undefined
+    });
   };
 
   const handleToSelect = (date?: Date) => {
-    onChange({ ...value, to: toDateValue(date) });
+    onChange({
+      ...value,
+      toDate: date ? convertToYYYYMMDDFromDate(date) : undefined
+    });
   };
 
   return (
@@ -68,7 +82,7 @@ const ActivityDateRangeField: FC<ActivityDateRangeFieldProps> = ({
       <div className="flex flex-wrap gap-2">
         {ACTIVITY_DATE_PRESETS.map((preset) => (
           <Chip
-            key={preset.id}
+            key={preset}
             size="sm"
             label={translateText([
               "activities",
@@ -76,10 +90,10 @@ const ActivityDateRangeField: FC<ActivityDateRangeFieldProps> = ({
               "filters",
               "dateRange",
               "presets",
-              preset.labelKey
+              PRESET_LABEL_KEYS[preset]
             ])}
-            isSelected={selectedPreset === preset.id}
-            onClick={() => onChange(getPresetDateRange(preset.id, timeZone))}
+            isSelected={selectedPreset === preset}
+            onClick={() => onChange(getDateRangeForPreset(preset, timeZone))}
           />
         ))}
       </div>

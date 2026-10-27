@@ -4,141 +4,63 @@ import {
   ActivityFeedResponse,
   ActivityListItem,
   ActivityMeetingListItem,
-  ActivityOwner,
-  ActivityRelatedAssociation,
   ActivityRow,
   ActivityTaskListItem,
   ActivityType
 } from "~community/crm/activities/types/activityTypes";
-import {
-  CrmContactEntity,
-  CrmContactRecord,
-  CrmOwnerRecord
-} from "~community/crm/types/CrmCommonTypes";
 
-export interface ActivityListLookups {
-  owners: CrmOwnerRecord;
-  contacts: CrmContactRecord;
-}
+const toRowBase = (item: ActivityListItem, contactIds: number[]) => ({
+  id: item.id,
+  ownerId: item.ownerId,
+  dealId: item.dealId,
+  companyId: item.companyId,
+  contactIds,
+  canComplete: false
+});
 
-const toOwner = (
-  ownerId: number | null,
-  owners: CrmOwnerRecord
-): ActivityOwner | null => {
-  const owner = ownerId === null ? null : owners[ownerId];
-
-  if (!owner) return null;
-
-  return {
-    id: owner.employeeId,
-    name: [owner.firstName, owner.lastName].filter(Boolean).join(" "),
-    avatar: owner.authPic
-  };
-};
-
-const toLinkedContacts = (
-  contactIds: number[],
-  contacts: CrmContactRecord
-): CrmContactEntity[] =>
-  contactIds.flatMap((contactId) => {
-    const contact = contacts[contactId];
-
-    return contact?.name ? [contact] : [];
-  });
-
-const toContactLinks = (
-  linkedContacts: CrmContactEntity[]
-): ActivityRelatedAssociation[] =>
-  linkedContacts.map((contact) => ({
-    id: contact.id ?? 0,
-    name: contact.name ?? "",
-    deleted: false
-  }));
-
-const toCompanyLink = (
-  companyId: number | null,
-  linkedContacts: CrmContactEntity[]
-): ActivityRelatedAssociation | null => {
-  if (companyId === null) return null;
-
-  const contact = linkedContacts.find(
-    (linkedContact) =>
-      linkedContact.companyId === companyId && linkedContact.companyName
-  );
-
-  return contact?.companyName
-    ? { id: companyId, name: contact.companyName, deleted: false }
-    : null;
-};
-
-const toRowBase = (
-  item: ActivityListItem,
-  contactIds: number[],
-  lookups: ActivityListLookups
-) => {
-  const linkedContacts = toLinkedContacts(contactIds, lookups.contacts);
-
-  return {
-    id: item.id,
-    owner: toOwner(item.ownerId, lookups.owners),
-    contacts: toContactLinks(linkedContacts),
-    deal: null,
-    company: toCompanyLink(item.companyId, linkedContacts),
-    canComplete: false
-  };
-};
-
-const toCallRow = (
-  item: ActivityCallListItem,
-  lookups: ActivityListLookups
-): ActivityRow => ({
-  ...toRowBase(item, item.contactId === null ? [] : [item.contactId], lookups),
+const toCallRow = (item: ActivityCallListItem): ActivityRow => ({
+  ...toRowBase(item, item.contactId === null ? [] : [item.contactId]),
   type: ActivityType.CALL,
   title: item.subject ?? "",
   dueAt: null,
-  occurredAt: item.loggedAt,
+  loggedAt: item.loggedAt,
+  startAt: null,
   completedAt: null,
   isCompleted: false,
   priority: null
 });
 
-const toMeetingRow = (
-  item: ActivityMeetingListItem,
-  lookups: ActivityListLookups
-): ActivityRow => ({
-  ...toRowBase(item, item.contactIds, lookups),
+const toMeetingRow = (item: ActivityMeetingListItem): ActivityRow => ({
+  ...toRowBase(item, item.contactIds),
   type: ActivityType.MEETING,
   title: item.name ?? "",
-  dueAt: item.isScheduled ? item.startAt : null,
-  occurredAt: item.startAt,
+  dueAt: null,
+  loggedAt: null,
+  startAt: item.startAt,
   completedAt: null,
   isCompleted: false,
   priority: null
 });
 
-const toEmailRow = (
-  item: ActivityEmailListItem,
-  lookups: ActivityListLookups
-): ActivityRow => ({
-  ...toRowBase(item, item.contactIds, lookups),
+const toEmailRow = (item: ActivityEmailListItem): ActivityRow => ({
+  ...toRowBase(item, item.contactIds),
   type: ActivityType.EMAIL,
   title: item.subject ?? "",
   dueAt: null,
-  occurredAt: item.loggedAt,
+  loggedAt: item.loggedAt,
+  startAt: null,
   completedAt: null,
   isCompleted: false,
   priority: null
 });
 
-const toTaskRow = (
-  item: ActivityTaskListItem,
-  lookups: ActivityListLookups
-): ActivityRow => ({
-  ...toRowBase(item, item.contactId === null ? [] : [item.contactId], lookups),
+const toTaskRow = (item: ActivityTaskListItem): ActivityRow => ({
+  ...toRowBase(item, item.contactId === null ? [] : [item.contactId]),
   type: ActivityType.TASK,
   title: item.name ?? "",
   dueAt: item.dueAt,
-  occurredAt: null,
+  loggedAt: null,
+  startAt: null,
   completedAt: item.completedAt,
   isCompleted: item.isCompleted,
   priority: item.priority
@@ -146,36 +68,26 @@ const toTaskRow = (
 
 const toRows = (
   type: ActivityType,
-  items: ActivityListItem[],
-  lookups: ActivityListLookups
+  items: ActivityListItem[]
 ): ActivityRow[] => {
   switch (type) {
     case ActivityType.CALL:
-      return (items as ActivityCallListItem[]).map((item) =>
-        toCallRow(item, lookups)
-      );
+      return (items as ActivityCallListItem[]).map(toCallRow);
     case ActivityType.MEETING:
-      return (items as ActivityMeetingListItem[]).map((item) =>
-        toMeetingRow(item, lookups)
-      );
+      return (items as ActivityMeetingListItem[]).map(toMeetingRow);
     case ActivityType.EMAIL:
-      return (items as ActivityEmailListItem[]).map((item) =>
-        toEmailRow(item, lookups)
-      );
+      return (items as ActivityEmailListItem[]).map(toEmailRow);
     case ActivityType.TASK:
-      return (items as ActivityTaskListItem[]).map((item) =>
-        toTaskRow(item, lookups)
-      );
+      return (items as ActivityTaskListItem[]).map(toTaskRow);
   }
 };
 
 export const toActivityListPage = (
   type: ActivityType,
-  items: ActivityListItem[],
-  lookups: ActivityListLookups
+  items: ActivityListItem[]
 ): ActivityFeedResponse => ({
-  overdue: [],
-  today: [],
-  upcoming: [],
-  byMonth: { items: toRows(type, items, lookups), page: 0, hasMore: false }
+  items: toRows(type, items),
+  currentPage: 0,
+  totalItems: items.length,
+  totalPages: 1
 });

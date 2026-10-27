@@ -15,87 +15,12 @@ export enum ActivityTab {
   EMAILS = "EMAILS"
 }
 
-export enum ActivityBucket {
+export enum ActivitySection {
   OVERDUE = "OVERDUE",
   TODAY = "TODAY",
   UPCOMING = "UPCOMING",
   BY_MONTH = "BY_MONTH"
 }
-
-export interface ActivityOwner {
-  id: number;
-  name: string;
-  avatar: string | null;
-}
-
-export interface ActivityRelatedAssociation {
-  id: number;
-  name: string;
-  deleted: boolean;
-}
-
-export interface ActivityRow {
-  id: number;
-  type: ActivityType;
-  title: string;
-  dueAt: string | null;
-  occurredAt: string | null;
-  completedAt: string | null;
-  isCompleted: boolean;
-  priority: CrmPriorityEnum | null;
-  owner: ActivityOwner | null;
-  contacts: ActivityRelatedAssociation[];
-  deal: ActivityRelatedAssociation | null;
-  company: ActivityRelatedAssociation | null;
-  canComplete: boolean;
-}
-
-interface ActivityByMonthPage {
-  items: ActivityRow[];
-  page: number;
-  hasMore: boolean;
-}
-
-export interface ActivityFeedResponse {
-  overdue: ActivityRow[];
-  today: ActivityRow[];
-  upcoming: ActivityRow[];
-  byMonth: ActivityByMonthPage;
-}
-
-export interface ActivityFeedFilters {
-  type?: ActivityType;
-  search?: string;
-  ownerId?: number;
-  from?: string;
-  to?: string;
-  page?: number;
-}
-
-export interface DateRange {
-  from: string | null;
-  to: string | null;
-}
-
-export interface ActivityMonthGroup {
-  monthKey: string;
-  rows: ActivityRow[];
-}
-
-export interface ActivityBucketGroup {
-  id: string;
-  bucket: ActivityBucket;
-  monthKey: string | null;
-  rows: ActivityRow[];
-}
-
-export interface ActivityTabConfig {
-  id: ActivityTab;
-  labelKey: string;
-  type: ActivityType | null;
-}
-
-export type ActivityTeamMember = ActivityOwner;
 
 export enum ActivityDatePreset {
   TODAY = "TODAY",
@@ -104,10 +29,59 @@ export enum ActivityDatePreset {
   LAST_30_DAYS = "LAST_30_DAYS"
 }
 
-export interface ActivityFilterValues {
+export interface ActivityRow {
+  id: number;
+  type: ActivityType;
+  title: string;
+  dueAt: string | null;
+  loggedAt: string | null;
+  startAt: string | null;
+  completedAt: string | null;
+  isCompleted: boolean;
+  priority: CrmPriorityEnum | null;
   ownerId: number | null;
-  dateRange: DateRange;
+  dealId: number | null;
+  companyId: number | null;
+  contactIds: number[];
+  canComplete: boolean;
 }
+
+export interface ActivityFeedResponse {
+  items: ActivityRow[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface ActivityFeedFilters {
+  type?: ActivityType;
+  search?: string;
+  ownerId?: number;
+  fromDate?: string;
+  toDate?: string;
+  page?: number;
+  size?: number;
+}
+
+export interface ActivityDateRange {
+  fromDate?: string;
+  toDate?: string;
+}
+
+export interface ActivitySectionGroup {
+  id: string;
+  section: ActivitySection;
+  monthKey: string | null;
+  rows: ActivityRow[];
+}
+
+export interface ActivityOwner {
+  id: number;
+  name: string;
+  avatar: string | null;
+}
+
+export type ActivityTeamMember = ActivityOwner;
 
 export interface ActivityListParams {
   searchKeyword?: string;

@@ -4,15 +4,14 @@ import { FC, MouseEvent, useState } from "react";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import ActivityFilterPopover from "~community/crm/activities/components/molecules/ActivityFilterPopover/ActivityFilterPopover";
 import {
-  ActivityFilterValues,
+  ActivityFeedFilters,
   ActivityTeamMember
 } from "~community/crm/activities/types/activityTypes";
-import { countActiveFilters } from "~community/crm/activities/utils/activityFilterUtil";
 
 interface ActivityFilterControlProps {
   id: string;
-  filters: ActivityFilterValues;
-  onApplyFilters: (filters: ActivityFilterValues) => void;
+  filters: ActivityFeedFilters;
+  onApplyFilters: (filters: ActivityFeedFilters) => void;
   teamMembers: ActivityTeamMember[];
   isTeamMembersError: boolean;
   timeZone?: string;
@@ -36,7 +35,9 @@ const ActivityFilterControl: FC<ActivityFilterControlProps> = ({
   const isFilterOpen = filterAnchorEl !== null;
   const filterButtonId = `${id}-button`;
   const filterPopoverId = `${id}-popover`;
-  const activeFilterCount = countActiveFilters(filters);
+  const activeFilterCount =
+    Number(Boolean(filters.ownerId)) +
+    Number(Boolean(filters.fromDate || filters.toDate));
 
   const handleCloseFilters = () => {
     setFilterAnchorEl(null);

@@ -4,7 +4,6 @@ import { ChangeEvent, FC, useMemo, useState } from "react";
 import { SearchableDropdownItem } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { ActivityTeamMember } from "~community/crm/activities/types/activityTypes";
-import { filterTeamMembers } from "~community/crm/activities/utils/activityFilterUtil";
 import SelectableSearchField from "~community/crm/components/molecules/SelectableSearchField/SelectableSearchField";
 
 export interface ActivityTeamMemberFieldProps {
@@ -35,7 +34,11 @@ const ActivityTeamMemberField: FC<ActivityTeamMemberFieldProps> = ({
 
   const items: SearchableDropdownItem[] = useMemo(
     () =>
-      filterTeamMembers(teamMembers, searchValue).map((member) => ({
+      teamMembers
+        .filter((member) =>
+          member.name.toLowerCase().includes(searchValue.trim().toLowerCase())
+        )
+        .map((member) => ({
         id: String(member.id),
         content: <span className="body2">{member.name}</span>
       })),

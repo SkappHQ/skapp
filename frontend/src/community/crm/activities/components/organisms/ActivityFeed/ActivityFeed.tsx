@@ -5,22 +5,20 @@ import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import ActivityBucketSection from "~community/crm/activities/components/molecules/ActivityBucketSection/ActivityBucketSection";
 import ActivityFeedSkeleton from "~community/crm/activities/components/molecules/ActivityFeedSkeleton/ActivityFeedSkeleton";
+import { ACTIVITY_SECTION_LABEL_KEYS } from "~community/crm/activities/constants/activityConstants";
 import {
-  ACTIVITY_BUCKET_LABEL_KEYS,
-  ACTIVITY_FEED_ID,
-  ACTIVITY_TABS
-} from "~community/crm/activities/constants/activityConstants";
-import {
-  ActivityBucket,
-  ActivityBucketGroup,
   ActivityFeedResponse,
   ActivityRow,
+  ActivitySection,
+  ActivitySectionGroup,
   ActivityTab
 } from "~community/crm/activities/types/activityTypes";
 import {
   formatMonthHeading,
-  getVisibleBuckets
+  getActivitySections
 } from "~community/crm/activities/utils/activityFeedUtil";
+
+const ACTIVITY_FEED_ID = "crm-activity-feed";
 
 export interface ActivityFeedProps {
   id?: string;
@@ -57,8 +55,12 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
 }) => {
   const translateText = useTranslator("crmModule");
 
-  const buckets = useMemo(
-    () => getVisibleBuckets(pages, timeZone),
+  const sections = useMemo(
+    () =>
+      getActivitySections(
+        pages.flatMap((page) => page.items),
+        timeZone
+      ),
     [pages, timeZone]
   );
 
@@ -68,19 +70,17 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
     onLoadMore
   });
 
-  const getBucketTitle = (group: ActivityBucketGroup): string =>
-    group.bucket === ActivityBucket.BY_MONTH && group.monthKey
+  const getSectionTitle = (group: ActivitySectionGroup): string =>
+    group.section === ActivitySection.BY_MONTH && group.monthKey
       ? formatMonthHeading(group.monthKey)
       : translateText([
           "activities",
           "buckets",
-          ACTIVITY_BUCKET_LABEL_KEYS[group.bucket]
+          ACTIVITY_SECTION_LABEL_KEYS[group.section]
         ]);
 
   const trimmedSearchTerm = searchTerm.trim();
-  const emptyStateKey =
-    ACTIVITY_TABS.find((tab) => tab.id === activeTab)?.labelKey ??
-    ACTIVITY_TABS[0].labelKey;
+  const emptyStateKey = activeTab.toLowerCase();
 
   const renderContent = () => {
     if (isLoading) {
@@ -104,7 +104,7 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
       );
     }
 
-    if (buckets.length === 0) {
+    if (sections.length === 0) {
       return trimmedSearchTerm ? (
         <EmptyDataView
           icon={<SearchIcon />}
@@ -143,11 +143,11 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
 
     return (
       <div className="flex flex-col gap-4">
-        {buckets.map((group) => (
+        {sections.map((group) => (
           <ActivityBucketSection
             key={group.id}
             id={`${id}-bucket-${group.id}`}
-            title={getBucketTitle(group)}
+            title={getSectionTitle(group)}
             rows={group.rows}
             timeZone={timeZone}
             onRowClick={onRowClick}

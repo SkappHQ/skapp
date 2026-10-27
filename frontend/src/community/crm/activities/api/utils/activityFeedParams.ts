@@ -1,5 +1,4 @@
 import { getRequestTimezone } from "~community/common/utils/requestTimezoneUtils";
-import { ACTIVITY_TABS } from "~community/crm/activities/constants/activityConstants";
 import {
   ActivityFeedFilters,
   ActivityFeedResponse,
@@ -7,6 +6,14 @@ import {
   ActivityTab,
   ActivityType
 } from "~community/crm/activities/types/activityTypes";
+
+const ACTIVITY_TAB_TYPES: Record<ActivityTab, ActivityType | null> = {
+  [ActivityTab.ALL]: null,
+  [ActivityTab.TASKS]: ActivityType.TASK,
+  [ActivityTab.CALLS]: ActivityType.CALL,
+  [ActivityTab.MEETINGS]: ActivityType.MEETING,
+  [ActivityTab.EMAILS]: ActivityType.EMAIL
+};
 
 export interface ActivityFeedQuery {
   tab: ActivityTab;
@@ -17,7 +24,7 @@ export interface ActivityFeedQuery {
 }
 
 export const getActivityTypeForTab = (tab: ActivityTab): ActivityType | null =>
-  ACTIVITY_TABS.find((tabConfig) => tabConfig.id === tab)?.type ?? null;
+  ACTIVITY_TAB_TYPES[tab];
 
 export const buildActivityFeedParams = (
   query: ActivityFeedQuery,
@@ -30,8 +37,8 @@ export const buildActivityFeedParams = (
   if (type) params.type = type;
   if (search) params.search = search;
   if (query.ownerId !== null) params.ownerId = query.ownerId;
-  if (query.from) params.from = query.from;
-  if (query.to) params.to = query.to;
+  if (query.from) params.fromDate = query.from;
+  if (query.to) params.toDate = query.to;
 
   return params;
 };
@@ -59,25 +66,13 @@ export const getViewerTimezone = (): string =>
 export const getNextActivityFeedPage = (
   lastPage: ActivityFeedResponse | null
 ): number | null =>
-  lastPage?.byMonth?.hasMore ? lastPage.byMonth.page + 1 : null;
+  lastPage && lastPage.currentPage + 1 < lastPage.totalPages
+    ? lastPage.currentPage + 1
+    : null;
 
 export const countActivityFeedRows = (
   pages: ActivityFeedResponse[]
-): number => {
-  const [firstPage] = pages;
-
-  if (!firstPage) return 0;
-
-  const datedRowCount =
-    (firstPage.overdue?.length ?? 0) +
-    (firstPage.today?.length ?? 0) +
-    (firstPage.upcoming?.length ?? 0);
-
-  return pages.reduce(
-    (total, page) => total + (page?.byMonth?.items?.length ?? 0),
-    datedRowCount
-  );
-};
+): number => pages.reduce((total, page) => total + page.items.length, 0);
 
 export const shouldShowActivityControls = ({
   hasActiveFilters,

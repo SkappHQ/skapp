@@ -22,23 +22,21 @@ import { toActivityListPage } from "~community/crm/activities/api/utils/activity
 import { useActivityStore } from "~community/crm/activities/store/activityStore";
 import {
   ActivityFeedResponse,
-  ActivityFilterValues,
-  ActivityRow,
+  ActivityFeedFilters,
   ActivityTab,
   ActivityTeamMember
 } from "~community/crm/activities/types/activityTypes";
-import { useCrmStore } from "~community/crm/store/store";
 
 export interface UseActivityFeedResult {
   isManager: boolean;
   timeZone: string;
   activeTab: ActivityTab;
   search: string;
-  appliedFilters: ActivityFilterValues;
+  appliedFilters: ActivityFeedFilters;
   showControls: boolean;
   setActiveTab: (tab: ActivityTab) => void;
   setSearch: (search: string) => void;
-  applyFilters: (filters: ActivityFilterValues) => void;
+  applyFilters: (filters: ActivityFeedFilters) => void;
   pages: ActivityFeedResponse[];
   resultCount: number | null;
   isLoading: boolean;
@@ -84,9 +82,9 @@ export const useActivityFeed = (): UseActivityFeedResult => {
     () => ({
       tab: activeTab,
       search: search.trim(),
-      ownerId: isManager ? appliedFilters.ownerId : null,
-      from: isManager ? appliedFilters.dateRange.from : null,
-      to: isManager ? appliedFilters.dateRange.to : null
+      ownerId: isManager ? (appliedFilters.ownerId ?? null) : null,
+      from: isManager ? (appliedFilters.fromDate ?? null) : null,
+      to: isManager ? (appliedFilters.toDate ?? null) : null
     }),
     [activeTab, search, isManager, appliedFilters]
   );
@@ -95,13 +93,6 @@ export const useActivityFeed = (): UseActivityFeedResult => {
 
   const feed = useGetActivityFeedInfinite(query, isAllTab);
   const list = useGetActivityList(query, !isAllTab);
-
-  const { owners, contacts } = useCrmStore(
-    useShallow((store) => ({
-      owners: store.owners,
-      contacts: store.contacts
-    }))
-  );
 
   const { data: teamMembers, isError: isTeamMembersError } =
     useGetActivityTeamMembers(isManager);
@@ -113,8 +104,8 @@ export const useActivityFeed = (): UseActivityFeedResult => {
 
     if (!type || !listData) return NO_PAGES;
 
-    return [toActivityListPage(type, listData, { owners, contacts })];
-  }, [activeTab, listData, owners, contacts]);
+    return [toActivityListPage(type, listData)];
+  }, [activeTab, listData]);
 
   const pages = isAllTab ? (feed.data?.pages ?? NO_PAGES) : listPages;
   const isLoading = isAllTab ? feed.isLoading : list.isLoading;

@@ -5,14 +5,12 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import ActivityFilterControl from "~community/crm/activities/components/molecules/ActivityFilterControl/ActivityFilterControl";
 import ActivitySearchField from "~community/crm/activities/components/molecules/ActivitySearchField/ActivitySearchField";
 import {
-  ACTIVITY_TABS,
-  ACTIVITY_TOOLBAR_ID
-} from "~community/crm/activities/constants/activityConstants";
-import {
-  ActivityFilterValues,
+  ActivityFeedFilters,
   ActivityTab,
   ActivityTeamMember
 } from "~community/crm/activities/types/activityTypes";
+
+const ACTIVITY_TOOLBAR_ID = "crm-activity-toolbar";
 
 export interface ActivityToolbarProps {
   id?: string;
@@ -22,8 +20,8 @@ export interface ActivityToolbarProps {
   onSearchChange: (searchTerm: string) => void;
   resultCount: number | null;
   isManager: boolean;
-  filters: ActivityFilterValues;
-  onApplyFilters: (filters: ActivityFilterValues) => void;
+  filters: ActivityFeedFilters;
+  onApplyFilters: (filters: ActivityFeedFilters) => void;
   teamMembers: ActivityTeamMember[];
   isTeamMembersError: boolean;
   timeZone?: string;
@@ -48,14 +46,12 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
 
-  const tabs = ACTIVITY_TABS.map((tab) => ({
-    id: tab.id,
-    label: translateText(["activities", "tabs", tab.labelKey])
+  const tabs = Object.values(ActivityTab).map((tab) => ({
+    id: tab,
+    label: translateText(["activities", "tabs", tab.toLowerCase()])
   }));
 
-  const searchPlaceholderKey =
-    ACTIVITY_TABS.find((tab) => tab.id === activeTab)?.labelKey ??
-    ACTIVITY_TABS[0].labelKey;
+  const searchPlaceholderKey = activeTab.toLowerCase();
 
   return (
     <div id={id} className="flex flex-col gap-4">
