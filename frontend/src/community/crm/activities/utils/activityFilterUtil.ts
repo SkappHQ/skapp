@@ -95,16 +95,6 @@ export const areFilterValuesEqual = (
 ): boolean =>
   first.ownerId === second.ownerId && isSameDateRange(first, second);
 
-export const countActiveFilters = (filters: ActivityFeedFilters): number => {
-  const isOwnerActive = Boolean(filters.ownerId);
-  const isDateRangeActive = Boolean(filters.fromDate || filters.toDate);
-
-  return Number(isOwnerActive) + Number(isDateRangeActive);
-};
-
-export const hasActiveFilters = (filters: ActivityFeedFilters): boolean =>
-  countActiveFilters(filters) > 0;
-
 export const filterCRMEmployees = (
   members: CrmOwnerEntity[],
   searchTerm: string
