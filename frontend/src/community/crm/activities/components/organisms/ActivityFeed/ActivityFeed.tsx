@@ -18,8 +18,6 @@ import {
   getActivitySections
 } from "~community/crm/activities/utils/activityFeedUtil";
 
-const ACTIVITY_FEED_ID = "crm-activity-feed";
-
 export interface ActivityFeedProps {
   id?: string;
   activeTab: ActivityTab;
@@ -40,7 +38,7 @@ const EMPTY_STATE_CLASSES = {
 };
 
 const ActivityFeed: FC<ActivityFeedProps> = ({
-  id = ACTIVITY_FEED_ID,
+  id = "crm-activity-feed",
   activeTab,
   pages,
   searchTerm,
