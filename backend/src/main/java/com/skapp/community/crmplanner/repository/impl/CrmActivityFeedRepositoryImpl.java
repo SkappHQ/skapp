@@ -1,6 +1,7 @@
 package com.skapp.community.crmplanner.repository.impl;
 
 import com.skapp.community.common.util.StringUtils;
+import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.model.CrmActivityCall;
 import com.skapp.community.crmplanner.model.CrmActivityCall_;
 import com.skapp.community.crmplanner.model.CrmActivityEmail;
@@ -23,7 +24,6 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.payload.response.CrmActivityFeedRowResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityFeedRepository;
-import com.skapp.community.crmplanner.type.CrmActivityFeedColumn;
 import com.skapp.community.crmplanner.type.CrmActivityListParams;
 import com.skapp.community.crmplanner.type.CrmActivityTaskPriority;
 import com.skapp.community.crmplanner.type.CrmActivityType;
@@ -37,7 +37,6 @@ import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
-import jakarta.persistence.criteria.Selection;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Session;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
@@ -51,7 +50,6 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Repository
@@ -104,18 +102,17 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), searchPattern)));
 		}
 		taskRows
-			.multiselect(cb.literal(CrmActivityType.TASK.name()).alias(CrmActivityFeedColumn.TYPE.name()),
-					task.get(CrmActivityTask_.id).alias(CrmActivityFeedColumn.ID.name()),
-					task.get(CrmActivityTask_.name).alias(CrmActivityFeedColumn.TITLE.name()),
-					taskDueAt.alias(CrmActivityFeedColumn.DUE_AT.name()),
-					taskCompletedAt.alias(CrmActivityFeedColumn.COMPLETED_AT.name()),
-					taskIsCompleted.alias(CrmActivityFeedColumn.IS_COMPLETED.name()),
-					task.get(CrmActivityTask_.priority).cast(String.class).alias(CrmActivityFeedColumn.PRIORITY.name()),
-					taskOwnerId.alias(CrmActivityFeedColumn.OWNER_ID.name()),
-					taskDeal.get(CrmDeal_.id).alias(CrmActivityFeedColumn.DEAL_ID.name()),
-					taskCompany.get(CrmCompany_.id).alias(CrmActivityFeedColumn.COMPANY_ID.name()),
-					taskContact.get(CrmContact_.id).cast(String.class).alias(CrmActivityFeedColumn.CONTACT_IDS.name()),
-					taskFeedAt.alias(CrmActivityFeedColumn.FEED_AT.name()))
+			.multiselect(cb.literal(CrmActivityType.TASK.name()).alias(CrmConstants.ACTIVITY_FEED_TYPE_ALIAS),
+					task.get(CrmActivityTask_.id).alias(CrmActivityTask_.ID),
+					task.get(CrmActivityTask_.name).alias(CrmActivityTask_.NAME),
+					taskDueAt.alias(CrmActivityTask_.DUE_AT), taskCompletedAt.alias(CrmActivityTask_.COMPLETED_AT),
+					taskIsCompleted.alias(CrmActivityTask_.IS_COMPLETED),
+					task.get(CrmActivityTask_.priority).cast(String.class).alias(CrmActivityTask_.PRIORITY),
+					taskOwnerId.alias(CrmActivityTask_.OWNER), taskDeal.get(CrmDeal_.id).alias(CrmActivityTask_.DEAL),
+					taskCompany.get(CrmCompany_.id).alias(CrmActivityTask_.COMPANY),
+					taskContact.get(CrmContact_.id).cast(String.class).alias(CrmActivityTask_.CONTACT),
+					cb.nullLiteral(Instant.class).alias(CrmActivityMeeting_.START_AT),
+					cb.nullLiteral(Instant.class).alias(CrmActivityCall_.LOGGED_AT))
 			.where(taskPredicates.toArray(new Predicate[0]));
 
 		JpaSubQuery<Tuple> callRows = query.subquery(Tuple.class);
@@ -150,18 +147,18 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), searchPattern)));
 		}
 		callRows
-			.multiselect(cb.literal(CrmActivityType.CALL.name()).alias(CrmActivityFeedColumn.TYPE.name()),
-					call.get(CrmActivityCall_.id).alias(CrmActivityFeedColumn.ID.name()),
-					call.get(CrmActivityCall_.subject).alias(CrmActivityFeedColumn.TITLE.name()),
-					cb.nullLiteral(Instant.class).alias(CrmActivityFeedColumn.DUE_AT.name()),
-					cb.nullLiteral(Instant.class).alias(CrmActivityFeedColumn.COMPLETED_AT.name()),
-					cb.nullLiteral(Boolean.class).alias(CrmActivityFeedColumn.IS_COMPLETED.name()),
-					cb.nullLiteral(String.class).alias(CrmActivityFeedColumn.PRIORITY.name()),
-					callOwnerId.alias(CrmActivityFeedColumn.OWNER_ID.name()),
-					callDeal.get(CrmDeal_.id).alias(CrmActivityFeedColumn.DEAL_ID.name()),
-					callCompany.get(CrmCompany_.id).alias(CrmActivityFeedColumn.COMPANY_ID.name()),
-					callContact.get(CrmContact_.id).cast(String.class).alias(CrmActivityFeedColumn.CONTACT_IDS.name()),
-					callLoggedAt.alias(CrmActivityFeedColumn.FEED_AT.name()))
+			.multiselect(cb.literal(CrmActivityType.CALL.name()).alias(CrmConstants.ACTIVITY_FEED_TYPE_ALIAS),
+					call.get(CrmActivityCall_.id).alias(CrmActivityTask_.ID),
+					call.get(CrmActivityCall_.subject).alias(CrmActivityTask_.NAME),
+					cb.nullLiteral(Instant.class).alias(CrmActivityTask_.DUE_AT),
+					cb.nullLiteral(Instant.class).alias(CrmActivityTask_.COMPLETED_AT),
+					cb.nullLiteral(Boolean.class).alias(CrmActivityTask_.IS_COMPLETED),
+					cb.nullLiteral(String.class).alias(CrmActivityTask_.PRIORITY),
+					callOwnerId.alias(CrmActivityTask_.OWNER), callDeal.get(CrmDeal_.id).alias(CrmActivityTask_.DEAL),
+					callCompany.get(CrmCompany_.id).alias(CrmActivityTask_.COMPANY),
+					callContact.get(CrmContact_.id).cast(String.class).alias(CrmActivityTask_.CONTACT),
+					cb.nullLiteral(Instant.class).alias(CrmActivityMeeting_.START_AT),
+					callLoggedAt.alias(CrmActivityCall_.LOGGED_AT))
 			.where(callPredicates.toArray(new Predicate[0]));
 
 		JpaSubQuery<Tuple> meetingRows = query.subquery(Tuple.class);
@@ -211,19 +208,17 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					StringUtils.COMMA_DELIMITER))
 			.where(cb.equal(meetingLink.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId),
 					meeting.get(CrmActivityMeeting_.id)), cb.isFalse(meetingContact.get(CrmContact_.isDeleted)));
-		meetingRows
-			.multiselect(cb.literal(CrmActivityType.MEETING.name()).alias(CrmActivityFeedColumn.TYPE.name()),
-					meeting.get(CrmActivityMeeting_.id).alias(CrmActivityFeedColumn.ID.name()),
-					meeting.get(CrmActivityMeeting_.name).alias(CrmActivityFeedColumn.TITLE.name()),
-					cb.nullLiteral(Instant.class).alias(CrmActivityFeedColumn.DUE_AT.name()),
-					cb.nullLiteral(Instant.class).alias(CrmActivityFeedColumn.COMPLETED_AT.name()),
-					cb.nullLiteral(Boolean.class).alias(CrmActivityFeedColumn.IS_COMPLETED.name()),
-					cb.nullLiteral(String.class).alias(CrmActivityFeedColumn.PRIORITY.name()),
-					meetingOwnerId.alias(CrmActivityFeedColumn.OWNER_ID.name()),
-					meetingDeal.get(CrmDeal_.id).alias(CrmActivityFeedColumn.DEAL_ID.name()),
-					meetingCompany.get(CrmCompany_.id).alias(CrmActivityFeedColumn.COMPANY_ID.name()),
-					meetingContactIds.alias(CrmActivityFeedColumn.CONTACT_IDS.name()),
-					meetingStartAt.alias(CrmActivityFeedColumn.FEED_AT.name()))
+		meetingRows.multiselect(cb.literal(CrmActivityType.MEETING.name()).alias(CrmConstants.ACTIVITY_FEED_TYPE_ALIAS),
+				meeting.get(CrmActivityMeeting_.id).alias(CrmActivityTask_.ID),
+				meeting.get(CrmActivityMeeting_.name).alias(CrmActivityTask_.NAME),
+				cb.nullLiteral(Instant.class).alias(CrmActivityTask_.DUE_AT),
+				cb.nullLiteral(Instant.class).alias(CrmActivityTask_.COMPLETED_AT),
+				cb.nullLiteral(Boolean.class).alias(CrmActivityTask_.IS_COMPLETED),
+				cb.nullLiteral(String.class).alias(CrmActivityTask_.PRIORITY),
+				meetingOwnerId.alias(CrmActivityTask_.OWNER), meetingDeal.get(CrmDeal_.id).alias(CrmActivityTask_.DEAL),
+				meetingCompany.get(CrmCompany_.id).alias(CrmActivityTask_.COMPANY),
+				meetingContactIds.alias(CrmActivityTask_.CONTACT), meetingStartAt.alias(CrmActivityMeeting_.START_AT),
+				cb.nullLiteral(Instant.class).alias(CrmActivityCall_.LOGGED_AT))
 			.where(meetingPredicates.toArray(new Predicate[0]));
 
 		JpaSubQuery<Tuple> emailRows = query.subquery(Tuple.class);
@@ -272,69 +267,70 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			.where(cb.equal(emailLink.get(CrmActivityEmailContact_.id).get(CrmActivityEmailContactId_.emailId),
 					email.get(CrmActivityEmail_.id)), cb.isFalse(emailContact.get(CrmContact_.isDeleted)));
 		emailRows
-			.multiselect(cb.literal(CrmActivityType.EMAIL.name()).alias(CrmActivityFeedColumn.TYPE.name()),
-					email.get(CrmActivityEmail_.id).alias(CrmActivityFeedColumn.ID.name()),
-					email.get(CrmActivityEmail_.subject).alias(CrmActivityFeedColumn.TITLE.name()),
-					cb.nullLiteral(Instant.class).alias(CrmActivityFeedColumn.DUE_AT.name()),
-					cb.nullLiteral(Instant.class).alias(CrmActivityFeedColumn.COMPLETED_AT.name()),
-					cb.nullLiteral(Boolean.class).alias(CrmActivityFeedColumn.IS_COMPLETED.name()),
-					cb.nullLiteral(String.class).alias(CrmActivityFeedColumn.PRIORITY.name()),
-					emailOwnerId.alias(CrmActivityFeedColumn.OWNER_ID.name()),
-					emailDeal.get(CrmDeal_.id).alias(CrmActivityFeedColumn.DEAL_ID.name()),
-					emailCompany.get(CrmCompany_.id).alias(CrmActivityFeedColumn.COMPANY_ID.name()),
-					emailContactIds.alias(CrmActivityFeedColumn.CONTACT_IDS.name()),
-					emailLoggedAt.alias(CrmActivityFeedColumn.FEED_AT.name()))
+			.multiselect(cb.literal(CrmActivityType.EMAIL.name()).alias(CrmConstants.ACTIVITY_FEED_TYPE_ALIAS),
+					email.get(CrmActivityEmail_.id).alias(CrmActivityTask_.ID),
+					email.get(CrmActivityEmail_.subject).alias(CrmActivityTask_.NAME),
+					cb.nullLiteral(Instant.class).alias(CrmActivityTask_.DUE_AT),
+					cb.nullLiteral(Instant.class).alias(CrmActivityTask_.COMPLETED_AT),
+					cb.nullLiteral(Boolean.class).alias(CrmActivityTask_.IS_COMPLETED),
+					cb.nullLiteral(String.class).alias(CrmActivityTask_.PRIORITY),
+					emailOwnerId.alias(CrmActivityTask_.OWNER), emailDeal.get(CrmDeal_.id).alias(CrmActivityTask_.DEAL),
+					emailCompany.get(CrmCompany_.id).alias(CrmActivityTask_.COMPANY),
+					emailContactIds.alias(CrmActivityTask_.CONTACT),
+					cb.nullLiteral(Instant.class).alias(CrmActivityMeeting_.START_AT),
+					emailLoggedAt.alias(CrmActivityCall_.LOGGED_AT))
 			.where(emailPredicates.toArray(new Predicate[0]));
 
 		JpaDerivedRoot<Tuple> activity = query.from(cb.union(true, callRows, taskRows, meetingRows, emailRows));
-		List<Selection<?>> selections = new ArrayList<>(Arrays.stream(CrmActivityFeedColumn.values())
-			.filter(column -> column != CrmActivityFeedColumn.TOTAL)
-			.<Selection<?>>map(column -> activity.get(column.name()).alias(column.name()))
-			.toList());
-		selections.add(cb.count(activity.get(CrmActivityFeedColumn.ID.name()), cb.createWindow())
-			.alias(CrmActivityFeedColumn.TOTAL.name()));
-		query.multiselect(selections)
-			.orderBy(params.getSortOrder().isAscending()
-					? List.<Order>of(cb.asc(activity.get(CrmActivityFeedColumn.FEED_AT.name()), false),
-							cb.asc(activity.get(CrmActivityFeedColumn.TYPE.name())),
-							cb.asc(activity.get(CrmActivityFeedColumn.ID.name())))
-					: List.<Order>of(cb.desc(activity.get(CrmActivityFeedColumn.FEED_AT.name()), false),
-							cb.asc(activity.get(CrmActivityFeedColumn.TYPE.name())),
-							cb.desc(activity.get(CrmActivityFeedColumn.ID.name()))))
+		Expression<Instant> taskAt = cb.<Instant>selectCase()
+			.when(cb.isTrue(activity.<Boolean>get(CrmActivityTask_.IS_COMPLETED)),
+					cb.coalesce(activity.<Instant>get(CrmActivityTask_.COMPLETED_AT),
+							activity.<Instant>get(CrmActivityTask_.DUE_AT)))
+			.otherwise(activity.<Instant>get(CrmActivityTask_.DUE_AT));
+		Expression<Instant> feedAt = cb.<Instant>coalesce()
+			.value(activity.<Instant>get(CrmActivityCall_.LOGGED_AT))
+			.value(activity.<Instant>get(CrmActivityMeeting_.START_AT))
+			.value(taskAt);
+		Path<Long> activityId = activity.get(CrmActivityTask_.ID);
+		query
+			.multiselect(activityId, activity.get(CrmActivityTask_.NAME), activity.get(CrmActivityTask_.DUE_AT),
+					activity.get(CrmActivityTask_.COMPLETED_AT), activity.get(CrmActivityTask_.IS_COMPLETED),
+					activity.get(CrmActivityTask_.PRIORITY), activity.get(CrmActivityTask_.OWNER),
+					activity.get(CrmActivityTask_.DEAL), activity.get(CrmActivityTask_.COMPANY),
+					activity.get(CrmActivityTask_.CONTACT), activity.get(CrmActivityMeeting_.START_AT),
+					activity.get(CrmActivityCall_.LOGGED_AT), activity.get(CrmConstants.ACTIVITY_FEED_TYPE_ALIAS),
+					cb.count(activityId, cb.createWindow()))
+			.orderBy(params.getSortOrder().isAscending() ? List.<Order>of(cb.asc(feedAt, false), cb.asc(activityId))
+					: List.<Order>of(cb.desc(feedAt, false), cb.desc(activityId)))
 			.offset(pageable.getOffset())
 			.fetch(pageable.getPageSize());
 
 		List<Tuple> results = entityManager.createQuery(query).getResultList();
 		List<CrmActivityFeedRowResponseDto> rows = results.stream().map(result -> {
-			CrmActivityType type = CrmActivityType.valueOf(result.get(CrmActivityFeedColumn.TYPE.name(), String.class));
 			CrmActivityFeedRowResponseDto row = new CrmActivityFeedRowResponseDto();
-			row.setId(result.get(CrmActivityFeedColumn.ID.name(), Long.class));
-			row.setTitle(result.get(CrmActivityFeedColumn.TITLE.name(), String.class));
-			row.setDueAt(result.get(CrmActivityFeedColumn.DUE_AT.name(), Instant.class));
-			Instant feedAt = result.get(CrmActivityFeedColumn.FEED_AT.name(), Instant.class);
-			if (type == CrmActivityType.MEETING) {
-				row.setStartAt(feedAt);
-			}
-			else if (type != CrmActivityType.TASK) {
-				row.setLoggedAt(feedAt);
-			}
-			row.setCompletedAt(result.get(CrmActivityFeedColumn.COMPLETED_AT.name(), Instant.class));
-			row.setIsCompleted(result.get(CrmActivityFeedColumn.IS_COMPLETED.name(), Boolean.class));
-			String priority = result.get(CrmActivityFeedColumn.PRIORITY.name(), String.class);
+			row.setId(result.get(0, Long.class));
+			row.setTitle(result.get(1, String.class));
+			row.setDueAt(result.get(2, Instant.class));
+			row.setCompletedAt(result.get(3, Instant.class));
+			row.setIsCompleted(result.get(4, Boolean.class));
+			String priority = result.get(5, String.class);
 			if (priority != null) {
 				row.setPriority(CrmActivityTaskPriority.valueOf(priority));
 			}
-			row.setOwnerId(result.get(CrmActivityFeedColumn.OWNER_ID.name(), Long.class));
-			row.setDealId(result.get(CrmActivityFeedColumn.DEAL_ID.name(), Long.class));
-			row.setCompanyId(result.get(CrmActivityFeedColumn.COMPANY_ID.name(), Long.class));
-			StringUtils.convertToList(result.get(CrmActivityFeedColumn.CONTACT_IDS.name(), String.class))
+			row.setOwnerId(result.get(6, Long.class));
+			row.setDealId(result.get(7, Long.class));
+			row.setCompanyId(result.get(8, Long.class));
+			StringUtils.convertToList(result.get(9, String.class))
 				.stream()
 				.map(Long::valueOf)
 				.forEach(row.getContactIds()::add);
+			row.setStartAt(result.get(10, Instant.class));
+			row.setLoggedAt(result.get(11, Instant.class));
+			row.setType(CrmActivityType.valueOf(result.get(12, String.class)));
 			return row;
 		}).toList();
 
-		long total = results.isEmpty() ? 0 : results.getFirst().get(CrmActivityFeedColumn.TOTAL.name(), Long.class);
+		long total = results.isEmpty() ? 0 : results.getFirst().get(13, Long.class);
 		return new PageImpl<>(rows, pageable, total);
 	}
 
