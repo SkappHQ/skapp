@@ -6,8 +6,8 @@ export const crmActivityEndpoints = {
 };
 
 export const crmActivityListEndpoints: Record<ActivityType, string> = {
-  [ActivityType.TASK]: `${moduleAPIPath.CRM}/activities/tasks`,
-  [ActivityType.CALL]: `${moduleAPIPath.CRM}/activities/calls`,
-  [ActivityType.MEETING]: `${moduleAPIPath.CRM}/activities/meetings`,
-  [ActivityType.EMAIL]: `${moduleAPIPath.CRM}/activities/emails`
+  [ActivityType.TASK]: `${moduleAPIPath.CRM}/activity/task`,
+  [ActivityType.CALL]: `${moduleAPIPath.CRM}/activity/call`,
+  [ActivityType.MEETING]: `${moduleAPIPath.CRM}/activity/meeting`,
+  [ActivityType.EMAIL]: `${moduleAPIPath.CRM}/activity/email`
 };
