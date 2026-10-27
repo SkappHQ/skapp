@@ -23,11 +23,8 @@ import { isDueToday, isOverdue } from "~community/crm/utils/taskValidations";
 export const getActivityRowKey = (row: ActivityRow): string =>
   `${row.type}-${row.id}`;
 
-const toMillis = (isoInstant: string): number =>
-  parseInstant(isoInstant).toMillis();
-
 const isInFuture = (isoInstant: string): boolean =>
-  toMillis(isoInstant) >= DateTime.now().toMillis();
+  parseInstant(isoInstant) >= DateTime.now();
 
 const isRowOverdue = (row: ActivityRow, zone?: string): boolean =>
   row.type === ActivityType.TASK &&
