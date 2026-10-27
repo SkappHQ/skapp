@@ -1,7 +1,5 @@
 import { DateTime } from "luxon";
 
-import { daysTypes } from "~community/common/constants/stringConstants";
-import { daysOfWeek } from "~community/common/constants/timeConstants";
 import {
   convertToYYYYMMDDFromDateTime,
   convertYYYYMMDDToDateTime,
@@ -43,16 +41,8 @@ const toRange = (from: DateTime, to: DateTime): ActivityDateRange => ({
   toDate: convertToYYYYMMDDFromDateTime(to)
 });
 
-const getStartOfWeek = (today: DateTime, weekStartDay: daysTypes): DateTime => {
-  const weekStartWeekday =
-    daysOfWeek.findIndex((day) => day.toUpperCase() === weekStartDay) + 1;
-
-  return today.minus({ days: (today.weekday - weekStartWeekday + 7) % 7 });
-};
-
 export const getPresetDateRange = (
   preset: ActivityDatePreset,
-  weekStartDay: daysTypes,
   zone?: string
 ): ActivityDateRange => {
   const today = nowInZone(zone).startOf("day");
@@ -60,11 +50,8 @@ export const getPresetDateRange = (
   switch (preset) {
     case ActivityDatePreset.TODAY:
       return toRange(today, today);
-    case ActivityDatePreset.THIS_WEEK: {
-      const weekStart = getStartOfWeek(today, weekStartDay);
-
-      return toRange(weekStart, weekStart.plus({ days: 6 }));
-    }
+    case ActivityDatePreset.THIS_WEEK:
+      return toRange(today.startOf("week"), today.endOf("week"));
     case ActivityDatePreset.THIS_MONTH:
       return toRange(today.startOf("month"), today.endOf("month"));
     case ActivityDatePreset.LAST_30_DAYS:
@@ -83,13 +70,12 @@ const isSameDateRange = (
 
 export const getMatchingPreset = (
   range: ActivityDateRange,
-  weekStartDay: daysTypes,
   zone?: string
 ): ActivityDatePreset | null => {
   if (!range.fromDate || !range.toDate) return null;
 
   const match = ACTIVITY_DATE_PRESETS.find((preset) =>
-    isSameDateRange(getPresetDateRange(preset.id, weekStartDay, zone), range)
+    isSameDateRange(getPresetDateRange(preset.id, zone), range)
   );
 
   return match ? match.id : null;
