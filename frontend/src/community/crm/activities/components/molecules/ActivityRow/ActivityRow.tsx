@@ -1,5 +1,5 @@
 import { Avatar } from "@rootcodelabs/skapp-ui";
-import { FC, KeyboardEvent } from "react";
+import { FC } from "react";
 
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -46,40 +46,36 @@ const ActivityRow: FC<ActivityRowProps> = ({
   const isTask = row.type === ActivityType.TASK;
   const isCompletedStyleApplied = isTask && row.isCompleted;
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.target !== event.currentTarget) return;
-
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      onRowClick(row);
-    }
-  };
-
   return (
     <div
       id={rowId}
-      role="button"
-      tabIndex={0}
-      aria-label={translateAria(["activities", "row", "openDetails"], {
-        type: translateText([
-          "activities",
-          "types",
-          row.type.toLowerCase()
-        ]).toLowerCase(),
-        subject: row.title
-      })}
-      className="relative flex items-center gap-4 p-3 min-w-0 min-h-[63px] bg-white hover:bg-secondary-background overflow-hidden cursor-pointer focus-visible:outline-2 focus-visible:outline-primary-accent"
-      onClick={() => onRowClick(row)}
-      onKeyDown={handleKeyDown}
+      className="relative flex items-center gap-4 p-3 min-w-0 min-h-[63px] bg-white hover:bg-secondary-background overflow-hidden"
     >
+      <button
+        id={`${rowId}-open`}
+        type="button"
+        aria-label={translateAria(["activities", "row", "openDetails"], {
+          type: translateText([
+            "activities",
+            "types",
+            row.type.toLowerCase()
+          ]).toLowerCase(),
+          subject: row.title
+        })}
+        className="absolute inset-0 cursor-pointer focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-accent"
+        onClick={() => onRowClick(row)}
+      />
+
       {showCheckbox && isTask && (
-        <ActivityRowCheckbox
-          id={`${rowId}-checkbox`}
-          subject={row.title}
-          isCompleted={row.isCompleted}
-          canComplete={row.canComplete}
-          onToggle={(isCompleted) => onToggleComplete(row, isCompleted)}
-        />
+        <div className="relative z-10">
+          <ActivityRowCheckbox
+            id={`${rowId}-checkbox`}
+            subject={row.title}
+            isCompleted={row.isCompleted}
+            canComplete={row.canComplete}
+            onToggle={(isCompleted) => onToggleComplete(row, isCompleted)}
+          />
+        </div>
       )}
 
       <div className="flex flex-1 items-center gap-3 min-w-0">
