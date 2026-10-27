@@ -1,10 +1,10 @@
 import { DateTime } from "luxon";
 
-import { daysTypes } from "~community/common/constants/stringConstants";
-import { daysOfWeek } from "~community/common/constants/timeConstants";
 import {
+  convertToYYYYMMDDFromDate,
   convertToYYYYMMDDFromDateTime,
   convertYYYYMMDDToDateTime,
+  getStartAndEndOfCurrentWeek,
   nowInZone
 } from "~community/common/utils/dateTimeUtils";
 import {
@@ -43,16 +43,8 @@ const toRange = (from: DateTime, to: DateTime): ActivityDateRange => ({
   toDate: convertToYYYYMMDDFromDateTime(to)
 });
 
-const getStartOfWeek = (today: DateTime, weekStartDay: daysTypes): DateTime => {
-  const weekStartWeekday =
-    daysOfWeek.findIndex((day) => day.toUpperCase() === weekStartDay) + 1;
-
-  return today.minus({ days: (today.weekday - weekStartWeekday + 7) % 7 });
-};
-
 export const getDateRangeForPreset = (
   preset: ActivityDatePreset,
-  weekStartDay: daysTypes,
   zone?: string
 ): ActivityDateRange => {
   const today = nowInZone(zone).startOf("day");
@@ -61,9 +53,12 @@ export const getDateRangeForPreset = (
     case ActivityDatePreset.TODAY:
       return toRange(today, today);
     case ActivityDatePreset.THIS_WEEK: {
-      const weekStart = getStartOfWeek(today, weekStartDay);
+      const { startOfWeek, endOfWeek } = getStartAndEndOfCurrentWeek();
 
-      return toRange(weekStart, weekStart.plus({ days: 6 }));
+      return {
+        fromDate: convertToYYYYMMDDFromDate(startOfWeek),
+        toDate: convertToYYYYMMDDFromDate(endOfWeek)
+      };
     }
     case ActivityDatePreset.THIS_MONTH:
       return toRange(today.startOf("month"), today.endOf("month"));
@@ -83,16 +78,15 @@ const isSameDateRange = (
 
 export const getMatchingPreset = (
   range: ActivityDateRange,
-  weekStartDay: daysTypes,
   zone?: string
 ): ActivityDatePreset | null => {
   if (!range.fromDate || !range.toDate) return null;
 
   const match = ACTIVITY_DATE_PRESETS.find((preset) =>
-    isSameDateRange(getDateRangeForPreset(preset.id, weekStartDay, zone), range)
+    isSameDateRange(getDateRangeForPreset(preset, zone), range)
   );
 
-  return match ? match.id : null;
+  return match ?? null;
 };
 
 export const areFilterValuesEqual = (
