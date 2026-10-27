@@ -8,8 +8,7 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import {
   useGetActivityFeedInfinite,
-  useGetActivityList,
-  useGetActivityTeamMembers
+  useGetActivityList
 } from "~community/crm/activities/api/ActivityApi";
 import {
   ActivityFeedQuery,
@@ -23,9 +22,11 @@ import { useActivityStore } from "~community/crm/activities/store/activityStore"
 import {
   ActivityFeedResponse,
   ActivityFeedFilters,
-  ActivityTab,
-  ActivityTeamMember
+  ActivityTab
 } from "~community/crm/activities/types/activityTypes";
+import { useGetOwnerLookup } from "~community/crm/api/ContactApi";
+import { DEFAULT_LOOKUP_PAGE_SIZE } from "~community/crm/constants/commonConstants";
+import { CrmOwnerEntity } from "~community/crm/types/CrmCommonTypes";
 
 export interface UseActivityFeedResult {
   isManager: boolean;
@@ -44,12 +45,12 @@ export interface UseActivityFeedResult {
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   loadMore: () => void;
-  teamMembers: ActivityTeamMember[];
+  teamMembers: CrmOwnerEntity[];
   isTeamMembersError: boolean;
 }
 
 const NO_PAGES: ActivityFeedResponse[] = [];
-const NO_TEAM_MEMBERS: ActivityTeamMember[] = [];
+const NO_TEAM_MEMBERS: CrmOwnerEntity[] = [];
 
 export const useActivityFeed = (): UseActivityFeedResult => {
   const translateText = useTranslator("crmModule");
@@ -94,8 +95,11 @@ export const useActivityFeed = (): UseActivityFeedResult => {
   const feed = useGetActivityFeedInfinite(query, isAllTab);
   const list = useGetActivityList(query, !isAllTab);
 
-  const { data: teamMembers, isError: isTeamMembersError } =
-    useGetActivityTeamMembers(isManager);
+  const { data: ownerLookup, isError: isTeamMembersError } = useGetOwnerLookup(
+    "",
+    DEFAULT_LOOKUP_PAGE_SIZE,
+    isManager
+  );
 
   const listData = list.data;
 
@@ -169,7 +173,7 @@ export const useActivityFeed = (): UseActivityFeedResult => {
     hasNextPage,
     isFetchingNextPage,
     loadMore,
-    teamMembers: teamMembers ?? NO_TEAM_MEMBERS,
+    teamMembers: ownerLookup?.items ?? NO_TEAM_MEMBERS,
     isTeamMembersError
   };
 };
