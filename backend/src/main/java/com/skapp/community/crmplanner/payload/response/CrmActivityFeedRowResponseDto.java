@@ -1,7 +1,6 @@
 package com.skapp.community.crmplanner.payload.response;
 
 import com.skapp.community.crmplanner.type.CrmActivityTaskPriority;
-import com.skapp.community.crmplanner.type.CrmActivityType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,8 +13,6 @@ import java.util.Set;
 public class CrmActivityFeedRowResponseDto {
 
 	private Long id;
-
-	private CrmActivityType type;
 
 	private String title;
 
@@ -38,7 +35,5 @@ public class CrmActivityFeedRowResponseDto {
 	private Long companyId;
 
 	private Set<Long> contactIds = new LinkedHashSet<>();
-
-	private Boolean canComplete;
 
 }

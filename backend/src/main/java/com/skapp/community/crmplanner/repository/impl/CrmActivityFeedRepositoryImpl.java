@@ -309,7 +309,6 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			CrmActivityType type = CrmActivityType.valueOf(result.get(CrmActivityFeedColumn.TYPE.name(), String.class));
 			CrmActivityFeedRowResponseDto row = new CrmActivityFeedRowResponseDto();
 			row.setId(result.get(CrmActivityFeedColumn.ID.name(), Long.class));
-			row.setType(type);
 			row.setTitle(result.get(CrmActivityFeedColumn.TITLE.name(), String.class));
 			row.setDueAt(result.get(CrmActivityFeedColumn.DUE_AT.name(), Instant.class));
 			Instant feedAt = result.get(CrmActivityFeedColumn.FEED_AT.name(), Instant.class);
@@ -328,7 +327,6 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			row.setOwnerId(result.get(CrmActivityFeedColumn.OWNER_ID.name(), Long.class));
 			row.setDealId(result.get(CrmActivityFeedColumn.DEAL_ID.name(), Long.class));
 			row.setCompanyId(result.get(CrmActivityFeedColumn.COMPANY_ID.name(), Long.class));
-			row.setCanComplete(type == CrmActivityType.TASK);
 			StringUtils.convertToList(result.get(CrmActivityFeedColumn.CONTACT_IDS.name(), String.class))
 				.stream()
 				.map(Long::valueOf)
