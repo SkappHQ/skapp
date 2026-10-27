@@ -26,7 +26,7 @@ export const getActivityRowKey = (row: ActivityRow): string =>
 const isInFuture = (isoInstant: string): boolean =>
   parseInstant(isoInstant) >= DateTime.now();
 
-const isRowOverdue = (row: ActivityRow, zone?: string): boolean =>
+export const isRowOverdue = (row: ActivityRow, zone?: string): boolean =>
   row.type === ActivityType.TASK &&
   !row.isCompleted &&
   row.dueAt !== null &&

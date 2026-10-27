@@ -5,23 +5,26 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import ActivityDateRangeField from "~community/crm/activities/components/molecules/ActivityDateRangeField/ActivityDateRangeField";
 import ActivityTeamMemberField from "~community/crm/activities/components/molecules/ActivityTeamMemberField/ActivityTeamMemberField";
 import {
-  ActivityFeedFilters,
-  ActivityTeamMember
+  ActivityDateRange,
+  ActivityFilterValues
 } from "~community/crm/activities/types/activityTypes";
 import {
   areFilterValuesEqual,
   validateDateRange
 } from "~community/crm/activities/utils/activityFilterUtil";
+import { CrmOwnerEntity } from "~community/crm/types/CrmCommonTypes";
 
 export interface ActivityFilterPopoverProps {
   id: string;
-  filters: ActivityFeedFilters;
-  teamMembers: ActivityTeamMember[];
+  filters: ActivityFilterValues;
+  teamMembers: CrmOwnerEntity[];
   isTeamMembersError: boolean;
   timeZone?: string;
-  onApply: (filters: ActivityFeedFilters) => void;
+  onApply: (filters: ActivityFilterValues) => void;
   onClose: () => void;
 }
+
+const EMPTY_ACTIVITY_FILTERS: ActivityFilterValues = {};
 
 const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
   id,
@@ -35,20 +38,39 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
 
-  const [draft, setDraft] = useState<ActivityFeedFilters>(filters);
+  const [draft, setDraft] = useState<ActivityFilterValues>(filters);
 
   const isRangeValid = validateDateRange(draft);
   const isChanged = !areFilterValuesEqual(draft, filters);
   const isApplyDisabled = !isChanged || !isRangeValid;
+  const isResetDisabled =
+    areFilterValuesEqual(draft, EMPTY_ACTIVITY_FILTERS) &&
+    areFilterValuesEqual(filters, EMPTY_ACTIVITY_FILTERS);
 
-  const handleApply = () => {
+  const handleApply = (): void => {
     onApply(draft);
     onClose();
   };
 
-  const handleReset = () => {
-    setDraft({});
-    onApply({});
+  const handleReset = (): void => {
+    setDraft(EMPTY_ACTIVITY_FILTERS);
+    onApply(EMPTY_ACTIVITY_FILTERS);
+    onClose();
+  };
+
+  const handleDateRangeChange = (dateRange: ActivityDateRange): void => {
+    setDraft((previous) => ({
+      ...(previous.ownerId ? { ownerId: previous.ownerId } : {}),
+      ...dateRange
+    }));
+  };
+
+  const handleOwnerChange = (ownerId: number | null): void => {
+    setDraft((previous) => ({
+      ...(previous.fromDate ? { fromDate: previous.fromDate } : {}),
+      ...(previous.toDate ? { toDate: previous.toDate } : {}),
+      ...(ownerId ? { ownerId } : {})
+    }));
   };
 
   return (
@@ -79,19 +101,15 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
           id={`${id}-date-range`}
           value={draft}
           timeZone={timeZone}
-          onChange={({ fromDate, toDate }) =>
-            setDraft({ ...draft, fromDate, toDate })
-          }
+          onChange={handleDateRangeChange}
         />
 
         <ActivityTeamMemberField
           id={`${id}-team-member`}
           teamMembers={teamMembers}
-          selectedOwnerId={draft.ownerId ?? null}
+          selectedOwnerId={draft.ownerId}
           isError={isTeamMembersError}
-          onChange={(ownerId) =>
-            setDraft({ ...draft, ownerId: ownerId ?? undefined })
-          }
+          onChange={handleOwnerChange}
         />
       </div>
 
@@ -101,6 +119,7 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
           type="button"
           variant="secondary"
           isFullWidth
+          disabled={isResetDisabled}
           onClick={handleReset}
         >
           {translateText(["activities", "toolbar", "filters", "reset"])}

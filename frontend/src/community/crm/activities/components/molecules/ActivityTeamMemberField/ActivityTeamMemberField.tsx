@@ -1,20 +1,24 @@
-import { InputField, SearchIcon, Tooltip } from "@rootcodelabs/skapp-ui";
+import { InputField, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useMemo, useState } from "react";
 
 import { SearchableDropdownItem } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { ActivityTeamMember } from "~community/crm/activities/types/activityTypes";
+import { filterCRMEmployees } from "~community/crm/activities/utils/activityFilterUtil";
 import SelectableSearchField from "~community/crm/components/molecules/SelectableSearchField/SelectableSearchField";
+import { CrmOwnerEntity } from "~community/crm/types/CrmCommonTypes";
 
 export interface ActivityTeamMemberFieldProps {
   id: string;
-  teamMembers: ActivityTeamMember[];
-  selectedOwnerId: number | null;
+  teamMembers: CrmOwnerEntity[];
+  selectedOwnerId?: number;
   isError: boolean;
   onChange: (ownerId: number | null) => void;
 }
 
 const TEAM_MEMBER_KEYS = ["activities", "toolbar", "filters", "teamMember"];
+
+const getMemberName = (member: CrmOwnerEntity): string =>
+  [member.firstName, member.lastName].filter(Boolean).join(" ");
 
 const ActivityTeamMemberField: FC<ActivityTeamMemberFieldProps> = ({
   id,
@@ -29,18 +33,14 @@ const ActivityTeamMemberField: FC<ActivityTeamMemberFieldProps> = ({
   const [searchValue, setSearchValue] = useState("");
 
   const selectedMember = teamMembers.find(
-    (member) => member.id === selectedOwnerId
+    (member) => member.employeeId === selectedOwnerId
   );
 
   const items: SearchableDropdownItem[] = useMemo(
     () =>
-      teamMembers
-        .filter((member) =>
-          member.name.toLowerCase().includes(searchValue.trim().toLowerCase())
-        )
-        .map((member) => ({
-        id: String(member.id),
-        content: <span className="body2">{member.name}</span>
+      filterCRMEmployees(teamMembers, searchValue).map((member) => ({
+        id: String(member.employeeId),
+        content: <span className="body2">{getMemberName(member)}</span>
       })),
     [teamMembers, searchValue]
   );
@@ -51,25 +51,17 @@ const ActivityTeamMemberField: FC<ActivityTeamMemberFieldProps> = ({
   if (isError) {
     return (
       <div className="flex w-full flex-col gap-1">
-        <Tooltip
-          id={`${id}-error-tooltip`}
-          content={translateText([...TEAM_MEMBER_KEYS, "loadError"])}
-          position="bottom"
-        >
-          <div className="w-full">
-            <InputField
-              id={`${id}-input`}
-              label={label}
-              placeholder={placeholder}
-              aria-describedby={`${id}-error`}
-              rightIcon={<SearchIcon />}
-              value=""
-              fullWidth
-              readOnly
-              disabled
-            />
-          </div>
-        </Tooltip>
+        <InputField
+          id={`${id}-input`}
+          label={label}
+          placeholder={placeholder}
+          aria-describedby={`${id}-error`}
+          rightIcon={<SearchIcon />}
+          value=""
+          fullWidth
+          readOnly
+          disabled
+        />
         <p id={`${id}-error`} className="body3 text-semantic-red-accent">
           {translateText([...TEAM_MEMBER_KEYS, "loadErrorInline"])}
         </p>
@@ -85,7 +77,7 @@ const ActivityTeamMemberField: FC<ActivityTeamMemberFieldProps> = ({
         id={id}
         label={label}
         placeholder={placeholder}
-        selectedValue={selectedMember?.name ?? ""}
+        selectedValue={selectedMember ? getMemberName(selectedMember) : ""}
         onClear={() => {
           setSearchValue("");
           onChange(null);
@@ -107,11 +99,6 @@ const ActivityTeamMemberField: FC<ActivityTeamMemberFieldProps> = ({
           isListEmpty ? "noTeamMembers" : "noMatches"
         ])}
       />
-      {isListEmpty && (
-        <p id={`${id}-empty`} className="body3 text-secondary-text">
-          {translateText([...TEAM_MEMBER_KEYS, "noTeamMembers"])}
-        </p>
-      )}
     </div>
   );
 };

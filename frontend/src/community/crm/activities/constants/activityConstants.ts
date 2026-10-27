@@ -33,6 +33,13 @@ export const ACTIVITY_DATE_PRESETS: ActivityDatePreset[] = [
 
 export const ACTIVITY_LAST_DAYS_PRESET_LENGTH = 30;
 
+export const ACTIVITY_SKELETON_CONFIG = {
+  groupCount: 3,
+  rowCount: 4
+};
+
+export const ACTIVITY_FEED_ID = "crm-activity-feed";
+
 export const ACTIVITY_TYPE_ICON_MAP: Record<
   ActivityType,
   ComponentType<SVGProps<SVGSVGElement>>

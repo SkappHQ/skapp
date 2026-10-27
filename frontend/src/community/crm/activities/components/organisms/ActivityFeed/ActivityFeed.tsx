@@ -82,12 +82,15 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
   const trimmedSearchTerm = searchTerm.trim();
   const emptyStateKey = activeTab.toLowerCase();
 
+  const showCheckbox = activeTab === ActivityTab.TASKS;
+
   const renderContent = () => {
     if (isLoading) {
       return (
         <ActivityFeedSkeleton
           id={`${id}-loading`}
           message={translateText(["activities", "feed", "loading"])}
+          showCheckbox={showCheckbox}
         />
       );
     }
@@ -150,6 +153,7 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
             title={getSectionTitle(group)}
             rows={group.rows}
             timeZone={timeZone}
+            showCheckbox={showCheckbox}
             onRowClick={onRowClick}
             onToggleComplete={onToggleComplete}
           />
@@ -161,6 +165,7 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
             message={translateText(["activities", "feed", "loadingMore"])}
             groupCount={1}
             rowCount={2}
+            showCheckbox={showCheckbox}
           />
         )}
       </div>

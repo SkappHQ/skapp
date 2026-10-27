@@ -146,9 +146,7 @@
       "openFiltersActive": "Open filters, filters applied",
       "closeFilters": "Close filters",
       "clearTeamMember": "Clear team member filter",
-      "teamMember": "Selected team member",
-      "fromDate": "Filter start date",
-      "toDate": "Filter end date"
+      "teamMember": "Team member, selected"
     }
   }
 }

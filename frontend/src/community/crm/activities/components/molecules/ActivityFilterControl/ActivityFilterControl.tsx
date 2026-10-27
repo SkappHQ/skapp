@@ -3,16 +3,14 @@ import { FC, MouseEvent, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import ActivityFilterPopover from "~community/crm/activities/components/molecules/ActivityFilterPopover/ActivityFilterPopover";
-import {
-  ActivityFeedFilters,
-  ActivityTeamMember
-} from "~community/crm/activities/types/activityTypes";
+import { ActivityFilterValues } from "~community/crm/activities/types/activityTypes";
+import { CrmOwnerEntity } from "~community/crm/types/CrmCommonTypes";
 
 interface ActivityFilterControlProps {
   id: string;
-  filters: ActivityFeedFilters;
-  onApplyFilters: (filters: ActivityFeedFilters) => void;
-  teamMembers: ActivityTeamMember[];
+  filters: ActivityFilterValues;
+  onApplyFilters: (filters: ActivityFilterValues) => void;
+  teamMembers: CrmOwnerEntity[];
   isTeamMembersError: boolean;
   timeZone?: string;
 }
@@ -39,12 +37,11 @@ const ActivityFilterControl: FC<ActivityFilterControlProps> = ({
     Number(Boolean(filters.ownerId)) +
     Number(Boolean(filters.fromDate || filters.toDate));
 
-  const handleCloseFilters = () => {
+  const handleCloseFilters = (): void => {
     setFilterAnchorEl(null);
-    document.getElementById(filterButtonId)?.focus();
   };
 
-  const handleToggleFilters = (event: MouseEvent<HTMLElement>) => {
+  const handleToggleFilters = (event: MouseEvent<HTMLElement>): void => {
     setFilterAnchorEl(isFilterOpen ? null : event.currentTarget);
   };
 
@@ -63,7 +60,7 @@ const ActivityFilterControl: FC<ActivityFilterControlProps> = ({
         ])}
         aria-haspopup="dialog"
         aria-expanded={isFilterOpen}
-        aria-controls={isFilterOpen ? filterPopoverId : ""}
+        {...(isFilterOpen ? { "aria-controls": filterPopoverId } : {})}
         badge={{ count: activeFilterCount, show: activeFilterCount > 0 }}
         onClick={handleToggleFilters}
       />
