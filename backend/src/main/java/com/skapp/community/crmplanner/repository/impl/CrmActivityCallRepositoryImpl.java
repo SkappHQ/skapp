@@ -6,7 +6,10 @@ import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmContact_;
+import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.model.CrmDealStage_;
 import com.skapp.community.crmplanner.model.CrmDeal_;
+import com.skapp.community.crmplanner.payload.response.CrmActivityCallDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityCallResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityCallRepository;
 import com.skapp.community.crmplanner.type.CrmActivityCallFilterParams;
@@ -28,6 +31,7 @@ import org.springframework.stereotype.Repository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -94,6 +98,30 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 			.orderBy(orders);
 
 		return entityManager.createQuery(query).getResultList();
+	}
+
+	@Override
+	public Optional<CrmActivityCallDetailResponseDto> findCallDetailById(Long id) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmActivityCallDetailResponseDto> query = cb.createQuery(CrmActivityCallDetailResponseDto.class);
+		Root<CrmActivityCall> call = query.from(CrmActivityCall.class);
+		Join<CrmActivityCall, Employee> owner = call.join(CrmActivityCall_.owner, JoinType.LEFT);
+		Join<CrmActivityCall, CrmContact> contact = call.join(CrmActivityCall_.contact, JoinType.LEFT);
+		Join<CrmActivityCall, CrmDeal> deal = call.join(CrmActivityCall_.deal, JoinType.LEFT);
+		Join<CrmActivityCall, CrmCompany> company = call.join(CrmActivityCall_.company, JoinType.LEFT);
+
+		query
+			.select(cb.construct(CrmActivityCallDetailResponseDto.class, call.get(CrmActivityCall_.id),
+					call.get(CrmActivityCall_.subject), call.get(CrmActivityCall_.loggedAt),
+					call.get(CrmActivityCall_.durationMinutes), call.get(CrmActivityCall_.comments),
+					owner.get(Employee_.employeeId), contact.get(CrmContact_.id), contact.get(CrmContact_.name),
+					contact.get(CrmContact_.isDeleted), deal.get(CrmDeal_.id), deal.get(CrmDeal_.name),
+					deal.get(CrmDeal_.amount), deal.get(CrmDeal_.stage).get(CrmDealStage_.id),
+					deal.get(CrmDeal_.owner).get(Employee_.employeeId), deal.get(CrmDeal_.isDeleted),
+					company.get(CrmCompany_.id), company.get(CrmCompany_.name), company.get(CrmCompany_.isDeleted)))
+			.where(cb.equal(call.get(CrmActivityCall_.id), id), cb.isFalse(call.get(CrmActivityCall_.isDeleted)));
+
+		return entityManager.createQuery(query).getResultStream().findFirst();
 	}
 
 }
