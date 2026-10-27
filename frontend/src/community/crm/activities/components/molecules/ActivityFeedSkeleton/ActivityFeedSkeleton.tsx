@@ -18,22 +18,33 @@ const ActivityFeedSkeleton: FC<ActivityFeedSkeletonProps> = ({
   groupCount = ACTIVITY_SKELETON_CONFIG.groupCount,
   rowCount = ACTIVITY_SKELETON_CONFIG.rowCount,
   showCheckbox = false
-}) => (
-  <div id={id} role="status" aria-busy={true} aria-live="polite">
-    <span className="sr-only">{message}</span>
-    <div className="flex flex-col gap-4" aria-hidden="true">
-      {Array.from({ length: groupCount }).map((_, groupIndex) => (
-        <div className="flex flex-col" key={groupIndex}>
-          <SkeletonShape circle className="h-3 w-16 mb-2" />
-          <div className="border border-secondary-accent rounded-lg overflow-hidden divide-y divide-secondary-accent">
-            {Array.from({ length: rowCount }).map((_, rowIndex) => (
-              <ActivityRowSkeleton key={rowIndex} showCheckbox={showCheckbox} />
-            ))}
+}) => {
+  const groupIds = Array.from(
+    { length: groupCount },
+    (_, groupIndex) => `${id}-group-${groupIndex}`
+  );
+  const rowIds = Array.from(
+    { length: rowCount },
+    (_, rowIndex) => `${id}-row-${rowIndex}`
+  );
+
+  return (
+    <div id={id} role="status" aria-busy={true} aria-live="polite">
+      <span className="sr-only">{message}</span>
+      <div className="flex flex-col gap-4" aria-hidden="true">
+        {groupIds.map((groupId) => (
+          <div className="flex flex-col" key={groupId}>
+            <SkeletonShape circle className="h-3 w-16 mb-2" />
+            <div className="border border-secondary-accent rounded-lg overflow-hidden divide-y divide-secondary-accent">
+              {rowIds.map((rowId) => (
+                <ActivityRowSkeleton key={rowId} showCheckbox={showCheckbox} />
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default ActivityFeedSkeleton;
