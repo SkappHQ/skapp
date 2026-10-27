@@ -20,6 +20,11 @@ import {
 
 const ACTIVITY_FEED_ID = "crm-activity-feed";
 
+const ACTIVITY_LOAD_MORE_SKELETON_CONFIG = {
+  groupCount: 1,
+  rowCount: 2
+};
+
 export interface ActivityFeedProps {
   id?: string;
   activeTab: ActivityTab;
@@ -163,8 +168,8 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
           <ActivityFeedSkeleton
             id={`${id}-loading-more`}
             message={translateText(["activities", "feed", "loadingMore"])}
-            groupCount={1}
-            rowCount={2}
+            groupCount={ACTIVITY_LOAD_MORE_SKELETON_CONFIG.groupCount}
+            rowCount={ACTIVITY_LOAD_MORE_SKELETON_CONFIG.rowCount}
             showCheckbox={showCheckbox}
           />
         )}

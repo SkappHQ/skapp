@@ -43,7 +43,7 @@ const ActivityRow: FC<ActivityRowProps> = ({
 
   const rowId = `crm-activity-row-${getActivityRowKey(row)}`;
   const isTask = row.type === ActivityType.TASK;
-  const isCompletedStyleApplied = isTask && row.isCompleted;
+  const isCompletedStyleApplied = showCheckbox && isTask && row.isCompleted;
 
   return (
     <div
