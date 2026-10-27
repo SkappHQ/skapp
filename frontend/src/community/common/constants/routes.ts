@@ -77,6 +77,8 @@ const ROUTES = {
     ADD: "/people/directory/add",
     GOOGLE_IMPORT_SYNCING: "/people/directory/import-google/syncing",
     GOOGLE_IMPORT_REVIEW: "/people/directory/import-google/review",
+    MICROSOFT_IMPORT_SYNCING: "/people/directory/import-microsoft/syncing",
+    MICROSOFT_IMPORT_REVIEW: "/people/directory/import-microsoft/review",
     SYNC_CHANGES: "/people/directory/sync-changes"
   },
   CONFIGURATIONS: {
@@ -210,6 +212,8 @@ export const employeeRestrictedRoutes = [
 export const nonSuperAdminRestrictedRoutes = [
   ROUTES.PEOPLE.GOOGLE_IMPORT_SYNCING,
   ROUTES.PEOPLE.GOOGLE_IMPORT_REVIEW,
+  ROUTES.PEOPLE.MICROSOFT_IMPORT_SYNCING,
+  ROUTES.PEOPLE.MICROSOFT_IMPORT_REVIEW,
   ROUTES.PEOPLE.SYNC_CHANGES
 ];
 
