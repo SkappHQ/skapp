@@ -38,6 +38,7 @@ import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Selection;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Session;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
@@ -127,20 +128,19 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		if (searchPattern != null) {
 			predicates.add(buildContactSearchPredicate(cb, searchPattern, task.get(CrmActivityTask_.name), contact));
 		}
-		CrmActivityFeedColumns columns = CrmActivityFeedColumns.builder()
-			.type(CrmActivityType.TASK)
-			.id(task.get(CrmActivityTask_.id))
-			.name(task.get(CrmActivityTask_.name))
-			.dueAt(dueAt)
-			.completedAt(completedAt)
-			.isCompleted(isCompleted)
-			.priority(task.get(CrmActivityTask_.priority).cast(String.class))
-			.ownerId(ownerId)
-			.dealId(deal.get(CrmDeal_.id))
-			.companyId(company.get(CrmCompany_.id))
-			.contactIds(contact.get(CrmContact_.id).cast(String.class))
-			.build();
-		return taskRows.multiselect(columns.toSelections(cb)).where(predicates.toArray(new Predicate[0]));
+		CrmActivityFeedColumns columns = new CrmActivityFeedColumns();
+		columns.setType(CrmActivityType.TASK);
+		columns.setId(task.get(CrmActivityTask_.id));
+		columns.setName(task.get(CrmActivityTask_.name));
+		columns.setDueAt(dueAt);
+		columns.setCompletedAt(completedAt);
+		columns.setIsCompleted(isCompleted);
+		columns.setPriority(task.get(CrmActivityTask_.priority).cast(String.class));
+		columns.setOwnerId(ownerId);
+		columns.setDealId(deal.get(CrmDeal_.id));
+		columns.setCompanyId(company.get(CrmCompany_.id));
+		columns.setContactIds(contact.get(CrmContact_.id).cast(String.class));
+		return taskRows.multiselect(toSelections(cb, columns)).where(predicates.toArray(new Predicate[0]));
 	}
 
 	private JpaSubQuery<Tuple> buildCallRows(HibernateCriteriaBuilder cb, JpaCriteriaQuery<Tuple> query,
@@ -160,17 +160,16 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		if (searchPattern != null) {
 			predicates.add(buildContactSearchPredicate(cb, searchPattern, call.get(CrmActivityCall_.subject), contact));
 		}
-		CrmActivityFeedColumns columns = CrmActivityFeedColumns.builder()
-			.type(CrmActivityType.CALL)
-			.id(call.get(CrmActivityCall_.id))
-			.name(call.get(CrmActivityCall_.subject))
-			.ownerId(ownerId)
-			.dealId(deal.get(CrmDeal_.id))
-			.companyId(company.get(CrmCompany_.id))
-			.contactIds(contact.get(CrmContact_.id).cast(String.class))
-			.loggedAt(loggedAt)
-			.build();
-		return callRows.multiselect(columns.toSelections(cb)).where(predicates.toArray(new Predicate[0]));
+		CrmActivityFeedColumns columns = new CrmActivityFeedColumns();
+		columns.setType(CrmActivityType.CALL);
+		columns.setId(call.get(CrmActivityCall_.id));
+		columns.setName(call.get(CrmActivityCall_.subject));
+		columns.setOwnerId(ownerId);
+		columns.setDealId(deal.get(CrmDeal_.id));
+		columns.setCompanyId(company.get(CrmCompany_.id));
+		columns.setContactIds(contact.get(CrmContact_.id).cast(String.class));
+		columns.setLoggedAt(loggedAt);
+		return callRows.multiselect(toSelections(cb, columns)).where(predicates.toArray(new Predicate[0]));
 	}
 
 	private JpaSubQuery<Tuple> buildMeetingRows(HibernateCriteriaBuilder cb, JpaCriteriaQuery<Tuple> query,
@@ -207,17 +206,16 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		contactIds.select(cb.listagg(cb.asc(contactId), contactId.cast(String.class), StringUtils.COMMA_DELIMITER))
 			.where(cb.equal(link.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId),
 					meeting.get(CrmActivityMeeting_.id)), cb.isFalse(contact.get(CrmContact_.isDeleted)));
-		CrmActivityFeedColumns columns = CrmActivityFeedColumns.builder()
-			.type(CrmActivityType.MEETING)
-			.id(meeting.get(CrmActivityMeeting_.id))
-			.name(meeting.get(CrmActivityMeeting_.name))
-			.ownerId(ownerId)
-			.dealId(deal.get(CrmDeal_.id))
-			.companyId(company.get(CrmCompany_.id))
-			.contactIds(contactIds)
-			.startAt(startAt)
-			.build();
-		return meetingRows.multiselect(columns.toSelections(cb)).where(predicates.toArray(new Predicate[0]));
+		CrmActivityFeedColumns columns = new CrmActivityFeedColumns();
+		columns.setType(CrmActivityType.MEETING);
+		columns.setId(meeting.get(CrmActivityMeeting_.id));
+		columns.setName(meeting.get(CrmActivityMeeting_.name));
+		columns.setOwnerId(ownerId);
+		columns.setDealId(deal.get(CrmDeal_.id));
+		columns.setCompanyId(company.get(CrmCompany_.id));
+		columns.setContactIds(contactIds);
+		columns.setStartAt(startAt);
+		return meetingRows.multiselect(toSelections(cb, columns)).where(predicates.toArray(new Predicate[0]));
 	}
 
 	private JpaSubQuery<Tuple> buildEmailRows(HibernateCriteriaBuilder cb, JpaCriteriaQuery<Tuple> query,
@@ -254,17 +252,16 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		contactIds.select(cb.listagg(cb.asc(contactId), contactId.cast(String.class), StringUtils.COMMA_DELIMITER))
 			.where(cb.equal(link.get(CrmActivityEmailContact_.id).get(CrmActivityEmailContactId_.emailId),
 					email.get(CrmActivityEmail_.id)), cb.isFalse(contact.get(CrmContact_.isDeleted)));
-		CrmActivityFeedColumns columns = CrmActivityFeedColumns.builder()
-			.type(CrmActivityType.EMAIL)
-			.id(email.get(CrmActivityEmail_.id))
-			.name(email.get(CrmActivityEmail_.subject))
-			.ownerId(ownerId)
-			.dealId(deal.get(CrmDeal_.id))
-			.companyId(company.get(CrmCompany_.id))
-			.contactIds(contactIds)
-			.loggedAt(loggedAt)
-			.build();
-		return emailRows.multiselect(columns.toSelections(cb)).where(predicates.toArray(new Predicate[0]));
+		CrmActivityFeedColumns columns = new CrmActivityFeedColumns();
+		columns.setType(CrmActivityType.EMAIL);
+		columns.setId(email.get(CrmActivityEmail_.id));
+		columns.setName(email.get(CrmActivityEmail_.subject));
+		columns.setOwnerId(ownerId);
+		columns.setDealId(deal.get(CrmDeal_.id));
+		columns.setCompanyId(company.get(CrmCompany_.id));
+		columns.setContactIds(contactIds);
+		columns.setLoggedAt(loggedAt);
+		return emailRows.multiselect(toSelections(cb, columns)).where(predicates.toArray(new Predicate[0]));
 	}
 
 	private Predicate buildContactSearchPredicate(HibernateCriteriaBuilder cb, String searchPattern, Path<String> title,
@@ -316,6 +313,32 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		if (params.getRangeEnd() != null) {
 			predicates.add(cb.lessThan(feedAt, params.getRangeEnd()));
 		}
+	}
+
+	private Selection<?>[] toSelections(HibernateCriteriaBuilder cb, CrmActivityFeedColumns columns) {
+		return new Selection<?>[] { cb.literal(columns.getType().name()).alias(CrmConstants.ACTIVITY_FEED_TYPE_ALIAS),
+				columns.getId().alias(CrmActivityTask_.ID), columns.getName().alias(CrmActivityTask_.NAME),
+				instantOrNull(cb, columns.getDueAt()).alias(CrmActivityTask_.DUE_AT),
+				instantOrNull(cb, columns.getCompletedAt()).alias(CrmActivityTask_.COMPLETED_AT),
+				booleanOrNull(cb, columns.getIsCompleted()).alias(CrmActivityTask_.IS_COMPLETED),
+				stringOrNull(cb, columns.getPriority()).alias(CrmActivityTask_.PRIORITY),
+				columns.getOwnerId().alias(CrmActivityTask_.OWNER), columns.getDealId().alias(CrmActivityTask_.DEAL),
+				columns.getCompanyId().alias(CrmActivityTask_.COMPANY),
+				columns.getContactIds().alias(CrmActivityTask_.CONTACT),
+				instantOrNull(cb, columns.getStartAt()).alias(CrmActivityMeeting_.START_AT),
+				instantOrNull(cb, columns.getLoggedAt()).alias(CrmActivityCall_.LOGGED_AT) };
+	}
+
+	private Expression<Instant> instantOrNull(HibernateCriteriaBuilder cb, Expression<Instant> expression) {
+		return expression != null ? expression : cb.nullLiteral(Instant.class);
+	}
+
+	private Expression<Boolean> booleanOrNull(HibernateCriteriaBuilder cb, Expression<Boolean> expression) {
+		return expression != null ? expression : cb.nullLiteral(Boolean.class);
+	}
+
+	private Expression<String> stringOrNull(HibernateCriteriaBuilder cb, Expression<String> expression) {
+		return expression != null ? expression : cb.nullLiteral(String.class);
 	}
 
 }
