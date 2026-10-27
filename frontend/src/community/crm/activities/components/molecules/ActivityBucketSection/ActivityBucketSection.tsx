@@ -9,7 +9,7 @@ export interface ActivityBucketSectionProps {
   title: string;
   rows: ActivityRowData[];
   timeZone?: string;
-  showCheckbox: boolean;
+  isShowCheckbox: boolean;
   onRowClick: (row: ActivityRowData) => void;
   onToggleComplete: (row: ActivityRowData, isCompleted: boolean) => void;
 }
@@ -19,7 +19,7 @@ const ActivityBucketSection: FC<ActivityBucketSectionProps> = ({
   title,
   rows,
   timeZone,
-  showCheckbox,
+  isShowCheckbox,
   onRowClick,
   onToggleComplete
 }) => (
@@ -36,7 +36,7 @@ const ActivityBucketSection: FC<ActivityBucketSectionProps> = ({
           <ActivityRow
             row={row}
             timeZone={timeZone}
-            showCheckbox={showCheckbox}
+            isShowCheckbox={isShowCheckbox}
             onRowClick={onRowClick}
             onToggleComplete={onToggleComplete}
           />

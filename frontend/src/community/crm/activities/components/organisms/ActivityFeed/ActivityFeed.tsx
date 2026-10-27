@@ -20,11 +20,6 @@ import {
 
 const ACTIVITY_FEED_ID = "crm-activity-feed";
 
-const ACTIVITY_LOAD_MORE_SKELETON_CONFIG = {
-  groupCount: 1,
-  rowCount: 2
-};
-
 export interface ActivityFeedProps {
   id?: string;
   activeTab: ActivityTab;
@@ -59,6 +54,7 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
   onToggleComplete
 }) => {
   const translateText = useTranslator("crmModule");
+  const translateAria = useTranslator("crmAria");
 
   const sections = useMemo(
     () =>
@@ -85,17 +81,19 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
         ]);
 
   const trimmedSearchTerm = searchTerm.trim();
-  const emptyStateKey = activeTab.toLowerCase();
+  const emptyStateKeys = trimmedSearchTerm
+    ? ["noResults"]
+    : ["emptyState", activeTab.toLowerCase()];
 
-  const showCheckbox = activeTab === ActivityTab.TASKS;
+  const isShowCheckbox = activeTab === ActivityTab.TASKS;
 
   const renderContent = () => {
     if (isLoading) {
       return (
         <ActivityFeedSkeleton
           id={`${id}-loading`}
-          message={translateText(["activities", "feed", "loading"])}
-          showCheckbox={showCheckbox}
+          message={translateAria(["activities", "feed", "loading"])}
+          isShowCheckbox={isShowCheckbox}
         />
       );
     }
@@ -113,35 +111,17 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
     }
 
     if (sections.length === 0) {
-      return trimmedSearchTerm ? (
+      return (
         <EmptyDataView
           icon={<SearchIcon />}
-          title={translateText(["activities", "feed", "noResults", "title"], {
-            term: trimmedSearchTerm
-          })}
+          title={translateText(
+            ["activities", "feed", ...emptyStateKeys, "title"],
+            { term: trimmedSearchTerm }
+          )}
           description={translateText([
             "activities",
             "feed",
-            "noResults",
-            "description"
-          ])}
-          className={EMPTY_STATE_CLASSES}
-        />
-      ) : (
-        <EmptyDataView
-          icon={<SearchIcon />}
-          title={translateText([
-            "activities",
-            "feed",
-            "emptyState",
-            emptyStateKey,
-            "title"
-          ])}
-          description={translateText([
-            "activities",
-            "feed",
-            "emptyState",
-            emptyStateKey,
+            ...emptyStateKeys,
             "description"
           ])}
           className={EMPTY_STATE_CLASSES}
@@ -158,7 +138,7 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
             title={getSectionTitle(group)}
             rows={group.rows}
             timeZone={timeZone}
-            showCheckbox={showCheckbox}
+            isShowCheckbox={isShowCheckbox}
             onRowClick={onRowClick}
             onToggleComplete={onToggleComplete}
           />
@@ -167,10 +147,10 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
         {isFetchingNextPage && (
           <ActivityFeedSkeleton
             id={`${id}-loading-more`}
-            message={translateText(["activities", "feed", "loadingMore"])}
-            groupCount={ACTIVITY_LOAD_MORE_SKELETON_CONFIG.groupCount}
-            rowCount={ACTIVITY_LOAD_MORE_SKELETON_CONFIG.rowCount}
-            showCheckbox={showCheckbox}
+            message={translateAria(["activities", "feed", "loadingMore"])}
+            groupCount={1}
+            rowCount={2}
+            isShowCheckbox={isShowCheckbox}
           />
         )}
       </div>

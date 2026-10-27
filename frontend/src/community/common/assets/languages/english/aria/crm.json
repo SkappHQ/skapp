@@ -139,6 +139,10 @@
       "mediumPriority": "Medium priority",
       "lowPriority": "Low priority"
     },
+    "feed": {
+      "loading": "Loading activities",
+      "loadingMore": "Loading more activities"
+    },
     "toolbar": {
       "clearSearch": "Clear search"
     }
