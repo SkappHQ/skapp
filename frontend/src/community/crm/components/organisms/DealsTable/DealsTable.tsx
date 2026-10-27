@@ -1,5 +1,6 @@
 import {
   Column,
+  CrmIcon,
   GroupData,
   ListTable,
   ProjectTableSkeletonLoader,
@@ -8,7 +9,6 @@ import {
 import { FC, useCallback, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 
-import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -185,11 +185,7 @@ const DealsTable: FC<Props> = ({
               }}
             >
               <div className="flex items-center justify-center size-6 rounded-full shrink-0 bg-status-pink">
-                <HandshakeIcon
-                  width="14"
-                  height="14"
-                  fill="var(--color-white)"
-                />
+                <CrmIcon width="14" height="14" color="var(--color-white)" />
               </div>
               <span className="body2 group-hover:underline">#{deal.id}</span>
               <span

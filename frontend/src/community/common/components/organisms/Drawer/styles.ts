@@ -8,7 +8,7 @@ type stylesProps = {
 
 export const DRAWER_ANIMATION_DURATION = "0.3s";
 export const DRAWER_TRANSFORM_DURATION = "0.05s";
-export const DRAWER_ITEM_ICON_SIZE = "18";
+export const DRAWER_ITEM_ICON_SIZE = "24";
 
 export const styles = ({ theme }: stylesProps) => ({
   iconBtn: (isDrawerExpanded: boolean, isBelow1024: boolean) => {
@@ -39,7 +39,12 @@ export const styles = ({ theme }: stylesProps) => ({
     display: "flex",
     transition: `opacity ${DRAWER_ANIMATION_DURATION} ease`,
     opacity: isVisible ? 1 : 0,
-    zIndex: isVisible ? 2 : 1
+    zIndex: isVisible ? 2 : 1,
+    color: theme.palette.common.black,
+    "& svg": {
+      width: "1.375rem",
+      height: "1.375rem"
+    }
   }),
   drawerContainer: (isDrawerExpanded: boolean) => ({
     width: "100%",
