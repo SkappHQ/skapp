@@ -7,7 +7,6 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.StringUtils;
-import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.payload.request.CrmActivityFeedFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityFeedRowResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityFeedRepository;
@@ -16,7 +15,6 @@ import com.skapp.community.crmplanner.type.CrmActivityListParams;
 import com.skapp.community.crmplanner.util.CrmUtil;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -28,7 +26,6 @@ import java.time.ZoneId;
 import java.util.Locale;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 
@@ -41,7 +38,6 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getActivities(CrmActivityFeedFilterDto filterDto) {
-		log.info("getActivities: execution started");
 
 		User currentUser = userService.getCurrentUser();
 		boolean isRepresentative = CrmUtil.isCrmSalesRepresentative(currentUser);
@@ -70,8 +66,7 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 		}
 
 		Page<CrmActivityFeedRowResponseDto> activityPage = crmActivityFeedRepository.findActivities(params,
-				PageRequest.of(Math.max(filterDto.getPage(), 0),
-						Math.clamp(filterDto.getSize(), 1, CrmConstants.ACTIVITY_FEED_MAX_PAGE_SIZE)));
+				PageRequest.of(Math.max(filterDto.getPage(), 0), Math.max(filterDto.getSize(), 1)));
 
 		PageDto pageDto = new PageDto();
 		pageDto.setItems(activityPage.getContent());
@@ -79,7 +74,6 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 		pageDto.setTotalItems(activityPage.getTotalElements());
 		pageDto.setTotalPages(activityPage.getTotalPages());
 
-		log.info("getActivities: execution ended");
 		return new ResponseEntityDto(false, pageDto);
 	}
 

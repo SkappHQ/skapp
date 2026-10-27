@@ -69,6 +69,4 @@ public class CrmConstants {
 
 	public static final int ACTIVITY_FEED_DEFAULT_PAGE_SIZE = 25;
 
-	public static final int ACTIVITY_FEED_MAX_PAGE_SIZE = 100;
-
 }
