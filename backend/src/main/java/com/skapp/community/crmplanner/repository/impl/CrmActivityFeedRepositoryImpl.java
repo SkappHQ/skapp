@@ -109,7 +109,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					taskDueAt.alias(CrmActivityFeedColumn.DUE_AT.name()),
 					taskCompletedAt.alias(CrmActivityFeedColumn.COMPLETED_AT.name()),
 					taskIsCompleted.alias(CrmActivityFeedColumn.IS_COMPLETED.name()),
-					task.get(CrmActivityTask_.priority).alias(CrmActivityFeedColumn.PRIORITY.name()),
+					task.get(CrmActivityTask_.priority).as(String.class).alias(CrmActivityFeedColumn.PRIORITY.name()),
 					taskOwnerId.alias(CrmActivityFeedColumn.OWNER_ID.name()),
 					taskDeal.get(CrmDeal_.id).alias(CrmActivityFeedColumn.DEAL_ID.name()),
 					taskCompany.get(CrmCompany_.id).alias(CrmActivityFeedColumn.COMPANY_ID.name()),
@@ -155,7 +155,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					cb.nullLiteral(Instant.class).alias(CrmActivityFeedColumn.DUE_AT.name()),
 					cb.nullLiteral(Instant.class).alias(CrmActivityFeedColumn.COMPLETED_AT.name()),
 					cb.nullLiteral(Boolean.class).alias(CrmActivityFeedColumn.IS_COMPLETED.name()),
-					cb.nullLiteral(CrmActivityTaskPriority.class).alias(CrmActivityFeedColumn.PRIORITY.name()),
+					cb.nullLiteral(String.class).alias(CrmActivityFeedColumn.PRIORITY.name()),
 					callOwnerId.alias(CrmActivityFeedColumn.OWNER_ID.name()),
 					callDeal.get(CrmDeal_.id).alias(CrmActivityFeedColumn.DEAL_ID.name()),
 					callCompany.get(CrmCompany_.id).alias(CrmActivityFeedColumn.COMPANY_ID.name()),
@@ -217,7 +217,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					cb.nullLiteral(Instant.class).alias(CrmActivityFeedColumn.DUE_AT.name()),
 					cb.nullLiteral(Instant.class).alias(CrmActivityFeedColumn.COMPLETED_AT.name()),
 					cb.nullLiteral(Boolean.class).alias(CrmActivityFeedColumn.IS_COMPLETED.name()),
-					cb.nullLiteral(CrmActivityTaskPriority.class).alias(CrmActivityFeedColumn.PRIORITY.name()),
+					cb.nullLiteral(String.class).alias(CrmActivityFeedColumn.PRIORITY.name()),
 					meetingOwnerId.alias(CrmActivityFeedColumn.OWNER_ID.name()),
 					meetingDeal.get(CrmDeal_.id).alias(CrmActivityFeedColumn.DEAL_ID.name()),
 					meetingCompany.get(CrmCompany_.id).alias(CrmActivityFeedColumn.COMPANY_ID.name()),
@@ -277,7 +277,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					cb.nullLiteral(Instant.class).alias(CrmActivityFeedColumn.DUE_AT.name()),
 					cb.nullLiteral(Instant.class).alias(CrmActivityFeedColumn.COMPLETED_AT.name()),
 					cb.nullLiteral(Boolean.class).alias(CrmActivityFeedColumn.IS_COMPLETED.name()),
-					cb.nullLiteral(CrmActivityTaskPriority.class).alias(CrmActivityFeedColumn.PRIORITY.name()),
+					cb.nullLiteral(String.class).alias(CrmActivityFeedColumn.PRIORITY.name()),
 					emailOwnerId.alias(CrmActivityFeedColumn.OWNER_ID.name()),
 					emailDeal.get(CrmDeal_.id).alias(CrmActivityFeedColumn.DEAL_ID.name()),
 					emailCompany.get(CrmCompany_.id).alias(CrmActivityFeedColumn.COMPANY_ID.name()),
@@ -285,7 +285,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					emailLoggedAt.alias(CrmActivityFeedColumn.FEED_AT.name()))
 			.where(emailPredicates.toArray(new Predicate[0]));
 
-		JpaDerivedRoot<Tuple> activity = query.from(cb.union(true, taskRows, callRows, meetingRows, emailRows));
+		JpaDerivedRoot<Tuple> activity = query.from(cb.union(true, callRows, taskRows, meetingRows, emailRows));
 		List<Selection<?>> selections = new ArrayList<>(Arrays.stream(CrmActivityFeedColumn.values())
 			.filter(column -> column != CrmActivityFeedColumn.TOTAL)
 			.<Selection<?>>map(column -> activity.get(column.name()).alias(column.name()))
@@ -320,7 +320,10 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			}
 			row.setCompletedAt(result.get(CrmActivityFeedColumn.COMPLETED_AT.name(), Instant.class));
 			row.setIsCompleted(result.get(CrmActivityFeedColumn.IS_COMPLETED.name(), Boolean.class));
-			row.setPriority(result.get(CrmActivityFeedColumn.PRIORITY.name(), CrmActivityTaskPriority.class));
+			String priority = result.get(CrmActivityFeedColumn.PRIORITY.name(), String.class);
+			if (priority != null) {
+				row.setPriority(CrmActivityTaskPriority.valueOf(priority));
+			}
 			row.setOwnerId(result.get(CrmActivityFeedColumn.OWNER_ID.name(), Long.class));
 			row.setDealId(result.get(CrmActivityFeedColumn.DEAL_ID.name(), Long.class));
 			row.setCompanyId(result.get(CrmActivityFeedColumn.COMPANY_ID.name(), Long.class));
