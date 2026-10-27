@@ -2,7 +2,6 @@ import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import ActivityTypeIcon from "~community/crm/activities/components/atoms/ActivityTypeIcon/ActivityTypeIcon";
-import { ACTIVITY_TYPE_LABEL_KEYS } from "~community/crm/activities/constants/activityConstants";
 import {
   ActivityRow as ActivityRowData,
   ActivityType
@@ -47,7 +46,7 @@ const ActivityRow: FC<ActivityRowProps> = ({
           type: translateText([
             "activities",
             "types",
-            ACTIVITY_TYPE_LABEL_KEYS[row.type]
+            row.type.toLowerCase()
           ]).toLowerCase(),
           subject: row.title
         })}

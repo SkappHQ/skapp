@@ -7,8 +7,7 @@ import ActivityBucketSection from "~community/crm/activities/components/molecule
 import ActivityFeedSkeleton from "~community/crm/activities/components/molecules/ActivityFeedSkeleton/ActivityFeedSkeleton";
 import {
   ACTIVITY_FEED_ID,
-  ACTIVITY_SECTION_LABEL_KEYS,
-  ACTIVITY_TABS
+  ACTIVITY_SECTION_LABEL_KEYS
 } from "~community/crm/activities/constants/activityConstants";
 import {
   ActivityFeedResponse,
@@ -82,9 +81,7 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
         ]);
 
   const trimmedSearchTerm = searchTerm.trim();
-  const emptyStateKey =
-    ACTIVITY_TABS.find((tab) => tab.id === activeTab)?.labelKey ??
-    ACTIVITY_TABS[0].labelKey;
+  const emptyStateKey = activeTab.toLowerCase();
 
   const showCheckbox = activeTab === ActivityTab.TASKS;
 

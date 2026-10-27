@@ -74,9 +74,3 @@ export interface ActivitySectionGroup {
   monthKey: string | null;
   rows: ActivityRow[];
 }
-
-export interface ActivityTabConfig {
-  id: ActivityTab;
-  labelKey: string;
-  type: ActivityType | null;
-}
