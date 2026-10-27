@@ -26,7 +26,7 @@ const fetchActivityFeed = async (
   const response = await authFetch.get(crmActivityEndpoints.GET_ACTIVITY_FEED, {
     params
   });
-  return response.data.results[0];
+  return response?.data?.results?.[0];
 };
 
 export const useGetActivityFeed = (
@@ -52,7 +52,7 @@ const fetchActivityCalls = async (
   const response = await authFetch.get(crmActivityEndpoints.GET_CALLS, {
     params
   });
-  return response.data.results;
+  return response?.data?.results;
 };
 
 export const useGetActivityCalls = (
@@ -72,7 +72,7 @@ const fetchActivityEmails = async (
   const response = await authFetch.get(crmActivityEndpoints.GET_EMAILS, {
     params
   });
-  return response.data.results;
+  return response?.data?.results;
 };
 
 export const useGetActivityEmails = (
@@ -92,7 +92,7 @@ const fetchActivityMeetings = async (
   const response = await authFetch.get(crmActivityEndpoints.GET_MEETINGS, {
     params
   });
-  return response.data.results;
+  return response?.data?.results;
 };
 
 export const useGetActivityMeetings = (
@@ -112,7 +112,7 @@ const fetchActivityTasks = async (
   const response = await authFetch.get(crmActivityEndpoints.GET_TASKS, {
     params
   });
-  return response.data.results;
+  return response?.data?.results;
 };
 
 export const useGetActivityTasks = (

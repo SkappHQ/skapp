@@ -87,7 +87,7 @@ export interface ActivityListFilters {
   endDate?: string;
 }
 
-export interface ActivityListItemBase {
+interface ActivityListItemBase {
   id: number;
   ownerId: number | null;
   dealId: number | null;

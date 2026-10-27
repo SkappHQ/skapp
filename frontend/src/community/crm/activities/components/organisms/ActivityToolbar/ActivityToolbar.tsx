@@ -16,7 +16,8 @@ export interface ActivityToolbarProps {
   onTabChange: (tab: ActivityTab) => void;
   searchTerm: string;
   onSearchChange: (searchTerm: string) => void;
-  resultCount: number | null;
+  resultCount: number;
+  isResultCountReady: boolean;
   isManager: boolean;
   filters: ActivityFilterValues;
   onApplyFilters: (filters: ActivityFilterValues) => void;
@@ -37,6 +38,7 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
   searchTerm,
   onSearchChange,
   resultCount,
+  isResultCountReady,
   isManager,
   filters,
   onApplyFilters,
@@ -95,6 +97,7 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
             searchTerm={searchTerm}
             onSearchChange={onSearchChange}
             resultCount={resultCount}
+            isResultCountReady={isResultCountReady}
           />
         </div>
       )}

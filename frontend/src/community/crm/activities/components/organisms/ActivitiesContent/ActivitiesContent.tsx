@@ -7,19 +7,19 @@ import ActivityFeed from "~community/crm/activities/components/organisms/Activit
 import ActivityToolbar from "~community/crm/activities/components/organisms/ActivityToolbar/ActivityToolbar";
 import { DEFAULT_ACTIVITY_TAB } from "~community/crm/activities/constants/activityConstants";
 import {
-  ActivityCallResponse,
-  ActivityEmailResponse,
   ActivityFeedFilters,
   ActivityFeedResponse,
   ActivityFilterValues,
   ActivityListFilters,
-  ActivityListItemBase,
-  ActivityMeetingResponse,
-  ActivityRow,
-  ActivityTab,
-  ActivityTaskResponse,
-  ActivityType
+  ActivityTab
 } from "~community/crm/activities/types/activityTypes";
+import {
+  toCallRow,
+  toEmailRow,
+  toMeetingRow,
+  toSingleFeedPage,
+  toTaskRow
+} from "~community/crm/activities/utils/activityFeedUtil";
 import {
   useGetActivityCalls,
   useGetActivityEmails,
@@ -27,75 +27,17 @@ import {
   useGetActivityMeetings,
   useGetActivityTasks
 } from "~community/crm/api/ActivityApi";
-import { useGetOwnerLookup } from "~community/crm/api/ContactApi";
 import { useGetDealsByIds } from "~community/crm/api/DealApi";
-import { DEFAULT_LOOKUP_PAGE_SIZE } from "~community/crm/constants/commonConstants";
+import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmOwnerEntity } from "~community/crm/types/CrmCommonTypes";
 import { getMissingDealIds, mergeDeals } from "~community/crm/utils/dealUtil";
-
-const NO_PAGES: ActivityFeedResponse[] = [];
-const NO_TEAM_MEMBERS: CrmOwnerEntity[] = [];
-
-const toRowBase = (
-  item: ActivityListItemBase
-): Omit<ActivityRow, "type" | "title" | "contactIds"> => ({
-  id: item.id,
-  ownerId: item.ownerId,
-  dealId: item.dealId,
-  companyId: item.companyId,
-  dueAt: null,
-  loggedAt: null,
-  startAt: null,
-  completedAt: null,
-  isCompleted: false,
-  priority: null,
-  canComplete: false
-});
-
-const toCallRow = (item: ActivityCallResponse): ActivityRow => ({
-  ...toRowBase(item),
-  type: ActivityType.CALL,
-  title: item.subject,
-  loggedAt: item.loggedAt,
-  contactIds: item.contactId ? [item.contactId] : []
-});
-
-const toEmailRow = (item: ActivityEmailResponse): ActivityRow => ({
-  ...toRowBase(item),
-  type: ActivityType.EMAIL,
-  title: item.subject,
-  loggedAt: item.loggedAt,
-  contactIds: item.contactIds
-});
-
-const toMeetingRow = (item: ActivityMeetingResponse): ActivityRow => ({
-  ...toRowBase(item),
-  type: ActivityType.MEETING,
-  title: item.name,
-  startAt: item.startAt,
-  contactIds: item.contactIds
-});
-
-const toTaskRow = (item: ActivityTaskResponse): ActivityRow => ({
-  ...toRowBase(item),
-  type: ActivityType.TASK,
-  title: item.name,
-  dueAt: item.dueAt,
-  completedAt: item.completedAt,
-  isCompleted: item.isCompleted,
-  priority: item.priority,
-  contactIds: item.contactId ? [item.contactId] : []
-});
-
-const toSinglePage = (items: ActivityRow[]): ActivityFeedResponse[] => [
-  { items, currentPage: 0, totalItems: items.length, totalPages: 1 }
-];
 
 const ActivitiesContent: FC = () => {
   const displayZone = useDisplayZone();
   const { isCrmSalesManager } = useSessionData();
   const isManager = Boolean(isCrmSalesManager);
+
+  const { isCrmInitialDataError } = useInitializeCrmData();
 
   const [activeTab, setActiveTab] = useState<ActivityTab>(DEFAULT_ACTIVITY_TAB);
   const [searchTerm, setSearchTerm] = useState("");
@@ -103,9 +45,15 @@ const ActivitiesContent: FC = () => {
 
   const isAllTab = activeTab === ActivityTab.ALL;
 
-  const { deals, setDeals } = useCrmStore(
-    useShallow((store) => ({ deals: store.deals, setDeals: store.setDeals }))
+  const { owners, deals, setDeals } = useCrmStore(
+    useShallow((store) => ({
+      owners: store.owners,
+      deals: store.deals,
+      setDeals: store.setDeals
+    }))
   );
+
+  const teamMembers = useMemo(() => Object.values(owners), [owners]);
 
   const feedFilters: ActivityFeedFilters = useMemo(
     () => ({ ...(searchTerm ? { search: searchTerm } : {}), ...filters }),
@@ -140,12 +88,6 @@ const ActivitiesContent: FC = () => {
     activeTab === ActivityTab.TASKS
   );
 
-  const { data: ownerLookup, isError: isTeamMembersError } = useGetOwnerLookup(
-    "",
-    DEFAULT_LOOKUP_PAGE_SIZE,
-    isManager
-  );
-
   const { isLoading, isError } = {
     [ActivityTab.ALL]: feed,
     [ActivityTab.CALLS]: calls,
@@ -154,17 +96,17 @@ const ActivitiesContent: FC = () => {
     [ActivityTab.TASKS]: tasks
   }[activeTab];
 
-  const pages = useMemo(() => {
+  const pages: ActivityFeedResponse[] = useMemo(() => {
     if (isAllTab && feed.data) return feed.data.pages;
     if (activeTab === ActivityTab.CALLS && calls.data)
-      return toSinglePage(calls.data.map(toCallRow));
+      return toSingleFeedPage(calls.data.map(toCallRow));
     if (activeTab === ActivityTab.EMAILS && emails.data)
-      return toSinglePage(emails.data.map(toEmailRow));
+      return toSingleFeedPage(emails.data.map(toEmailRow));
     if (activeTab === ActivityTab.MEETINGS && meetings.data)
-      return toSinglePage(meetings.data.map(toMeetingRow));
+      return toSingleFeedPage(meetings.data.map(toMeetingRow));
     if (activeTab === ActivityTab.TASKS && tasks.data)
-      return toSinglePage(tasks.data.map(toTaskRow));
-    return NO_PAGES;
+      return toSingleFeedPage(tasks.data.map(toTaskRow));
+    return [];
   }, [
     activeTab,
     isAllTab,
@@ -197,9 +139,8 @@ const ActivitiesContent: FC = () => {
     setDeals(mergeDeals(deals, fetchedDeals));
   }, [fetchedDeals]);
 
-  const totalCount =
+  const resultCount =
     isAllTab && feed.data ? feed.data.pages[0].totalItems : rows.length;
-  const resultCount = isLoading || isError ? null : totalCount;
   const hasActiveFilters =
     searchTerm.length > 0 || Object.keys(filters).length > 0;
 
@@ -208,18 +149,19 @@ const ActivitiesContent: FC = () => {
   const handleToggleComplete = (): void => {};
 
   return (
-    <div className="flex flex-col w-full gap-4">
+    <div className="flex flex-col w-full gap-4 pt-5.5 lg:pt-1">
       <ActivityToolbar
         activeTab={activeTab}
         onTabChange={setActiveTab}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         resultCount={resultCount}
+        isResultCountReady={!isLoading && !isError}
         isManager={isManager}
         filters={filters}
         onApplyFilters={setFilters}
-        teamMembers={ownerLookup ? ownerLookup.items : NO_TEAM_MEMBERS}
-        isTeamMembersError={isTeamMembersError}
+        teamMembers={teamMembers}
+        isTeamMembersError={isCrmInitialDataError}
         timeZone={displayZone}
         showControls={
           isLoading || isError || hasActiveFilters || rows.length > 0
