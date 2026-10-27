@@ -1,15 +1,17 @@
+import { Avatar } from "@rootcodelabs/skapp-ui";
 import { FC, KeyboardEvent } from "react";
 
+import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import ActivityOwnerAvatar from "~community/crm/activities/components/atoms/ActivityOwnerAvatar/ActivityOwnerAvatar";
-import ActivityPriorityMarker from "~community/crm/activities/components/atoms/ActivityPriorityMarker/ActivityPriorityMarker";
 import ActivityTypeIcon from "~community/crm/activities/components/atoms/ActivityTypeIcon/ActivityTypeIcon";
-import { ACTIVITY_TYPE_LABEL_KEYS } from "~community/crm/activities/constants/activityConstants";
 import {
   ActivityRow as ActivityRowData,
   ActivityType
 } from "~community/crm/activities/types/activityTypes";
 import { getActivityRowKey } from "~community/crm/activities/utils/activityFeedUtil";
+import PriorityLabel from "~community/crm/components/atoms/PriorityLabel/PriorityLabel";
+import { useCrmStore } from "~community/crm/store/store";
+import { getContactDisplayName } from "~community/crm/utils/contactUtil";
 
 import ActivityRowCheckbox from "./ActivityRowCheckbox";
 import ActivityRowSubtitle from "./ActivityRowSubtitle";
@@ -29,6 +31,14 @@ const ActivityRow: FC<ActivityRowProps> = ({
 }) => {
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
+
+  const owners = useCrmStore((state) => state.owners);
+
+  const owner = row.ownerId != null ? owners[row.ownerId] : undefined;
+  const ownerImageUrl = useGetImageUrl([owner?.authPic ?? ""])[0];
+  const ownerName = owner
+    ? [owner.firstName, owner.lastName].filter(Boolean).join(" ")
+    : "";
 
   const rowId = `crm-activity-row-${getActivityRowKey(row)}`;
   const isTask = row.type === ActivityType.TASK;
@@ -52,9 +62,9 @@ const ActivityRow: FC<ActivityRowProps> = ({
         type: translateText([
           "activities",
           "types",
-          ACTIVITY_TYPE_LABEL_KEYS[row.type]
+          row.type.toLowerCase()
         ]).toLowerCase(),
-        subject: row.subject
+        subject: row.title
       })}
       className="relative flex items-center gap-4 p-3 min-w-0 min-h-[63px] bg-white hover:bg-secondary-background overflow-hidden cursor-pointer focus-visible:outline-2 focus-visible:outline-primary-accent"
       onClick={() => onRowClick(row)}
@@ -65,7 +75,7 @@ const ActivityRow: FC<ActivityRowProps> = ({
       {isTask && (
         <ActivityRowCheckbox
           id={`${rowId}-checkbox`}
-          subject={row.subject}
+          subject={row.title}
           isCompleted={row.isCompleted}
           canComplete={row.canComplete}
           onToggle={(isCompleted) => onToggleComplete(row, isCompleted)}
@@ -83,9 +93,9 @@ const ActivityRow: FC<ActivityRowProps> = ({
                 ? "line-through text-secondary-icon"
                 : "text-black"
             }`}
-            title={row.subject}
+            title={row.title}
           >
-            {row.subject}
+            {row.title}
           </p>
 
           <ActivityRowSubtitle
@@ -98,12 +108,24 @@ const ActivityRow: FC<ActivityRowProps> = ({
       </div>
 
       <div className="flex items-center gap-6 shrink-0">
-        {isTask && row.priority && (
-          <ActivityPriorityMarker priority={row.priority} />
-        )}
+        {isTask && row.priority && <PriorityLabel priority={row.priority} />}
 
-        {row.owner && (
-          <ActivityOwnerAvatar id={`${rowId}-owner`} owner={row.owner} />
+        {owner && (
+          <span
+            className="inline-flex shrink-0"
+            role="img"
+            aria-label={translateAria(["activities", "row", "owner"], {
+              name: ownerName
+            })}
+          >
+            <Avatar
+              id={`${rowId}-owner`}
+              size="xs"
+              src={ownerImageUrl ?? undefined}
+              firstName={owner.firstName}
+              lastName={owner.lastName}
+            />
+          </span>
         )}
       </div>
     </div>

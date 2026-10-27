@@ -1,125 +1,114 @@
 import { DateTime } from "luxon";
-import type { DateRange as PickerDateRange } from "react-day-picker";
 
+import {
+  FULL_MONTH_YEAR_FORMAT,
+  TIME_FORMAT_12_HOUR,
+  YEAR_MONTH_FORMAT
+} from "~community/common/constants/timeConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import {
-  getOrdinalIndicator,
+  formatDateTimeWithOrdinalIndicatorWithoutYear,
   instantInZone,
-  nowInZone,
   parseInstant
 } from "~community/common/utils/dateTimeUtils";
+import { ACTIVITY_SECTION_ORDER } from "~community/crm/activities/constants/activityConstants";
 import {
-  ACTIVITY_BUCKET_ORDER,
-  ACTIVITY_DATE_FORMAT,
-  ACTIVITY_FIXED_BUCKET_KEYS,
-  ACTIVITY_MONTH_ABBREVIATIONS,
-  ACTIVITY_MONTH_HEADING_FORMAT,
-  ACTIVITY_MONTH_KEY_FORMAT,
-  ACTIVITY_TIME_FORMAT
-} from "~community/crm/activities/constants/activityConstants";
-import {
-  ActivityBucket,
-  ActivityBucketGroup,
-  ActivityFeedResponse,
-  ActivityLink,
-  ActivityMonthGroup,
   ActivityRow,
-  ActivityType,
-  DateRange
+  ActivitySection,
+  ActivitySectionGroup,
+  ActivityType
 } from "~community/crm/activities/types/activityTypes";
+import { isDueToday, isOverdue } from "~community/crm/utils/taskValidations";
 
 export const getActivityRowKey = (row: ActivityRow): string =>
   `${row.type}-${row.id}`;
 
-export const getMonthAnchor = (row: ActivityRow): string | null => {
-  return row.occurredAt ?? row.completedAt ?? row.dueAt;
+const isInFuture = (isoInstant: string): boolean =>
+  parseInstant(isoInstant) >= DateTime.now();
+
+const isRowOverdue = (row: ActivityRow, zone?: string): boolean =>
+  row.type === ActivityType.TASK &&
+  !row.isCompleted &&
+  row.dueAt !== null &&
+  isOverdue(row.dueAt, zone);
+
+const getRowSection = (row: ActivityRow, zone?: string): ActivitySection => {
+  if (isRowOverdue(row, zone)) return ActivitySection.OVERDUE;
+
+  let scheduledAt = row.dueAt;
+
+  if (row.type === ActivityType.MEETING) {
+    scheduledAt = row.startAt && isInFuture(row.startAt) ? row.startAt : null;
+  }
+
+  if (!row.isCompleted && scheduledAt) {
+    if (isDueToday(scheduledAt, zone)) return ActivitySection.TODAY;
+
+    if (isInFuture(scheduledAt)) return ActivitySection.UPCOMING;
+  }
+
+  return ActivitySection.BY_MONTH;
 };
 
-const groupByMonth = (
-  pages: ActivityFeedResponse[],
+export const getActivitySections = (
+  rows: ActivityRow[],
   zone?: string
-): ActivityMonthGroup[] => {
-  const seenKeys = new Set<string>();
-  const groups = new Map<string, ActivityRow[]>();
+): ActivitySectionGroup[] => {
+  const fixedSectionRows: Record<ActivitySection, ActivityRow[]> = {
+    [ActivitySection.OVERDUE]: [],
+    [ActivitySection.TODAY]: [],
+    [ActivitySection.UPCOMING]: [],
+    [ActivitySection.BY_MONTH]: []
+  };
+  const monthGroups = new Map<string, ActivityRow[]>();
 
-  for (const page of pages) {
-    for (const row of page.byMonth?.items ?? []) {
-      const rowKey = getActivityRowKey(row);
-      const anchor = getMonthAnchor(row);
+  for (const row of rows) {
+    const section = getRowSection(row, zone);
 
-      if (seenKeys.has(rowKey) || !anchor) continue;
+    if (section !== ActivitySection.BY_MONTH) {
+      fixedSectionRows[section].push(row);
+      continue;
+    }
 
-      seenKeys.add(rowKey);
+    const anchor = row.loggedAt ?? row.startAt ?? row.completedAt ?? row.dueAt;
 
-      const monthKey = instantInZone(anchor, zone).toFormat(
-        ACTIVITY_MONTH_KEY_FORMAT
-      );
-      const monthRows = groups.get(monthKey) ?? [];
+    if (!anchor) continue;
 
+    const monthKey = instantInZone(anchor, zone).toFormat(YEAR_MONTH_FORMAT);
+    const monthRows = monthGroups.get(monthKey);
+
+    if (monthRows) {
       monthRows.push(row);
-      groups.set(monthKey, monthRows);
+    } else {
+      monthGroups.set(monthKey, [row]);
     }
   }
 
-  return Array.from(groups, ([monthKey, rows]) => ({
-    monthKey,
-    rows
-  })).sort((first, second) => second.monthKey.localeCompare(first.monthKey));
-};
-
-export const getVisibleBuckets = (
-  pages: ActivityFeedResponse[],
-  zone?: string
-): ActivityBucketGroup[] => {
-  const [firstPage] = pages;
-
-  if (!firstPage) return [];
-
-  return ACTIVITY_BUCKET_ORDER.flatMap((bucket): ActivityBucketGroup[] => {
-    if (bucket === ActivityBucket.BY_MONTH) {
-      return groupByMonth(pages, zone).map((group) => ({
-        id: `month-${group.monthKey}`,
-        bucket,
-        monthKey: group.monthKey,
-        rows: group.rows
+  return ACTIVITY_SECTION_ORDER.flatMap((section): ActivitySectionGroup[] => {
+    if (section === ActivitySection.BY_MONTH) {
+      return Array.from(monthGroups, ([monthKey, monthRows]) => ({
+        id: `month-${monthKey}`,
+        section,
+        monthKey,
+        rows: monthRows
       }));
     }
 
     return [
       {
-        id: bucket.toLowerCase(),
-        bucket,
+        id: section.toLowerCase(),
+        section,
         monthKey: null,
-        rows: firstPage[ACTIVITY_FIXED_BUCKET_KEYS[bucket]] ?? []
+        rows: fixedSectionRows[section]
       }
     ];
   }).filter((group) => group.rows.length > 0);
 };
 
 export const formatMonthHeading = (monthKey: string): string =>
-  DateTime.fromFormat(monthKey, ACTIVITY_MONTH_KEY_FORMAT).toFormat(
-    ACTIVITY_MONTH_HEADING_FORMAT
+  DateTime.fromFormat(monthKey, YEAR_MONTH_FORMAT).toFormat(
+    FULL_MONTH_YEAR_FORMAT
   );
-
-const formatActivityDate = (dateTime: DateTime): string =>
-  `${dateTime.day}${getOrdinalIndicator(dateTime.day)} ${
-    ACTIVITY_MONTH_ABBREVIATIONS[dateTime.month - 1]
-  }`;
-
-const toMillis = (isoInstant: string): number =>
-  parseInstant(isoInstant).toMillis();
-
-const isInFuture = (isoInstant: string): boolean =>
-  toMillis(isoInstant) >= DateTime.now().toMillis();
-
-const isDueToday = (dueAt: string, zone?: string): boolean =>
-  instantInZone(dueAt, zone).hasSame(nowInZone(zone), "day");
-
-export const isRowOverdue = (row: ActivityRow, zone?: string): boolean =>
-  row.type === ActivityType.TASK &&
-  row.dueAt !== null &&
-  instantInZone(row.dueAt, zone).startOf("day") <
-    nowInZone(zone).startOf("day");
 
 export const getRowSubtitle = (
   row: ActivityRow,
@@ -138,58 +127,32 @@ export const getRowSubtitle = (
     }
 
     return translate(["activities", "row", "subtitle", "dueOn"], {
-      date: formatActivityDate(instantInZone(row.dueAt, zone))
+      date: formatDateTimeWithOrdinalIndicatorWithoutYear(
+        instantInZone(row.dueAt, zone)
+      )
     });
   }
 
-  if (row.type === ActivityType.MEETING && row.dueAt && isInFuture(row.dueAt)) {
+  if (
+    row.type === ActivityType.MEETING &&
+    row.startAt &&
+    isInFuture(row.startAt)
+  ) {
     return translate(["activities", "row", "subtitle", "scheduledOn"], {
-      date: formatActivityDate(instantInZone(row.dueAt, zone))
+      date: formatDateTimeWithOrdinalIndicatorWithoutYear(
+        instantInZone(row.startAt, zone)
+      )
     });
   }
 
-  const happenedAt = row.occurredAt ?? row.dueAt;
+  const happenedAt = row.loggedAt ?? row.startAt;
 
   if (!happenedAt) return "";
 
   const zoned = instantInZone(happenedAt, zone);
 
   return translate(["activities", "row", "subtitle", "occurredAt"], {
-    date: formatActivityDate(zoned),
-    time: zoned.toFormat(ACTIVITY_TIME_FORMAT)
+    date: formatDateTimeWithOrdinalIndicatorWithoutYear(zoned),
+    time: zoned.toFormat(TIME_FORMAT_12_HOUR)
   });
 };
-
-export const getLinkLabel = (
-  link: ActivityLink,
-  translate: TranslatorFunctionType
-): string =>
-  link.deleted
-    ? translate(["activities", "row", "deletedLink"], { name: link.name })
-    : link.name;
-
-const parseDateValue = (value: string): DateTime =>
-  DateTime.fromFormat(value, ACTIVITY_DATE_FORMAT);
-
-export const validateDateRange = (range: DateRange): boolean => {
-  if (!range.from || !range.to) return true;
-
-  const from = parseDateValue(range.from);
-  const to = parseDateValue(range.to);
-
-  if (!from.isValid || !to.isValid) return false;
-
-  return to.toMillis() >= from.toMillis();
-};
-
-export const toPickerDateRange = (range: DateRange): PickerDateRange => {
-  const pickerRange: Partial<PickerDateRange> = {};
-
-  if (range.from) pickerRange.from = parseDateValue(range.from).toJSDate();
-  if (range.to) pickerRange.to = parseDateValue(range.to).toJSDate();
-
-  return pickerRange as PickerDateRange;
-};
-
-export const toDateValue = (date?: Date): string | null =>
-  date ? DateTime.fromJSDate(date).toFormat(ACTIVITY_DATE_FORMAT) : null;

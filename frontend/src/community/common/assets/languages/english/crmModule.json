@@ -584,11 +584,7 @@
       "pageHead": "Activities | Skapp"
     },
     "toasts": {
-      "loadError": {
-        "title": "Oops! Something went wrong",
-        "description": "Failed to load activities"
-      },
-      "completeError": {
+      "updateTaskStatusError": {
         "title": "Failed to update task",
         "description": "Could not update the task status. Please try again."
       }
