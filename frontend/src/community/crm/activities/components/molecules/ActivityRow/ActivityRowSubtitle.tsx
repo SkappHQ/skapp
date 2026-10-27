@@ -10,6 +10,11 @@ import { useCrmStore } from "~community/crm/store/store";
 import { getContactDisplayName } from "~community/crm/utils/contactUtil";
 import { isOverdue } from "~community/crm/utils/taskValidations";
 
+interface SubtitlePart {
+  key: string;
+  content: ReactNode;
+}
+
 interface ActivityRowSubtitleProps {
   id: string;
   row: ActivityRow;
@@ -61,7 +66,7 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
     </span>
   );
 
-  const parts: { key: string; content: ReactNode }[] = [];
+  const parts: SubtitlePart[] = [];
 
   if (status) {
     parts.push({
