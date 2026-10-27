@@ -43,7 +43,8 @@ const ActivityRow: FC<ActivityRowProps> = ({
 
   const rowId = `crm-activity-row-${getActivityRowKey(row)}`;
   const isTask = row.type === ActivityType.TASK;
-  const isCompletedStyleApplied = showCheckbox && isTask && row.isCompleted;
+  const isCompletedStyleApplied = isTask && row.isCompleted;
+  const isStrikethroughApplied = showCheckbox && isCompletedStyleApplied;
 
   return (
     <div
@@ -84,10 +85,8 @@ const ActivityRow: FC<ActivityRowProps> = ({
           <p
             id={`${rowId}-subject`}
             className={`body2 truncate ${
-              isCompletedStyleApplied
-                ? "line-through text-secondary-icon"
-                : "text-black"
-            }`}
+              isCompletedStyleApplied ? "text-secondary-icon" : "text-black"
+            } ${isStrikethroughApplied ? "line-through" : ""}`}
             title={row.title}
           >
             {row.title}
@@ -98,6 +97,7 @@ const ActivityRow: FC<ActivityRowProps> = ({
             row={row}
             timeZone={timeZone}
             isCompletedStyleApplied={isCompletedStyleApplied}
+            isStrikethroughApplied={isStrikethroughApplied}
           />
         </div>
       </div>

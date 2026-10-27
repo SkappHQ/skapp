@@ -19,6 +19,7 @@ interface ActivityRowSubtitleProps {
   id: string;
   row: ActivityRow;
   isCompletedStyleApplied: boolean;
+  isStrikethroughApplied: boolean;
   timeZone?: string;
 }
 
@@ -26,6 +27,7 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
   id,
   row,
   isCompletedStyleApplied,
+  isStrikethroughApplied,
   timeZone
 }) => {
   const translateText = useTranslator("crmModule");
@@ -46,7 +48,7 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
     isOverdue(row.dueAt, timeZone);
 
   const status = getRowSubtitle(row, translateText, timeZone);
-  const strikeClass = isCompletedStyleApplied ? "line-through" : "";
+  const strikeClass = isStrikethroughApplied ? "line-through" : "";
   const statusColor = isRowOverdue
     ? "text-semantic-red-text"
     : isCompletedStyleApplied
