@@ -4,7 +4,7 @@ import ActivityRow from "~community/crm/activities/components/molecules/Activity
 import { ActivityRow as ActivityRowData } from "~community/crm/activities/types/activityTypes";
 import { getActivityRowKey } from "~community/crm/activities/utils/activityFeedUtil";
 
-export interface ActivityBucketSectionProps {
+export interface ActivityFeedSectionProps {
   id: string;
   title: string;
   rows: ActivityRowData[];
@@ -14,7 +14,7 @@ export interface ActivityBucketSectionProps {
   onToggleComplete: (row: ActivityRowData, isCompleted: boolean) => void;
 }
 
-const ActivityBucketSection: FC<ActivityBucketSectionProps> = ({
+const ActivityFeedSection: FC<ActivityFeedSectionProps> = ({
   id,
   title,
   rows,
@@ -46,4 +46,4 @@ const ActivityBucketSection: FC<ActivityBucketSectionProps> = ({
   </section>
 );
 
-export default ActivityBucketSection;
+export default ActivityFeedSection;
