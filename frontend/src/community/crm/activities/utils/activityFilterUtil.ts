@@ -1,11 +1,12 @@
 import { DateTime } from "luxon";
 
 import { daysTypes } from "~community/common/constants/stringConstants";
+import { daysOfWeek } from "~community/common/constants/timeConstants";
 import {
-  DATE_FORMAT,
-  daysOfWeek
-} from "~community/common/constants/timeConstants";
-import { nowInZone } from "~community/common/utils/dateTimeUtils";
+  convertToYYYYMMDDFromDateTime,
+  convertYYYYMMDDToDateTime,
+  nowInZone
+} from "~community/common/utils/dateTimeUtils";
 import {
   ACTIVITY_DATE_PRESETS,
   ACTIVITY_LAST_DAYS_PRESET_LENGTH
@@ -17,17 +18,11 @@ import {
 } from "~community/crm/activities/types/activityTypes";
 import { CrmOwnerEntity } from "~community/crm/types/CrmCommonTypes";
 
-const formatDateValue = (dateTime: DateTime): string =>
-  dateTime.toFormat(DATE_FORMAT);
-
-const parseDateValue = (value: string): DateTime =>
-  DateTime.fromFormat(value, DATE_FORMAT);
-
 export const validateDateRange = (range: ActivityDateRange): boolean => {
   if (!range.fromDate || !range.toDate) return true;
 
-  const from = parseDateValue(range.fromDate);
-  const to = parseDateValue(range.toDate);
+  const from = convertYYYYMMDDToDateTime(range.fromDate);
+  const to = convertYYYYMMDDToDateTime(range.toDate);
 
   if (!from.isValid || !to.isValid) return false;
 
@@ -36,17 +31,14 @@ export const validateDateRange = (range: ActivityDateRange): boolean => {
 
 export const toPickerDateRange = (range: ActivityDateRange) => ({
   ...(range.fromDate
-    ? { from: parseDateValue(range.fromDate).toJSDate() }
+    ? { from: convertYYYYMMDDToDateTime(range.fromDate).toJSDate() }
     : {}),
-  ...(range.toDate ? { to: parseDateValue(range.toDate).toJSDate() } : {})
+  ...(range.toDate ? { to: convertYYYYMMDDToDateTime(range.toDate).toJSDate() } : {})
 });
 
-export const toDateValue = (date: Date): string =>
-  formatDateValue(DateTime.fromJSDate(date));
-
 const toRange = (from: DateTime, to: DateTime): ActivityDateRange => ({
-  fromDate: formatDateValue(from),
-  toDate: formatDateValue(to)
+  fromDate: convertToYYYYMMDDFromDateTime(from),
+  toDate: convertToYYYYMMDDFromDateTime(to)
 });
 
 const getStartOfWeek = (today: DateTime, weekStartDay: daysTypes): DateTime => {
