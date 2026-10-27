@@ -1,6 +1,6 @@
 package com.skapp.community.crmplanner.repository.impl;
 
-import com.skapp.community.crmplanner.constant.CrmConstants;
+import com.skapp.community.common.util.StringUtils;
 import com.skapp.community.crmplanner.model.CrmActivityCall;
 import com.skapp.community.crmplanner.model.CrmActivityCall_;
 import com.skapp.community.crmplanner.model.CrmActivityEmail;
@@ -211,7 +211,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		Path<Long> meetingContactId = meetingContact.get(CrmContact_.id);
 		meetingContactIds
 			.select(cb.listagg(cb.asc(meetingContactId), meetingContactId.as(String.class),
-					CrmConstants.ACTIVITY_FEED_CONTACT_IDS_SEPARATOR))
+					StringUtils.COMMA_DELIMITER))
 			.where(cb.equal(meetingLink.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId),
 					meeting.get(CrmActivityMeeting_.id)), cb.isFalse(meetingContact.get(CrmContact_.isDeleted)));
 		meetingRows
@@ -271,8 +271,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		Join<CrmActivityEmailContact, CrmContact> emailContact = emailLink.join(CrmActivityEmailContact_.contact);
 		Path<Long> emailContactId = emailContact.get(CrmContact_.id);
 		emailContactIds
-			.select(cb.listagg(cb.asc(emailContactId), emailContactId.as(String.class),
-					CrmConstants.ACTIVITY_FEED_CONTACT_IDS_SEPARATOR))
+			.select(cb.listagg(cb.asc(emailContactId), emailContactId.as(String.class), StringUtils.COMMA_DELIMITER))
 			.where(cb.equal(emailLink.get(CrmActivityEmailContact_.id).get(CrmActivityEmailContactId_.emailId),
 					email.get(CrmActivityEmail_.id)), cb.isFalse(emailContact.get(CrmContact_.isDeleted)));
 		emailRows
@@ -324,12 +323,10 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			row.setDealId(result.get(CrmActivityFeedColumn.DEAL_ID.name(), Long.class));
 			row.setCompanyId(result.get(CrmActivityFeedColumn.COMPANY_ID.name(), Long.class));
 			row.setCanComplete(type == CrmActivityType.TASK);
-			String contactIds = result.get(CrmActivityFeedColumn.CONTACT_IDS.name(), String.class);
-			if (contactIds != null) {
-				Arrays.stream(contactIds.split(CrmConstants.ACTIVITY_FEED_CONTACT_IDS_SEPARATOR))
-					.map(Long::valueOf)
-					.forEach(row.getContactIds()::add);
-			}
+			StringUtils.convertToList(result.get(CrmActivityFeedColumn.CONTACT_IDS.name(), String.class))
+				.stream()
+				.map(Long::valueOf)
+				.forEach(row.getContactIds()::add);
 			return row;
 		}).toList();
 

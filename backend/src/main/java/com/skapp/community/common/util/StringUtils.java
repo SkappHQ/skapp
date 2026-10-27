@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 @UtilityClass
 public class StringUtils {
 
-	private static final String COMMA_DELIMITER = ",";
+	public static final String COMMA_DELIMITER = ",";
 
 	/**
 	 * Returns true if the provided string is either null or consists solely of whitespace
