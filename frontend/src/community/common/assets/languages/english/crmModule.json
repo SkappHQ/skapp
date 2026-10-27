@@ -576,5 +576,42 @@
         "errorDescription": "Something went wrong. Please try again."
       }
     }
+  },
+  "activities": {
+    "logCall": {
+      "modal": {
+        "title": "Log a call",
+        "labels": {
+          "subject": "Subject",
+          "date": "Date",
+          "time": "Time",
+          "duration": "Duration",
+          "contact": "Contact",
+          "activityOwner": "Activity owner",
+          "comments": "Comments",
+          "deal": "Deal",
+          "relatedTo": "Related to"
+        },
+        "placeholders": {
+          "subject": "Enter subject",
+          "date": "Select date",
+          "time": "Select time",
+          "duration": "Enter duration",
+          "contact": "Enter name",
+          "comments": "Add message",
+          "deal": "Search deals",
+          "relatedTo": "Search companies"
+        },
+        "tooltips": {
+          "duration": "Enter the call duration, for example 15 minutes"
+        },
+        "buttons": {
+          "addAssociations": "Add associations",
+          "hideAssociations": "Hide associations",
+          "cancel": "Cancel",
+          "save": "Save"
+        }
+      }
+    }
   }
 }

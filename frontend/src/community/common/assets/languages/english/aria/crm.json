@@ -128,5 +128,24 @@
       "confirm": "Confirm delete task",
       "cancel": "Cancel delete task"
     }
+  },
+  "activities": {
+    "logCall": {
+      "modal": {
+        "subject": "Call subject",
+        "date": "Call date",
+        "time": "Call time",
+        "duration": "Call duration",
+        "durationInfo": "Call duration information",
+        "contact": "Call contact",
+        "comments": "Call comments",
+        "deal": "Search deals",
+        "relatedTo": "Search companies",
+        "toggleAssociations": "Toggle associations",
+        "cancel": "Cancel log a call",
+        "save": "Save call",
+        "removeOwner": "Remove activity owner"
+      }
+    }
   }
 }
