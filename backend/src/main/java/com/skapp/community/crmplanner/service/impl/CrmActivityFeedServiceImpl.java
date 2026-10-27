@@ -1,6 +1,7 @@
 package com.skapp.community.crmplanner.service.impl;
 
 import com.skapp.community.common.constant.CommonMessageConstant;
+import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
@@ -17,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +41,7 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 		boolean isRepresentative = CrmUtil.isCrmSalesRepresentative(currentUser);
 		boolean hasDateRange = filterDto.getStartDate() != null || filterDto.getEndDate() != null;
 		if (isRepresentative && (filterDto.getOwnerId() != null || hasDateRange)) {
-			throw new AccessDeniedException(CommonMessageConstant.COMMON_ERROR_ACCESS_DENIED.name());
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ACCESS_DENIED);
 		}
 
 		CrmValidations.validateActivityDateRange(filterDto.getStartDate(), filterDto.getEndDate());
