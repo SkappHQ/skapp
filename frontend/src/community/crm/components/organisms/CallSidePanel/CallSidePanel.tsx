@@ -133,6 +133,7 @@ const CallSidePanel: FC<Props> = ({
             <SidePanelDealSection
               dealIds={dealId && deals[dealId] ? [dealId] : []}
               showAddDealAction={false}
+              emptyHeightClassName="h-[163px]"
               emptyDescription={translateText([
                 "activities",
                 "callSidePanel",
