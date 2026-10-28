@@ -2,7 +2,7 @@ name: PR Checklist
 
 on:
   pull_request_target:
-    types: [opened, edited, reopened, synchronize]
+    types: [opened, edited, reopened, synchronize, ready_for_review]
     branches: [develop]
 
 permissions:
@@ -10,7 +10,7 @@ permissions:
 
 concurrency:
   group: pr-checklist-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 env:
   PR_PATH: repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}
@@ -38,20 +38,24 @@ jobs:
           for file in pr-checklist.md pr-checklist-check.mjs; do
             gh api "$SOURCE/$file?ref=main" -H "Accept: application/vnd.github.raw" | tr -d '\r' > "$CHECKLIST_DIR/$file"
           done
-          if [ -z "$(head -n 1 "$CHECKLIST_DIR/pr-checklist.md")" ]; then
+          if ! head -n 1 "$CHECKLIST_DIR/pr-checklist.md" | grep -q '^## '; then
             echo "::error::The shared checklist must start with its heading line"
+            exit 1
+          fi
+          if [ ! -s "$CHECKLIST_DIR/pr-checklist-check.mjs" ]; then
+            echo "::error::The shared checklist check is empty"
             exit 1
           fi
 
       - name: Attach shared checklist
-        if: github.event.action == 'opened'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           CHECKLIST=$(cat "$CHECKLIST_DIR/pr-checklist.md")
+          export MARKER
           MARKER=$(head -n 1 <<< "$CHECKLIST")
           BODY=$(gh api "$PR_PATH" --jq '.body // ""' | tr -d '\r')
-          if grep -qxF "$MARKER" <<< "$BODY"; then
+          if awk '{ gsub(/^[[:space:]]+|[[:space:]]+$/, "") } $0 == ENVIRON["MARKER"] { found = 1 } END { exit !found }' <<< "$BODY"; then
             exit 0
           fi
           if [ -n "$BODY" ]; then
@@ -67,4 +71,5 @@ jobs:
         run: gh api "$PR_PATH" --jq '.body // ""' > "$CHECKLIST_DIR/body.md"
 
       - name: Check checklist
+        if: ${{ !github.event.pull_request.draft }}
         run: node "$CHECKLIST_DIR/pr-checklist-check.mjs" "$CHECKLIST_DIR/pr-checklist.md" "$CHECKLIST_DIR/body.md"
