@@ -1,6 +1,6 @@
 package com.skapp.community.crmplanner.service.impl;
 
-import com.skapp.community.common.exception.EntityNotFoundException;
+import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
@@ -59,7 +59,7 @@ public class CrmActivityCallCreateServiceImpl implements CrmActivityCallCreateSe
 		Employee owner = resolveCallOwner(requestDto.getOwnerId(), currentUser);
 
 		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
-			.orElseThrow(() -> new EntityNotFoundException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
 
 		CrmActivityCall call = new CrmActivityCall();
 		call.setSubject(requestDto.getSubject());
@@ -71,14 +71,14 @@ public class CrmActivityCallCreateServiceImpl implements CrmActivityCallCreateSe
 
 		if (requestDto.getDealId() != null) {
 			CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
-				.orElseThrow(() -> new EntityNotFoundException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 			CrmValidations.validateCallDealMatchesContactCompany(deal, contact);
 			call.setDeal(deal);
 		}
 
 		if (requestDto.getCompanyId() != null) {
 			CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
-				.orElseThrow(() -> new EntityNotFoundException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
 			call.setCompany(company);
 		}
 
