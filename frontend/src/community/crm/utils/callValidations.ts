@@ -1,8 +1,7 @@
 import * as Yup from "yup";
 
+import { unitConversion } from "~community/common/constants/configs";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
-
-const MINUTES_PER_HOUR = 60;
 
 const CALL_DURATION_REGEX = {
   MINUTES_ONLY: /^\d+$/,
@@ -21,7 +20,7 @@ export const parseCallDurationToMinutes = (input: string): number | null => {
   const hours = match[1] ? Number(match[1]) : 0;
   const minutes = match[2] ? Number(match[2]) : 0;
 
-  return hours * MINUTES_PER_HOUR + minutes;
+  return hours * unitConversion.MINUTES_PER_HOUR + minutes;
 };
 
 export const getCallValidationSchema = (translator: TranslatorFunctionType) =>

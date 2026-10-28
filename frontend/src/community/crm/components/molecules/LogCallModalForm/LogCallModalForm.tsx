@@ -24,14 +24,23 @@ import LogCallContactField from "./LogCallContactField";
 import LogCallDealField from "./LogCallDealField";
 import LogCallOwnerField from "./LogCallOwnerField";
 
+const FIELD_IDS = {
+  SUBJECT: "log-call-subject",
+  DURATION: "log-call-duration",
+  CONTACT: "log-call-contact",
+  OWNER: "log-call-owner",
+  DEAL: "log-call-deal",
+  RELATED_TO: "log-call-related-to"
+};
+
 const FIELD_FOCUS_ORDER: {
   field: keyof CrmLogCallFormValues;
   elementId: string;
 }[] = [
-  { field: "subject", elementId: "log-call-subject" },
-  { field: "duration", elementId: "log-call-duration" },
-  { field: "contactId", elementId: "log-call-contact-input" },
-  { field: "ownerId", elementId: "activity-owner-search-input" }
+  { field: "subject", elementId: FIELD_IDS.SUBJECT },
+  { field: "duration", elementId: FIELD_IDS.DURATION },
+  { field: "contactId", elementId: `${FIELD_IDS.CONTACT}-input` },
+  { field: "ownerId", elementId: `${FIELD_IDS.OWNER}-input` }
 ];
 
 interface Props {
@@ -113,7 +122,7 @@ const LogCallModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
     <div className="flex flex-col w-full h-full justify-between gap-[0.625rem] max-h-[78vh]">
       <div className="flex flex-col gap-[0.625rem] overflow-y-auto pr-1">
         <InputField
-          id="log-call-subject"
+          id={FIELD_IDS.SUBJECT}
           name="subject"
           value={values.subject}
           label={translateText(["labels", "subject"])}
@@ -166,7 +175,7 @@ const LogCallModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
         </div>
 
         <InputField
-          id="log-call-duration"
+          id={FIELD_IDS.DURATION}
           name="duration"
           value={values.duration}
           label={translateText(["labels", "duration"])}
@@ -182,13 +191,13 @@ const LogCallModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
         <div className="flex flex-row items-start gap-[0.625rem]">
           <div className="flex-1">
             <LogCallContactField
-              id="log-call-contact"
+              id={FIELD_IDS.CONTACT}
               formik={formik}
               onDealCleared={handleDealCleared}
             />
           </div>
           <div className="flex-1">
-            <LogCallOwnerField formik={formik} />
+            <LogCallOwnerField id={FIELD_IDS.OWNER} formik={formik} />
           </div>
         </div>
 
@@ -205,7 +214,7 @@ const LogCallModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
         {isAssociationsVisible && (
           <>
             <LogCallDealField
-              id="log-call-deal"
+              id={FIELD_IDS.DEAL}
               formik={formik}
               errorMessage={
                 isDealMismatch
@@ -213,9 +222,9 @@ const LogCallModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
                   : ""
               }
               isClearedNoticeVisible={isDealClearedNoticeVisible}
-              onDealSelected={() => setIsDealClearedNoticeVisible(false)}
+              onDealChange={() => setIsDealClearedNoticeVisible(false)}
             />
-            <LogCallCompanyField id="log-call-related-to" formik={formik} />
+            <LogCallCompanyField id={FIELD_IDS.RELATED_TO} formik={formik} />
           </>
         )}
 

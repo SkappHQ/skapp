@@ -104,9 +104,14 @@ const LogCallModalContent: FC<Props> = ({
     createCall(toPayload(values, values.contactId, values.ownerId));
   };
 
+  const validationSchema = useMemo(
+    () => getCallValidationSchema(translateText),
+    [translateText]
+  );
+
   const formik = useFormik<CrmLogCallFormValues>({
     initialValues,
-    validationSchema: getCallValidationSchema(translateText),
+    validationSchema,
     onSubmit: handleSubmit,
     validateOnChange: false,
     validateOnBlur: true,

@@ -46,6 +46,7 @@ const SelectableSearchField: FC<Props> = ({
         label={label}
         value={selectedValue}
         title={selectedValue}
+        required={required}
         readOnly
         fullWidth
         variant="md"

@@ -21,7 +21,7 @@ interface Props {
   formik: FormikProps<CrmLogCallFormValues>;
   errorMessage: string;
   isClearedNoticeVisible: boolean;
-  onDealSelected: () => void;
+  onDealChange: () => void;
 }
 
 const LogCallDealField: FC<Props> = ({
@@ -29,7 +29,7 @@ const LogCallDealField: FC<Props> = ({
   formik,
   errorMessage,
   isClearedNoticeVisible,
-  onDealSelected
+  onDealChange
 }) => {
   const { values, setFieldValue } = formik;
 
@@ -105,12 +105,13 @@ const LogCallDealField: FC<Props> = ({
 
     setDeals(mergeDeals(deals, [deal]));
     setFieldValue("dealId", deal.id);
-    onDealSelected();
+    onDealChange();
   };
 
   const handleClear = (): void => {
     setFieldValue("dealId", null);
     setSearchTerm("");
+    onDealChange();
   };
 
   return (
