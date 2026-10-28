@@ -53,6 +53,14 @@ export const crmTaskEndpoints = {
   DELETE_TASK: (id: number) => `${moduleAPIPath.CRM}/task/${id}`
 };
 
+export const crmActivityEndpoints = {
+  GET_ACTIVITY_FEED: `${moduleAPIPath.CRM}/activities`,
+  GET_CALLS: `${moduleAPIPath.CRM}/activity/call`,
+  GET_EMAILS: `${moduleAPIPath.CRM}/activity/email`,
+  GET_MEETINGS: `${moduleAPIPath.CRM}/activity/meeting`,
+  GET_TASKS: `${moduleAPIPath.CRM}/activity/task`
+};
+
 export const crmBoardEndpoints = {
   GET_BOARD_INIT_DATA: `${moduleAPIPath.CRM}/board/init-data`,
   GET_DEALS_GROUPED_BY_STAGES: `${moduleAPIPath.CRM}/board/deals-grouped-by-stages`,

@@ -13,9 +13,14 @@ import {
 } from "~community/common/utils/dateTimeUtils";
 import { ACTIVITY_SECTION_ORDER } from "~community/crm/activities/constants/activityConstants";
 import {
+  ActivityCallResponse,
+  ActivityEmailResponse,
+  ActivityFeedResponse,
+  ActivityMeetingResponse,
   ActivityRow,
   ActivitySection,
   ActivitySectionGroup,
+  ActivityTaskResponse,
   ActivityType
 } from "~community/crm/activities/types/activityTypes";
 import { isDueToday, isOverdue } from "~community/crm/utils/taskValidations";
@@ -156,3 +161,79 @@ export const getRowSubtitle = (
     time: zoned.toFormat(TIME_FORMAT_12_HOUR)
   });
 };
+
+export const toCallRow = (call: ActivityCallResponse): ActivityRow => ({
+  id: call.id,
+  type: ActivityType.CALL,
+  title: call.subject,
+  dueAt: null,
+  loggedAt: call.loggedAt,
+  startAt: null,
+  completedAt: null,
+  isCompleted: false,
+  priority: null,
+  ownerId: call.ownerId,
+  dealId: call.dealId,
+  companyId: call.companyId,
+  contactIds: call.contactId ? [call.contactId] : [],
+  canComplete: false
+});
+
+export const toEmailRow = (email: ActivityEmailResponse): ActivityRow => ({
+  id: email.id,
+  type: ActivityType.EMAIL,
+  title: email.subject,
+  dueAt: null,
+  loggedAt: email.loggedAt,
+  startAt: null,
+  completedAt: null,
+  isCompleted: false,
+  priority: null,
+  ownerId: email.ownerId,
+  dealId: email.dealId,
+  companyId: email.companyId,
+  contactIds: email.contactIds,
+  canComplete: false
+});
+
+export const toMeetingRow = (
+  meeting: ActivityMeetingResponse
+): ActivityRow => ({
+  id: meeting.id,
+  type: ActivityType.MEETING,
+  title: meeting.name,
+  dueAt: null,
+  loggedAt: null,
+  startAt: meeting.startAt,
+  completedAt: null,
+  isCompleted: false,
+  priority: null,
+  ownerId: meeting.ownerId,
+  dealId: meeting.dealId,
+  companyId: meeting.companyId,
+  contactIds: meeting.contactIds,
+  canComplete: false
+});
+
+export const toTaskRow = (task: ActivityTaskResponse): ActivityRow => ({
+  id: task.id,
+  type: ActivityType.TASK,
+  title: task.name,
+  dueAt: task.dueAt,
+  loggedAt: null,
+  startAt: null,
+  completedAt: task.completedAt,
+  isCompleted: task.isCompleted,
+  priority: task.priority,
+  ownerId: task.ownerId,
+  dealId: task.dealId,
+  companyId: task.companyId,
+  contactIds: task.contactId ? [task.contactId] : [],
+  canComplete: false
+});
+
+export const toSingleFeedPage = (
+  rows: ActivityRow[]
+): ActivityFeedResponse[] => [
+  { items: rows, currentPage: 0, totalItems: rows.length, totalPages: 1 }
+];
