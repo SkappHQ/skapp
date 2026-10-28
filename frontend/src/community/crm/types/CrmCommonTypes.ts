@@ -112,15 +112,15 @@ export interface CrmTaskEntity {
 }
 
 export interface CrmCallEntity {
-  id?: number;
-  subject?: string;
-  comments?: string;
-  startAt?: string;
+  id: number;
+  subject: string;
+  loggedAt: string;
   durationMinutes?: number;
-  ownerId?: number;
-  contactId?: number;
-  companyId?: number;
-  dealId?: number;
+  comments?: string;
+  ownerId: number;
+  contact: CrmContactEntity;
+  deal?: CrmDealEntity;
+  company?: CrmCompanyEntity;
 }
 
 export interface CrmTaskTypeEntity {
