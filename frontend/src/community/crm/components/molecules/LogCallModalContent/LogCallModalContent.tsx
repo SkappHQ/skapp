@@ -18,7 +18,10 @@ import {
 import { CrmErrorMessageKeyEnum } from "~community/crm/enums/common";
 import { useDefaultCrmOwner } from "~community/crm/hooks/useDefaultCrmOwner";
 import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
-import { getCallValidationSchema } from "~community/crm/utils/callValidations";
+import {
+  getCallValidationSchema,
+  parseCallDurationToMinutes
+} from "~community/crm/utils/callValidations";
 
 interface Props {
   onCancel: () => void;
@@ -69,13 +72,16 @@ const LogCallModalContent: FC<Props> = ({
           .toISO()
       : null;
     const comments = values.comments.trim();
+    const durationMinutes = values.duration.trim()
+      ? parseCallDurationToMinutes(values.duration)
+      : null;
 
     return {
       subject: values.subject.trim(),
       contactId,
       ownerId,
       ...(loggedAt ? { loggedAt } : {}),
-      ...(values.duration ? { durationMinutes: Number(values.duration) } : {}),
+      ...(durationMinutes !== null ? { durationMinutes } : {}),
       ...(values.dealId ? { dealId: values.dealId } : {}),
       ...(values.companyId ? { companyId: values.companyId } : {}),
       ...(comments ? { comments } : {})

@@ -615,7 +615,7 @@
           "subject": "Enter subject",
           "date": "Select date",
           "time": "Select time",
-          "duration": "Enter duration",
+          "duration": "e.g. 1h 30m",
           "contact": "Enter name",
           "comments": "Add message",
           "deal": "Search deals",
@@ -638,6 +638,7 @@
           "subject": "Subject is required",
           "contact": "Please select a contact",
           "owner": "Activity owner is required",
+          "duration": "Please enter a valid duration (e.g. 1h 30m)",
           "dealMismatch": "This deal's company doesn't match any linked contact — add a contact from that company or choose a different deal"
         },
         "notices": {
