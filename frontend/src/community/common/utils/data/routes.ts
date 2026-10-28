@@ -419,7 +419,8 @@ const routes = [
     requiredAuthLevel: [
       AdminTypes.SUPER_ADMIN,
       AdminTypes.PEOPLE_ADMIN,
-      AdminTypes.ATTENDANCE_ADMIN
+      AdminTypes.ATTENDANCE_ADMIN,
+      AdminTypes.LEAVE_ADMIN
     ]
   },
   {

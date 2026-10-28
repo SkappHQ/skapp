@@ -487,6 +487,10 @@ const nextConfig = {
         destination: "/enterprise/report/clock-in-overview"
       },
       {
+        source: "/report/leave-balance-utilization",
+        destination: "/enterprise/report/leave-balance-utilization"
+      },
+      {
         source: "/crm",
         destination: "/community/crm/contacts"
       },
