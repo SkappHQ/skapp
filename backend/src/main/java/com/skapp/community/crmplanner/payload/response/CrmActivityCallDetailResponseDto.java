@@ -23,14 +23,8 @@ public class CrmActivityCallDetailResponseDto {
 
 	private CrmContactLookupResponseDto contact;
 
-	private Boolean isContactDeleted;
-
 	private CrmDealResponseDto deal;
 
-	private Boolean isDealDeleted;
-
 	private CrmCompanyLookupResponseDto company;
-
-	private Boolean isCompanyDeleted;
 
 }

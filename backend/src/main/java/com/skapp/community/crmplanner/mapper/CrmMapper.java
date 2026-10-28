@@ -93,9 +93,6 @@ public interface CrmMapper {
 	CrmTaskDetailResponseDto crmTaskToCrmTaskDetailResponseDto(CrmTask task);
 
 	@Mapping(target = "ownerId", source = "owner.employeeId")
-	@Mapping(target = "isContactDeleted", source = "contact.isDeleted")
-	@Mapping(target = "isDealDeleted", source = "deal.isDeleted")
-	@Mapping(target = "isCompanyDeleted", source = "company.isDeleted")
 	CrmActivityCallDetailResponseDto crmActivityCallToCrmActivityCallDetailResponseDto(CrmActivityCall call);
 
 }

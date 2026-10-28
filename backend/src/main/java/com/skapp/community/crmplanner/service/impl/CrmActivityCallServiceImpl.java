@@ -102,6 +102,16 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 		}
 
 		CrmActivityCallDetailResponseDto response = crmMapper.crmActivityCallToCrmActivityCallDetailResponseDto(call);
+		if (call.getContact() != null && Boolean.TRUE.equals(call.getContact().getIsDeleted())) {
+			response.setContact(null);
+		}
+		if (call.getDeal() != null && Boolean.TRUE.equals(call.getDeal().getIsDeleted())) {
+			response.setDeal(null);
+		}
+		if (call.getCompany() != null && Boolean.TRUE.equals(call.getCompany().getIsDeleted())) {
+			response.setCompany(null);
+		}
+
 		CrmDealResponseDto deal = response.getDeal();
 		if (deal != null && CrmValidations.isOwnerRestrictedForRepresentative(currentUser, deal.getOwnerId())) {
 			CrmDealResponseDto restrictedDeal = new CrmDealResponseDto();
