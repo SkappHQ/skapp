@@ -21,10 +21,16 @@ public class CrmActivityCallDetailResponseDto {
 
 	private Long ownerId;
 
-	private CrmActivityCallContactResponseDto contact;
+	private CrmContactLookupResponseDto contact;
 
-	private CrmActivityCallDealResponseDto deal;
+	private Boolean isContactDeleted;
 
-	private CrmActivityCallCompanyResponseDto company;
+	private CrmDealResponseDto deal;
+
+	private Boolean isDealDeleted;
+
+	private CrmCompanyLookupResponseDto company;
+
+	private Boolean isCompanyDeleted;
 
 }

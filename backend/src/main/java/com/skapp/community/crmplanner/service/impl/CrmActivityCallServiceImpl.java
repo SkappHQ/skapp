@@ -11,9 +11,9 @@ import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmActivityCall;
 import com.skapp.community.crmplanner.payload.request.CrmActivityCallFilterDto;
-import com.skapp.community.crmplanner.payload.response.CrmActivityCallDealResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityCallDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityCallResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityCallDao;
 import com.skapp.community.crmplanner.service.CrmActivityCallService;
 import com.skapp.community.crmplanner.type.CrmActivityCallFilterParams;
@@ -102,11 +102,12 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 		}
 
 		CrmActivityCallDetailResponseDto response = crmMapper.crmActivityCallToCrmActivityCallDetailResponseDto(call);
-		CrmActivityCallDealResponseDto deal = response.getDeal();
+		CrmDealResponseDto deal = response.getDeal();
 		if (deal != null && CrmValidations.isOwnerRestrictedForRepresentative(currentUser, deal.getOwnerId())) {
-			deal.setName(null);
-			deal.setAmount(null);
-			deal.setStageId(null);
+			CrmDealResponseDto restrictedDeal = new CrmDealResponseDto();
+			restrictedDeal.setId(deal.getId());
+			restrictedDeal.setOwnerId(deal.getOwnerId());
+			response.setDeal(restrictedDeal);
 		}
 
 		log.info("getCallById: execution ended");
