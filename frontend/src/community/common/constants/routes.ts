@@ -75,8 +75,16 @@ const ROUTES = {
     USER_ACCOUNT: "/user-account",
     EDIT: (id: any) => `/people/directory/edit/${id}`,
     ADD: "/people/directory/add",
-    GOOGLE_IMPORT_SYNCING: "/people/directory/import-google/syncing",
-    GOOGLE_IMPORT_REVIEW: "/people/directory/import-google/review",
+    IMPORT: {
+      GOOGLE: {
+        SYNCING: "/people/directory/import-google/syncing",
+        REVIEW: "/people/directory/import-google/review"
+      },
+      MICROSOFT_ENTRA: {
+        SYNCING: "/people/directory/import-microsoft/syncing",
+        REVIEW: "/people/directory/import-microsoft/review"
+      }
+    },
     SYNC_CHANGES: "/people/directory/sync-changes"
   },
   CONFIGURATIONS: {
@@ -208,8 +216,10 @@ export const employeeRestrictedRoutes = [
 ];
 
 export const nonSuperAdminRestrictedRoutes = [
-  ROUTES.PEOPLE.GOOGLE_IMPORT_SYNCING,
-  ROUTES.PEOPLE.GOOGLE_IMPORT_REVIEW,
+  ROUTES.PEOPLE.IMPORT.GOOGLE.SYNCING,
+  ROUTES.PEOPLE.IMPORT.GOOGLE.REVIEW,
+  ROUTES.PEOPLE.IMPORT.MICROSOFT_ENTRA.SYNCING,
+  ROUTES.PEOPLE.IMPORT.MICROSOFT_ENTRA.REVIEW,
   ROUTES.PEOPLE.SYNC_CHANGES
 ];
 
