@@ -93,7 +93,12 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_SUCCESS_DEAL_DELETED("api.success.crm.deal-deleted"),
 	CRM_ERROR_ACTIVITY_DATE_RANGE_INVALID("api.error.crm.activity.date-range-invalid"),
 	CRM_ERROR_ACTIVITY_CALL_NOT_FOUND("api.error.crm.activity.call-not-found"),
-	CRM_ERROR_ACTIVITY_CALL_VIEW_DENIED("api.error.crm.activity.call-view-denied");
+	CRM_ERROR_ACTIVITY_CALL_VIEW_DENIED("api.error.crm.activity.call-view-denied"),
+	CRM_ERROR_ACTIVITY_CALL_EDIT_DENIED("api.error.crm.activity.call-edit-denied"),
+	CRM_ERROR_ACTIVITY_CALL_SUBJECT_REQUIRED("api.error.crm.activity.call-subject-required"),
+	CRM_ERROR_ACTIVITY_CALL_CONTACT_REQUIRED("api.error.crm.activity.call-contact-required"),
+	CRM_ERROR_ACTIVITY_CALL_DURATION_INVALID("api.error.crm.activity.call-duration-invalid"),
+	CRM_ERROR_ACTIVITY_CALL_DEAL_COMPANY_MISMATCH("api.error.crm.activity.call-deal-company-mismatch");
 
 	private final String messageKey;
 
