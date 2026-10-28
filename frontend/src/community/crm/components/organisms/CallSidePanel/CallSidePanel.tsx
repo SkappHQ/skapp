@@ -5,25 +5,27 @@ import {
   MenuItemProps,
   SidePanel
 } from "@rootcodelabs/skapp-ui";
-import { FC, useMemo } from "react";
+import { FC, useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import TaskTypeIcon from "~community/crm/components/atoms/TaskTypeIcon/TaskTypeIcon";
+import { ACTIVITY_TYPE_ICON_MAP } from "~community/crm/activities/constants/activityConstants";
+import { ActivityType } from "~community/crm/activities/types/activityTypes";
 import SidePanelCallInfo from "~community/crm/components/molecules/SidePanelCallInfo/SidePanelCallInfo";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import { TASK_DETAIL_ICON_SIZE } from "~community/crm/constants/taskConstants";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmCallEntity } from "~community/crm/types/CrmCommonTypes";
+import { mergeDeals } from "~community/crm/utils/dealUtil";
 
 interface Props {
   call: CrmCallEntity;
   isOpen: boolean;
   onClose: () => void;
-  onEdit?: () => void;
-  onDelete?: () => void;
-  onContactClick?: () => void;
-  onCompanyClick?: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  onContactClick: () => void;
+  onCompanyClick: () => void;
 }
 
 const CallSidePanel: FC<Props> = ({
@@ -38,45 +40,47 @@ const CallSidePanel: FC<Props> = ({
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
 
-  const { owners, contacts, companies } = useCrmStore(
+  const { owners, deals, setDeals } = useCrmStore(
     useShallow((state) => ({
       owners: state.owners,
-      contacts: state.contacts,
-      companies: state.companies
+      deals: state.deals,
+      setDeals: state.setDeals
     }))
   );
 
-  const owner = call.ownerId != null ? owners[call.ownerId] : null;
-  const contact = call.contactId != null ? contacts[call.contactId] : null;
-  const company = call.companyId != null ? companies[call.companyId] : null;
+  const CallIcon = ACTIVITY_TYPE_ICON_MAP[ActivityType.CALL];
+  const owner = owners[call.ownerId];
+  const dealId = call.deal && call.deal.id;
 
-  const menuItems: MenuItemProps[] = useMemo(
-    () => [
-      {
-        id: "edit",
-        label: translateText(["activities", "callSidePanel", "editCall"]),
-        icon: { start: <EditIcon width="16px" height="16px" /> },
-        onClick: () => onEdit?.()
+  useEffect(() => {
+    if (!call.deal) return;
+
+    setDeals(mergeDeals(deals, [call.deal]));
+  }, [call.deal]);
+
+  const menuItems: MenuItemProps[] = [
+    {
+      id: "edit",
+      label: translateText(["activities", "callSidePanel", "editCall"]),
+      icon: { start: <EditIcon width="16px" height="16px" /> },
+      onClick: onEdit
+    },
+    {
+      id: "delete",
+      label: translateText(["activities", "callSidePanel", "deleteCall"]),
+      icon: {
+        start: (
+          <DeleteButtonIcon
+            width="12px"
+            height="14px"
+            fill="var(--color-semantic-red-text)"
+          />
+        )
       },
-      {
-        id: "delete",
-        label: translateText(["activities", "callSidePanel", "deleteCall"]),
-        icon: {
-          start: (
-            <DeleteButtonIcon
-              width="12px"
-              height="14px"
-              fill="var(--color-semantic-red-text)"
-            />
-          )
-        },
-        activeBehavior:
-          "hover:bg-semantic-red-background text-semantic-red-text",
-        onClick: () => onDelete?.()
-      }
-    ],
-    [translateText, onEdit, onDelete]
-  );
+      activeBehavior: "hover:bg-semantic-red-background text-semantic-red-text",
+      onClick: onDelete
+    }
+  ];
 
   return (
     <SidePanel
@@ -85,7 +89,10 @@ const CallSidePanel: FC<Props> = ({
       closeOnBackdropClick
       header={
         <div className="flex items-center gap-4 pl-2">
-          <TaskTypeIcon typeName="call" size={TASK_DETAIL_ICON_SIZE} />
+          <CallIcon
+            width={TASK_DETAIL_ICON_SIZE}
+            height={TASK_DETAIL_ICON_SIZE}
+          />
           <span className="h1 text-black">{call.subject}</span>
         </div>
       }
@@ -114,8 +121,9 @@ const CallSidePanel: FC<Props> = ({
               {translateText(["activities", "callSidePanel", "comments"])}
             </p>
             <p className="subtitle3">
-              {call.comments ??
-                translateText(["activities", "callSidePanel", "noComments"])}
+              {call.comments
+                ? call.comments
+                : translateText(["activities", "callSidePanel", "noComments"])}
             </p>
           </div>
 
@@ -125,7 +133,7 @@ const CallSidePanel: FC<Props> = ({
             </h2>
             <hr className="border-secondary-accent" />
             <SidePanelDealSection
-              dealIds={call.dealId != null ? [call.dealId] : []}
+              dealIds={dealId && deals[dealId] ? [dealId] : []}
               showAddDealAction={false}
               emptyDescription={translateText([
                 "activities",
@@ -140,8 +148,6 @@ const CallSidePanel: FC<Props> = ({
           <SidePanelCallInfo
             call={call}
             owner={owner}
-            contact={contact}
-            company={company}
             onContactClick={onContactClick}
             onCompanyClick={onCompanyClick}
           />

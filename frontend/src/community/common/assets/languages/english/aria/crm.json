@@ -131,9 +131,7 @@
   },
   "activities": {
     "callSidePanel": {
-      "kebabMenu": "Call actions",
-      "openContact": "Open contact",
-      "openCompany": "Open company"
+      "kebabMenu": "Call actions"
     },
     "logCall": {
       "modal": {

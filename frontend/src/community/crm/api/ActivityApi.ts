@@ -9,7 +9,6 @@ import { AxiosError } from "axios";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 import {
-  ActivityCallDetailResponse,
   ActivityCallResponse,
   ActivityEmailResponse,
   ActivityFeedFilters,
@@ -20,6 +19,7 @@ import {
 } from "~community/crm/activities/types/activityTypes";
 import { crmActivityEndpoints } from "~community/crm/api/utils/ApiEndpoints";
 import { crmActivityQueryKeys } from "~community/crm/api/utils/QueryKeys";
+import { CrmCallEntity } from "~community/crm/types/CrmCommonTypes";
 
 const fetchActivityFeed = async (
   params: ActivityFeedFilters
@@ -127,9 +127,7 @@ export const useGetActivityTasks = (
     refetchOnWindowFocus: false
   });
 
-const fetchCallById = async (
-  id: number
-): Promise<ActivityCallDetailResponse> => {
+const fetchCallById = async (id: number): Promise<CrmCallEntity> => {
   const response = await authFetch.get(crmActivityEndpoints.GET_CALL_BY_ID(id));
   return response?.data?.results?.[0];
 };
@@ -137,7 +135,7 @@ const fetchCallById = async (
 export const useGetCallById = (
   id: number,
   enabled: boolean
-): UseQueryResult<ActivityCallDetailResponse, AxiosError> =>
+): UseQueryResult<CrmCallEntity, AxiosError> =>
   useQuery({
     queryKey: crmActivityQueryKeys.CALL(id),
     queryFn: () => fetchCallById(id),

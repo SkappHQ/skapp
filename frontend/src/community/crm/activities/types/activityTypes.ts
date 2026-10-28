@@ -1,9 +1,4 @@
 import { CrmPriorityEnum } from "~community/crm/enums/common";
-import {
-  CrmCompanyEntity,
-  CrmContactEntity,
-  CrmDealEntity
-} from "~community/crm/types/CrmCommonTypes";
 
 export enum ActivityType {
   TASK = "TASK",
@@ -124,16 +119,4 @@ export interface ActivityTaskResponse extends ActivityListItemBase {
   isCompleted: boolean;
   completedAt: string | null;
   contactId: number | null;
-}
-
-export interface ActivityCallDetailResponse {
-  id: number;
-  subject: string;
-  loggedAt: string | null;
-  durationMinutes: number | null;
-  comments: string | null;
-  ownerId: number;
-  contact: CrmContactEntity | null;
-  deal: CrmDealEntity | null;
-  company: CrmCompanyEntity | null;
 }

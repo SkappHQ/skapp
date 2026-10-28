@@ -1,39 +1,40 @@
-import { DateTime } from "luxon";
 import { FC } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
+import {
+  FULL_MONTH_YEAR_FORMAT,
+  TIME_FORMAT_12_HOUR
+} from "~community/common/constants/timeConstants";
+import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-import { formatDayWithOrdinalIndicator } from "~community/common/utils/dateTimeUtils";
+import {
+  formatDayWithOrdinalIndicator,
+  instantInZone
+} from "~community/common/utils/dateTimeUtils";
 import OwnerAvatarChip from "~community/crm/components/atoms/OwnerAvatarChip/OwnerAvatarChip";
 import PropertyRow from "~community/crm/components/molecules/PropertyRow/PropertyRow";
 import {
   CrmCallEntity,
-  CrmCompanyEntity,
-  CrmContactEntity,
   CrmOwnerEntity
 } from "~community/crm/types/CrmCommonTypes";
 import { getContactDisplayName } from "~community/crm/utils/contactUtil";
 
 interface Props {
   call: CrmCallEntity;
-  owner?: CrmOwnerEntity | null;
-  contact?: CrmContactEntity | null;
-  company?: CrmCompanyEntity | null;
-  onContactClick?: () => void;
-  onCompanyClick?: () => void;
+  owner?: CrmOwnerEntity;
+  onContactClick: () => void;
+  onCompanyClick: () => void;
 }
 
 const SidePanelCallInfo: FC<Props> = ({
   call,
   owner,
-  contact,
-  company,
   onContactClick,
   onCompanyClick
 }) => {
   const translateText = useTranslator("crmModule");
-  const translateAria = useTranslator("crmAria");
+  const displayZone = useDisplayZone();
 
   const noValue = translateText([
     "activities",
@@ -41,23 +42,15 @@ const SidePanelCallInfo: FC<Props> = ({
     "info",
     "noValue"
   ]);
-  const contactName = contact ? getContactDisplayName(contact) : "";
-  const startAt = call.startAt ? DateTime.fromISO(call.startAt) : null;
-  const callDate = startAt?.isValid
-    ? `${formatDayWithOrdinalIndicator(startAt)} ${startAt.toFormat("MMMM")}`
-    : "";
-  const callStartTime = startAt?.isValid ? startAt.toFormat("hh:mm a") : "";
+  const loggedAt = instantInZone(call.loggedAt, displayZone);
+  const callDate = `${formatDayWithOrdinalIndicator(loggedAt)} ${loggedAt.toFormat(FULL_MONTH_YEAR_FORMAT)}`;
+  const callStartTime = loggedAt.toFormat(TIME_FORMAT_12_HOUR);
 
-  const renderLink = (
-    label: string,
-    ariaLabel: string,
-    onClick?: () => void
-  ) => (
+  const renderLink = (label: string, onClick: () => void) => (
     <button
       type="button"
       onClick={onClick}
-      aria-label={ariaLabel}
-      className="inline-flex items-center gap-[4px] bg-transparent border-0 p-0 cursor-pointer transition-opacity hover:opacity-80"
+      className="inline-flex items-center gap-[4px] min-w-0 max-w-full bg-transparent border-0 p-0 cursor-pointer transition-opacity hover:opacity-80"
     >
       <span className="body2 leading-6 tracking-[0.5px] underline text-primary-text truncate">
         {label}
@@ -81,12 +74,8 @@ const SidePanelCallInfo: FC<Props> = ({
           "contact"
         ])}
       >
-        {contactName ? (
-          renderLink(
-            contactName,
-            translateAria(["activities", "callSidePanel", "openContact"]),
-            onContactClick
-          )
+        {call.contact ? (
+          renderLink(getContactDisplayName(call.contact), onContactClick)
         ) : (
           <span className="body2">
             {translateText([
@@ -102,7 +91,7 @@ const SidePanelCallInfo: FC<Props> = ({
       <PropertyRow
         label={translateText(["activities", "callSidePanel", "info", "date"])}
       >
-        <span className="body2">{callDate || noValue}</span>
+        <span className="body2">{callDate}</span>
       </PropertyRow>
 
       <PropertyRow
@@ -113,7 +102,7 @@ const SidePanelCallInfo: FC<Props> = ({
           "startTime"
         ])}
       >
-        <span className="body2">{callStartTime || noValue}</span>
+        <span className="body2">{callStartTime}</span>
       </PropertyRow>
 
       <PropertyRow
@@ -163,12 +152,8 @@ const SidePanelCallInfo: FC<Props> = ({
           "relatedTo"
         ])}
       >
-        {company?.name ? (
-          renderLink(
-            company.name,
-            translateAria(["activities", "callSidePanel", "openCompany"]),
-            onCompanyClick
-          )
+        {call.company && call.company.name ? (
+          renderLink(call.company.name, onCompanyClick)
         ) : (
           <span className="body2">{noValue}</span>
         )}
