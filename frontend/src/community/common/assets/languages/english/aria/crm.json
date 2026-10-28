@@ -147,7 +147,10 @@
         "relatedTo": "Search companies",
         "cancel": "Cancel log a call",
         "save": "Save call",
-        "removeOwner": "Remove activity owner"
+        "removeOwner": "Remove activity owner",
+        "clearContact": "Clear selected contact",
+        "clearDeal": "Clear selected deal",
+        "clearRelatedTo": "Clear selected company"
       }
     },
     "tabs": "Activity types",

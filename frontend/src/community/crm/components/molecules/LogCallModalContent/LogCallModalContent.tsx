@@ -1,6 +1,5 @@
 import { useFormik } from "formik";
 import { FC, useEffect, useMemo } from "react";
-import * as Yup from "yup";
 import { useShallow } from "zustand/react/shallow";
 
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
@@ -12,6 +11,7 @@ import {
   CrmLogCallFormValues,
   CrmOwnerEntity
 } from "~community/crm/types/CrmCommonTypes";
+import { getCallValidationSchema } from "~community/crm/utils/callValidations";
 import { updateOwnerRecord } from "~community/crm/utils/commonUtil";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
@@ -20,12 +20,7 @@ interface Props {
 }
 
 const LogCallModalContent: FC<Props> = ({ onCancel }) => {
-  const translateText = useTranslator(
-    "crmModule",
-    "activities",
-    "logCall",
-    "modal"
-  );
+  const translateText = useTranslator("crmModule");
   const displayZone = useDisplayZone();
 
   const { owners, setOwners } = useCrmStore(
@@ -67,33 +62,17 @@ const LogCallModalContent: FC<Props> = ({ onCancel }) => {
       date: now.toUTC().toISO(),
       time: now.toFormat(now.minute < 30 ? "HH:00" : "HH:30"),
       duration: "",
-      contact: "",
+      contactId: null,
       ownerId: defaultOwner ? defaultOwner.employeeId : null,
       comments: "",
-      deal: "",
-      company: ""
+      dealId: null,
+      companyId: null
     };
   }, [defaultOwner, displayZone]);
 
-  const validationSchema = useMemo(
-    () =>
-      Yup.object().shape({
-        subject: Yup.string()
-          .trim()
-          .required(translateText(["validations", "subject"])),
-        contact: Yup.string()
-          .trim()
-          .required(translateText(["validations", "contact"])),
-        ownerId: Yup.number()
-          .typeError(translateText(["validations", "owner"]))
-          .required(translateText(["validations", "owner"]))
-      }),
-    [translateText]
-  );
-
   const formik = useFormik<CrmLogCallFormValues>({
     initialValues,
-    validationSchema,
+    validationSchema: getCallValidationSchema(translateText),
     onSubmit: (_values, helpers) => helpers.setSubmitting(false),
     validateOnChange: false,
     validateOnBlur: true,

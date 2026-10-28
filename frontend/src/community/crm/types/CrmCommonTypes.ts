@@ -149,9 +149,9 @@ export interface CrmLogCallFormValues {
   date: string | null;
   time: string;
   duration: string;
-  contact: string;
+  contactId: number | null;
   ownerId: number | null;
   comments: string;
-  deal: string;
-  company: string;
+  dealId: number | null;
+  companyId: number | null;
 }
