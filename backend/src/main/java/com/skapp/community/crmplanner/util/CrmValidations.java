@@ -372,19 +372,19 @@ public class CrmValidations {
 
 	public static void validateCallSubject(String subject) {
 		if (subject == null || subject.isBlank()) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CALL_SUBJECT_REQUIRED);
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_SUBJECT_REQUIRED);
 		}
 	}
 
 	public static void validateCallContactId(Long contactId) {
 		if (contactId == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CALL_CONTACT_REQUIRED);
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_CONTACT_REQUIRED);
 		}
 	}
 
 	public static void validateCallDurationMinutes(Integer durationMinutes) {
 		if (durationMinutes != null && durationMinutes < 0) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CALL_DURATION_INVALID);
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_DURATION_INVALID);
 		}
 	}
 
@@ -395,7 +395,7 @@ public class CrmValidations {
 		Long dealCompanyId = deal.getCompany() != null ? deal.getCompany().getId() : null;
 		Long contactCompanyId = contact.getCompany() != null ? contact.getCompany().getId() : null;
 		if (!Objects.equals(dealCompanyId, contactCompanyId)) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CALL_DEAL_COMPANY_MISMATCH);
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_DEAL_COMPANY_MISMATCH);
 		}
 	}
 

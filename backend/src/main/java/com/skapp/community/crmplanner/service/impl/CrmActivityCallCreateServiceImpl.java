@@ -72,6 +72,9 @@ public class CrmActivityCallCreateServiceImpl implements CrmActivityCallCreateSe
 		if (requestDto.getDealId() != null) {
 			CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+			if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, deal.getOwner().getEmployeeId())) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_VIEW_DENIED);
+			}
 			CrmValidations.validateCallDealMatchesContactCompany(deal, contact);
 			call.setDeal(deal);
 		}
@@ -84,7 +87,7 @@ public class CrmActivityCallCreateServiceImpl implements CrmActivityCallCreateSe
 
 		CrmActivityCall savedCall = crmActivityCallDao.save(call);
 
-		log.info("createCall: execution ended");
+		log.info("createCall: execution ended with callId={}", savedCall.getId());
 		return new ResponseEntityDto(false, crmMapper.crmActivityCallToCrmActivityCallCreateResponseDto(savedCall));
 	}
 
