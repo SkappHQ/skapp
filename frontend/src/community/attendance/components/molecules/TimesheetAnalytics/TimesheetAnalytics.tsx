@@ -1,13 +1,12 @@
 import { Stack } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
+import { LeaveIcon, TimesheetIcon } from "@rootcodelabs/skapp-ui";
 import { JSX, useState } from "react";
 
 import { TimesheetAnalyticsTabTypes } from "~community/attendance/enums/timesheetEnums";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import { TimeRecordDataResponseType } from "~community/attendance/types/timeSheetTypes";
-import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { IconName } from "~community/common/types/IconTypes";
 
 import EmployeeTimeRecordsTable from "../EmployeeTimeRecordsTable/EmployeeTimeRecordsTable";
 import TimeSheetFilters from "../TimeSheetFilters/TimeSheetFilters";
@@ -61,20 +60,16 @@ const TimesheetAnalytics = ({
           <TimesheetStatCard
             title={translateText(["workedHoursKpiLabel"])}
             time={workSummaryData?.workedHours as string}
-            icon={
-              <Icon
-                name={IconName.TIME_SHEET_ICON}
-                fill={theme.palette.secondary.dark}
-              />
-            }
+            icon={<TimesheetIcon color={theme.palette.secondary.dark} />}
           />
           <TimesheetStatCard
             title={translateText(["breakHoursKpiLabel"])}
             time={workSummaryData?.breakHours as string}
             icon={
-              <Icon
-                name={IconName.LEAVE_ICON}
-                fill={theme.palette.secondary.dark}
+              <LeaveIcon
+                width={16}
+                height={16}
+                color={theme.palette.secondary.dark}
               />
             }
           />

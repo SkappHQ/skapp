@@ -1,10 +1,9 @@
 import { Box, Stack } from "@mui/material";
+import { LeaveIcon, TimesheetIcon } from "@rootcodelabs/skapp-ui";
 import { JSX } from "react";
 
 import { DailyLogType } from "~community/attendance/types/timeSheetTypes";
-import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { IconName } from "~community/common/types/IconTypes";
 import { L1EmployeeType } from "~community/people/types/PeopleTypes";
 
 import TimesheetDailyRecordTable from "../TimesheetDailyRecordTable/TimesheetDailyRecordTable";
@@ -43,12 +42,12 @@ const TimesheetDailyLog = ({
         <TimesheetStatCard
           title={translateText(["workedHoursKpiLabel"])}
           time={workSummaryData?.workedHours}
-          icon={<Icon name={IconName.TIME_SHEET_ICON} />}
+          icon={<TimesheetIcon />}
         />
         <TimesheetStatCard
           title={translateText(["breakHoursKpiLabel"])}
           time={workSummaryData?.breakHours}
-          icon={<Icon name={IconName.LEAVE_ICON} />}
+          icon={<LeaveIcon width={16} height={16} />}
         />
       </Stack>
       <TimesheetDailyRecordTable

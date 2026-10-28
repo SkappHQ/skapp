@@ -1,4 +1,3 @@
-import { HandshakeIcon, ReportIcon } from "@rootcodelabs/skapp-ui";
 import { JSX } from "react";
 
 import AddIcon from "~community/common/assets/Icons/AddIcon";
@@ -34,25 +33,20 @@ import ClockDenyIcon from "~community/common/assets/Icons/ClockDenyIcon";
 import ClockIcon from "~community/common/assets/Icons/ClockIcon";
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import CloseStatusPopupIcon from "~community/common/assets/Icons/CloseStatusPopupIcon";
-import ConfigurationsIcon from "~community/common/assets/Icons/ConfigurationsIcon";
 import CopyIcon from "~community/common/assets/Icons/CopyIcon";
 import CreateDocumentIcon from "~community/common/assets/Icons/CreateDocumentIcon";
 import CrossedCircleIcon from "~community/common/assets/Icons/CrossedCircleIcon";
 import CurvedTickIcon from "~community/common/assets/Icons/CurvedTickIcon";
 import DancingWomenIcon from "~community/common/assets/Icons/DancingWomenIcon";
 import DashIcon from "~community/common/assets/Icons/DashIcon";
-import DashboardIcon from "~community/common/assets/Icons/DashboardIcon";
 import DeclinedIcon from "~community/common/assets/Icons/DeclinedIcon";
 import DeleteButtonIcon from "~community/common/assets/Icons/DeleteButtonIcon";
 import DeniedIcon from "~community/common/assets/Icons/DeniedIcon";
 import DeniedStatusIcon from "~community/common/assets/Icons/DeniedStatusIcon";
-import DocumentsIcon from "~community/common/assets/Icons/DocumentsIcon";
 import DottedClockIcon from "~community/common/assets/Icons/DottedClockIcon";
 import DownloadDocumentIcon from "~community/common/assets/Icons/DownloadDocumentIcon";
 import DownloadIcon from "~community/common/assets/Icons/DownloadIcon";
 import DragIcon from "~community/common/assets/Icons/DragIcon";
-import DrawerCloseIcon from "~community/common/assets/Icons/DrawerCloseIcon";
-import DrawerOpenIcon from "~community/common/assets/Icons/DrawerOpenIcon";
 import DropDownArrowIcon from "~community/common/assets/Icons/DropDownArrowIcon";
 import DropDownArrow from "~community/common/assets/Icons/DropdownArrow";
 import DropdownIcon from "~community/common/assets/Icons/DropdownIcon";
@@ -72,7 +66,6 @@ import ForwardArrow from "~community/common/assets/Icons/ForwardArrow";
 import GemIcon from "~community/common/assets/Icons/GemIcon";
 import GoogleCalendarIcon from "~community/common/assets/Icons/GoogleCalendarIcon";
 import GoogleIcon from "~community/common/assets/Icons/GoogleIcon";
-import DefaultHandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
 import HelpDeskModuleIcon from "~community/common/assets/Icons/HelpDeskModuleIcon";
 import HourGlassEmptyIcon from "~community/common/assets/Icons/HourGlassEmptyIcon";
 import IdentityVerifiedIcon from "~community/common/assets/Icons/IdentityVerifiedIcon";
@@ -80,11 +73,8 @@ import InfoIcon from "~community/common/assets/Icons/InfoIcon";
 import InformationIcon from "~community/common/assets/Icons/InformationIcon";
 import InitialsIcon from "~community/common/assets/Icons/InitialsIcon";
 import InstagramIcon from "~community/common/assets/Icons/InstagramIcon";
-import IntegrationsIcon from "~community/common/assets/Icons/IntegrationsIcon";
 import InviteIcon from "~community/common/assets/Icons/InviteIcon";
-import InvoiceIcon from "~community/common/assets/Icons/InvoiceIcon";
 import InvoiceModuleIcon from "~community/common/assets/Icons/InvoiceModuleIcon";
-import LeaveIcon from "~community/common/assets/Icons/LeaveIcon";
 import LeaveModuleIcon from "~community/common/assets/Icons/LeaveModuleIcon";
 import LeftArrowIcon from "~community/common/assets/Icons/LeftArrowIcon";
 import LocalPhoneIcon from "~community/common/assets/Icons/LocalPhoneIcon";
@@ -104,7 +94,6 @@ import PauseIcon from "~community/common/assets/Icons/PauseIcon";
 import PdfIcon from "~community/common/assets/Icons/PdfIcon";
 import PenIcon from "~community/common/assets/Icons/PenIcon";
 import PendingStatusIcon from "~community/common/assets/Icons/PendingStatusIcon";
-import PeopleIcon from "~community/common/assets/Icons/PeopleIcon";
 import PeopleModuleIcon from "~community/common/assets/Icons/PeopleModuleIcon";
 import PeopleRemoveIcon from "~community/common/assets/Icons/PeopleRemoveIcon";
 import PercentageIcon from "~community/common/assets/Icons/PercentageIcon";
@@ -112,7 +101,6 @@ import PlayIcon from "~community/common/assets/Icons/PlayIcon";
 import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 import PopOutIcon from "~community/common/assets/Icons/PopOutIcon";
 import ProjectManagementModuleIcon from "~community/common/assets/Icons/ProjectManagementModuleIcon";
-import ProjectsIcon from "~community/common/assets/Icons/ProjectsIcon";
 import RadioSelectedIcon from "~community/common/assets/Icons/RadioSelectedIcon";
 import ReactivateUserIcon from "~community/common/assets/Icons/ReactivateUserIcon";
 import RemoveCircleIcon from "~community/common/assets/Icons/RemoveCircleIcon";
@@ -146,7 +134,6 @@ import TextIcon from "~community/common/assets/Icons/TextIcon";
 import ThreeDotsIcon from "~community/common/assets/Icons/ThreeDotsIcon";
 import TickIcon from "~community/common/assets/Icons/TickIcon";
 import TimerIcon from "~community/common/assets/Icons/TimerIcon";
-import TimeSheetIcon from "~community/common/assets/Icons/TimesheetIcon";
 import UnCheckedIcon from "~community/common/assets/Icons/UnCheckedIcon";
 import UndoIcon from "~community/common/assets/Icons/UndoIcon";
 import UpArrowIcon from "~community/common/assets/Icons/UpArrowIcon";
@@ -191,11 +178,7 @@ export const IconMapping: Partial<
   [IconName.DELETE_BUTTON_ICON]: DeleteButtonIcon,
   [IconName.CLOSE_STATUS_POPUP_ICON]: CloseStatusPopupIcon,
   [IconName.CHECK_WRAPPER_ICON]: CheckWrapperIcon,
-  [IconName.DASHBOARD_ICON]: DashboardIcon,
-  [IconName.PEOPLE_ICON]: PeopleIcon,
   [IconName.SETTINGS_ICON]: SettingsIcon,
-  [IconName.TIME_SHEET_ICON]: TimeSheetIcon,
-  [IconName.LEAVE_ICON]: LeaveIcon,
   [IconName.EXPAND_ICON]: ExpandIcon,
   [IconName.BELL_ICON]: BellIcon,
   [IconName.MENU_ICON]: MenuIcon,
@@ -261,7 +244,6 @@ export const IconMapping: Partial<
   [IconName.ARROW_FILLED_RIGHT_ICON]: ArrowFilledRight,
   [IconName.NEW_WINDOW_ICON]: NewWindowIcon,
   [IconName.RIGHT_MARK]: RightMark,
-  [IconName.CONFIGURATIONS_ICON]: ConfigurationsIcon,
   [IconName.ATTACHMENT_ICON]: AttachmentIcon,
   [IconName.SHARE_ICON]: ShareIcon,
   [IconName.LOCK_ICON]: LockIcon,
@@ -275,7 +257,6 @@ export const IconMapping: Partial<
   [IconName.WARNING_TRIANGLE_ICON]: WarningTriangleIcon,
   [IconName.GOOGLE_ICON]: GoogleIcon,
   [IconName.MICROSOFT_ICON]: MicrosoftIcon,
-  [IconName.DOCUMENTS_ICON]: DocumentsIcon,
   [IconName.PEOPLE_MODULE_ICON]: PeopleModuleIcon,
   [IconName.ATTENDANCE_MODULE_ICON]: AttendanceModuleIcon,
   [IconName.LEAVE_MODULE_ICON]: LeaveModuleIcon,
@@ -322,17 +303,10 @@ export const IconMapping: Partial<
   [IconName.HELP_DESK_MODULE_ICON]: HelpDeskModuleIcon,
   [IconName.PROJECT_MANAGEMENT_MODULE_ICON]: ProjectManagementModuleIcon,
   [IconName.BLOCKED_ICON]: BlockedIcon,
-  [IconName.DRAWER_CLOSE_ICON]: DrawerCloseIcon,
-  [IconName.DRAWER_OPEN_ICON]: DrawerOpenIcon,
   [IconName.GEM_ICON]: GemIcon,
   [IconName.DOWNLOAD_DOCUMENT_ICON]: DownloadDocumentIcon,
-  [IconName.PROJECTS_ICON]: ProjectsIcon,
-  [IconName.REPORT_ICON]: ReportIcon,
-  [IconName.INTEGRATIONS_ICON]: IntegrationsIcon,
   [IconName.INSTAGRAM_ICON]: InstagramIcon,
-  [IconName.INVOICE_ICON]: InvoiceIcon,
   [IconName.INVOICE_MODULE_ICON]: InvoiceModuleIcon,
-  [IconName.HAND_SHAKE_ICON]: HandshakeIcon ?? DefaultHandshakeIcon,
   [IconName.HOUR_GLASS_EMPTY_ICON]: HourGlassEmptyIcon,
   [IconName.WARNING_ALERT_ICON]: WarningAlertIcon,
   [IconName.DUE_STATUS_ICON]: DueIndicatorIcon,

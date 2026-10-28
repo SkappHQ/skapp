@@ -1,3 +1,17 @@
+import {
+  ConfigurationsIcon,
+  CrmIcon,
+  DashboardIcon,
+  InvoiceIcon,
+  LeaveIcon,
+  PeopleIcon,
+  ProjectsIcon,
+  ReportsIcon,
+  SettingsIcon,
+  SignIcon,
+  TimesheetIcon
+} from "@rootcodelabs/skapp-ui";
+
 import ROUTES from "~community/common/constants/routes";
 import {
   AdminTypes,
@@ -6,14 +20,13 @@ import {
   RepresentativeTypes,
   SenderTypes
 } from "~community/common/types/AuthTypes";
-import { IconName } from "~community/common/types/IconTypes";
 
 const routes = [
   {
     id: "0",
     name: "Dashboard",
     url: ROUTES.DASHBOARD.BASE,
-    icon: IconName.DASHBOARD_ICON,
+    icon: DashboardIcon,
     hasSubTree: false,
     requiredAuthLevel: [
       AdminTypes.SUPER_ADMIN,
@@ -32,7 +45,7 @@ const routes = [
     id: "1",
     name: "Timesheet",
     url: ROUTES.TIMESHEET.BASE,
-    icon: IconName.TIME_SHEET_ICON,
+    icon: TimesheetIcon,
     hasSubTree: true,
     requiredAuthLevel: [
       AdminTypes.SUPER_ADMIN,
@@ -74,7 +87,7 @@ const routes = [
     id: "2",
     name: "Leave",
     url: ROUTES.LEAVE.BASE,
-    icon: IconName.LEAVE_ICON,
+    icon: LeaveIcon,
     hasSubTree: true,
     requiredAuthLevel: [
       AdminTypes.SUPER_ADMIN,
@@ -149,7 +162,7 @@ const routes = [
     id: "3",
     name: "People",
     url: ROUTES.PEOPLE.BASE,
-    icon: IconName.PEOPLE_ICON,
+    icon: PeopleIcon,
     hasSubTree: true,
     requiredAuthLevel: [
       AdminTypes.SUPER_ADMIN,
@@ -213,7 +226,7 @@ const routes = [
     id: "4",
     name: "CRM",
     url: ROUTES.CRM.BASE,
-    icon: IconName.HAND_SHAKE_ICON,
+    icon: CrmIcon,
     hasSubTree: true,
     requiredAuthLevel: [
       AdminTypes.SUPER_ADMIN,
@@ -288,7 +301,7 @@ const routes = [
     id: "5",
     name: "Sign",
     url: ROUTES.SIGN.BASE,
-    icon: IconName.DOCUMENTS_ICON,
+    icon: SignIcon,
     hasSubTree: true,
     requiredAuthLevel: [
       AdminTypes.SUPER_ADMIN,
@@ -348,7 +361,7 @@ const routes = [
     id: "6",
     name: "Projects",
     url: ROUTES.PROJECTS.BASE,
-    icon: IconName.PROJECTS_ICON,
+    icon: ProjectsIcon,
     hasSubTree: true,
     // badge: "New",
     requiredAuthLevel: [
@@ -395,7 +408,7 @@ const routes = [
     id: "7",
     name: "Invoices",
     url: ROUTES.INVOICE.BASE,
-    icon: IconName.INVOICE_ICON,
+    icon: InvoiceIcon,
     hasSubTree: true,
     requiredAuthLevel: [AdminTypes.SUPER_ADMIN, ManagerTypes.INVOICE_MANAGER],
     subTree: [
@@ -425,7 +438,7 @@ const routes = [
     id: "8",
     name: "Reports",
     url: ROUTES.REPORT.BASE,
-    icon: IconName.REPORT_ICON,
+    icon: ReportsIcon,
     hasSubTree: false,
     badge: "New",
     requiredAuthLevel: [
@@ -438,7 +451,7 @@ const routes = [
     id: "9",
     name: "Configurations",
     url: ROUTES.CONFIGURATIONS.BASE,
-    icon: IconName.CONFIGURATIONS_ICON,
+    icon: ConfigurationsIcon,
     hasSubTree: false,
     requiredAuthLevel: [
       AdminTypes.SUPER_ADMIN,
@@ -454,7 +467,7 @@ const routes = [
     id: "10",
     name: "Settings",
     url: ROUTES.SETTINGS.BASE,
-    icon: IconName.SETTINGS_ICON,
+    icon: SettingsIcon,
     hasSubTree: false,
     requiredAuthLevel: [
       AdminTypes.SUPER_ADMIN,

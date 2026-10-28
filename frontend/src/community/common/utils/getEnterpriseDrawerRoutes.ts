@@ -1,3 +1,5 @@
+import { IntegrationsIcon } from "@rootcodelabs/skapp-ui";
+
 import ROUTES from "~community/common/constants/routes";
 import {
   AdminTypes,
@@ -8,7 +10,6 @@ import {
 } from "~community/common/types/AuthTypes";
 
 import { GlobalLoginMethod } from "../enums/CommonEnums";
-import { IconName } from "../types/IconTypes";
 import routes from "./data/routes";
 
 type Role =
@@ -60,7 +61,7 @@ const getEnterpriseDrawerRoutes = ({
           id: route?.id,
           name: "Integrations",
           url: ROUTES.SETTINGS.BASE,
-          icon: IconName.INTEGRATIONS_ICON,
+          icon: IntegrationsIcon,
           hasSubTree: false,
           // Feature flagged: "New" badge temporarily disabled
           // badge: "New",
@@ -77,7 +78,7 @@ const getEnterpriseDrawerRoutes = ({
         id: route?.id,
         name: "Settings",
         url: ROUTES.SETTINGS.BASE,
-        icon: IconName.SETTINGS_ICON,
+        icon: route.icon,
         hasSubTree: false,
         requiredAuthLevel: [
           AdminTypes.SUPER_ADMIN,
