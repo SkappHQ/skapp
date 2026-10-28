@@ -151,6 +151,21 @@
       "closeFilters": "Close filters",
       "clearTeamMember": "Clear team member filter",
       "teamMember": "Team member, selected"
+    },
+    "logCall": {
+      "modal": {
+        "subject": "Call subject",
+        "date": "Call date",
+        "time": "Call time",
+        "duration": "Call duration",
+        "contact": "Call contact",
+        "comments": "Call comments",
+        "deal": "Search deals",
+        "relatedTo": "Search companies",
+        "cancel": "Cancel log a call",
+        "save": "Save call",
+        "removeOwner": "Remove activity owner"
+      }
     }
   }
 }
