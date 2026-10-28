@@ -13,8 +13,8 @@ import com.skapp.community.crmplanner.model.CrmActivityCall;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.payload.request.CrmActivityCallEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmActivityCallFilterDto;
-import com.skapp.community.crmplanner.payload.request.CrmActivityCallPatchRequestDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityCallDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityCallResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
@@ -143,10 +143,10 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 
 	@Override
 	@Transactional
-	public ResponseEntityDto updateCall(Long id, CrmActivityCallPatchRequestDto requestDto) {
-		log.info("updateCall: execution started");
+	public ResponseEntityDto editCall(Long id, CrmActivityCallEditRequestDto requestDto) {
+		log.info("editCall: execution started");
 
-		CrmActivityCall call = crmActivityCallDao.findByIdAndIsDeletedFalse(id)
+		CrmActivityCall call = crmActivityCallDao.findCallById(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_NOT_FOUND));
 
 		User currentUser = userService.getCurrentUser();
@@ -211,11 +211,13 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 			}
 		}
 
-		CrmValidations.validateCallDealMatchesContactCompany(call.getDeal(), call.getContact());
+		if (requestDto.getContactId() != null || requestDto.getDealId().isPresent()) {
+			CrmValidations.validateCallDealMatchesContactCompany(call.getDeal(), call.getContact());
+		}
 
 		CrmActivityCall updatedCall = crmActivityCallDao.save(call);
 
-		log.info("updateCall: execution ended");
+		log.info("editCall: execution ended");
 		return new ResponseEntityDto(false, crmMapper.crmActivityCallToCrmActivityCallResponseDto(updatedCall));
 	}
 

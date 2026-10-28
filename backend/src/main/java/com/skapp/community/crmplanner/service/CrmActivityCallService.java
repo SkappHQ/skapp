@@ -1,8 +1,8 @@
 package com.skapp.community.crmplanner.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.crmplanner.payload.request.CrmActivityCallEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmActivityCallFilterDto;
-import com.skapp.community.crmplanner.payload.request.CrmActivityCallPatchRequestDto;
 
 public interface CrmActivityCallService {
 
@@ -10,6 +10,6 @@ public interface CrmActivityCallService {
 
 	ResponseEntityDto getCallById(Long id);
 
-	ResponseEntityDto updateCall(Long id, CrmActivityCallPatchRequestDto requestDto);
+	ResponseEntityDto editCall(Long id, CrmActivityCallEditRequestDto requestDto);
 
 }

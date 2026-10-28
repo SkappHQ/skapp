@@ -1,8 +1,8 @@
 package com.skapp.community.crmplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.crmplanner.payload.request.CrmActivityCallEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmActivityCallFilterDto;
-import com.skapp.community.crmplanner.payload.request.CrmActivityCallPatchRequestDto;
 import com.skapp.community.crmplanner.service.CrmActivityCallService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -40,9 +40,9 @@ public class CrmActivityCallController {
 
 	@PatchMapping("/{id}")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
-	public ResponseEntity<ResponseEntityDto> updateCall(@PathVariable Long id,
-			@RequestBody CrmActivityCallPatchRequestDto requestDto) {
-		ResponseEntityDto response = crmActivityCallService.updateCall(id, requestDto);
+	public ResponseEntity<ResponseEntityDto> editCall(@PathVariable Long id,
+			@RequestBody CrmActivityCallEditRequestDto requestDto) {
+		ResponseEntityDto response = crmActivityCallService.editCall(id, requestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

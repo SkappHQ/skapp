@@ -8,7 +8,7 @@ import java.time.Instant;
 
 @Getter
 @Setter
-public class CrmActivityCallPatchRequestDto {
+public class CrmActivityCallEditRequestDto {
 
 	private String subject;
 
