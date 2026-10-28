@@ -10,7 +10,8 @@ export interface ActivitySearchFieldProps {
   placeholder: string;
   searchTerm: string;
   onSearchChange: (searchTerm: string) => void;
-  resultCount: number | null;
+  resultCount: number;
+  isResultCountReady: boolean;
 }
 
 const ActivitySearchField: FC<ActivitySearchFieldProps> = ({
@@ -18,7 +19,8 @@ const ActivitySearchField: FC<ActivitySearchFieldProps> = ({
   placeholder,
   searchTerm,
   onSearchChange,
-  resultCount
+  resultCount,
+  isResultCountReady
 }) => {
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
@@ -30,7 +32,7 @@ const ActivitySearchField: FC<ActivitySearchFieldProps> = ({
     if (debouncedValue !== searchTerm) onSearchChange(debouncedValue);
   }, [debouncedValue, searchTerm, onSearchChange]);
 
-  const isCountAnnounced = searchTerm.length > 0 && resultCount !== null;
+  const isCountAnnounced = searchTerm.length > 0 && isResultCountReady;
 
   return (
     <div className="flex flex-col">
