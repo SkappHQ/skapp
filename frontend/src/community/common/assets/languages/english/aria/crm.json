@@ -130,6 +130,29 @@
     }
   },
   "activities": {
+    "callSidePanel": {
+      "kebabMenu": "Call actions",
+      "openContact": "Open contact",
+      "openCompany": "Open company"
+    },
+    "logCall": {
+      "modal": {
+        "subject": "Call subject",
+        "date": "Call date",
+        "time": "Call time",
+        "duration": "Call duration",
+        "contact": "Call contact",
+        "comments": "Call comments",
+        "deal": "Search deals",
+        "relatedTo": "Search companies",
+        "cancel": "Cancel log a call",
+        "save": "Save call",
+        "removeOwner": "Remove activity owner",
+        "clearContact": "Clear selected contact",
+        "clearDeal": "Clear selected deal",
+        "clearRelatedTo": "Clear selected company"
+      }
+    },
     "tabs": "Activity types",
     "row": {
       "openDetails": "Open {{type}} details for {{subject}}",
@@ -151,24 +174,6 @@
       "closeFilters": "Close filters",
       "clearTeamMember": "Clear team member filter",
       "teamMember": "Team member, selected"
-    },
-    "logCall": {
-      "modal": {
-        "subject": "Call subject",
-        "date": "Call date",
-        "time": "Call time",
-        "duration": "Call duration",
-        "contact": "Call contact",
-        "comments": "Call comments",
-        "deal": "Search deals",
-        "relatedTo": "Search companies",
-        "cancel": "Cancel log a call",
-        "save": "Save call",
-        "removeOwner": "Remove activity owner",
-        "clearContact": "Clear selected contact",
-        "clearDeal": "Clear selected deal",
-        "clearRelatedTo": "Clear selected company"
-      }
     }
   }
 }

@@ -579,6 +579,77 @@
     }
   },
   "activities": {
+    "callSidePanel": {
+      "comments": "Comments",
+      "noComments": "No comments added",
+      "dealsTitle": "Deals",
+      "noDealsDescription": "No deals are linked to this call",
+      "editCall": "Edit call",
+      "deleteCall": "Delete call",
+      "info": {
+        "contact": "Contact",
+        "date": "Date",
+        "startTime": "Start time",
+        "duration": "Duration",
+        "activityOwner": "Activity owner",
+        "relatedTo": "Related to",
+        "durationValue": "{{minutes}} min",
+        "noValue": "-"
+      }
+    },
+    "logCall": {
+      "modal": {
+        "title": "Log a call",
+        "labels": {
+          "subject": "Subject",
+          "date": "Date",
+          "time": "Time",
+          "duration": "Duration",
+          "contact": "Contact",
+          "activityOwner": "Activity owner",
+          "comments": "Comments",
+          "deal": "Deal",
+          "relatedTo": "Related to"
+        },
+        "placeholders": {
+          "subject": "Enter subject",
+          "date": "Select date",
+          "time": "Select time",
+          "duration": "Enter duration",
+          "contact": "Enter name",
+          "comments": "Add message",
+          "deal": "Search deals",
+          "relatedTo": "Search companies",
+          "activityOwner": "Search owner"
+        },
+        "buttons": {
+          "addAssociations": "Add associations",
+          "hideAssociations": "Hide associations",
+          "cancel": "Cancel",
+          "save": "Save"
+        },
+        "emptyStates": {
+          "noOwners": "No owners found",
+          "noContacts": "No contacts found",
+          "noDeals": "No deals found",
+          "noCompanies": "No companies found"
+        },
+        "validations": {
+          "subject": "Subject is required",
+          "contact": "Please select a contact",
+          "owner": "Activity owner is required",
+          "duration": "Duration must be a whole number of minutes, 0 or more",
+          "dealMismatch": "The deal must belong to the contact's company"
+        },
+        "notices": {
+          "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
+        },
+        "toastMessages": {
+          "errorTitle": "Oops! Something went wrong",
+          "errorDescription": "Failed to log call"
+        }
+      }
+    },
     "page": {
       "title": "Activities",
       "pageHead": "Activities | Skapp",
@@ -685,59 +756,6 @@
         },
         "reset": "Reset filters",
         "apply": "Apply filters"
-      }
-    },
-    "logCall": {
-      "modal": {
-        "title": "Log a call",
-        "labels": {
-          "subject": "Subject",
-          "date": "Date",
-          "time": "Time",
-          "duration": "Duration",
-          "contact": "Contact",
-          "activityOwner": "Activity owner",
-          "comments": "Comments",
-          "deal": "Deal",
-          "relatedTo": "Related to"
-        },
-        "placeholders": {
-          "subject": "Enter subject",
-          "date": "Select date",
-          "time": "Select time",
-          "duration": "Enter duration",
-          "contact": "Enter name",
-          "comments": "Add message",
-          "deal": "Search deals",
-          "relatedTo": "Search companies",
-          "activityOwner": "Search owner"
-        },
-        "buttons": {
-          "addAssociations": "Add associations",
-          "hideAssociations": "Hide associations",
-          "cancel": "Cancel",
-          "save": "Save"
-        },
-        "emptyStates": {
-          "noOwners": "No owners found",
-          "noContacts": "No contacts found",
-          "noDeals": "No deals found",
-          "noCompanies": "No companies found"
-        },
-        "validations": {
-          "subject": "Subject is required",
-          "contact": "Please select a contact",
-          "owner": "Activity owner is required",
-          "duration": "Duration must be a whole number of minutes, 0 or more",
-          "dealMismatch": "The deal must belong to the contact's company"
-        },
-        "notices": {
-          "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
-        },
-        "toastMessages": {
-          "errorTitle": "Oops! Something went wrong",
-          "errorDescription": "Failed to log call"
-        }
       }
     }
   }
