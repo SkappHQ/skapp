@@ -54,7 +54,7 @@ jobs:
           CHECKLIST=$(cat "$CHECKLIST_DIR/pr-checklist.md")
           export MARKER
           MARKER=$(head -n 1 <<< "$CHECKLIST")
-          BODY=$(gh api "$PR_PATH" --jq '.body // ""' | tr -d '\r')
+          BODY=$(gh api "$PR_PATH" --jq '.body // ""')
           if awk '{ gsub(/^[[:space:]]+|[[:space:]]+$/, "") } $0 == ENVIRON["MARKER"] { found = 1 } END { exit !found }' <<< "$BODY"; then
             exit 0
           fi
