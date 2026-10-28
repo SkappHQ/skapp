@@ -34,6 +34,7 @@ import { useGetDealsByIds } from "~community/crm/api/DealApi";
 import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
 import { useCrmStore } from "~community/crm/store/store";
+import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 import { getMissingDealIds, mergeDeals } from "~community/crm/utils/dealUtil";
 
 const ActivitiesContent: FC = () => {
@@ -46,15 +47,26 @@ const ActivitiesContent: FC = () => {
   const [activeTab, setActiveTab] = useState<ActivityTab>(DEFAULT_ACTIVITY_TAB);
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<ActivityFilterValues>({});
-  const [selectedCallId, setSelectedCallId] = useState<number | null>(null);
 
   const isAllTab = activeTab === ActivityTab.ALL;
 
-  const { owners, deals, setDeals } = useCrmStore(
+  const {
+    owners,
+    deals,
+    selectedCallId,
+    isCrmSidePanelOpen,
+    setDeals,
+    setSelectedCallId,
+    openCrmSidePanel
+  } = useCrmStore(
     useShallow((store) => ({
       owners: store.owners,
       deals: store.deals,
-      setDeals: store.setDeals
+      selectedCallId: store.selectedCallId,
+      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+      setDeals: store.setDeals,
+      setSelectedCallId: store.setSelectedCallId,
+      openCrmSidePanel: store.openCrmSidePanel
     }))
   );
 
@@ -150,7 +162,10 @@ const ActivitiesContent: FC = () => {
     searchTerm.length > 0 || Object.keys(filters).length > 0;
 
   const handleRowClick = (row: ActivityRow): void => {
-    if (row.type === ActivityType.CALL) setSelectedCallId(row.id);
+    if (row.type !== ActivityType.CALL) return;
+
+    setSelectedCallId(row.id);
+    openCrmSidePanel(CrmSidePanelTypes.CALL_SIDE_PANEL);
   };
 
   const handleToggleComplete = (): void => {};
@@ -188,11 +203,8 @@ const ActivitiesContent: FC = () => {
         onToggleComplete={handleToggleComplete}
       />
       {selectedCallId !== null && (
-        <SidePanelWrapper>
-          <ActivityCallSidePanel
-            callId={selectedCallId}
-            onClose={() => setSelectedCallId(null)}
-          />
+        <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
+          <ActivityCallSidePanel callId={selectedCallId} />
         </SidePanelWrapper>
       )}
     </div>
