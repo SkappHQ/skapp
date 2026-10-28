@@ -24,7 +24,7 @@ interface Props {
 }
 
 const LogCallOwnerField: FC<Props> = ({ formik }) => {
-  const { values, setFieldValue } = formik;
+  const { values, errors, setFieldValue } = formik;
 
   const translateText = useTranslator(
     "crmModule",
@@ -112,6 +112,8 @@ const LogCallOwnerField: FC<Props> = ({ formik }) => {
       label={translateText(["labels", "activityOwner"])}
       placeholder={translateText(["placeholders", "activityOwner"])}
       value={searchTerm}
+      state={errors.ownerId ? "error" : "default"}
+      errorMessage={errors.ownerId}
       onChange={(event) => setSearchTerm(event.target.value)}
       emptyMessage={translateText(["emptyStates", "noOwners"])}
     />

@@ -630,6 +630,7 @@
           "activityOwner": "Search owner"
         },
         "buttons": {
+          "addAssociations": "Add associations",
           "hideAssociations": "Hide associations",
           "cancel": "Cancel",
           "save": "Save"
@@ -639,7 +640,8 @@
         },
         "validations": {
           "subject": "Subject is required",
-          "contact": "Please select a contact"
+          "contact": "Please select a contact",
+          "owner": "Activity owner is required"
         }
       }
     }
