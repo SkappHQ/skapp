@@ -110,8 +110,10 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 	public ResponseEntityDto getCallById(Long id) {
 		log.info("getCallById: execution started");
 
-		CrmActivityCall call = crmActivityCallDao.findCallById(id)
-			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_NOT_FOUND));
+		CrmActivityCall call = crmActivityCallDao.findCallById(id);
+		if (call == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_NOT_FOUND);
+		}
 
 		User currentUser = userService.getCurrentUser();
 		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, call.getOwner().getEmployeeId())) {
@@ -149,8 +151,10 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 	public ResponseEntityDto editCall(Long id, CrmActivityCallEditRequestDto requestDto) {
 		log.info("editCall: execution started");
 
-		CrmActivityCall call = crmActivityCallDao.findCallById(id)
-			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_NOT_FOUND));
+		CrmActivityCall call = crmActivityCallDao.findCallById(id);
+		if (call == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_NOT_FOUND);
+		}
 
 		User currentUser = userService.getCurrentUser();
 		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, call.getOwner().getEmployeeId())) {

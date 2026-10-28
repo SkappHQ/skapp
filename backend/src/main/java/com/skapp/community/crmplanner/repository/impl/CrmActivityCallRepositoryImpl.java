@@ -28,7 +28,6 @@ import org.springframework.stereotype.Repository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -98,7 +97,7 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 	}
 
 	@Override
-	public Optional<CrmActivityCall> findCallById(Long id) {
+	public CrmActivityCall findCallById(Long id) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmActivityCall> query = cb.createQuery(CrmActivityCall.class);
 		Root<CrmActivityCall> call = query.from(CrmActivityCall.class);
@@ -110,7 +109,7 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 		query.select(call)
 			.where(cb.equal(call.get(CrmActivityCall_.id), id), cb.isFalse(call.get(CrmActivityCall_.isDeleted)));
 
-		return entityManager.createQuery(query).getResultList().stream().findFirst();
+		return entityManager.createQuery(query).getResultStream().findFirst().orElse(null);
 	}
 
 }

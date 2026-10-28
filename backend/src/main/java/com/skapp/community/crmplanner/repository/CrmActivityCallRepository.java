@@ -5,12 +5,11 @@ import com.skapp.community.crmplanner.payload.response.CrmActivityCallResponseDt
 import com.skapp.community.crmplanner.type.CrmActivityCallFilterParams;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface CrmActivityCallRepository {
 
 	List<CrmActivityCallResponseDto> findCalls(CrmActivityCallFilterParams params);
 
-	Optional<CrmActivityCall> findCallById(Long id);
+	CrmActivityCall findCallById(Long id);
 
 }
