@@ -57,7 +57,7 @@ const LogCallDealField: FC<Props> = ({
   const debouncedSearch = useDebounce(searchTerm.trim(), SEARCH_DEBOUNCE_DELAY);
 
   const selectedContact = values.contactId ? contacts[values.contactId] : null;
-  const contactCompanyId = selectedContact && selectedContact.companyId;
+  const contactCompanyId = selectedContact?.companyId;
 
   const isSearchEnabled =
     debouncedSearch.length > 0 || Boolean(contactCompanyId);
@@ -99,7 +99,7 @@ const LogCallDealField: FC<Props> = ({
     );
     setSearchTerm("");
 
-    if (!deal || !deal.id) return;
+    if (!deal?.id) return;
 
     setDeals(mergeDeals(deals, [deal]));
     setFieldValue("dealId", deal.id);
@@ -117,9 +117,7 @@ const LogCallDealField: FC<Props> = ({
         id={id}
         label={translateText(["labels", "deal"])}
         placeholder={translateText(["placeholders", "deal"])}
-        selectedValue={
-          selectedDeal && selectedDeal.name ? selectedDeal.name : ""
-        }
+        selectedValue={selectedDeal?.name ? selectedDeal.name : ""}
         onClear={handleClear}
         clearAriaLabel={translateAria(["clearDeal"])}
         fieldAriaLabel={translateAria(["deal"])}
@@ -132,9 +130,9 @@ const LogCallDealField: FC<Props> = ({
         errorMessage={errors.dealId}
       />
       {isClearedNoticeVisible && (
-        <p role="status" className="text-sm text-semantic-amber-text">
+        <output className="text-sm text-semantic-amber-text">
           {translateText(["notices", "dealCleared"])}
-        </p>
+        </output>
       )}
     </div>
   );
