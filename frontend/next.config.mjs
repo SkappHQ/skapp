@@ -154,6 +154,14 @@ const nextConfig = {
         destination: "/enterprise/people/directory/import-google/syncing"
       },
       {
+        source: "/people/directory/import-microsoft/review",
+        destination: "/enterprise/people/directory/import-microsoft/review"
+      },
+      {
+        source: "/people/directory/import-microsoft/syncing",
+        destination: "/enterprise/people/directory/import-microsoft/syncing"
+      },
+      {
         source: "/people/directory/pending",
         destination: "/community/people/directory/pending"
       },
