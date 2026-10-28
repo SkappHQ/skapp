@@ -1,4 +1,4 @@
-import { IntegrationsIcon, SettingsIcon } from "@rootcodelabs/skapp-ui";
+import { IntegrationsIcon } from "@rootcodelabs/skapp-ui";
 
 import ROUTES from "~community/common/constants/routes";
 import {
@@ -78,7 +78,7 @@ const getEnterpriseDrawerRoutes = ({
         id: route?.id,
         name: "Settings",
         url: ROUTES.SETTINGS.BASE,
-        icon: SettingsIcon,
+        icon: route.icon,
         hasSubTree: false,
         requiredAuthLevel: [
           AdminTypes.SUPER_ADMIN,

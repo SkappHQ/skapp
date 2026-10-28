@@ -185,7 +185,7 @@ const DealsTable: FC<Props> = ({
               }}
             >
               <div className="flex items-center justify-center size-6 rounded-full shrink-0 bg-status-pink">
-                <CrmIcon width="14" height="14" color="var(--color-white)" />
+                <CrmIcon width={14} height={14} color="var(--color-white)" />
               </div>
               <span className="body2 group-hover:underline">#{deal.id}</span>
               <span

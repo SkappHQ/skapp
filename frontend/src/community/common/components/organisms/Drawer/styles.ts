@@ -8,7 +8,7 @@ type stylesProps = {
 
 export const DRAWER_ANIMATION_DURATION = "0.3s";
 export const DRAWER_TRANSFORM_DURATION = "0.05s";
-export const DRAWER_ITEM_ICON_SIZE = "24";
+export const DRAWER_ITEM_ICON_SIZE = 24;
 
 export const styles = ({ theme }: stylesProps) => ({
   iconBtn: (isDrawerExpanded: boolean, isBelow1024: boolean) => {
