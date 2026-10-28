@@ -1,6 +1,6 @@
 package com.skapp.community.crmplanner.repository;
 
-import com.skapp.community.crmplanner.payload.response.CrmActivityCallDetailResponseDto;
+import com.skapp.community.crmplanner.model.CrmActivityCall;
 import com.skapp.community.crmplanner.payload.response.CrmActivityCallResponseDto;
 import com.skapp.community.crmplanner.type.CrmActivityCallFilterParams;
 
@@ -11,6 +11,6 @@ public interface CrmActivityCallRepository {
 
 	List<CrmActivityCallResponseDto> findCalls(CrmActivityCallFilterParams params);
 
-	Optional<CrmActivityCallDetailResponseDto> findCallDetailById(Long id);
+	Optional<CrmActivityCall> findByIdWithAssociations(Long id);
 
 }

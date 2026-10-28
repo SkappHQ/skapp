@@ -2,7 +2,6 @@ package com.skapp.community.crmplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmActivityCallFilterDto;
-import com.skapp.community.crmplanner.service.CrmActivityCallDetailService;
 import com.skapp.community.crmplanner.service.CrmActivityCallService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +21,6 @@ public class CrmActivityCallController {
 
 	private final CrmActivityCallService crmActivityCallService;
 
-	private final CrmActivityCallDetailService crmActivityCallDetailService;
-
 	@GetMapping
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getCalls(CrmActivityCallFilterDto filterDto) {
@@ -34,7 +31,7 @@ public class CrmActivityCallController {
 	@GetMapping("/{id}")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getCallById(@PathVariable Long id) {
-		ResponseEntityDto response = crmActivityCallDetailService.getCallById(id);
+		ResponseEntityDto response = crmActivityCallService.getCallById(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
