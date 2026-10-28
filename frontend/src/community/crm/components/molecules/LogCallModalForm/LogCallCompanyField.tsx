@@ -87,7 +87,7 @@ const LogCallCompanyField: FC<Props> = ({ id, formik }) => {
     );
     setSearchTerm("");
 
-    if (!company || !company.id) return;
+    if (!company?.id) return;
 
     setCompanies(updateCompanyRecord(companies, [company]));
     setFieldValue("companyId", company.id);
@@ -103,9 +103,7 @@ const LogCallCompanyField: FC<Props> = ({ id, formik }) => {
       id={id}
       label={translateText(["labels", "relatedTo"])}
       placeholder={translateText(["placeholders", "relatedTo"])}
-      selectedValue={
-        selectedCompany && selectedCompany.name ? selectedCompany.name : ""
-      }
+      selectedValue={selectedCompany?.name ? selectedCompany.name : ""}
       onClear={handleClear}
       clearAriaLabel={translateAria(["clearRelatedTo"])}
       fieldAriaLabel={translateAria(["relatedTo"])}

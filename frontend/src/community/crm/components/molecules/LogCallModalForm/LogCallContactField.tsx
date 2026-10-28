@@ -99,7 +99,7 @@ const LogCallContactField: FC<Props> = ({ id, formik, onDealCleared }) => {
     );
     setSearchTerm("");
 
-    if (!contact || !contact.id) return;
+    if (!contact?.id) return;
 
     setContacts(updateContactRecord(contacts, [contact]));
     setFieldValue("contactId", contact.id);
