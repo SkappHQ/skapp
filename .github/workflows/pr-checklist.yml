@@ -2,35 +2,54 @@ name: PR Checklist
 
 on:
   pull_request_target:
-    types: [opened]
+    types: [opened, edited, reopened, synchronize]
     branches: [develop]
 
 permissions:
   pull-requests: write
 
+concurrency:
+  group: pr-checklist-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  PR_PATH: repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}
+  CHECKLIST_DIR: ${{ github.workspace }}/pr-checklist
+
 jobs:
-  attach-checklist:
+  checklist:
     if: github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 2
+    defaults:
+      run:
+        shell: bash
     steps:
-      - name: Attach shared checklist
+      - name: Fetch shared checklist
         env:
-          GH_TOKEN: ${{ github.token }}
-          CHECKLIST_TOKEN: ${{ secrets.PR_CHECKLIST_TOKEN }}
-          PR_PATH: repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}
-          CHECKLIST_SOURCE: repos/rootcodelabs/skapp-ep/contents/.github/pr-checklist.md?ref=main
+          GH_TOKEN: ${{ secrets.PR_CHECKLIST_TOKEN }}
+          SOURCE: repos/rootcodelabs/skapp-ep/contents/.github
         run: |
-          if [ -z "$CHECKLIST_TOKEN" ]; then
-            echo "::warning::PR_CHECKLIST_TOKEN is not set; checklist not attached"
-            exit 0
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::PR_CHECKLIST_TOKEN is not set"
+            exit 1
           fi
-          CHECKLIST=$(GH_TOKEN="$CHECKLIST_TOKEN" gh api "$CHECKLIST_SOURCE" -H "Accept: application/vnd.github.raw" | tr -d '\r')
-          MARKER=$(head -n 1 <<< "$CHECKLIST")
-          if [ -z "$MARKER" ]; then
+          mkdir -p "$CHECKLIST_DIR"
+          for file in pr-checklist.md pr-checklist-check.mjs; do
+            gh api "$SOURCE/$file?ref=main" -H "Accept: application/vnd.github.raw" | tr -d '\r' > "$CHECKLIST_DIR/$file"
+          done
+          if [ -z "$(head -n 1 "$CHECKLIST_DIR/pr-checklist.md")" ]; then
             echo "::error::The shared checklist must start with its heading line"
             exit 1
           fi
+
+      - name: Attach shared checklist
+        if: github.event.action == 'opened'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          CHECKLIST=$(cat "$CHECKLIST_DIR/pr-checklist.md")
+          MARKER=$(head -n 1 <<< "$CHECKLIST")
           BODY=$(gh api "$PR_PATH" --jq '.body // ""' | tr -d '\r')
           if grep -qxF "$MARKER" <<< "$BODY"; then
             exit 0
@@ -41,3 +60,11 @@ jobs:
             BODY=$CHECKLIST
           fi
           jq -n --arg body "$BODY" '{body: $body}' | gh api -X PATCH "$PR_PATH" --input - > /dev/null
+
+      - name: Read description
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api "$PR_PATH" --jq '.body // ""' > "$CHECKLIST_DIR/body.md"
+
+      - name: Check checklist
+        run: node "$CHECKLIST_DIR/pr-checklist-check.mjs" "$CHECKLIST_DIR/pr-checklist.md" "$CHECKLIST_DIR/body.md"
