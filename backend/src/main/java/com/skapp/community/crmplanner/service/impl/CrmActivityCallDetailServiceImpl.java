@@ -1,7 +1,7 @@
 package com.skapp.community.crmplanner.service.impl;
 
 import com.skapp.community.common.constant.CommonMessageConstant;
-import com.skapp.community.common.exception.EntityNotFoundException;
+import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
@@ -31,7 +31,7 @@ public class CrmActivityCallDetailServiceImpl implements CrmActivityCallDetailSe
 		log.info("getCallById: execution started");
 
 		CrmActivityCallDetailResponseDto call = crmActivityCallDao.findCallDetailById(id)
-			.orElseThrow(() -> new EntityNotFoundException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_NOT_FOUND));
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_NOT_FOUND));
 
 		User currentUser = userService.getCurrentUser();
 		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, call.getOwnerId())) {
