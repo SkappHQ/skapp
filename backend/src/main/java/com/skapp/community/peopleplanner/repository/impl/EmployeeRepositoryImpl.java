@@ -151,6 +151,22 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			predicates.add(root.get(Employee_.EMPLOYMENT_ALLOCATION).in(employeeFilterDto.getEmploymentAllocations()));
 		}
 
+		boolean hasWorkLocationIds = employeeFilterDto.getWorkLocationIds() != null
+				&& !employeeFilterDto.getWorkLocationIds().isEmpty();
+		boolean isUnassignedWorkLocation = Boolean.TRUE.equals(employeeFilterDto.getIsUnassignedWorkLocation());
+		if (hasWorkLocationIds || isUnassignedWorkLocation) {
+			Join<Employee, WorkLocation> workLocationJoin = root.join(Employee_.workLocation, JoinType.LEFT);
+			List<Predicate> workLocationPredicates = new ArrayList<>();
+			if (hasWorkLocationIds) {
+				workLocationPredicates
+					.add(workLocationJoin.get(WorkLocation_.workLocationId).in(employeeFilterDto.getWorkLocationIds()));
+			}
+			if (isUnassignedWorkLocation) {
+				workLocationPredicates.add(workLocationJoin.get(WorkLocation_.workLocationId).isNull());
+			}
+			predicates.add(criteriaBuilder.or(workLocationPredicates.toArray(new Predicate[0])));
+		}
+
 		if (employeeFilterDto.getSearchKeyword() != null && !employeeFilterDto.getSearchKeyword().isEmpty()) {
 			predicates.add(findByEmailName(employeeFilterDto.getSearchKeyword(), criteriaBuilder, root, userJoin));
 		}
