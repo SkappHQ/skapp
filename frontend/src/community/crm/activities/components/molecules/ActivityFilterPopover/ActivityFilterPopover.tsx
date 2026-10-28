@@ -6,7 +6,7 @@ import ActivityDateRangeField from "~community/crm/activities/components/molecul
 import ActivityTeamMemberField from "~community/crm/activities/components/molecules/ActivityTeamMemberField/ActivityTeamMemberField";
 import {
   ActivityDateRange,
-  ActivityFilterValues
+  ActivityFeedFilters
 } from "~community/crm/activities/types/activityTypes";
 import {
   areFilterValuesEqual,
@@ -16,15 +16,13 @@ import { CrmOwnerEntity } from "~community/crm/types/CrmCommonTypes";
 
 export interface ActivityFilterPopoverProps {
   id: string;
-  filters: ActivityFilterValues;
+  filters: ActivityFeedFilters;
   teamMembers: CrmOwnerEntity[];
   isTeamMembersError: boolean;
   timeZone?: string;
-  onApply: (filters: ActivityFilterValues) => void;
+  onApply: (filters: ActivityFeedFilters) => void;
   onClose: () => void;
 }
-
-const EMPTY_ACTIVITY_FILTERS: ActivityFilterValues = {};
 
 const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
   id,
@@ -38,35 +36,36 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
 
-  const [draft, setDraft] = useState<ActivityFilterValues>(filters);
+  const [selectedFilters, setSelectedFilters] =
+    useState<ActivityFeedFilters>(filters);
 
-  const isRangeValid = validateDateRange(draft);
-  const isChanged = !areFilterValuesEqual(draft, filters);
+  const isRangeValid = validateDateRange(selectedFilters);
+  const isChanged = !areFilterValuesEqual(selectedFilters, filters);
   const isApplyDisabled = !isChanged || !isRangeValid;
   const isResetDisabled =
-    areFilterValuesEqual(draft, EMPTY_ACTIVITY_FILTERS) &&
-    areFilterValuesEqual(filters, EMPTY_ACTIVITY_FILTERS);
+    areFilterValuesEqual(selectedFilters, {}) &&
+    areFilterValuesEqual(filters, {});
 
   const handleApply = (): void => {
-    onApply(draft);
+    onApply(selectedFilters);
     onClose();
   };
 
   const handleReset = (): void => {
-    setDraft(EMPTY_ACTIVITY_FILTERS);
-    onApply(EMPTY_ACTIVITY_FILTERS);
+    setSelectedFilters({});
+    onApply({});
     onClose();
   };
 
   const handleDateRangeChange = (dateRange: ActivityDateRange): void => {
-    setDraft((previous) => ({
+    setSelectedFilters((previous) => ({
       ...(previous.ownerId ? { ownerId: previous.ownerId } : {}),
       ...dateRange
     }));
   };
 
   const handleOwnerChange = (ownerId: number | null): void => {
-    setDraft((previous) => ({
+    setSelectedFilters((previous) => ({
       ...(previous.fromDate ? { fromDate: previous.fromDate } : {}),
       ...(previous.toDate ? { toDate: previous.toDate } : {}),
       ...(ownerId ? { ownerId } : {})
@@ -99,7 +98,7 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
 
         <ActivityDateRangeField
           id={`${id}-date-range`}
-          value={draft}
+          value={selectedFilters}
           timeZone={timeZone}
           onChange={handleDateRangeChange}
         />
@@ -107,7 +106,7 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
         <ActivityTeamMemberField
           id={`${id}-team-member`}
           teamMembers={teamMembers}
-          selectedOwnerId={draft.ownerId}
+          selectedOwnerId={selectedFilters.ownerId}
           isError={isTeamMembersError}
           onChange={handleOwnerChange}
         />

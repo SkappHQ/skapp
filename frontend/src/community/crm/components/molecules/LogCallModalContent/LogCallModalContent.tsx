@@ -65,7 +65,7 @@ const LogCallModalContent: FC<Props> = ({ onCancel }) => {
     return {
       subject: "",
       date: now.toUTC().toISO(),
-      time: now.toFormat("HH:mm"),
+      time: now.toFormat(now.minute < 30 ? "HH:00" : "HH:30"),
       duration: "",
       contact: "",
       ownerId: defaultOwner ? defaultOwner.employeeId : null,
@@ -83,7 +83,10 @@ const LogCallModalContent: FC<Props> = ({ onCancel }) => {
           .required(translateText(["validations", "subject"])),
         contact: Yup.string()
           .trim()
-          .required(translateText(["validations", "contact"]))
+          .required(translateText(["validations", "contact"])),
+        ownerId: Yup.number()
+          .typeError(translateText(["validations", "owner"]))
+          .required(translateText(["validations", "owner"]))
       }),
     [translateText]
   );

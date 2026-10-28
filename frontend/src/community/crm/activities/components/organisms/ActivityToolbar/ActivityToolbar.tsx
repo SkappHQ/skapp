@@ -5,7 +5,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import ActivityFilterControl from "~community/crm/activities/components/molecules/ActivityFilterControl/ActivityFilterControl";
 import ActivitySearchField from "~community/crm/activities/components/molecules/ActivitySearchField/ActivitySearchField";
 import {
-  ActivityFilterValues,
+  ActivityFeedFilters,
   ActivityTab
 } from "~community/crm/activities/types/activityTypes";
 import { CrmOwnerEntity } from "~community/crm/types/CrmCommonTypes";
@@ -19,20 +19,16 @@ export interface ActivityToolbarProps {
   resultCount: number;
   isResultCountReady: boolean;
   isManager: boolean;
-  filters: ActivityFilterValues;
-  onApplyFilters: (filters: ActivityFilterValues) => void;
+  filters: ActivityFeedFilters;
+  onApplyFilters: (filters: ActivityFeedFilters) => void;
   teamMembers: CrmOwnerEntity[];
   isTeamMembersError: boolean;
   timeZone?: string;
   showControls?: boolean;
 }
 
-const ACTIVITY_TOOLBAR_ID = "crm-activity-toolbar";
-
-const ACTIVITY_TABS = Object.values(ActivityTab);
-
 const ActivityToolbar: FC<ActivityToolbarProps> = ({
-  id = ACTIVITY_TOOLBAR_ID,
+  id = "crm-activity-toolbar",
   activeTab,
   onTabChange,
   searchTerm,
@@ -49,6 +45,8 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
 }) => {
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
+
+  const ACTIVITY_TABS = Object.values(ActivityTab);
 
   const tabs = ACTIVITY_TABS.map((tab) => ({
     id: tab,

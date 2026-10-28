@@ -3,7 +3,7 @@ import { FC, useMemo } from "react";
 
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import ActivityBucketSection from "~community/crm/activities/components/molecules/ActivityBucketSection/ActivityBucketSection";
+import ActivityFeedSection from "~community/crm/activities/components/molecules/ActivityFeedSection/ActivityFeedSection";
 import ActivityFeedSkeleton from "~community/crm/activities/components/molecules/ActivityFeedSkeleton/ActivityFeedSkeleton";
 import { ACTIVITY_SECTION_LABEL_KEYS } from "~community/crm/activities/constants/activityConstants";
 import {
@@ -32,10 +32,6 @@ export interface ActivityFeedProps {
   onRowClick: (row: ActivityRow) => void;
   onToggleComplete: (row: ActivityRow, isCompleted: boolean) => void;
 }
-
-const EMPTY_STATE_CLASSES = {
-  wrapper: "bg-secondary-background rounded-lg"
-};
 
 const ActivityFeed: FC<ActivityFeedProps> = ({
   id = "crm-activity-feed",
@@ -122,7 +118,7 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
             ...emptyStateKeys,
             "description"
           ])}
-          className={EMPTY_STATE_CLASSES}
+          className={{ wrapper: "bg-secondary-background rounded-lg" }}
         />
       );
     }
@@ -130,9 +126,9 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
     return (
       <div className="flex flex-col gap-4">
         {sections.map((group) => (
-          <ActivityBucketSection
+          <ActivityFeedSection
             key={group.id}
-            id={`${id}-bucket-${group.id}`}
+            id={`${id}-section-${group.id}`}
             title={getSectionTitle(group)}
             rows={group.rows}
             timeZone={timeZone}

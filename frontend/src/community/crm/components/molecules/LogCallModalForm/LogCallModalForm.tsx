@@ -3,10 +3,10 @@ import {
   CalendarIcon,
   CloseIcon,
   DatePicker,
+  Dropdown,
   InputField,
   SearchIcon,
-  TextArea,
-  Tooltip
+  TextArea
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import { FC, useState } from "react";
@@ -20,6 +20,20 @@ import {
 import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
 
 import LogCallOwnerField from "./LogCallOwnerField";
+
+const TIME_OPTIONS = Array.from({ length: 48 }, (_, index) => {
+  const hour = Math.floor(index / 2);
+  const minute = index % 2 === 0 ? "00" : "30";
+  const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+  const period = hour < 12 ? "AM" : "PM";
+  const value = `${String(hour).padStart(2, "0")}:${minute}`;
+
+  return {
+    id: value,
+    value,
+    label: `${String(hour12).padStart(2, "0")}:${minute} ${period}`
+  };
+});
 
 interface Props {
   formik: FormikProps<CrmLogCallFormValues>;
@@ -107,15 +121,17 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
             </DatePicker>
           </div>
           <div className="flex-1">
-            <InputField
-              name="time"
-              type="time"
+            <Dropdown
+              options={TIME_OPTIONS}
               value={values.time}
+              onChange={(value) => setFieldValue("time", value)}
               label={translateText(["labels", "time"])}
               placeholder={translateText(["placeholders", "time"])}
-              onChange={handleChange}
-              aria-label={translateAria(["time"])}
-              fullWidth
+              variant="primary"
+              className="rounded-lg"
+              ariaLabel={translateAria(["time"])}
+              width="100%"
+              scrollToSelected
             />
           </div>
         </div>
@@ -132,22 +148,21 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
 
         <div className="flex flex-row items-start gap-[0.625rem]">
           <div className="flex-1">
-            <Tooltip content={values.contact} disabled={!values.contact}>
-              <InputField
-                name="contact"
-                value={values.contact}
-                label={translateText(["labels", "contact"])}
-                placeholder={translateText(["placeholders", "contact"])}
-                errorMessage={touched.contact ? errors.contact : ""}
-                state={touched.contact && errors.contact ? "error" : "default"}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                aria-label={translateAria(["contact"])}
-                rightIcon={<SearchIcon />}
-                fullWidth
-                required
-              />
-            </Tooltip>
+            <InputField
+              name="contact"
+              title={values.contact}
+              value={values.contact}
+              label={translateText(["labels", "contact"])}
+              placeholder={translateText(["placeholders", "contact"])}
+              errorMessage={touched.contact ? errors.contact : ""}
+              state={touched.contact && errors.contact ? "error" : "default"}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              aria-label={translateAria(["contact"])}
+              rightIcon={<SearchIcon />}
+              fullWidth
+              required
+            />
           </div>
           <div className="flex-1">
             <LogCallOwnerField formik={formik} />
@@ -166,36 +181,34 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
 
         {isAssociationsOpen && (
           <>
-            <Tooltip content={values.deal} disabled={!values.deal}>
-              <InputField
-                name="deal"
-                value={values.deal}
-                label={translateText(["labels", "deal"])}
-                placeholder={translateText(["placeholders", "deal"])}
-                onChange={handleChange}
-                aria-label={translateAria(["deal"])}
-                rightIcon={<SearchIcon />}
-                fullWidth
-              />
-            </Tooltip>
-            <Tooltip content={values.company} disabled={!values.company}>
-              <InputField
-                name="company"
-                value={values.company}
-                label={translateText(["labels", "relatedTo"])}
-                placeholder={translateText(["placeholders", "relatedTo"])}
-                onChange={handleChange}
-                aria-label={translateAria(["relatedTo"])}
-                rightIcon={<SearchIcon />}
-                fullWidth
-              />
-            </Tooltip>
+            <InputField
+              name="deal"
+              title={values.deal}
+              value={values.deal}
+              label={translateText(["labels", "deal"])}
+              placeholder={translateText(["placeholders", "deal"])}
+              onChange={handleChange}
+              aria-label={translateAria(["deal"])}
+              rightIcon={<SearchIcon />}
+              fullWidth
+            />
+            <InputField
+              name="company"
+              title={values.company}
+              value={values.company}
+              label={translateText(["labels", "relatedTo"])}
+              placeholder={translateText(["placeholders", "relatedTo"])}
+              onChange={handleChange}
+              aria-label={translateAria(["relatedTo"])}
+              rightIcon={<SearchIcon />}
+              fullWidth
+            />
           </>
         )}
 
         <button
           type="button"
-          className="self-start text-sm text-primary underline"
+          className="self-start text-sm text-primary-text underline"
           aria-expanded={isAssociationsOpen}
           onClick={() => setIsAssociationsOpen((open) => !open)}
         >

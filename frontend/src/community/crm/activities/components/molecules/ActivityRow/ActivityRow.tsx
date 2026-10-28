@@ -36,10 +36,10 @@ const ActivityRow: FC<ActivityRowProps> = ({
 
   const owners = useCrmStore((state) => state.owners);
 
-  const ownerId = row.ownerId ?? 0;
-  const owner = owners[ownerId];
+  const { ownerId } = row;
+  const owner = ownerId ? owners[ownerId] : null;
   const ownerImageUrl = useGetImageUrl([owner?.authPic ?? ""])[0];
-  const ownerName = getOwnerName(owners, ownerId);
+  const ownerName = ownerId ? getOwnerName(owners, ownerId) : "";
 
   const rowId = `crm-activity-row-${getActivityRowKey(row)}`;
   const isTask = row.type === ActivityType.TASK;

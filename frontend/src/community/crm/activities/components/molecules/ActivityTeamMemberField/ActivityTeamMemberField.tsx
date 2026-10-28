@@ -6,6 +6,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { filterCRMEmployees } from "~community/crm/activities/utils/activityFilterUtil";
 import SelectableSearchField from "~community/crm/components/molecules/SelectableSearchField/SelectableSearchField";
 import { CrmOwnerEntity } from "~community/crm/types/CrmCommonTypes";
+import { getOwnerName, toOwnersRecord } from "~community/crm/utils/commonUtil";
 
 export interface ActivityTeamMemberFieldProps {
   id: string;
@@ -14,11 +15,6 @@ export interface ActivityTeamMemberFieldProps {
   isError: boolean;
   onChange: (ownerId: number | null) => void;
 }
-
-const TEAM_MEMBER_KEYS = ["activities", "toolbar", "filters", "teamMember"];
-
-const getMemberName = (member: CrmOwnerEntity): string =>
-  [member.firstName, member.lastName].filter(Boolean).join(" ");
 
 const ActivityTeamMemberField: FC<ActivityTeamMemberFieldProps> = ({
   id,
@@ -32,17 +28,24 @@ const ActivityTeamMemberField: FC<ActivityTeamMemberFieldProps> = ({
 
   const [searchValue, setSearchValue] = useState("");
 
-  const selectedMember = teamMembers.find(
-    (member) => member.employeeId === selectedOwnerId
+  const TEAM_MEMBER_KEYS = ["activities", "toolbar", "filters", "teamMember"];
+
+  const teamMembersRecord = useMemo(
+    () => toOwnersRecord(teamMembers),
+    [teamMembers]
   );
 
   const items: SearchableDropdownItem[] = useMemo(
     () =>
       filterCRMEmployees(teamMembers, searchValue).map((member) => ({
         id: String(member.employeeId),
-        content: <span className="body2">{getMemberName(member)}</span>
+        content: (
+          <span className="body2">
+            {getOwnerName(teamMembersRecord, member.employeeId)}
+          </span>
+        )
       })),
-    [teamMembers, searchValue]
+    [teamMembers, teamMembersRecord, searchValue]
   );
 
   const label = translateText([...TEAM_MEMBER_KEYS, "label"]);
@@ -69,15 +72,13 @@ const ActivityTeamMemberField: FC<ActivityTeamMemberFieldProps> = ({
     );
   }
 
-  const isListEmpty = teamMembers.length === 0;
-
   return (
     <div className="flex w-full flex-col gap-1">
       <SelectableSearchField
         id={id}
         label={label}
         placeholder={placeholder}
-        selectedValue={selectedMember ? getMemberName(selectedMember) : ""}
+        selectedValue={getOwnerName(teamMembersRecord, selectedOwnerId)}
         onClear={() => {
           setSearchValue("");
           onChange(null);
@@ -96,7 +97,7 @@ const ActivityTeamMemberField: FC<ActivityTeamMemberFieldProps> = ({
         onSelect={(item) => onChange(Number(item.id))}
         emptyMessage={translateText([
           ...TEAM_MEMBER_KEYS,
-          isListEmpty ? "noTeamMembers" : "noMatches"
+          teamMembers.length === 0 ? "noTeamMembers" : "noMatches"
         ])}
       />
     </div>
