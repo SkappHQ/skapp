@@ -73,7 +73,7 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
       </div>
 
       {(showControls || action) && (
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {showControls && isManager && (
             <ActivityFilterControl
               id={`${id}-filter`}

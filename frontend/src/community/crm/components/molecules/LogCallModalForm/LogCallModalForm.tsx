@@ -31,8 +31,7 @@ const FIELD_FOCUS_ORDER: {
   { field: "subject", elementId: "log-call-subject" },
   { field: "duration", elementId: "log-call-duration" },
   { field: "contactId", elementId: "log-call-contact-input" },
-  { field: "ownerId", elementId: "activity-owner-search-input" },
-  { field: "dealId", elementId: "log-call-deal-input" }
+  { field: "ownerId", elementId: "activity-owner-search-input" }
 ];
 
 interface Props {
@@ -45,6 +44,7 @@ const LogCallModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
   const {
     values,
     errors,
+    status,
     touched,
     handleChange,
     handleBlur,
@@ -73,7 +73,12 @@ const LogCallModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
   const [isDealClearedNoticeVisible, setIsDealClearedNoticeVisible] =
     useState(false);
 
-  const isAssociationsVisible = isAssociationsOpen || Boolean(errors.dealId);
+  const isDealMismatch =
+    Boolean(status) &&
+    status.mismatchedDealId === values.dealId &&
+    status.mismatchedContactId === values.contactId;
+
+  const isAssociationsVisible = isAssociationsOpen || isDealMismatch;
 
   const handleDealCleared = (): void => {
     setIsDealClearedNoticeVisible(true);
@@ -81,8 +86,6 @@ const LogCallModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
   };
 
   const handleSave = async (): Promise<void> => {
-    if (isPending) return;
-
     await submitForm();
     const formErrors = await validateForm();
     const firstInvalidField = FIELD_FOCUS_ORDER.find(
@@ -204,6 +207,11 @@ const LogCallModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
             <LogCallDealField
               id="log-call-deal"
               formik={formik}
+              errorMessage={
+                isDealMismatch
+                  ? translateText(["validations", "dealMismatch"])
+                  : ""
+              }
               isClearedNoticeVisible={isDealClearedNoticeVisible}
               onDealSelected={() => setIsDealClearedNoticeVisible(false)}
             />

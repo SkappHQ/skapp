@@ -645,6 +645,8 @@
           "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
         },
         "toastMessages": {
+          "successTitle": "Call logged successfully",
+          "successDescription": "The call has been logged successfully",
           "errorTitle": "Oops! Something went wrong",
           "errorDescription": "Failed to log call"
         }

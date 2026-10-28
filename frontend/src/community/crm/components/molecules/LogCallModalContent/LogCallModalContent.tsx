@@ -1,5 +1,4 @@
-import { useFormik } from "formik";
-import { DateTime } from "luxon";
+import { FormikHelpers, useFormik } from "formik";
 import { FC, useEffect, useMemo } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -7,7 +6,10 @@ import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { ErrorResponse } from "~community/common/types/CommonTypes";
-import { instantInZone } from "~community/common/utils/dateTimeUtils";
+import {
+  instantInZone,
+  nowInZone
+} from "~community/common/utils/dateTimeUtils";
 import { ActivityCallCreatePayload } from "~community/crm/activities/types/activityTypes";
 import { useCreateCall } from "~community/crm/api/ActivityApi";
 import LogCallModalForm from "~community/crm/components/molecules/LogCallModalForm/LogCallModalForm";
@@ -27,12 +29,14 @@ interface Props {
   onCancel: () => void;
   onSaved: () => void;
   onDirtyChange: (isDirty: boolean) => void;
+  onPendingChange: (isPending: boolean) => void;
 }
 
 const LogCallModalContent: FC<Props> = ({
   onCancel,
   onSaved,
-  onDirtyChange
+  onDirtyChange,
+  onPendingChange
 }) => {
   const translateText = useTranslator("crmModule");
   const displayZone = useDisplayZone();
@@ -41,7 +45,7 @@ const LogCallModalContent: FC<Props> = ({
   const defaultOwner = useDefaultCrmOwner();
 
   const initialValues: CrmLogCallFormValues = useMemo(() => {
-    const now = DateTime.now();
+    const now = nowInZone(displayZone);
     const slotStart = now.set({
       minute: now.minute - (now.minute % CALL_TIME_SLOT_MINUTES)
     });
@@ -57,7 +61,7 @@ const LogCallModalContent: FC<Props> = ({
       dealId: null,
       companyId: null
     };
-  }, [defaultOwner]);
+  }, [defaultOwner, displayZone]);
 
   const toPayload = (
     values: CrmLogCallFormValues,
@@ -88,8 +92,14 @@ const LogCallModalContent: FC<Props> = ({
     };
   };
 
-  const handleSubmit = (values: CrmLogCallFormValues): void => {
-    if (!values.contactId || !values.ownerId) return;
+  const handleSubmit = (
+    values: CrmLogCallFormValues,
+    helpers: FormikHelpers<CrmLogCallFormValues>
+  ): void => {
+    if (!values.contactId || !values.ownerId) {
+      helpers.setSubmitting(false);
+      return;
+    }
 
     createCall(toPayload(values, values.contactId, values.ownerId));
   };
@@ -103,15 +113,33 @@ const LogCallModalContent: FC<Props> = ({
     enableReinitialize: true
   });
 
-  const { dirty, setSubmitting, setFieldError } = formik;
+  const { values, dirty, setSubmitting, setStatus } = formik;
 
   useEffect(() => {
     onDirtyChange(dirty);
-  }, [dirty]);
+  }, [dirty, onDirtyChange]);
 
   const handleSuccess = (): void => {
     setSubmitting(false);
     onSaved();
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateText([
+        "activities",
+        "logCall",
+        "modal",
+        "toastMessages",
+        "successTitle"
+      ]),
+      description: translateText([
+        "activities",
+        "logCall",
+        "modal",
+        "toastMessages",
+        "successDescription"
+      ])
+    });
   };
 
   const handleError = (error: ErrorResponse): void => {
@@ -121,16 +149,14 @@ const LogCallModalContent: FC<Props> = ({
       error.response?.data?.results?.[0]?.messageKey ===
       CrmErrorMessageKeyEnum.ACTIVITY_CALL_DEAL_COMPANY_MISMATCH
     ) {
-      setFieldError(
-        "dealId",
-        translateText([
-          "activities",
-          "logCall",
-          "modal",
-          "validations",
-          "dealMismatch"
-        ])
-      );
+      setStatus({
+        mismatchedDealId: values.dealId,
+        mismatchedContactId: values.contactId
+      });
+      requestAnimationFrame(() => {
+        document.getElementById("log-call-deal-input")?.focus();
+      });
+      return;
     }
 
     setToastMessage({
@@ -158,6 +184,10 @@ const LogCallModalContent: FC<Props> = ({
     handleSuccess,
     handleError
   );
+
+  useEffect(() => {
+    onPendingChange(isPending);
+  }, [isPending, onPendingChange]);
 
   return (
     <LogCallModalForm

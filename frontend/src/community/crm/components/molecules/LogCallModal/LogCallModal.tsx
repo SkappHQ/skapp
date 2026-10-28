@@ -20,15 +20,19 @@ const LogCallModal: FC<Props> = ({ isOpen, onClose }) => {
 
   const [isDirty, setIsDirty] = useState(false);
   const [isDiscardPromptOpen, setIsDiscardPromptOpen] = useState(false);
+  const [isPending, setIsPending] = useState(false);
 
   const handleCloseModal = (): void => {
     setIsDirty(false);
+    setIsPending(false);
     setIsDiscardPromptOpen(false);
     onClose();
   };
 
   const handleRequestClose = (): void => {
-    if (isDirty) {
+    if (isPending) return;
+
+    if (isDirty && !isDiscardPromptOpen) {
       setIsDiscardPromptOpen(true);
       return;
     }
@@ -59,6 +63,7 @@ const LogCallModal: FC<Props> = ({ isOpen, onClose }) => {
                 onCancel={handleRequestClose}
                 onSaved={handleCloseModal}
                 onDirtyChange={setIsDirty}
+                onPendingChange={setIsPending}
               />
             </div>
           </>

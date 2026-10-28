@@ -19,6 +19,7 @@ import { mergeDeals } from "~community/crm/utils/dealUtil";
 interface Props {
   id: string;
   formik: FormikProps<CrmLogCallFormValues>;
+  errorMessage: string;
   isClearedNoticeVisible: boolean;
   onDealSelected: () => void;
 }
@@ -26,10 +27,11 @@ interface Props {
 const LogCallDealField: FC<Props> = ({
   id,
   formik,
+  errorMessage,
   isClearedNoticeVisible,
   onDealSelected
 }) => {
-  const { values, errors, setFieldValue } = formik;
+  const { values, setFieldValue } = formik;
 
   const translateText = useTranslator(
     "crmModule",
@@ -127,7 +129,7 @@ const LogCallDealField: FC<Props> = ({
         onSelect={handleSelect}
         isOpenOnFocus={isSearchEnabled}
         emptyMessage={translateText(["emptyStates", "noDeals"])}
-        errorMessage={errors.dealId}
+        errorMessage={errorMessage}
       />
       {isClearedNoticeVisible && (
         <output className="text-sm text-semantic-amber-text">
