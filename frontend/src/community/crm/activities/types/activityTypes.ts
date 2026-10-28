@@ -74,3 +74,44 @@ export interface ActivitySectionGroup {
   monthKey: string | null;
   rows: ActivityRow[];
 }
+
+export interface ActivityListFilters {
+  searchKeyword?: string;
+  ownerId?: number;
+  startDate?: string;
+  endDate?: string;
+}
+
+interface ActivityListItemBase {
+  id: number;
+  ownerId: number | null;
+  dealId: number | null;
+  companyId: number | null;
+}
+
+export interface ActivityCallResponse extends ActivityListItemBase {
+  subject: string;
+  loggedAt: string | null;
+  contactId: number | null;
+}
+
+export interface ActivityEmailResponse extends ActivityListItemBase {
+  subject: string;
+  loggedAt: string | null;
+  contactIds: number[];
+}
+
+export interface ActivityMeetingResponse extends ActivityListItemBase {
+  name: string;
+  startAt: string | null;
+  contactIds: number[];
+}
+
+export interface ActivityTaskResponse extends ActivityListItemBase {
+  name: string;
+  dueAt: string | null;
+  priority: CrmPriorityEnum | null;
+  isCompleted: boolean;
+  completedAt: string | null;
+  contactId: number | null;
+}

@@ -109,6 +109,7 @@ const SetupOrganizationForm: React.FC<Props> = ({
             error={errors.country ?? ""}
             placeholder={"Select Country"}
             required={true}
+            menuPlacement="auto"
             onChange={(value) => {
               handleCountrySelect(value as string);
             }}
@@ -121,6 +122,7 @@ const SetupOrganizationForm: React.FC<Props> = ({
             error={errors.organizationTimeZone ?? ""}
             placeholder={"Select Timezone"}
             required={true}
+            menuPlacement="auto"
             onChange={(value) => {
               handleTimezoneSelect?.(value as string);
             }}
