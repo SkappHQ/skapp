@@ -9,10 +9,6 @@ export const getCallValidationSchema = (translator: TranslatorFunctionType) =>
       .required(
         translator(["activities", "logCall", "modal", "validations", "subject"])
       ),
-    duration: Yup.string().matches(
-      /^\d*$/,
-      translator(["activities", "logCall", "modal", "validations", "duration"])
-    ),
     contactId: Yup.number()
       .nullable()
       .required(
