@@ -2,26 +2,42 @@ name: PR Checklist
 
 on:
   pull_request_target:
-    types: [opened, reopened]
+    types: [opened]
+    branches: [develop]
 
 permissions:
   pull-requests: write
 
 jobs:
   attach-checklist:
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     steps:
       - name: Attach shared checklist
         env:
           GH_TOKEN: ${{ github.token }}
           CHECKLIST_TOKEN: ${{ secrets.PR_CHECKLIST_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          CHECKLIST_SOURCE: repos/rootcodelabs/skapp-ep/contents/.github/pr-checklist.md
+          PR_PATH: repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}
+          CHECKLIST_SOURCE: repos/rootcodelabs/skapp-ep/contents/.github/pr-checklist.md?ref=main
         run: |
-          CHECKLIST=$(GH_TOKEN="$CHECKLIST_TOKEN" gh api "$CHECKLIST_SOURCE" -H "Accept: application/vnd.github.raw")
+          if [ -z "$CHECKLIST_TOKEN" ]; then
+            echo "::warning::PR_CHECKLIST_TOKEN is not set; checklist not attached"
+            exit 0
+          fi
+          CHECKLIST=$(GH_TOKEN="$CHECKLIST_TOKEN" gh api "$CHECKLIST_SOURCE" -H "Accept: application/vnd.github.raw" | tr -d '\r')
           MARKER=$(head -n 1 <<< "$CHECKLIST")
-          BODY=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json body --jq .body)
+          if [ -z "$MARKER" ]; then
+            echo "::error::The shared checklist must start with its heading line"
+            exit 1
+          fi
+          BODY=$(gh api "$PR_PATH" --jq '.body // ""' | tr -d '\r')
           if grep -qxF "$MARKER" <<< "$BODY"; then
             exit 0
           fi
-          printf '%s\n\n%s\n' "$BODY" "$CHECKLIST" | gh pr edit "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file -
+          if [ -n "$BODY" ]; then
+            BODY=$(printf '%s\n\n%s' "$BODY" "$CHECKLIST")
+          else
+            BODY=$CHECKLIST
+          fi
+          jq -n --arg body "$BODY" '{body: $body}' | gh api -X PATCH "$PR_PATH" --input - > /dev/null
