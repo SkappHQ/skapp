@@ -1,6 +1,7 @@
 {
   "breadcrumbs": {
-    "crm": "CRM"
+    "crm": "CRM",
+    "activities": "Activities"
   },
   "common": {
     "initData": {
@@ -578,6 +579,31 @@
     }
   },
   "activities": {
+    "page": {
+      "title": "Activities",
+      "pageHead": "Activities | Skapp"
+    },
+    "toasts": {
+      "updateTaskStatusError": {
+        "title": "Failed to update task",
+        "description": "Could not update the task status. Please try again."
+      }
+    },
+    "types": {
+      "task": "Task",
+      "call": "Call",
+      "meeting": "Meeting",
+      "email": "Email"
+    },
+    "row": {
+      "subtitle": {
+        "overdue": "Overdue",
+        "dueToday": "Due today",
+        "dueOn": "Due on {{date}}",
+        "scheduledOn": "Scheduled on {{date}}",
+        "occurredAt": "{{date}} at {{time}}"
+      }
+    },
     "logCall": {
       "modal": {
         "title": "Log a call",

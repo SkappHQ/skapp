@@ -130,6 +130,11 @@
     }
   },
   "activities": {
+    "row": {
+      "openDetails": "Open {{type}} details for {{subject}}",
+      "markComplete": "Mark '{{subject}}' complete",
+      "markIncomplete": "Mark '{{subject}}' incomplete"
+    },
     "logCall": {
       "modal": {
         "subject": "Call subject",
