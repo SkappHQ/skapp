@@ -2,7 +2,7 @@ import { FC } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import {
-  FULL_MONTH_YEAR_FORMAT,
+  SHORT_MONTH_YEAR_FORMAT,
   TIME_FORMAT_12_HOUR
 } from "~community/common/constants/timeConstants";
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
@@ -43,7 +43,7 @@ const SidePanelCallInfo: FC<Props> = ({
     "noValue"
   ]);
   const loggedAt = instantInZone(call.loggedAt, displayZone);
-  const callDate = `${formatDayWithOrdinalIndicator(loggedAt)} ${loggedAt.toFormat(FULL_MONTH_YEAR_FORMAT)}`;
+  const callDate = `${formatDayWithOrdinalIndicator(loggedAt)} ${loggedAt.toFormat(SHORT_MONTH_YEAR_FORMAT)}`;
   const callStartTime = loggedAt.toFormat(TIME_FORMAT_12_HOUR);
 
   const renderLink = (label: string, onClick: () => void) => (
