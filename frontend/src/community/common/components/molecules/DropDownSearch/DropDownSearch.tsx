@@ -5,6 +5,7 @@ import { FC, type ReactNode } from "react";
 import Select, {
   type ActionMeta,
   type DropdownIndicatorProps,
+  type MenuPlacement,
   type MenuProps,
   components
 } from "react-select";
@@ -42,6 +43,7 @@ interface Props {
   customStyles?: Record<string, string>;
   required?: boolean;
   labelId?: string;
+  menuPlacement?: MenuPlacement;
 }
 
 const DropdownIndicator = (props: DropdownIndicatorProps): ReactNode => {
@@ -69,7 +71,8 @@ const DropdownSearch: FC<Props> = ({
   addNewClickBtnText,
   onAddNewClickBtn,
   customStyles,
-  required
+  required,
+  menuPlacement = "bottom"
 }) => {
   const theme: Theme = useTheme();
 
@@ -196,6 +199,7 @@ const DropdownSearch: FC<Props> = ({
         menuPortalTarget={
           typeof window !== "undefined" ? document.body : undefined
         }
+        menuPlacement={menuPlacement}
         components={{ DropdownIndicator, Menu }}
         onChange={handleChange}
         name={inputName}
