@@ -55,7 +55,7 @@ jobs:
           export MARKER
           MARKER=$(head -n 1 <<< "$CHECKLIST")
           BODY=$(gh api "$PR_PATH" --jq '.body // ""')
-          if awk '{ gsub(/^[[:space:]]+|[[:space:]]+$/, "") } $0 == ENVIRON["MARKER"] { found = 1 } END { exit !found }' <<< "$BODY"; then
+          if awk 'BEGIN { marker = ENVIRON["MARKER"]; gsub(/^[[:space:]]+|[[:space:]]+$/, "", marker) } { gsub(/^[[:space:]]+|[[:space:]]+$/, "") } $0 == marker { found = 1 } END { exit !found }' <<< "$BODY"; then
             exit 0
           fi
           if [ -n "$BODY" ]; then
