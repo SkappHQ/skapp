@@ -19,7 +19,7 @@ import {
 } from "~community/people/api/PeopleApi";
 import { BirthdayNotificationConfigType } from "~community/people/types/PeopleConfigTypes";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
-import GoogleWorkspaceSyncSettings from "~enterprise/configurations/components/organisms/GoogleWorkspaceSyncSettings/GoogleWorkspaceSyncSettings";
+import PeopleSyncSettings from "~enterprise/configurations/components/organisms/PeopleSyncSettings/PeopleSyncSettings";
 import { useEnterprisePeopleStore } from "~enterprise/people/store/enterprisePeopleStore";
 
 const PeopleConfigurations: FC = () => {
@@ -33,7 +33,7 @@ const PeopleConfigurations: FC = () => {
 
   const isEnterprise = useGetEnvironment() === appModes.ENTERPRISE;
   const { isSuperAdmin } = useSessionData();
-  const canManageGoogleWorkspace = isEnterprise && !!isSuperAdmin;
+  const canManagePeopleSync = isEnterprise && !!isSuperAdmin;
 
   const {
     setIsWorkspaceSaveTriggered,
@@ -92,13 +92,13 @@ const PeopleConfigurations: FC = () => {
   const isBirthdaySectionLoaded =
     isError || (!isLoading && !!birthdayNotificationConfig);
 
-  const isWorkspaceChanged = canManageGoogleWorkspace && isWorkspaceDirty;
+  const isWorkspaceChanged = canManagePeopleSync && isWorkspaceDirty;
   const isAnyChanged = birthdayFormik.dirty || isWorkspaceChanged;
 
   useConfigurationUnsavedChanges(isAnyChanged);
 
   const isAnySubmitting =
-    isPending || (canManageGoogleWorkspace && isWorkspaceSubmitting);
+    isPending || (canManagePeopleSync && isWorkspaceSubmitting);
 
   const handleCancelAll = () => {
     if (birthdayFormik.dirty) birthdayFormik.resetForm();
@@ -208,7 +208,7 @@ const PeopleConfigurations: FC = () => {
         </div>
       )}
 
-      {canManageGoogleWorkspace && <GoogleWorkspaceSyncSettings />}
+      {canManagePeopleSync && <PeopleSyncSettings />}
 
       {isBirthdaySectionLoaded && (
         <Box sx={{ display: "flex", flexDirection: "row", gap: "0.75rem" }}>
