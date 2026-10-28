@@ -1,0 +1,27 @@
+name: PR Checklist
+
+on:
+  pull_request_target:
+    types: [opened, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  attach-checklist:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Attach shared checklist
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CHECKLIST_TOKEN: ${{ secrets.PR_CHECKLIST_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          CHECKLIST_SOURCE: repos/rootcodelabs/skapp-ep/contents/.github/pr-checklist.md
+        run: |
+          CHECKLIST=$(GH_TOKEN="$CHECKLIST_TOKEN" gh api "$CHECKLIST_SOURCE" -H "Accept: application/vnd.github.raw")
+          MARKER=$(head -n 1 <<< "$CHECKLIST")
+          BODY=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json body --jq .body)
+          if grep -qxF "$MARKER" <<< "$BODY"; then
+            exit 0
+          fi
+          printf '%s\n\n%s\n' "$BODY" "$CHECKLIST" | gh pr edit "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file -
