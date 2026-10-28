@@ -10,6 +10,7 @@ import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityCallDetailResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmActivityCallResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactLookupResponseDto;
@@ -77,6 +78,12 @@ public interface CrmMapper {
 	@Mapping(target = "companyId", source = "company.id")
 	@Mapping(target = "dealId", source = "deal.id")
 	CrmTaskResponseDto crmTaskToCrmTaskResponseDto(CrmTask crmTask);
+
+	@Mapping(target = "ownerId", source = "owner.employeeId")
+	@Mapping(target = "contactId", source = "contact.id")
+	@Mapping(target = "dealId", source = "deal.id")
+	@Mapping(target = "companyId", source = "company.id")
+	CrmActivityCallResponseDto crmActivityCallToCrmActivityCallResponseDto(CrmActivityCall crmActivityCall);
 
 	List<CrmTaskTypeResponseDto> crmTaskTypesToCrmTaskTypeResponseDtos(List<CrmTaskType> crmTaskTypes);
 
