@@ -29,6 +29,7 @@ const FIELD_FOCUS_ORDER: {
   elementId: string;
 }[] = [
   { field: "subject", elementId: "log-call-subject" },
+  { field: "duration", elementId: "log-call-duration" },
   { field: "contactId", elementId: "log-call-contact-input" },
   { field: "ownerId", elementId: "activity-owner-search-input" },
   { field: "dealId", elementId: "log-call-deal-input" }
@@ -159,11 +160,15 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
         </div>
 
         <InputField
+          id="log-call-duration"
           name="duration"
           value={values.duration}
           label={translateText(["labels", "duration"])}
           placeholder={translateText(["placeholders", "duration"])}
+          errorMessage={touched.duration ? errors.duration : ""}
+          state={touched.duration && errors.duration ? "error" : "default"}
           onChange={handleChange}
+          onBlur={handleBlur}
           aria-label={translateAria(["duration"])}
           fullWidth
         />

@@ -615,7 +615,7 @@
           "subject": "Enter subject",
           "date": "Select date",
           "time": "Select time",
-          "duration": "Enter duration",
+          "duration": "e.g. 1h 30m",
           "contact": "Enter name",
           "comments": "Add message",
           "deal": "Search deals",
@@ -637,7 +637,8 @@
         "validations": {
           "subject": "Subject is required",
           "contact": "Please select a contact",
-          "owner": "Activity owner is required"
+          "owner": "Activity owner is required",
+          "duration": "Please enter a valid duration (e.g. 1h 30m)"
         },
         "notices": {
           "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
