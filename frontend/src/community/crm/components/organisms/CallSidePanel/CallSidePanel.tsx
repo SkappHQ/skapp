@@ -91,7 +91,7 @@ const CallSidePanel: FC<Props> = ({
             width={TASK_DETAIL_ICON_SIZE}
             height={TASK_DETAIL_ICON_SIZE}
           />
-          <span className="h1 text-black">{call.subject}</span>
+          <h2 className="h2 text-black">{call.subject}</h2>
         </div>
       }
       headerActions={
@@ -118,7 +118,7 @@ const CallSidePanel: FC<Props> = ({
             <p className="subtitle1">
               {translateText(["activities", "callSidePanel", "comments"])}
             </p>
-            <p className="subtitle3">
+            <p className="subtitle3 max-h-24 overflow-y-auto break-words">
               {call.comments
                 ? call.comments
                 : translateText(["activities", "callSidePanel", "noComments"])}
