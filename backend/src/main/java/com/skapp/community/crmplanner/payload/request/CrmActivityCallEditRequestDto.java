@@ -2,7 +2,6 @@ package com.skapp.community.crmplanner.payload.request;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.openapitools.jackson.nullable.JsonNullable;
 
 import java.time.Instant;
 
@@ -14,16 +13,16 @@ public class CrmActivityCallEditRequestDto {
 
 	private Instant loggedAt;
 
-	private JsonNullable<Integer> durationMinutes = JsonNullable.undefined();
+	private Integer durationMinutes;
 
 	private Long contactId;
 
-	private JsonNullable<Long> dealId = JsonNullable.undefined();
+	private Long dealId;
 
-	private JsonNullable<Long> companyId = JsonNullable.undefined();
+	private Long companyId;
 
 	private Long ownerId;
 
-	private JsonNullable<String> comments = JsonNullable.undefined();
+	private String comments;
 
 }
