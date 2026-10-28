@@ -3,14 +3,13 @@ import {
   EditIcon,
   KebabMenu,
   MenuItemProps,
+  PhoneFilledIcon,
   SidePanel
 } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { ACTIVITY_TYPE_ICON_MAP } from "~community/crm/activities/constants/activityConstants";
-import { ActivityType } from "~community/crm/activities/types/activityTypes";
 import SidePanelCallInfo from "~community/crm/components/molecules/SidePanelCallInfo/SidePanelCallInfo";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import { TASK_DETAIL_ICON_SIZE } from "~community/crm/constants/taskConstants";
@@ -48,9 +47,8 @@ const CallSidePanel: FC<Props> = ({
     }))
   );
 
-  const CallIcon = ACTIVITY_TYPE_ICON_MAP[ActivityType.CALL];
   const owner = owners[call.ownerId];
-  const dealId = call.deal && call.deal.id;
+  const dealId = call.deal?.id;
 
   useEffect(() => {
     if (!call.deal) return;
@@ -89,7 +87,7 @@ const CallSidePanel: FC<Props> = ({
       closeOnBackdropClick
       header={
         <div className="flex items-center gap-4 pl-2">
-          <CallIcon
+          <PhoneFilledIcon
             width={TASK_DETAIL_ICON_SIZE}
             height={TASK_DETAIL_ICON_SIZE}
           />
