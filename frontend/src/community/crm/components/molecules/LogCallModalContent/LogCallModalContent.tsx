@@ -40,9 +40,14 @@ const LogCallModalContent: FC<Props> = ({ onCancel }) => {
     };
   }, [defaultOwner]);
 
+  const validationSchema = useMemo(
+    () => getCallValidationSchema(translateText),
+    [translateText]
+  );
+
   const formik = useFormik<CrmLogCallFormValues>({
     initialValues,
-    validationSchema: getCallValidationSchema(translateText),
+    validationSchema,
     onSubmit: (_values, helpers) => helpers.setSubmitting(false),
     validateOnChange: false,
     validateOnBlur: true,

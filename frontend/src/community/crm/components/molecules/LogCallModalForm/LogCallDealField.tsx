@@ -20,16 +20,16 @@ interface Props {
   id: string;
   formik: FormikProps<CrmLogCallFormValues>;
   isClearedNoticeVisible: boolean;
-  onDealSelected: () => void;
+  onDealChange: () => void;
 }
 
 const LogCallDealField: FC<Props> = ({
   id,
   formik,
   isClearedNoticeVisible,
-  onDealSelected
+  onDealChange
 }) => {
-  const { values, errors, setFieldValue } = formik;
+  const { values, setFieldValue } = formik;
 
   const translateText = useTranslator(
     "crmModule",
@@ -103,12 +103,13 @@ const LogCallDealField: FC<Props> = ({
 
     setDeals(mergeDeals(deals, [deal]));
     setFieldValue("dealId", deal.id);
-    onDealSelected();
+    onDealChange();
   };
 
   const handleClear = (): void => {
     setFieldValue("dealId", null);
     setSearchTerm("");
+    onDealChange();
   };
 
   return (
@@ -127,7 +128,6 @@ const LogCallDealField: FC<Props> = ({
         onSelect={handleSelect}
         isOpenOnFocus={isSearchEnabled}
         emptyMessage={translateText(["emptyStates", "noDeals"])}
-        errorMessage={errors.dealId}
       />
       {isClearedNoticeVisible && (
         <output className="text-sm text-semantic-amber-text">

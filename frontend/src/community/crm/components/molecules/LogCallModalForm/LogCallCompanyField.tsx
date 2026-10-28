@@ -1,11 +1,14 @@
 import { FormikProps } from "formik";
-import { FC, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { SearchableDropdownItem } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useGetCompanyLookup } from "~community/crm/api/CompanyApi";
+import {
+  useGetCompaniesByIds,
+  useGetCompanyLookup
+} from "~community/crm/api/CompanyApi";
 import SelectableSearchField from "~community/crm/components/molecules/SelectableSearchField/SelectableSearchField";
 import {
   DEFAULT_LOOKUP_PAGE_SIZE,
@@ -14,7 +17,10 @@ import {
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
 import { CrmCompanyFilterRequest } from "~community/crm/types/CrmTypes";
-import { updateCompanyRecord } from "~community/crm/utils/companyUtil";
+import {
+  getMissingCompanyIds,
+  updateCompanyRecord
+} from "~community/crm/utils/companyUtil";
 
 interface Props {
   id: string;
@@ -78,6 +84,23 @@ const LogCallCompanyField: FC<Props> = ({ id, formik }) => {
       })),
     [lookupItems]
   );
+
+  const missingCompanyIds = useMemo(
+    () =>
+      values.companyId
+        ? getMissingCompanyIds([values.companyId], companies)
+        : [],
+    [values.companyId, companies]
+  );
+  const { data: fetchedCompanies } = useGetCompaniesByIds(
+    missingCompanyIds,
+    missingCompanyIds.length > 0
+  );
+  useEffect(() => {
+    if (fetchedCompanies && fetchedCompanies.length > 0) {
+      setCompanies(updateCompanyRecord(companies, fetchedCompanies));
+    }
+  }, [fetchedCompanies]);
 
   const selectedCompany = values.companyId ? companies[values.companyId] : null;
 

@@ -14,7 +14,6 @@ import {
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
 import { CrmContactFilterRequest } from "~community/crm/types/CrmTypes";
-import { updateCompanyRecord } from "~community/crm/utils/companyUtil";
 import {
   getContactDisplayName,
   updateContactRecord
@@ -42,13 +41,11 @@ const LogCallContactField: FC<Props> = ({ id, formik, onDealCleared }) => {
     "modal"
   );
 
-  const { contacts, deals, companies, setContacts, setCompanies } = useCrmStore(
+  const { contacts, deals, setContacts } = useCrmStore(
     useShallow((store) => ({
       contacts: store.contacts,
       deals: store.deals,
-      companies: store.companies,
-      setContacts: store.setContacts,
-      setCompanies: store.setCompanies
+      setContacts: store.setContacts
     }))
   );
 
@@ -117,11 +114,6 @@ const LogCallContactField: FC<Props> = ({ id, formik, onDealCleared }) => {
     }
 
     if (!hasFilledRelatedTo && !values.companyId && contact.companyId) {
-      setCompanies(
-        updateCompanyRecord(companies, [
-          { id: contact.companyId, name: contact.companyName }
-        ])
-      );
       setFieldValue("companyId", contact.companyId);
       setHasFilledRelatedTo(true);
     }
