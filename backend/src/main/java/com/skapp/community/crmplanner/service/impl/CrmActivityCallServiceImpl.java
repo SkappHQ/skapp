@@ -125,6 +125,9 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 		if (call.getDeal() != null && Boolean.TRUE.equals(call.getDeal().getIsDeleted())) {
 			response.setDeal(null);
 		}
+		else if (call.getDeal() != null) {
+			response.setDeal(CrmUtil.toDealResponseDto(crmMapper, call.getDeal()));
+		}
 		if (call.getCompany() != null && Boolean.TRUE.equals(call.getCompany().getIsDeleted())) {
 			response.setCompany(null);
 		}
