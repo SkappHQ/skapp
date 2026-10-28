@@ -423,7 +423,7 @@ const routes = [
   },
   {
     id: "8",
-    name: "Report",
+    name: "Reports",
     url: ROUTES.REPORT.BASE,
     icon: IconName.REPORT_ICON,
     hasSubTree: false,

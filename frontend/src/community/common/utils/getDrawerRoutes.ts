@@ -264,7 +264,7 @@ const getDrawerRoutes = ({
         };
       }
 
-      if (route?.name === "Report") {
+      if (route?.name === "Reports") {
         if (!isCoreOrProTier(tiers)) {
           return null;
         }

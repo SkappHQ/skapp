@@ -143,3 +143,15 @@ export type CrmBoardRecord = Record<number, CrmBoardColumn>;
 export type CrmTaskRecord = Record<number, CrmTaskEntity>;
 export type CrmTaskTypeRecord = Record<number, CrmTaskTypeEntity>;
 export type CrmIndustryRecord = Record<number, CrmIndustryEntity>;
+
+export interface CrmLogCallFormValues {
+  subject: string;
+  date: string | null;
+  time: string;
+  duration: string;
+  contact: string;
+  ownerId: number | null;
+  comments: string;
+  deal: string;
+  company: string;
+}

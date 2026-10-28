@@ -619,16 +619,20 @@
           "contact": "Enter name",
           "comments": "Add message",
           "deal": "Search deals",
-          "relatedTo": "Search companies"
-        },
-        "tooltips": {
-          "duration": "Enter the call duration, for example 15 minutes"
+          "relatedTo": "Search companies",
+          "activityOwner": "Search owner"
         },
         "buttons": {
-          "addAssociations": "Add associations",
           "hideAssociations": "Hide associations",
           "cancel": "Cancel",
           "save": "Save"
+        },
+        "emptyStates": {
+          "noOwners": "No owners found"
+        },
+        "validations": {
+          "subject": "Subject is required",
+          "contact": "Please select a contact"
         }
       }
     },

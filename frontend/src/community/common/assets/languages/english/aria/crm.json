@@ -141,12 +141,10 @@
         "date": "Call date",
         "time": "Call time",
         "duration": "Call duration",
-        "durationInfo": "Call duration information",
         "contact": "Call contact",
         "comments": "Call comments",
         "deal": "Search deals",
         "relatedTo": "Search companies",
-        "toggleAssociations": "Toggle associations",
         "cancel": "Cancel log a call",
         "save": "Save call",
         "removeOwner": "Remove activity owner"
@@ -155,8 +153,8 @@
     "tabs": "Activity types",
     "row": {
       "openDetails": "Open {{type}} details for {{subject}}",
-      "markComplete": "Mark '{{name}}' complete",
-      "markIncomplete": "Mark '{{name}}' incomplete",
+      "markComplete": "Mark '{{subject}}' complete",
+      "markIncomplete": "Mark '{{subject}}' incomplete",
       "owner": "Owner: {{name}}",
       "highPriority": "High priority",
       "mediumPriority": "Medium priority",
