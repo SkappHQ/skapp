@@ -63,6 +63,11 @@ export interface ActivityFeedFilters {
   size?: number;
 }
 
+export type ActivityFilterValues = Pick<
+  ActivityFeedFilters,
+  "ownerId" | "fromDate" | "toDate"
+>;
+
 export interface ActivityDateRange {
   fromDate?: string;
   toDate?: string;
