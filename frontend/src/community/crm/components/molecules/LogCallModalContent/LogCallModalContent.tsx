@@ -1,28 +1,24 @@
 import { useFormik } from "formik";
+import { DateTime } from "luxon";
 import { FC, useEffect, useMemo } from "react";
-import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { ErrorResponse } from "~community/common/types/CommonTypes";
-import {
-  instantInZone,
-  nowInZone
-} from "~community/common/utils/dateTimeUtils";
+import { instantInZone } from "~community/common/utils/dateTimeUtils";
 import { ActivityCallCreatePayload } from "~community/crm/activities/types/activityTypes";
 import { useCreateCall } from "~community/crm/api/ActivityApi";
 import LogCallModalForm from "~community/crm/components/molecules/LogCallModalForm/LogCallModalForm";
-import { CrmErrorMessageKeyEnum } from "~community/crm/enums/common";
-import { useCrmStore } from "~community/crm/store/store";
 import {
-  CrmLogCallFormValues,
-  CrmOwnerEntity
-} from "~community/crm/types/CrmCommonTypes";
+  CALL_TIME_SLOT_MINUTES,
+  CALL_TIME_VALUE_FORMAT
+} from "~community/crm/constants/callConstants";
+import { CrmErrorMessageKeyEnum } from "~community/crm/enums/common";
+import { useDefaultCrmOwner } from "~community/crm/hooks/useDefaultCrmOwner";
+import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
 import { getCallValidationSchema } from "~community/crm/utils/callValidations";
-import { updateOwnerRecord } from "~community/crm/utils/commonUtil";
-import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 interface Props {
   onCancel: () => void;
@@ -39,44 +35,18 @@ const LogCallModalContent: FC<Props> = ({
   const displayZone = useDisplayZone();
   const { setToastMessage } = useToast();
 
-  const { owners, setOwners } = useCrmStore(
-    useShallow((store) => ({
-      owners: store.owners,
-      setOwners: store.setOwners
-    }))
-  );
-
-  const { data: currentUser } = useGetUserPersonalDetails();
-
-  const defaultOwner = useMemo((): CrmOwnerEntity | null => {
-    if (!currentUser?.employeeId) return null;
-
-    return {
-      employeeId: Number(currentUser.employeeId),
-      firstName: currentUser.firstName ?? "",
-      lastName: currentUser.lastName ?? "",
-      authPic: currentUser.authPic as string | null
-    };
-  }, [
-    currentUser?.employeeId,
-    currentUser?.firstName,
-    currentUser?.lastName,
-    currentUser?.authPic
-  ]);
-
-  useEffect(() => {
-    if (!defaultOwner) return;
-
-    setOwners(updateOwnerRecord(owners, [defaultOwner]));
-  }, [defaultOwner]);
+  const defaultOwner = useDefaultCrmOwner();
 
   const initialValues: CrmLogCallFormValues = useMemo(() => {
-    const now = nowInZone(displayZone);
+    const now = DateTime.now();
+    const slotStart = now.set({
+      minute: now.minute - (now.minute % CALL_TIME_SLOT_MINUTES)
+    });
 
     return {
       subject: "",
       date: now.toUTC().toISO(),
-      time: now.toFormat(now.minute < 30 ? "HH:00" : "HH:30"),
+      time: slotStart.toFormat(CALL_TIME_VALUE_FORMAT),
       duration: "",
       contactId: null,
       ownerId: defaultOwner ? defaultOwner.employeeId : null,
@@ -84,7 +54,7 @@ const LogCallModalContent: FC<Props> = ({
       dealId: null,
       companyId: null
     };
-  }, [defaultOwner, displayZone]);
+  }, [defaultOwner]);
 
   const toPayload = (
     values: CrmLogCallFormValues,

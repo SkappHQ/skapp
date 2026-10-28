@@ -16,26 +16,13 @@ import {
   instantToPickedDay,
   pickedDayToInstant
 } from "~community/common/utils/dateTimeUtils";
+import { CALL_TIME_OPTIONS } from "~community/crm/constants/callConstants";
 import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
 
 import LogCallCompanyField from "./LogCallCompanyField";
 import LogCallContactField from "./LogCallContactField";
 import LogCallDealField from "./LogCallDealField";
 import LogCallOwnerField from "./LogCallOwnerField";
-
-const TIME_OPTIONS = Array.from({ length: 48 }, (_, index) => {
-  const hour = Math.floor(index / 2);
-  const minute = index % 2 === 0 ? "00" : "30";
-  const hour12 = hour % 12 === 0 ? 12 : hour % 12;
-  const period = hour < 12 ? "AM" : "PM";
-  const value = `${String(hour).padStart(2, "0")}:${minute}`;
-
-  return {
-    id: value,
-    value,
-    label: `${String(hour12).padStart(2, "0")}:${minute} ${period}`
-  };
-});
 
 const FIELD_FOCUS_ORDER: {
   field: keyof CrmLogCallFormValues;
@@ -161,7 +148,7 @@ const LogCallModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
           </div>
           <div className="flex-1">
             <Dropdown
-              options={TIME_OPTIONS}
+              options={CALL_TIME_OPTIONS}
               value={values.time}
               onChange={(value) => setFieldValue("time", value)}
               label={translateText(["labels", "time"])}
