@@ -1,92 +1,89 @@
 import { useFormik } from "formik";
-import { FC, useMemo } from "react";
+import { FC, useEffect, useMemo } from "react";
 import * as Yup from "yup";
+import { useShallow } from "zustand/react/shallow";
 
-import { characterLengths } from "~community/common/constants/stringConstants";
+import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { nowInZone } from "~community/common/utils/dateTimeUtils";
 import LogCallModalForm from "~community/crm/components/molecules/LogCallModalForm/LogCallModalForm";
-import { useCurrentUserAsCrmOwner } from "~community/crm/hooks/useCurrentUserAsCrmOwner";
-import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
+import { useCrmStore } from "~community/crm/store/store";
+import {
+  CrmLogCallFormValues,
+  CrmOwnerEntity
+} from "~community/crm/types/CrmCommonTypes";
+import { updateOwnerRecord } from "~community/crm/utils/commonUtil";
+import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 interface Props {
   onCancel: () => void;
 }
 
 const LogCallModalContent: FC<Props> = ({ onCancel }) => {
-  const translateText = useTranslator("crmModule");
+  const translateText = useTranslator(
+    "crmModule",
+    "activities",
+    "logCall",
+    "modal"
+  );
+  const displayZone = useDisplayZone();
 
-  const defaultOwner = useCurrentUserAsCrmOwner();
+  const { owners, setOwners } = useCrmStore(
+    useShallow((store) => ({
+      owners: store.owners,
+      setOwners: store.setOwners
+    }))
+  );
 
-  const initialValues: CrmLogCallFormValues = useMemo(
-    () => ({
+  const { data: currentUser } = useGetUserPersonalDetails();
+
+  const defaultOwner = useMemo((): CrmOwnerEntity | null => {
+    if (!currentUser?.employeeId) return null;
+
+    return {
+      employeeId: Number(currentUser.employeeId),
+      firstName: currentUser.firstName ?? "",
+      lastName: currentUser.lastName ?? "",
+      authPic: currentUser.authPic as string | null
+    };
+  }, [
+    currentUser?.employeeId,
+    currentUser?.firstName,
+    currentUser?.lastName,
+    currentUser?.authPic
+  ]);
+
+  useEffect(() => {
+    if (!defaultOwner) return;
+
+    setOwners(updateOwnerRecord(owners, [defaultOwner]));
+  }, [defaultOwner]);
+
+  const initialValues: CrmLogCallFormValues = useMemo(() => {
+    const now = nowInZone(displayZone);
+
+    return {
       subject: "",
-      date: null,
-      time: "",
+      date: now.toUTC().toISO(),
+      time: now.toFormat("HH:mm"),
       duration: "",
       contact: "",
       ownerId: defaultOwner ? defaultOwner.employeeId : null,
       comments: "",
       deal: "",
       company: ""
-    }),
-    [defaultOwner]
-  );
+    };
+  }, [defaultOwner, displayZone]);
 
   const validationSchema = useMemo(
     () =>
       Yup.object().shape({
         subject: Yup.string()
           .trim()
-          .required(
-            translateText([
-              "activities",
-              "logCall",
-              "modal",
-              "validations",
-              "subject"
-            ])
-          )
-          .max(
-            characterLengths.CALL_SUBJECT_LENGTH,
-            translateText([
-              "activities",
-              "logCall",
-              "modal",
-              "validations",
-              "subjectLength"
-            ])
-          ),
+          .required(translateText(["validations", "subject"])),
         contact: Yup.string()
           .trim()
-          .required(
-            translateText([
-              "activities",
-              "logCall",
-              "modal",
-              "validations",
-              "contact"
-            ])
-          ),
-        duration: Yup.string().matches(
-          /^\d*$/,
-          translateText([
-            "activities",
-            "logCall",
-            "modal",
-            "validations",
-            "duration"
-          ])
-        ),
-        comments: Yup.string().max(
-          characterLengths.CALL_COMMENTS_LENGTH,
-          translateText([
-            "activities",
-            "logCall",
-            "modal",
-            "validations",
-            "commentsLength"
-          ])
-        )
+          .required(translateText(["validations", "contact"]))
       }),
     [translateText]
   );

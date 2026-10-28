@@ -629,9 +629,6 @@
           "relatedTo": "Search companies",
           "activityOwner": "Search owner"
         },
-        "tooltips": {
-          "duration": "Enter the call duration in minutes"
-        },
         "buttons": {
           "hideAssociations": "Hide associations",
           "cancel": "Cancel",
@@ -642,10 +639,7 @@
         },
         "validations": {
           "subject": "Subject is required",
-          "subjectLength": "Subject must be 255 characters or fewer",
-          "contact": "Contact is required",
-          "duration": "Duration must be a whole number of minutes",
-          "commentsLength": "Comments must be 1000 characters or fewer"
+          "contact": "Please select a contact"
         }
       }
     }

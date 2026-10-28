@@ -11,7 +11,6 @@ import {
 import { FormikProps } from "formik";
 import { FC, useState } from "react";
 
-import { characterLengths } from "~community/common/constants/stringConstants";
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -40,8 +39,18 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
     submitForm
   } = formik;
 
-  const translateText = useTranslator("crmModule");
-  const translateAria = useTranslator("crmAria");
+  const translateText = useTranslator(
+    "crmModule",
+    "activities",
+    "logCall",
+    "modal"
+  );
+  const translateAria = useTranslator(
+    "crmAria",
+    "activities",
+    "logCall",
+    "modal"
+  );
   const displayZone = useDisplayZone();
 
   const [isAssociationsOpen, setIsAssociationsOpen] = useState(false);
@@ -58,45 +67,19 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
     );
   };
 
-  const handleToggleAssociations = (): void => {
-    if (isAssociationsOpen) {
-      setFieldValue("deal", "");
-      setFieldValue("company", "");
-    }
-    setIsAssociationsOpen((open) => !open);
-  };
-
   return (
     <div className="flex flex-col w-full h-full justify-between gap-[0.625rem] max-h-[78vh]">
       <div className="flex flex-col gap-[0.625rem] overflow-y-auto pr-1">
         <InputField
           name="subject"
           value={values.subject}
-          label={translateText([
-            "activities",
-            "logCall",
-            "modal",
-            "labels",
-            "subject"
-          ])}
-          placeholder={translateText([
-            "activities",
-            "logCall",
-            "modal",
-            "placeholders",
-            "subject"
-          ])}
+          label={translateText(["labels", "subject"])}
+          placeholder={translateText(["placeholders", "subject"])}
           errorMessage={touched.subject ? errors.subject : ""}
           state={touched.subject && errors.subject ? "error" : "default"}
           onChange={handleChange}
           onBlur={handleBlur}
-          aria-label={translateAria([
-            "activities",
-            "logCall",
-            "modal",
-            "subject"
-          ])}
-          maxLength={characterLengths.CALL_SUBJECT_LENGTH}
+          aria-label={translateAria(["subject"])}
           fullWidth
           required
         />
@@ -113,26 +96,9 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
                 <InputField
                   name="date"
                   value={pickedDate ? pickedDate.toLocaleDateString() : ""}
-                  label={translateText([
-                    "activities",
-                    "logCall",
-                    "modal",
-                    "labels",
-                    "date"
-                  ])}
-                  placeholder={translateText([
-                    "activities",
-                    "logCall",
-                    "modal",
-                    "placeholders",
-                    "date"
-                  ])}
-                  aria-label={translateAria([
-                    "activities",
-                    "logCall",
-                    "modal",
-                    "date"
-                  ])}
+                  label={translateText(["labels", "date"])}
+                  placeholder={translateText(["placeholders", "date"])}
+                  aria-label={translateAria(["date"])}
                   rightIcon={<CalendarIcon />}
                   fullWidth
                   readOnly
@@ -145,27 +111,10 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
               name="time"
               type="time"
               value={values.time}
-              label={translateText([
-                "activities",
-                "logCall",
-                "modal",
-                "labels",
-                "time"
-              ])}
-              placeholder={translateText([
-                "activities",
-                "logCall",
-                "modal",
-                "placeholders",
-                "time"
-              ])}
+              label={translateText(["labels", "time"])}
+              placeholder={translateText(["placeholders", "time"])}
               onChange={handleChange}
-              aria-label={translateAria([
-                "activities",
-                "logCall",
-                "modal",
-                "time"
-              ])}
+              aria-label={translateAria(["time"])}
               fullWidth
             />
           </div>
@@ -173,47 +122,11 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
 
         <InputField
           name="duration"
-          type="number"
-          min={0}
           value={values.duration}
-          label={translateText([
-            "activities",
-            "logCall",
-            "modal",
-            "labels",
-            "duration"
-          ])}
-          placeholder={translateText([
-            "activities",
-            "logCall",
-            "modal",
-            "placeholders",
-            "duration"
-          ])}
-          tooltipContent={translateText([
-            "activities",
-            "logCall",
-            "modal",
-            "tooltips",
-            "duration"
-          ])}
-          tooltipPosition="left"
-          ariaLabelTooltipButton={translateAria([
-            "activities",
-            "logCall",
-            "modal",
-            "durationInfo"
-          ])}
-          errorMessage={touched.duration ? errors.duration : ""}
-          state={touched.duration && errors.duration ? "error" : "default"}
+          label={translateText(["labels", "duration"])}
+          placeholder={translateText(["placeholders", "duration"])}
           onChange={handleChange}
-          onBlur={handleBlur}
-          aria-label={translateAria([
-            "activities",
-            "logCall",
-            "modal",
-            "duration"
-          ])}
+          aria-label={translateAria(["duration"])}
           fullWidth
         />
 
@@ -223,30 +136,13 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
               <InputField
                 name="contact"
                 value={values.contact}
-                label={translateText([
-                  "activities",
-                  "logCall",
-                  "modal",
-                  "labels",
-                  "contact"
-                ])}
-                placeholder={translateText([
-                  "activities",
-                  "logCall",
-                  "modal",
-                  "placeholders",
-                  "contact"
-                ])}
+                label={translateText(["labels", "contact"])}
+                placeholder={translateText(["placeholders", "contact"])}
                 errorMessage={touched.contact ? errors.contact : ""}
                 state={touched.contact && errors.contact ? "error" : "default"}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                aria-label={translateAria([
-                  "activities",
-                  "logCall",
-                  "modal",
-                  "contact"
-                ])}
+                aria-label={translateAria(["contact"])}
                 rightIcon={<SearchIcon />}
                 fullWidth
                 required
@@ -261,32 +157,11 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
         <TextArea
           name="comments"
           value={values.comments}
-          label={translateText([
-            "activities",
-            "logCall",
-            "modal",
-            "labels",
-            "comments"
-          ])}
-          placeholder={translateText([
-            "activities",
-            "logCall",
-            "modal",
-            "placeholders",
-            "comments"
-          ])}
-          errorMessage={touched.comments ? errors.comments : ""}
-          state={touched.comments && errors.comments ? "error" : "default"}
+          label={translateText(["labels", "comments"])}
+          placeholder={translateText(["placeholders", "comments"])}
           onChange={handleChange}
-          onBlur={handleBlur}
           rows={4}
-          maxLength={characterLengths.CALL_COMMENTS_LENGTH}
-          aria-label={translateAria([
-            "activities",
-            "logCall",
-            "modal",
-            "comments"
-          ])}
+          aria-label={translateAria(["comments"])}
         />
 
         {isAssociationsOpen && (
@@ -295,27 +170,10 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
               <InputField
                 name="deal"
                 value={values.deal}
-                label={translateText([
-                  "activities",
-                  "logCall",
-                  "modal",
-                  "labels",
-                  "deal"
-                ])}
-                placeholder={translateText([
-                  "activities",
-                  "logCall",
-                  "modal",
-                  "placeholders",
-                  "deal"
-                ])}
+                label={translateText(["labels", "deal"])}
+                placeholder={translateText(["placeholders", "deal"])}
                 onChange={handleChange}
-                aria-label={translateAria([
-                  "activities",
-                  "logCall",
-                  "modal",
-                  "deal"
-                ])}
+                aria-label={translateAria(["deal"])}
                 rightIcon={<SearchIcon />}
                 fullWidth
               />
@@ -324,27 +182,10 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
               <InputField
                 name="company"
                 value={values.company}
-                label={translateText([
-                  "activities",
-                  "logCall",
-                  "modal",
-                  "labels",
-                  "relatedTo"
-                ])}
-                placeholder={translateText([
-                  "activities",
-                  "logCall",
-                  "modal",
-                  "placeholders",
-                  "relatedTo"
-                ])}
+                label={translateText(["labels", "relatedTo"])}
+                placeholder={translateText(["placeholders", "relatedTo"])}
                 onChange={handleChange}
-                aria-label={translateAria([
-                  "activities",
-                  "logCall",
-                  "modal",
-                  "relatedTo"
-                ])}
+                aria-label={translateAria(["relatedTo"])}
                 rightIcon={<SearchIcon />}
                 fullWidth
               />
@@ -356,23 +197,11 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
           type="button"
           className="self-start text-sm text-primary underline"
           aria-expanded={isAssociationsOpen}
-          onClick={handleToggleAssociations}
+          onClick={() => setIsAssociationsOpen((open) => !open)}
         >
           {isAssociationsOpen
-            ? translateText([
-                "activities",
-                "logCall",
-                "modal",
-                "buttons",
-                "hideAssociations"
-              ])
-            : translateText([
-                "activities",
-                "logCall",
-                "modal",
-                "buttons",
-                "addAssociations"
-              ])}
+            ? translateText(["buttons", "hideAssociations"])
+            : translateText(["buttons", "addAssociations"])}
         </button>
       </div>
 
@@ -384,29 +213,18 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
           onClick={onCancel}
           icon={<CloseIcon />}
           iconPosition="end"
-          aria-label={translateAria([
-            "activities",
-            "logCall",
-            "modal",
-            "cancel"
-          ])}
+          aria-label={translateAria(["cancel"])}
         >
-          {translateText([
-            "activities",
-            "logCall",
-            "modal",
-            "buttons",
-            "cancel"
-          ])}
+          {translateText(["buttons", "cancel"])}
         </ButtonV2>
         <ButtonV2
           variant="primary"
           type="button"
           onClick={submitForm}
           disabled={isSubmitting || !dirty}
-          aria-label={translateAria(["activities", "logCall", "modal", "save"])}
+          aria-label={translateAria(["save"])}
         >
-          {translateText(["activities", "logCall", "modal", "buttons", "save"])}
+          {translateText(["buttons", "save"])}
         </ButtonV2>
       </div>
     </div>

@@ -141,7 +141,6 @@
         "date": "Call date",
         "time": "Call time",
         "duration": "Call duration",
-        "durationInfo": "Call duration information",
         "contact": "Call contact",
         "comments": "Call comments",
         "deal": "Search deals",

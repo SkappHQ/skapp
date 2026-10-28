@@ -26,8 +26,18 @@ interface Props {
 const LogCallOwnerField: FC<Props> = ({ formik }) => {
   const { values, setFieldValue } = formik;
 
-  const translateText = useTranslator("crmModule");
-  const translateAria = useTranslator("crmAria");
+  const translateText = useTranslator(
+    "crmModule",
+    "activities",
+    "logCall",
+    "modal"
+  );
+  const translateAria = useTranslator(
+    "crmAria",
+    "activities",
+    "logCall",
+    "modal"
+  );
 
   const { isSuperAdmin, isCrmAdmin, isCrmSalesManager } = useSessionData();
 
@@ -42,100 +52,68 @@ const LogCallOwnerField: FC<Props> = ({ formik }) => {
     }))
   );
 
-  const [ownerSearchTerm, setOwnerSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const debouncedOwnerSearch = useDebounce(
-    ownerSearchTerm.trim(),
-    SEARCH_DEBOUNCE_DELAY
-  );
+  const debouncedSearch = useDebounce(searchTerm.trim(), SEARCH_DEBOUNCE_DELAY);
 
-  const { data: ownerLookupData } = useGetOwnerLookup(
-    debouncedOwnerSearch,
+  const { data: lookupData } = useGetOwnerLookup(
+    debouncedSearch,
     DEFAULT_LOOKUP_PAGE_SIZE,
-    canChangeOwner && debouncedOwnerSearch.length > 0
+    canChangeOwner && debouncedSearch.length > 0
   );
 
-  const ownerLookupItems = useMemo(
-    () => (ownerLookupData ? ownerLookupData.items : []),
-    [ownerLookupData]
+  const lookupItems = useMemo(
+    () => (lookupData ? lookupData.items : []),
+    [lookupData]
   );
 
-  const ownerDropdownItems: SearchableDropdownItem[] = useMemo(
+  const dropdownItems: SearchableDropdownItem[] = useMemo(
     () =>
-      ownerLookupItems.map((owner) => {
+      lookupItems.map((owner) => {
         const ownerId = String(owner.employeeId);
         return {
           id: ownerId,
           content: <OwnerAvatarChip id={ownerId} owner={owner} />
         };
       }),
-    [ownerLookupItems]
+    [lookupItems]
   );
 
   const selectedOwner = values.ownerId != null ? owners[values.ownerId] : null;
 
-  const handleOwnerSelect = (item: SearchableDropdownItem) => {
-    const owner = ownerLookupItems.find(
+  const handleSelect = (item: SearchableDropdownItem) => {
+    const owner = lookupItems.find(
       (lookupOwner) => String(lookupOwner.employeeId) === item.id
     );
     if (owner) setOwners(updateOwnerRecord(owners, [owner]));
 
     setFieldValue("ownerId", owner ? owner.employeeId : null);
-    setOwnerSearchTerm("");
+    setSearchTerm("");
   };
 
-  const handleClearOwner = () => {
+  const handleClear = () => {
     setFieldValue("ownerId", null);
-    setOwnerSearchTerm("");
+    setSearchTerm("");
   };
 
   return selectedOwner ? (
     <SelectedOwnerField
-      label={translateText([
-        "activities",
-        "logCall",
-        "modal",
-        "labels",
-        "activityOwner"
-      ])}
+      label={translateText(["labels", "activityOwner"])}
       owner={selectedOwner}
-      onRemove={handleClearOwner}
+      onRemove={handleClear}
       showRemoveButton={canChangeOwner}
-      ariaLabel={translateAria([
-        "activities",
-        "logCall",
-        "modal",
-        "removeOwner"
-      ])}
+      ariaLabel={translateAria(["removeOwner"])}
     />
   ) : (
     <SearchableDropdown
       id="activity-owner-search"
-      items={ownerDropdownItems}
-      onSelect={handleOwnerSelect}
-      label={translateText([
-        "activities",
-        "logCall",
-        "modal",
-        "labels",
-        "activityOwner"
-      ])}
-      placeholder={translateText([
-        "activities",
-        "logCall",
-        "modal",
-        "placeholders",
-        "activityOwner"
-      ])}
-      value={ownerSearchTerm}
-      onChange={(event) => setOwnerSearchTerm(event.target.value)}
-      emptyMessage={translateText([
-        "activities",
-        "logCall",
-        "modal",
-        "emptyStates",
-        "noOwners"
-      ])}
+      items={dropdownItems}
+      onSelect={handleSelect}
+      label={translateText(["labels", "activityOwner"])}
+      placeholder={translateText(["placeholders", "activityOwner"])}
+      value={searchTerm}
+      onChange={(event) => setSearchTerm(event.target.value)}
+      emptyMessage={translateText(["emptyStates", "noOwners"])}
     />
   );
 };
