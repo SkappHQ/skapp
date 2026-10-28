@@ -1,6 +1,5 @@
 package com.skapp.community.crmplanner.service.impl;
 
-import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
@@ -12,7 +11,6 @@ import com.skapp.community.crmplanner.service.CrmActivityCallDetailService;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,7 +33,7 @@ public class CrmActivityCallDetailServiceImpl implements CrmActivityCallDetailSe
 
 		User currentUser = userService.getCurrentUser();
 		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, call.getOwnerId())) {
-			throw new AccessDeniedException(CommonMessageConstant.COMMON_ERROR_ACCESS_DENIED.name());
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_VIEW_DENIED);
 		}
 
 		if (call.getDealId() != null
