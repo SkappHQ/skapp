@@ -56,7 +56,8 @@ public class CrmActivityCallCreateServiceImpl implements CrmActivityCallCreateSe
 		validateCallCreationLimit();
 
 		User currentUser = userService.getCurrentUser();
-		Employee owner = resolveCallOwner(requestDto.getOwnerId(), currentUser);
+		Employee owner = requestDto.getOwnerId() != null
+				? crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser) : currentUser.getEmployee();
 
 		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
@@ -87,19 +88,11 @@ public class CrmActivityCallCreateServiceImpl implements CrmActivityCallCreateSe
 
 		CrmActivityCall savedCall = crmActivityCallDao.save(call);
 
-		log.info("createCall: execution ended with callId={}", savedCall.getId());
+		log.info("createCall: execution ended");
 		return new ResponseEntityDto(false, crmMapper.crmActivityCallToCrmActivityCallResponseDto(savedCall));
 	}
 
 	protected void validateCallCreationLimit() {
-	}
-
-	private Employee resolveCallOwner(Long ownerId, User currentUser) {
-		if (ownerId == null) {
-			return currentUser.getEmployee();
-		}
-
-		return crmOwnerResolver.resolveOwner(ownerId, currentUser);
 	}
 
 }
