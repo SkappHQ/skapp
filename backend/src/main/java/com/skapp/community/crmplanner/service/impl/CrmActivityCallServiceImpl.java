@@ -1,13 +1,19 @@
 package com.skapp.community.crmplanner.service.impl;
 
 import com.skapp.community.common.constant.CommonMessageConstant;
+import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.StringUtils;
+import com.skapp.community.crmplanner.constant.CrmMessageConstant;
+import com.skapp.community.crmplanner.mapper.CrmMapper;
+import com.skapp.community.crmplanner.model.CrmActivityCall;
 import com.skapp.community.crmplanner.payload.request.CrmActivityCallFilterDto;
+import com.skapp.community.crmplanner.payload.response.CrmActivityCallDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityCallResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityCallDao;
 import com.skapp.community.crmplanner.service.CrmActivityCallService;
 import com.skapp.community.crmplanner.type.CrmActivityCallFilterParams;
@@ -34,6 +40,8 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 	private final UserService userService;
 
 	private final TimeZoneService timeZoneService;
+
+	private final CrmMapper crmMapper;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -78,6 +86,42 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 
 		log.info("getCalls: execution ended");
 		return new ResponseEntityDto(false, calls);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getCallById(Long id) {
+		log.info("getCallById: execution started");
+
+		CrmActivityCall call = crmActivityCallDao.findCallById(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_NOT_FOUND));
+
+		User currentUser = userService.getCurrentUser();
+		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, call.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_VIEW_DENIED);
+		}
+
+		CrmActivityCallDetailResponseDto response = crmMapper.crmActivityCallToCrmActivityCallDetailResponseDto(call);
+		if (call.getContact() != null && Boolean.TRUE.equals(call.getContact().getIsDeleted())) {
+			response.setContact(null);
+		}
+		if (call.getDeal() != null && Boolean.TRUE.equals(call.getDeal().getIsDeleted())) {
+			response.setDeal(null);
+		}
+		if (call.getCompany() != null && Boolean.TRUE.equals(call.getCompany().getIsDeleted())) {
+			response.setCompany(null);
+		}
+
+		CrmDealResponseDto deal = response.getDeal();
+		if (deal != null && CrmValidations.isOwnerRestrictedForRepresentative(currentUser, deal.getOwnerId())) {
+			CrmDealResponseDto restrictedDeal = new CrmDealResponseDto();
+			restrictedDeal.setId(deal.getId());
+			restrictedDeal.setOwnerId(deal.getOwnerId());
+			response.setDeal(restrictedDeal);
+		}
+
+		log.info("getCallById: execution ended");
+		return new ResponseEntityDto(false, response);
 	}
 
 }
