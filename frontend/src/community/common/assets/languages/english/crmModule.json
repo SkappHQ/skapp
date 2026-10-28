@@ -589,6 +589,11 @@
         "description": "Could not update the task status. Please try again."
       }
     },
+    "buckets": {
+      "overdue": "Overdue",
+      "today": "Today",
+      "upcoming": "Upcoming"
+    },
     "types": {
       "task": "Task",
       "call": "Call",
@@ -602,6 +607,43 @@
         "dueOn": "Due on {{date}}",
         "scheduledOn": "Scheduled on {{date}}",
         "occurredAt": "{{date}} at {{time}}"
+      },
+      "deletedLink": "{{name}} (deleted)"
+    },
+    "feed": {
+      "emptyState": {
+        "all": {
+          "title": "No activities logged",
+          "description": "No activities have been logged yet. Once you log activities, they will be displayed here."
+        },
+        "tasks": {
+          "title": "No tasks logged",
+          "description": "No tasks have been logged yet. Once you log tasks, they will be displayed here."
+        },
+        "calls": {
+          "title": "No calls logged",
+          "description": "No calls have been logged yet. Once you log calls, they will be displayed here."
+        },
+        "meetings": {
+          "title": "No meetings logged",
+          "description": "No meetings have been logged yet. Once you log meetings, they will be displayed here."
+        },
+        "emails": {
+          "title": "No emails logged",
+          "description": "No emails have been logged yet. Once you log emails, they will be displayed here."
+        }
+      },
+      "noResults": {
+        "title": "No activities match '{{term}}'",
+        "description": "Try a different search term."
+      },
+      "loadError": "Couldn't load your activities. Please refresh to try again."
+    },
+    "toolbar": {
+      "search": {
+        "label": "Search activities",
+        "resultCount_one": "{{count}} activity found",
+        "resultCount_other": "{{count}} activities found"
       }
     }
   }
