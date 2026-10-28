@@ -88,7 +88,7 @@ public class CrmActivityCallCreateServiceImpl implements CrmActivityCallCreateSe
 		CrmActivityCall savedCall = crmActivityCallDao.save(call);
 
 		log.info("createCall: execution ended with callId={}", savedCall.getId());
-		return new ResponseEntityDto(false, crmMapper.crmActivityCallToCrmActivityCallCreateResponseDto(savedCall));
+		return new ResponseEntityDto(false, crmMapper.crmActivityCallToCrmActivityCallResponseDto(savedCall));
 	}
 
 	protected void validateCallCreationLimit() {
