@@ -82,7 +82,7 @@ const SidePanelCallInfo: FC<Props> = ({
               "activities",
               "callSidePanel",
               "info",
-              "contactDeleted"
+              "noLongerAvailable"
             ])}
           </span>
         )}

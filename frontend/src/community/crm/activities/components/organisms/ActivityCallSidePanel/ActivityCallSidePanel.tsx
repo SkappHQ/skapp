@@ -27,18 +27,8 @@ const ActivityCallSidePanel: FC<Props> = ({ callId, onClose }) => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText([
-        "activities",
-        "callSidePanel",
-        "toasts",
-        "loadErrorTitle"
-      ]),
-      description: translateText([
-        "activities",
-        "callSidePanel",
-        "toasts",
-        "loadErrorDescription"
-      ]),
+      title: translateText(["common", "initData", "errorTitle"]),
+      description: translateText(["common", "initData", "errorDescription"]),
       isIcon: true
     });
     onClose();
