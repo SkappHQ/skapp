@@ -11,6 +11,6 @@ public interface CrmActivityCallRepository {
 
 	List<CrmActivityCallResponseDto> findCalls(CrmActivityCallFilterParams params);
 
-	Optional<CrmActivityCall> findByIdWithAssociations(Long id);
+	Optional<CrmActivityCall> findCallById(Long id);
 
 }

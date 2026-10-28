@@ -93,7 +93,7 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 	public ResponseEntityDto getCallById(Long id) {
 		log.info("getCallById: execution started");
 
-		CrmActivityCall call = crmActivityCallDao.findByIdWithAssociations(id)
+		CrmActivityCall call = crmActivityCallDao.findCallById(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_NOT_FOUND));
 
 		User currentUser = userService.getCurrentUser();

@@ -98,7 +98,7 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 	}
 
 	@Override
-	public Optional<CrmActivityCall> findByIdWithAssociations(Long id) {
+	public Optional<CrmActivityCall> findCallById(Long id) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmActivityCall> query = cb.createQuery(CrmActivityCall.class);
 		Root<CrmActivityCall> call = query.from(CrmActivityCall.class);
