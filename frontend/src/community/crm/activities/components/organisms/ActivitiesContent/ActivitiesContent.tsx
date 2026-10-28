@@ -9,7 +9,6 @@ import { DEFAULT_ACTIVITY_TAB } from "~community/crm/activities/constants/activi
 import {
   ActivityFeedFilters,
   ActivityFeedResponse,
-  ActivityFilterValues,
   ActivityListFilters,
   ActivityTab
 } from "~community/crm/activities/types/activityTypes";
@@ -41,7 +40,7 @@ const ActivitiesContent: FC = () => {
 
   const [activeTab, setActiveTab] = useState<ActivityTab>(DEFAULT_ACTIVITY_TAB);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filters, setFilters] = useState<ActivityFilterValues>({});
+  const [filters, setFilters] = useState<ActivityFeedFilters>({});
 
   const isAllTab = activeTab === ActivityTab.ALL;
 

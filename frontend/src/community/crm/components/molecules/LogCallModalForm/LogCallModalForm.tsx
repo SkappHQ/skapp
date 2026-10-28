@@ -5,7 +5,6 @@ import {
   DatePicker,
   Dropdown,
   InputField,
-  SearchIcon,
   TextArea
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
@@ -19,6 +18,9 @@ import {
 } from "~community/common/utils/dateTimeUtils";
 import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
 
+import LogCallCompanyField from "./LogCallCompanyField";
+import LogCallContactField from "./LogCallContactField";
+import LogCallDealField from "./LogCallDealField";
 import LogCallOwnerField from "./LogCallOwnerField";
 
 const TIME_OPTIONS = Array.from({ length: 48 }, (_, index) => {
@@ -35,12 +37,24 @@ const TIME_OPTIONS = Array.from({ length: 48 }, (_, index) => {
   };
 });
 
+const FIELD_FOCUS_ORDER: {
+  field: keyof CrmLogCallFormValues;
+  elementId: string;
+}[] = [
+  { field: "subject", elementId: "log-call-subject" },
+  { field: "duration", elementId: "log-call-duration" },
+  { field: "contactId", elementId: "log-call-contact-input" },
+  { field: "ownerId", elementId: "activity-owner-search-input" },
+  { field: "dealId", elementId: "log-call-deal-input" }
+];
+
 interface Props {
   formik: FormikProps<CrmLogCallFormValues>;
+  isPending: boolean;
   onCancel: () => void;
 }
 
-const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
+const LogCallModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
   const {
     values,
     errors,
@@ -50,7 +64,8 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
     dirty,
     isSubmitting,
     setFieldValue,
-    submitForm
+    submitForm,
+    validateForm
   } = formik;
 
   const translateText = useTranslator(
@@ -68,6 +83,29 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
   const displayZone = useDisplayZone();
 
   const [isAssociationsOpen, setIsAssociationsOpen] = useState(false);
+  const [isDealClearedNoticeVisible, setIsDealClearedNoticeVisible] =
+    useState(false);
+
+  const isAssociationsVisible = isAssociationsOpen || Boolean(errors.dealId);
+
+  const handleDealCleared = (): void => {
+    setIsDealClearedNoticeVisible(true);
+    setIsAssociationsOpen(true);
+  };
+
+  const handleSave = async (): Promise<void> => {
+    if (isPending) return;
+
+    await submitForm();
+    const formErrors = await validateForm();
+    const firstInvalidField = FIELD_FOCUS_ORDER.find(
+      ({ field }) => formErrors[field]
+    );
+
+    if (firstInvalidField) {
+      document.getElementById(firstInvalidField.elementId)?.focus();
+    }
+  };
 
   const pickedDate = values.date
     ? instantToPickedDay(values.date, displayZone)
@@ -85,6 +123,7 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
     <div className="flex flex-col w-full h-full justify-between gap-[0.625rem] max-h-[78vh]">
       <div className="flex flex-col gap-[0.625rem] overflow-y-auto pr-1">
         <InputField
+          id="log-call-subject"
           name="subject"
           value={values.subject}
           label={translateText(["labels", "subject"])}
@@ -137,31 +176,26 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
         </div>
 
         <InputField
+          id="log-call-duration"
           name="duration"
           value={values.duration}
           label={translateText(["labels", "duration"])}
           placeholder={translateText(["placeholders", "duration"])}
+          errorMessage={touched.duration ? errors.duration : ""}
+          state={touched.duration && errors.duration ? "error" : "default"}
           onChange={handleChange}
+          onBlur={handleBlur}
+          inputMode="numeric"
           aria-label={translateAria(["duration"])}
           fullWidth
         />
 
         <div className="flex flex-row items-start gap-[0.625rem]">
           <div className="flex-1">
-            <InputField
-              name="contact"
-              title={values.contact}
-              value={values.contact}
-              label={translateText(["labels", "contact"])}
-              placeholder={translateText(["placeholders", "contact"])}
-              errorMessage={touched.contact ? errors.contact : ""}
-              state={touched.contact && errors.contact ? "error" : "default"}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              aria-label={translateAria(["contact"])}
-              rightIcon={<SearchIcon />}
-              fullWidth
-              required
+            <LogCallContactField
+              id="log-call-contact"
+              formik={formik}
+              onDealCleared={handleDealCleared}
             />
           </div>
           <div className="flex-1">
@@ -179,40 +213,25 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
           aria-label={translateAria(["comments"])}
         />
 
-        {isAssociationsOpen && (
+        {isAssociationsVisible && (
           <>
-            <InputField
-              name="deal"
-              title={values.deal}
-              value={values.deal}
-              label={translateText(["labels", "deal"])}
-              placeholder={translateText(["placeholders", "deal"])}
-              onChange={handleChange}
-              aria-label={translateAria(["deal"])}
-              rightIcon={<SearchIcon />}
-              fullWidth
+            <LogCallDealField
+              id="log-call-deal"
+              formik={formik}
+              isClearedNoticeVisible={isDealClearedNoticeVisible}
+              onDealSelected={() => setIsDealClearedNoticeVisible(false)}
             />
-            <InputField
-              name="company"
-              title={values.company}
-              value={values.company}
-              label={translateText(["labels", "relatedTo"])}
-              placeholder={translateText(["placeholders", "relatedTo"])}
-              onChange={handleChange}
-              aria-label={translateAria(["relatedTo"])}
-              rightIcon={<SearchIcon />}
-              fullWidth
-            />
+            <LogCallCompanyField id="log-call-related-to" formik={formik} />
           </>
         )}
 
         <button
           type="button"
           className="self-start text-sm text-primary-text underline"
-          aria-expanded={isAssociationsOpen}
-          onClick={() => setIsAssociationsOpen((open) => !open)}
+          aria-expanded={isAssociationsVisible}
+          onClick={() => setIsAssociationsOpen(!isAssociationsVisible)}
         >
-          {isAssociationsOpen
+          {isAssociationsVisible
             ? translateText(["buttons", "hideAssociations"])
             : translateText(["buttons", "addAssociations"])}
         </button>
@@ -222,7 +241,7 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
         <ButtonV2
           variant="tertiary"
           type="button"
-          disabled={isSubmitting}
+          disabled={isPending || isSubmitting}
           onClick={onCancel}
           icon={<CloseIcon />}
           iconPosition="end"
@@ -233,8 +252,9 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
         <ButtonV2
           variant="primary"
           type="button"
-          onClick={submitForm}
-          disabled={isSubmitting || !dirty}
+          onClick={handleSave}
+          disabled={isPending || isSubmitting || !dirty}
+          isLoading={isPending}
           aria-label={translateAria(["save"])}
         >
           {translateText(["buttons", "save"])}

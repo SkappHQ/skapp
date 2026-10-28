@@ -1,14 +1,19 @@
 import {
   InfiniteData,
   UseInfiniteQueryResult,
+  UseMutationResult,
   UseQueryResult,
   useInfiniteQuery,
-  useQuery
+  useMutation,
+  useQuery,
+  useQueryClient
 } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 
+import { ErrorResponse } from "~community/common/types/CommonTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import {
+  ActivityCallCreatePayload,
   ActivityCallResponse,
   ActivityEmailResponse,
   ActivityFeedFilters,
@@ -125,3 +130,25 @@ export const useGetActivityTasks = (
     enabled,
     refetchOnWindowFocus: false
   });
+
+const createCall = async (
+  payload: ActivityCallCreatePayload
+): Promise<void> => {
+  await authFetch.post(crmActivityEndpoints.CREATE_CALL, payload);
+};
+
+export const useCreateCall = (
+  onSuccess: () => void,
+  onError: (error: ErrorResponse) => void
+): UseMutationResult<void, ErrorResponse, ActivityCallCreatePayload> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createCall,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
+      onSuccess();
+    },
+    onError
+  });
+};

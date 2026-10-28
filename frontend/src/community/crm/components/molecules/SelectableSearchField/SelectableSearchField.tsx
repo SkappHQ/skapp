@@ -19,6 +19,8 @@ interface Props {
   items: SearchableDropdownItem[];
   onSelect: (item: SearchableDropdownItem) => void;
   emptyMessage?: string;
+  required?: boolean;
+  errorMessage?: string;
 }
 
 const SelectableSearchField: FC<Props> = ({
@@ -34,7 +36,9 @@ const SelectableSearchField: FC<Props> = ({
   items,
   onSelect,
   emptyMessage,
-  isOpenOnFocus = true
+  isOpenOnFocus = true,
+  required = false,
+  errorMessage
 }) => {
   if (selectedValue) {
     return (
@@ -69,6 +73,9 @@ const SelectableSearchField: FC<Props> = ({
       onSelect={onSelect}
       emptyMessage={emptyMessage}
       isOpenOnFocus={isOpenOnFocus}
+      required={required}
+      state={errorMessage ? "error" : "default"}
+      errorMessage={errorMessage}
     />
   );
 };

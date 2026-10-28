@@ -581,7 +581,8 @@
   "activities": {
     "page": {
       "title": "Activities",
-      "pageHead": "Activities | Skapp"
+      "pageHead": "Activities | Skapp",
+      "logCallBtn": "Log a call"
     },
     "toasts": {
       "updateTaskStatusError": {
@@ -718,12 +719,24 @@
           "save": "Save"
         },
         "emptyStates": {
-          "noOwners": "No owners found"
+          "noOwners": "No owners found",
+          "noContacts": "No contacts found",
+          "noDeals": "No deals found",
+          "noCompanies": "No companies found"
         },
         "validations": {
           "subject": "Subject is required",
           "contact": "Please select a contact",
-          "owner": "Activity owner is required"
+          "owner": "Activity owner is required",
+          "duration": "Duration must be a whole number of minutes, 0 or more",
+          "dealMismatch": "The deal must belong to the contact's company"
+        },
+        "notices": {
+          "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
+        },
+        "toastMessages": {
+          "errorTitle": "Oops! Something went wrong",
+          "errorDescription": "Failed to log call"
         }
       }
     }
