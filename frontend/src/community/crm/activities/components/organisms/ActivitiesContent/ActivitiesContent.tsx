@@ -1,8 +1,10 @@
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import useSessionData from "~community/common/hooks/useSessionData";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import ActivityFeed from "~community/crm/activities/components/organisms/ActivityFeed/ActivityFeed";
 import ActivityToolbar from "~community/crm/activities/components/organisms/ActivityToolbar/ActivityToolbar";
 import { DEFAULT_ACTIVITY_TAB } from "~community/crm/activities/constants/activityConstants";
@@ -27,11 +29,13 @@ import {
   useGetActivityTasks
 } from "~community/crm/api/ActivityApi";
 import { useGetDealsByIds } from "~community/crm/api/DealApi";
+import LogCallModal from "~community/crm/components/molecules/LogCallModal/LogCallModal";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
 import { useCrmStore } from "~community/crm/store/store";
 import { getMissingDealIds, mergeDeals } from "~community/crm/utils/dealUtil";
 
 const ActivitiesContent: FC = () => {
+  const translateText = useTranslator("crmModule");
   const displayZone = useDisplayZone();
   const { isCrmSalesManager } = useSessionData();
   const isManager = Boolean(isCrmSalesManager);
@@ -41,6 +45,7 @@ const ActivitiesContent: FC = () => {
   const [activeTab, setActiveTab] = useState<ActivityTab>(DEFAULT_ACTIVITY_TAB);
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<ActivityFeedFilters>({});
+  const [isLogCallModalOpen, setIsLogCallModalOpen] = useState(false);
 
   const isAllTab = activeTab === ActivityTab.ALL;
 
@@ -165,6 +170,21 @@ const ActivitiesContent: FC = () => {
         showControls={
           isLoading || isError || hasActiveFilters || rows.length > 0
         }
+        action={
+          activeTab === ActivityTab.CALLS && (
+            <ButtonV2
+              variant="primary"
+              type="button"
+              onClick={() => setIsLogCallModalOpen(true)}
+            >
+              {translateText(["activities", "toolbar", "logCallBtn"])}
+            </ButtonV2>
+          )
+        }
+      />
+      <LogCallModal
+        isOpen={isLogCallModalOpen}
+        onClose={() => setIsLogCallModalOpen(false)}
       />
       <ActivityFeed
         activeTab={activeTab}

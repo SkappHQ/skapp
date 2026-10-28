@@ -652,8 +652,7 @@
     },
     "page": {
       "title": "Activities",
-      "pageHead": "Activities | Skapp",
-      "logCallBtn": "Log a call"
+      "pageHead": "Activities | Skapp"
     },
     "toasts": {
       "updateTaskStatusError": {
@@ -719,6 +718,7 @@
       "loadError": "Couldn't load your activities. Please refresh to try again."
     },
     "toolbar": {
+      "logCallBtn": "Log a call",
       "search": {
         "label": "Search activities",
         "resultCount_one": "{{count}} activity found",
