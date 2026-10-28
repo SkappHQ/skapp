@@ -62,6 +62,7 @@ import FullScreenLoader from "../../molecules/FullScreenLoader/FullScreenLoader"
 import { StyledDrawer } from "./StyledDrawer";
 import {
   DRAWER_ITEM_ICON_SIZE,
+  DRAWER_TOGGLE_ICON_SIZE,
   getSelectedDrawerItemColor,
   styles
 } from "./styles";
@@ -519,7 +520,10 @@ const Drawer = (): JSX.Element => {
             const isVisible = isDrawerExpanded === (index === 0);
             return (
               <Box key={index} sx={classes.iconToggle(isVisible)}>
-                <ToggleIcon />
+                <ToggleIcon
+                  width={DRAWER_TOGGLE_ICON_SIZE}
+                  height={DRAWER_TOGGLE_ICON_SIZE}
+                />
               </Box>
             );
           })}

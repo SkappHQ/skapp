@@ -1,4 +1,10 @@
-import { Box, TextField, TextFieldProps, Typography } from "@mui/material";
+import {
+  Box,
+  InputAdornment,
+  TextField,
+  TextFieldProps,
+  Typography
+} from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { LocalizationProvider, MobileTimePicker } from "@mui/x-date-pickers";
 import { AdapterLuxon } from "@mui/x-date-pickers/AdapterLuxon";
@@ -50,8 +56,15 @@ const TimeInput = ({ time, setTime, label, error }: Props) => {
                 helperText={null}
                 inputProps={{
                   ...params.inputProps,
-                  "aria-label": `Choose ${label} time, selected time is ${DateTime.fromJSDate(time).toFormat("h:mm a")}`,
-                  endAdornment: <TimesheetIcon />
+                  "aria-label": `Choose ${label} time, selected time is ${DateTime.fromJSDate(time).toFormat("h:mm a")}`
+                }}
+                InputProps={{
+                  ...params.InputProps,
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <TimesheetIcon />
+                    </InputAdornment>
+                  )
                 }}
                 style={{
                   backgroundColor: error
