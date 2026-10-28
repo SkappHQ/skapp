@@ -594,7 +594,12 @@
         "activityOwner": "Activity owner",
         "relatedTo": "Related to",
         "durationValue": "{{minutes}} min",
-        "noValue": "-"
+        "noValue": "-",
+        "contactDeleted": "Contact deleted"
+      },
+      "toasts": {
+        "loadErrorTitle": "Couldn't load call",
+        "loadErrorDescription": "Something went wrong. Please try again"
       }
     },
     "logCall": {

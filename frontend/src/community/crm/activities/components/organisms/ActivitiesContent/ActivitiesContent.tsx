@@ -3,6 +3,7 @@ import { useShallow } from "zustand/react/shallow";
 
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import useSessionData from "~community/common/hooks/useSessionData";
+import ActivityCallSidePanel from "~community/crm/activities/components/organisms/ActivityCallSidePanel/ActivityCallSidePanel";
 import ActivityFeed from "~community/crm/activities/components/organisms/ActivityFeed/ActivityFeed";
 import ActivityToolbar from "~community/crm/activities/components/organisms/ActivityToolbar/ActivityToolbar";
 import { DEFAULT_ACTIVITY_TAB } from "~community/crm/activities/constants/activityConstants";
@@ -11,7 +12,9 @@ import {
   ActivityFeedResponse,
   ActivityFilterValues,
   ActivityListFilters,
-  ActivityTab
+  ActivityRow,
+  ActivityTab,
+  ActivityType
 } from "~community/crm/activities/types/activityTypes";
 import {
   toCallRow,
@@ -28,6 +31,7 @@ import {
   useGetActivityTasks
 } from "~community/crm/api/ActivityApi";
 import { useGetDealsByIds } from "~community/crm/api/DealApi";
+import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
 import { useCrmStore } from "~community/crm/store/store";
 import { getMissingDealIds, mergeDeals } from "~community/crm/utils/dealUtil";
@@ -42,6 +46,7 @@ const ActivitiesContent: FC = () => {
   const [activeTab, setActiveTab] = useState<ActivityTab>(DEFAULT_ACTIVITY_TAB);
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<ActivityFilterValues>({});
+  const [selectedCallId, setSelectedCallId] = useState<number | null>(null);
 
   const isAllTab = activeTab === ActivityTab.ALL;
 
@@ -144,7 +149,9 @@ const ActivitiesContent: FC = () => {
   const hasActiveFilters =
     searchTerm.length > 0 || Object.keys(filters).length > 0;
 
-  const handleRowClick = (): void => {};
+  const handleRowClick = (row: ActivityRow): void => {
+    if (row.type === ActivityType.CALL) setSelectedCallId(row.id);
+  };
 
   const handleToggleComplete = (): void => {};
 
@@ -180,6 +187,14 @@ const ActivitiesContent: FC = () => {
         onRowClick={handleRowClick}
         onToggleComplete={handleToggleComplete}
       />
+      {selectedCallId !== null && (
+        <SidePanelWrapper>
+          <ActivityCallSidePanel
+            callId={selectedCallId}
+            onClose={() => setSelectedCallId(null)}
+          />
+        </SidePanelWrapper>
+      )}
     </div>
   );
 };

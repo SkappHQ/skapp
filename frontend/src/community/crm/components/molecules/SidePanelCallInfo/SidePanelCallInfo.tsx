@@ -88,7 +88,14 @@ const SidePanelCallInfo: FC<Props> = ({
             onContactClick
           )
         ) : (
-          <span className="body2">{noValue}</span>
+          <span className="body2">
+            {translateText([
+              "activities",
+              "callSidePanel",
+              "info",
+              "contactDeleted"
+            ])}
+          </span>
         )}
       </PropertyRow>
 

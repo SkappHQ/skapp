@@ -9,6 +9,7 @@ import { AxiosError } from "axios";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 import {
+  ActivityCallDetailResponse,
   ActivityCallResponse,
   ActivityEmailResponse,
   ActivityFeedFilters,
@@ -122,6 +123,24 @@ export const useGetActivityTasks = (
   useQuery({
     queryKey: crmActivityQueryKeys.TASKS(params),
     queryFn: () => fetchActivityTasks(params),
+    enabled,
+    refetchOnWindowFocus: false
+  });
+
+const fetchCallById = async (
+  id: number
+): Promise<ActivityCallDetailResponse> => {
+  const response = await authFetch.get(crmActivityEndpoints.GET_CALL_BY_ID(id));
+  return response?.data?.results?.[0];
+};
+
+export const useGetCallById = (
+  id: number,
+  enabled: boolean
+): UseQueryResult<ActivityCallDetailResponse, AxiosError> =>
+  useQuery({
+    queryKey: crmActivityQueryKeys.CALL(id),
+    queryFn: () => fetchCallById(id),
     enabled,
     refetchOnWindowFocus: false
   });
