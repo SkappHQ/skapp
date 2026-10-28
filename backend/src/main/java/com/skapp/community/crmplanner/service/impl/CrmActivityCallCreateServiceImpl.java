@@ -53,7 +53,6 @@ public class CrmActivityCallCreateServiceImpl implements CrmActivityCallCreateSe
 		CrmValidations.validateCallSubject(requestDto.getSubject());
 		CrmValidations.validateCallContactId(requestDto.getContactId());
 		CrmValidations.validateCallDurationMinutes(requestDto.getDurationMinutes());
-		validateCallCreationLimit();
 
 		User currentUser = userService.getCurrentUser();
 		Employee owner = requestDto.getOwnerId() != null
@@ -90,9 +89,6 @@ public class CrmActivityCallCreateServiceImpl implements CrmActivityCallCreateSe
 
 		log.info("createCall: execution ended");
 		return new ResponseEntityDto(false, crmMapper.crmActivityCallToCrmActivityCallResponseDto(savedCall));
-	}
-
-	protected void validateCallCreationLimit() {
 	}
 
 }
