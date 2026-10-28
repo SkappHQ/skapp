@@ -14,6 +14,7 @@ import com.skapp.community.leaveplanner.payload.EmployeeLeaveRequestDto;
 import com.skapp.community.leaveplanner.payload.EmployeesOnLeaveFilterDto;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.leaveplanner.type.ManagerType;
+import com.skapp.community.peopleplanner.constant.PeopleConstants;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.EmployeeManager_;
@@ -151,20 +152,15 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			predicates.add(root.get(Employee_.EMPLOYMENT_ALLOCATION).in(employeeFilterDto.getEmploymentAllocations()));
 		}
 
-		boolean hasWorkLocationIds = employeeFilterDto.getWorkLocationIds() != null
-				&& !employeeFilterDto.getWorkLocationIds().isEmpty();
-		boolean isUnassignedWorkLocation = Boolean.TRUE.equals(employeeFilterDto.getIsUnassignedWorkLocation());
-		if (hasWorkLocationIds || isUnassignedWorkLocation) {
+		if (employeeFilterDto.getWorkLocationIds() != null && !employeeFilterDto.getWorkLocationIds().isEmpty()) {
 			Join<Employee, WorkLocation> workLocationJoin = root.join(Employee_.workLocation, JoinType.LEFT);
-			List<Predicate> workLocationPredicates = new ArrayList<>();
-			if (hasWorkLocationIds) {
-				workLocationPredicates
-					.add(workLocationJoin.get(WorkLocation_.workLocationId).in(employeeFilterDto.getWorkLocationIds()));
+			Predicate workLocationPredicate = workLocationJoin.get(WorkLocation_.workLocationId)
+				.in(employeeFilterDto.getWorkLocationIds());
+			if (employeeFilterDto.getWorkLocationIds().contains(PeopleConstants.UNASSIGNED_WORK_LOCATION_ID)) {
+				workLocationPredicate = criteriaBuilder.or(workLocationPredicate,
+						workLocationJoin.get(WorkLocation_.workLocationId).isNull());
 			}
-			if (isUnassignedWorkLocation) {
-				workLocationPredicates.add(workLocationJoin.get(WorkLocation_.workLocationId).isNull());
-			}
-			predicates.add(criteriaBuilder.or(workLocationPredicates.toArray(new Predicate[0])));
+			predicates.add(workLocationPredicate);
 		}
 
 		if (employeeFilterDto.getSearchKeyword() != null && !employeeFilterDto.getSearchKeyword().isEmpty()) {
