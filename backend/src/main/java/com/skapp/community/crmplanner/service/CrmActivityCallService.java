@@ -7,4 +7,6 @@ public interface CrmActivityCallService {
 
 	ResponseEntityDto getCalls(CrmActivityCallFilterDto filterDto);
 
+	ResponseEntityDto getCallById(Long id);
+
 }
