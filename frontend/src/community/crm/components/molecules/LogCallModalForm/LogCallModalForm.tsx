@@ -3,74 +3,100 @@ import {
   CalendarIcon,
   CloseIcon,
   DatePicker,
-  InfoIcon,
   InputField,
   SearchIcon,
   TextArea,
   Tooltip
 } from "@rootcodelabs/skapp-ui";
-import { FC, useMemo, useState } from "react";
+import { FormikProps } from "formik";
+import { FC, useState } from "react";
 
+import { characterLengths } from "~community/common/constants/stringConstants";
+import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import SelectedOwnerField from "~community/crm/components/molecules/SelectedOwnerField/SelectedOwnerField";
-import { CrmOwnerEntity } from "~community/crm/types/CrmCommonTypes";
-import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
+import {
+  instantToPickedDay,
+  pickedDayToInstant
+} from "~community/common/utils/dateTimeUtils";
+import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
+
+import LogCallOwnerField from "./LogCallOwnerField";
 
 interface Props {
+  formik: FormikProps<CrmLogCallFormValues>;
   onCancel: () => void;
 }
 
-const LogCallModalForm: FC<Props> = ({ onCancel }) => {
+const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
+  const {
+    values,
+    errors,
+    touched,
+    handleChange,
+    handleBlur,
+    dirty,
+    isSubmitting,
+    setFieldValue,
+    submitForm
+  } = formik;
+
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
+  const displayZone = useDisplayZone();
 
-  const { data: currentUser } = useGetUserPersonalDetails();
-
-  const [subject, setSubject] = useState("");
-  const [date, setDate] = useState<Date | null>(null);
-  const [time, setTime] = useState("");
-  const [duration, setDuration] = useState("");
-  const [contact, setContact] = useState("");
-  const [deal, setDeal] = useState("");
-  const [company, setCompany] = useState("");
-  const [comments, setComments] = useState("");
   const [isAssociationsOpen, setIsAssociationsOpen] = useState(false);
 
-  const owner = useMemo((): CrmOwnerEntity | null => {
-    if (!currentUser?.employeeId) return null;
+  const pickedDate = values.date
+    ? instantToPickedDay(values.date, displayZone)
+    : null;
 
-    return {
-      employeeId: Number(currentUser.employeeId),
-      firstName: currentUser.firstName ?? "",
-      lastName: currentUser.lastName ?? "",
-      authPic: currentUser.authPic as string | null
-    };
-  }, [
-    currentUser?.employeeId,
-    currentUser?.firstName,
-    currentUser?.lastName,
-    currentUser?.authPic
-  ]);
+  const handleDateSelect = (date?: Date) => {
+    setFieldValue(
+      "date",
+      date ? pickedDayToInstant(date, displayZone) : null,
+      true
+    );
+  };
 
-  const label = (key: string) =>
-    translateText(["activities", "logCall", "modal", "labels", key]);
-  const placeholder = (key: string) =>
-    translateText(["activities", "logCall", "modal", "placeholders", key]);
-  const aria = (key: string) =>
-    translateAria(["activities", "logCall", "modal", key]);
-  const button = (key: string) =>
-    translateText(["activities", "logCall", "modal", "buttons", key]);
+  const handleToggleAssociations = (): void => {
+    if (isAssociationsOpen) {
+      setFieldValue("deal", "");
+      setFieldValue("company", "");
+    }
+    setIsAssociationsOpen((open) => !open);
+  };
 
   return (
     <div className="flex flex-col w-full h-full justify-between gap-[0.625rem] max-h-[78vh]">
       <div className="flex flex-col gap-[0.625rem] overflow-y-auto pr-1">
         <InputField
           name="subject"
-          value={subject}
-          label={label("subject")}
-          placeholder={placeholder("subject")}
-          onChange={(event) => setSubject(event.target.value)}
-          aria-label={aria("subject")}
+          value={values.subject}
+          label={translateText([
+            "activities",
+            "logCall",
+            "modal",
+            "labels",
+            "subject"
+          ])}
+          placeholder={translateText([
+            "activities",
+            "logCall",
+            "modal",
+            "placeholders",
+            "subject"
+          ])}
+          errorMessage={touched.subject ? errors.subject : ""}
+          state={touched.subject && errors.subject ? "error" : "default"}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          aria-label={translateAria([
+            "activities",
+            "logCall",
+            "modal",
+            "subject"
+          ])}
+          maxLength={characterLengths.CALL_SUBJECT_LENGTH}
           fullWidth
           required
         />
@@ -79,17 +105,34 @@ const LogCallModalForm: FC<Props> = ({ onCancel }) => {
           <div className="flex-1">
             <DatePicker
               mode="single"
-              selected={date ?? undefined}
-              onSelect={(selected) => setDate(selected ?? null)}
+              {...(pickedDate && { selected: pickedDate })}
+              onSelect={handleDateSelect}
               popperProps={{ position: "bottom-start", isFlip: true }}
             >
               <div>
                 <InputField
                   name="date"
-                  value={date ? date.toLocaleDateString() : ""}
-                  label={label("date")}
-                  placeholder={placeholder("date")}
-                  aria-label={aria("date")}
+                  value={pickedDate ? pickedDate.toLocaleDateString() : ""}
+                  label={translateText([
+                    "activities",
+                    "logCall",
+                    "modal",
+                    "labels",
+                    "date"
+                  ])}
+                  placeholder={translateText([
+                    "activities",
+                    "logCall",
+                    "modal",
+                    "placeholders",
+                    "date"
+                  ])}
+                  aria-label={translateAria([
+                    "activities",
+                    "logCall",
+                    "modal",
+                    "date"
+                  ])}
                   rightIcon={<CalendarIcon />}
                   fullWidth
                   readOnly
@@ -101,56 +144,109 @@ const LogCallModalForm: FC<Props> = ({ onCancel }) => {
             <InputField
               name="time"
               type="time"
-              value={time}
-              label={label("time")}
-              placeholder={placeholder("time")}
-              onChange={(event) => setTime(event.target.value)}
-              aria-label={aria("time")}
+              value={values.time}
+              label={translateText([
+                "activities",
+                "logCall",
+                "modal",
+                "labels",
+                "time"
+              ])}
+              placeholder={translateText([
+                "activities",
+                "logCall",
+                "modal",
+                "placeholders",
+                "time"
+              ])}
+              onChange={handleChange}
+              aria-label={translateAria([
+                "activities",
+                "logCall",
+                "modal",
+                "time"
+              ])}
               fullWidth
             />
           </div>
         </div>
 
-        <div className="flex w-full flex-col gap-1">
-          <div className="flex h-6 items-center justify-between">
-            <span className="subtitle1 leading-normal">
-              {label("duration")}
-            </span>
-            <Tooltip
-              position="left"
-              content={translateText([
-                "activities",
-                "logCall",
-                "modal",
-                "tooltips",
-                "duration"
-              ])}
-            >
-              <span aria-label={aria("durationInfo")}>
-                <InfoIcon />
-              </span>
-            </Tooltip>
-          </div>
-          <InputField
-            name="duration"
-            value={duration}
-            placeholder={placeholder("duration")}
-            onChange={(event) => setDuration(event.target.value)}
-            aria-label={aria("duration")}
-            fullWidth
-          />
-        </div>
+        <InputField
+          name="duration"
+          type="number"
+          min={0}
+          value={values.duration}
+          label={translateText([
+            "activities",
+            "logCall",
+            "modal",
+            "labels",
+            "duration"
+          ])}
+          placeholder={translateText([
+            "activities",
+            "logCall",
+            "modal",
+            "placeholders",
+            "duration"
+          ])}
+          tooltipContent={translateText([
+            "activities",
+            "logCall",
+            "modal",
+            "tooltips",
+            "duration"
+          ])}
+          tooltipPosition="left"
+          ariaLabelTooltipButton={translateAria([
+            "activities",
+            "logCall",
+            "modal",
+            "durationInfo"
+          ])}
+          errorMessage={touched.duration ? errors.duration : ""}
+          state={touched.duration && errors.duration ? "error" : "default"}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          aria-label={translateAria([
+            "activities",
+            "logCall",
+            "modal",
+            "duration"
+          ])}
+          fullWidth
+        />
 
         <div className="flex flex-row items-start gap-[0.625rem]">
           <div className="flex-1">
-            <Tooltip content={contact} disabled={!contact}>
+            <Tooltip content={values.contact} disabled={!values.contact}>
               <InputField
                 name="contact"
-                value={contact}
-                label={label("contact")}
-                placeholder={placeholder("contact")}
-                onChange={(event) => setContact(event.target.value)}
-                aria-label={aria("contact")}
+                value={values.contact}
+                label={translateText([
+                  "activities",
+                  "logCall",
+                  "modal",
+                  "labels",
+                  "contact"
+                ])}
+                placeholder={translateText([
+                  "activities",
+                  "logCall",
+                  "modal",
+                  "placeholders",
+                  "contact"
+                ])}
+                errorMessage={touched.contact ? errors.contact : ""}
+                state={touched.contact && errors.contact ? "error" : "default"}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                aria-label={translateAria([
+                  "activities",
+                  "logCall",
+                  "modal",
+                  "contact"
+                ])}
                 rightIcon={<SearchIcon />}
                 fullWidth
                 required
@@ -158,50 +254,97 @@ const LogCallModalForm: FC<Props> = ({ onCancel }) => {
             </Tooltip>
           </div>
           <div className="flex-1">
-            {owner && (
-              <SelectedOwnerField
-                label={label("activityOwner")}
-                owner={owner}
-                onRemove={() => {}}
-                showRemoveButton={false}
-                ariaLabel={aria("removeOwner")}
-              />
-            )}
+            <LogCallOwnerField formik={formik} />
           </div>
         </div>
 
         <TextArea
           name="comments"
-          value={comments}
-          label={label("comments")}
-          placeholder={placeholder("comments")}
-          onChange={(event) => setComments(event.target.value)}
+          value={values.comments}
+          label={translateText([
+            "activities",
+            "logCall",
+            "modal",
+            "labels",
+            "comments"
+          ])}
+          placeholder={translateText([
+            "activities",
+            "logCall",
+            "modal",
+            "placeholders",
+            "comments"
+          ])}
+          errorMessage={touched.comments ? errors.comments : ""}
+          state={touched.comments && errors.comments ? "error" : "default"}
+          onChange={handleChange}
+          onBlur={handleBlur}
           rows={4}
-          aria-label={aria("comments")}
+          maxLength={characterLengths.CALL_COMMENTS_LENGTH}
+          aria-label={translateAria([
+            "activities",
+            "logCall",
+            "modal",
+            "comments"
+          ])}
         />
 
         {isAssociationsOpen && (
           <>
-            <Tooltip content={deal} disabled={!deal}>
+            <Tooltip content={values.deal} disabled={!values.deal}>
               <InputField
                 name="deal"
-                value={deal}
-                label={label("deal")}
-                placeholder={placeholder("deal")}
-                onChange={(event) => setDeal(event.target.value)}
-                aria-label={aria("deal")}
+                value={values.deal}
+                label={translateText([
+                  "activities",
+                  "logCall",
+                  "modal",
+                  "labels",
+                  "deal"
+                ])}
+                placeholder={translateText([
+                  "activities",
+                  "logCall",
+                  "modal",
+                  "placeholders",
+                  "deal"
+                ])}
+                onChange={handleChange}
+                aria-label={translateAria([
+                  "activities",
+                  "logCall",
+                  "modal",
+                  "deal"
+                ])}
                 rightIcon={<SearchIcon />}
                 fullWidth
               />
             </Tooltip>
-            <Tooltip content={company} disabled={!company}>
+            <Tooltip content={values.company} disabled={!values.company}>
               <InputField
-                name="relatedTo"
-                value={company}
-                label={label("relatedTo")}
-                placeholder={placeholder("relatedTo")}
-                onChange={(event) => setCompany(event.target.value)}
-                aria-label={aria("relatedTo")}
+                name="company"
+                value={values.company}
+                label={translateText([
+                  "activities",
+                  "logCall",
+                  "modal",
+                  "labels",
+                  "relatedTo"
+                ])}
+                placeholder={translateText([
+                  "activities",
+                  "logCall",
+                  "modal",
+                  "placeholders",
+                  "relatedTo"
+                ])}
+                onChange={handleChange}
+                aria-label={translateAria([
+                  "activities",
+                  "logCall",
+                  "modal",
+                  "relatedTo"
+                ])}
                 rightIcon={<SearchIcon />}
                 fullWidth
               />
@@ -213,12 +356,23 @@ const LogCallModalForm: FC<Props> = ({ onCancel }) => {
           type="button"
           className="self-start text-sm text-primary underline"
           aria-expanded={isAssociationsOpen}
-          aria-label={aria("toggleAssociations")}
-          onClick={() => setIsAssociationsOpen((open) => !open)}
+          onClick={handleToggleAssociations}
         >
           {isAssociationsOpen
-            ? button("hideAssociations")
-            : button("addAssociations")}
+            ? translateText([
+                "activities",
+                "logCall",
+                "modal",
+                "buttons",
+                "hideAssociations"
+              ])
+            : translateText([
+                "activities",
+                "logCall",
+                "modal",
+                "buttons",
+                "addAssociations"
+              ])}
         </button>
       </div>
 
@@ -226,15 +380,33 @@ const LogCallModalForm: FC<Props> = ({ onCancel }) => {
         <ButtonV2
           variant="tertiary"
           type="button"
+          disabled={isSubmitting}
           onClick={onCancel}
           icon={<CloseIcon />}
           iconPosition="end"
-          aria-label={aria("cancel")}
+          aria-label={translateAria([
+            "activities",
+            "logCall",
+            "modal",
+            "cancel"
+          ])}
         >
-          {button("cancel")}
+          {translateText([
+            "activities",
+            "logCall",
+            "modal",
+            "buttons",
+            "cancel"
+          ])}
         </ButtonV2>
-        <ButtonV2 variant="primary" type="button" aria-label={aria("save")}>
-          {button("save")}
+        <ButtonV2
+          variant="primary"
+          type="button"
+          onClick={submitForm}
+          disabled={isSubmitting || !dirty}
+          aria-label={translateAria(["activities", "logCall", "modal", "save"])}
+        >
+          {translateText(["activities", "logCall", "modal", "buttons", "save"])}
         </ButtonV2>
       </div>
     </div>

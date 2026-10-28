@@ -626,16 +626,26 @@
           "contact": "Enter name",
           "comments": "Add message",
           "deal": "Search deals",
-          "relatedTo": "Search companies"
+          "relatedTo": "Search companies",
+          "activityOwner": "Search owner"
         },
         "tooltips": {
-          "duration": "Enter the call duration, for example 15 minutes"
+          "duration": "Enter the call duration in minutes"
         },
         "buttons": {
-          "addAssociations": "Add associations",
           "hideAssociations": "Hide associations",
           "cancel": "Cancel",
           "save": "Save"
+        },
+        "emptyStates": {
+          "noOwners": "No owners found"
+        },
+        "validations": {
+          "subject": "Subject is required",
+          "subjectLength": "Subject must be 255 characters or fewer",
+          "contact": "Contact is required",
+          "duration": "Duration must be a whole number of minutes",
+          "commentsLength": "Comments must be 1000 characters or fewer"
         }
       }
     }

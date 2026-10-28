@@ -146,7 +146,6 @@
         "comments": "Call comments",
         "deal": "Search deals",
         "relatedTo": "Search companies",
-        "toggleAssociations": "Toggle associations",
         "cancel": "Cancel log a call",
         "save": "Save call",
         "removeOwner": "Remove activity owner"

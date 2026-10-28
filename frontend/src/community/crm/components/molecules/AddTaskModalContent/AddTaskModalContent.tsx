@@ -1,5 +1,5 @@
 import { useFormik } from "formik";
-import { FC, useEffect, useMemo } from "react";
+import { FC, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -8,12 +8,9 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { useCreateTask } from "~community/crm/api/TaskApi";
 import TaskModalForm from "~community/crm/components/molecules/TaskModalForm/TaskModalForm";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
+import { useCurrentUserAsCrmOwner } from "~community/crm/hooks/useCurrentUserAsCrmOwner";
 import { useCrmStore } from "~community/crm/store/store";
-import {
-  CrmOwnerEntity,
-  CrmTaskEntity
-} from "~community/crm/types/CrmCommonTypes";
-import { updateOwnerRecord } from "~community/crm/utils/commonUtil";
+import { CrmTaskEntity } from "~community/crm/types/CrmCommonTypes";
 import { getSelectedContact } from "~community/crm/utils/contactUtil";
 import { getSelectedDeal } from "~community/crm/utils/dealUtil";
 import {
@@ -21,7 +18,6 @@ import {
   updateTaskRecord
 } from "~community/crm/utils/taskUtil";
 import { getTaskValidationSchema } from "~community/crm/utils/taskValidations";
-import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 const AddTaskModalContent: FC = () => {
   const { setToastMessage } = useToast();
@@ -31,7 +27,6 @@ const AddTaskModalContent: FC = () => {
   const {
     tasks,
     taskIds,
-    owners,
     companies,
     contacts,
     deals,
@@ -39,7 +34,6 @@ const AddTaskModalContent: FC = () => {
     selectedDealId,
     setTasks,
     setTaskIds,
-    setOwners,
     setCompanies,
     setContacts,
     setDeals,
@@ -48,7 +42,6 @@ const AddTaskModalContent: FC = () => {
     useShallow((store) => ({
       tasks: store.tasks,
       taskIds: store.taskIds,
-      owners: store.owners,
       companies: store.companies,
       contacts: store.contacts,
       deals: store.deals,
@@ -56,7 +49,6 @@ const AddTaskModalContent: FC = () => {
       selectedDealId: store.selectedDealId,
       setTasks: store.setTasks,
       setTaskIds: store.setTaskIds,
-      setOwners: store.setOwners,
       setCompanies: store.setCompanies,
       setContacts: store.setContacts,
       setDeals: store.setDeals,
@@ -64,29 +56,7 @@ const AddTaskModalContent: FC = () => {
     }))
   );
 
-  const { data: currentUser } = useGetUserPersonalDetails();
-
-  const defaultOwner = useMemo((): CrmOwnerEntity | null => {
-    if (!currentUser?.employeeId) return null;
-
-    return {
-      employeeId: Number(currentUser.employeeId),
-      firstName: currentUser.firstName ?? "",
-      lastName: currentUser.lastName ?? "",
-      authPic: currentUser.authPic as string | null
-    };
-  }, [
-    currentUser?.employeeId,
-    currentUser?.firstName,
-    currentUser?.lastName,
-    currentUser?.authPic
-  ]);
-
-  useEffect(() => {
-    if (!defaultOwner) return;
-
-    setOwners(updateOwnerRecord(owners, [defaultOwner]));
-  }, [defaultOwner]);
+  const defaultOwner = useCurrentUserAsCrmOwner();
 
   const selectedContact = getSelectedContact(contacts, selectedContactId);
   const selectedDeal = getSelectedDeal(deals, selectedDealId);
