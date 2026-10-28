@@ -50,7 +50,7 @@ const CallSidePanel: FC<Props> = ({
 
   const CallIcon = ACTIVITY_TYPE_ICON_MAP[ActivityType.CALL];
   const owner = owners[call.ownerId];
-  const dealId = call.deal && call.deal.id;
+  const dealId = call.deal?.id;
 
   useEffect(() => {
     if (!call.deal) return;

@@ -141,7 +141,7 @@ const SidePanelCallInfo: FC<Props> = ({
           "relatedTo"
         ])}
       >
-        {call.company && call.company.name ? (
+        {call.company?.name ? (
           renderLink(call.company.name, onCompanyClick)
         ) : (
           <span className="body2">{noValue}</span>
