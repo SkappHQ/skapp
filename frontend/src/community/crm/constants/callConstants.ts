@@ -2,13 +2,11 @@ import { DateTime, Interval } from "luxon";
 
 export const CALL_TIME_SLOT_MINUTES = 30;
 
-export const CALL_TIME_LOCALE = "en-US";
-
 export const CALL_TIME_VALUE_FORMAT = "HH:mm";
 
 export const CALL_TIME_LABEL_FORMAT = "hh:mm a";
 
-const dayStart = DateTime.utc().startOf("day").setLocale(CALL_TIME_LOCALE);
+const dayStart = DateTime.utc().startOf("day");
 
 export const CALL_TIME_OPTIONS = Interval.fromDateTimes(
   dayStart,

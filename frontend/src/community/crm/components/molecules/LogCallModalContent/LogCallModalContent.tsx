@@ -6,7 +6,6 @@ import * as Yup from "yup";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import LogCallModalForm from "~community/crm/components/molecules/LogCallModalForm/LogCallModalForm";
 import {
-  CALL_TIME_LOCALE,
   CALL_TIME_SLOT_MINUTES,
   CALL_TIME_VALUE_FORMAT
 } from "~community/crm/constants/callConstants";
@@ -28,7 +27,7 @@ const LogCallModalContent: FC<Props> = ({ onCancel }) => {
   const defaultOwner = useDefaultCrmOwner();
 
   const initialValues: CrmLogCallFormValues = useMemo(() => {
-    const now = DateTime.now().setLocale(CALL_TIME_LOCALE);
+    const now = DateTime.now();
     const slotStart = now.set({
       minute: now.minute - (now.minute % CALL_TIME_SLOT_MINUTES)
     });
