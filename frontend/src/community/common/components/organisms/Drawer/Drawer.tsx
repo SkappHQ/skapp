@@ -47,7 +47,6 @@ import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnab
 import { useLeaveStore } from "~community/leave/store/store";
 import { useGetOrganizationCalendarStatus } from "~enterprise/common/api/CalendarApi";
 import Badge from "~enterprise/common/components/atoms/Badge/Badge";
-import SubmitRequestModalController from "~enterprise/common/components/organisms/SubmitRequestModalController/SubmitRequestModalController";
 import { SubmitRequestModalEnums } from "~enterprise/common/enums/Common";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import useS3Download from "~enterprise/common/hooks/useS3Download";
@@ -218,7 +217,11 @@ const Drawer = (): JSX.Element => {
     }
   }, [organizationDetails, orgLoading]);
 
-  const { setSubmitRequestModalType } = useCommonEnterpriseStore();
+  const { setSubmitRequestModalType } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      setSubmitRequestModalType: state.setSubmitRequestModalType
+    }))
+  );
 
   const handleOpenSubmitRequestModal = () => {
     setSubmitRequestModalType(SubmitRequestModalEnums.SUBMIT_REQUEST);
@@ -522,7 +525,6 @@ const Drawer = (): JSX.Element => {
           )}
         </Box>
       </IconButton>
-      <SubmitRequestModalController />
     </StyledDrawer>
   );
 };
