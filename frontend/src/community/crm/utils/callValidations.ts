@@ -1,6 +1,7 @@
 import * as Yup from "yup";
 
 import { unitConversion } from "~community/common/constants/configs";
+import { callDurationPattern } from "~community/common/regex/regexPatterns";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 
 const CALL_DURATION_REGEX = {
@@ -30,12 +31,18 @@ export const getCallValidationSchema = (translator: TranslatorFunctionType) =>
       .required(
         translator(["activities", "logCall", "modal", "validations", "subject"])
       ),
-    duration: Yup.string().test(
-      "is-valid-duration",
-      translator(["activities", "logCall", "modal", "validations", "duration"]),
-      (value) =>
-        !value || !value.trim() || parseCallDurationToMinutes(value) !== null
-    ),
+    duration: Yup.string()
+      .trim()
+      .matches(callDurationPattern(), {
+        message: translator([
+          "activities",
+          "logCall",
+          "modal",
+          "validations",
+          "duration"
+        ]),
+        excludeEmptyString: true
+      }),
     contactId: Yup.number()
       .nullable()
       .required(

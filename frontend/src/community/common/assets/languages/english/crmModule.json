@@ -593,7 +593,6 @@
         "duration": "Duration",
         "activityOwner": "Activity owner",
         "relatedTo": "Related to",
-        "durationValue": "{{minutes}} min",
         "noValue": "-"
       }
     },
@@ -615,7 +614,7 @@
           "subject": "Enter subject",
           "date": "Select date",
           "time": "Select time",
-          "duration": "e.g. 1h 30m",
+          "duration": "Enter duration",
           "contact": "Enter name",
           "comments": "Add message",
           "deal": "Search deals",

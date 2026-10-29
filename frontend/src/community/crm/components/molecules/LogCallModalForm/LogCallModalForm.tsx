@@ -9,7 +9,7 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import { DateTime } from "luxon";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { CALL_TIME_OPTIONS } from "~community/crm/constants/callConstants";
@@ -20,23 +20,14 @@ import LogCallContactField from "./LogCallContactField";
 import LogCallDealField from "./LogCallDealField";
 import LogCallOwnerField from "./LogCallOwnerField";
 
-const FIELD_IDS = {
-  SUBJECT: "log-call-subject",
-  DURATION: "log-call-duration",
-  CONTACT: "log-call-contact",
-  OWNER: "log-call-owner",
-  DEAL: "log-call-deal",
-  RELATED_TO: "log-call-related-to"
-};
-
 const FIELD_FOCUS_ORDER: {
   field: keyof CrmLogCallFormValues;
   elementId: string;
 }[] = [
-  { field: "subject", elementId: FIELD_IDS.SUBJECT },
-  { field: "duration", elementId: FIELD_IDS.DURATION },
-  { field: "contactId", elementId: `${FIELD_IDS.CONTACT}-input` },
-  { field: "ownerId", elementId: `${FIELD_IDS.OWNER}-input` }
+  { field: "subject", elementId: "log-call-subject" },
+  { field: "duration", elementId: "log-call-duration" },
+  { field: "contactId", elementId: "log-call-contact-input" },
+  { field: "ownerId", elementId: "log-call-owner-input" }
 ];
 
 interface Props {
@@ -55,9 +46,9 @@ const LogCallModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
     handleBlur,
     dirty,
     isSubmitting,
+    submitCount,
     setFieldValue,
-    submitForm,
-    validateForm
+    submitForm
   } = formik;
 
   const translateText = useTranslator(
@@ -89,17 +80,17 @@ const LogCallModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
     setIsAssociationsOpen(true);
   };
 
-  const handleSave = async (): Promise<void> => {
-    await submitForm();
-    const formErrors = await validateForm();
+  useEffect(() => {
+    if (submitCount === 0 || isSubmitting) return;
+
     const firstInvalidField = FIELD_FOCUS_ORDER.find(
-      ({ field }) => formErrors[field]
+      ({ field }) => errors[field]
     );
 
     if (firstInvalidField) {
       document.getElementById(firstInvalidField.elementId)?.focus();
     }
-  };
+  }, [submitCount, isSubmitting]);
 
   const pickedDate = values.date
     ? DateTime.fromISO(values.date).startOf("day").toJSDate()
@@ -117,7 +108,7 @@ const LogCallModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
     <div className="flex flex-col w-full h-full justify-between gap-2 -mt-3 max-h-[calc(100vh-10rem)]">
       <div className="flex flex-col gap-2 overflow-y-auto pr-1">
         <InputField
-          id={FIELD_IDS.SUBJECT}
+          id="log-call-subject"
           name="subject"
           value={values.subject}
           label={translateText(["labels", "subject"])}
@@ -170,7 +161,7 @@ const LogCallModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
         </div>
 
         <InputField
-          id={FIELD_IDS.DURATION}
+          id="log-call-duration"
           name="duration"
           value={values.duration}
           label={translateText(["labels", "duration"])}
@@ -186,13 +177,13 @@ const LogCallModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
         <div className="flex flex-row items-start gap-[0.625rem]">
           <div className="flex-1">
             <LogCallContactField
-              id={FIELD_IDS.CONTACT}
+              id="log-call-contact"
               formik={formik}
               onDealCleared={handleDealCleared}
             />
           </div>
           <div className="flex-1">
-            <LogCallOwnerField id={FIELD_IDS.OWNER} formik={formik} />
+            <LogCallOwnerField id="log-call-owner" formik={formik} />
           </div>
         </div>
 
@@ -209,7 +200,7 @@ const LogCallModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
         {isAssociationsVisible && (
           <>
             <LogCallDealField
-              id={FIELD_IDS.DEAL}
+              id="log-call-deal"
               formik={formik}
               errorMessage={
                 isDealMismatch
@@ -219,7 +210,7 @@ const LogCallModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
               isClearedNoticeVisible={isDealClearedNoticeVisible}
               onDealChange={() => setIsDealClearedNoticeVisible(false)}
             />
-            <LogCallCompanyField id={FIELD_IDS.RELATED_TO} formik={formik} />
+            <LogCallCompanyField id="log-call-related-to" formik={formik} />
           </>
         )}
 
@@ -250,7 +241,7 @@ const LogCallModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
         <ButtonV2
           variant="primary"
           type="button"
-          onClick={handleSave}
+          onClick={submitForm}
           disabled={isPending || isSubmitting || !dirty}
           isLoading={isPending}
           aria-label={translateAria(["save"])}
