@@ -48,7 +48,6 @@ import getDrawerRoutes from "~community/common/utils/getDrawerRoutes";
 import { shouldActivateLink } from "~community/common/utils/keyboardUtils";
 import useCanViewLeavePolicies from "~community/leave/hooks/useCanViewLeavePolicies";
 import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
-import { useLeaveStore } from "~community/leave/store/store";
 import { useGetOrganizationCalendarStatus } from "~enterprise/common/api/CalendarApi";
 import Badge from "~enterprise/common/components/atoms/Badge/Badge";
 import { SubmitRequestModalEnums } from "~enterprise/common/enums/Common";
@@ -122,12 +121,6 @@ const Drawer = (): JSX.Element => {
 
   const { data: organizationCalendarStatusData } =
     useGetOrganizationCalendarStatus();
-
-  const { setMyLeaveRequestModalType } = useLeaveStore(
-    useShallow((state) => ({
-      setMyLeaveRequestModalType: state.setMyLeaveRequestModalType
-    }))
-  );
 
   const notificationLeaveCount = useGetNotificationSummaryCount(
     NotificationSummaryType.LEAVE_REQUEST
