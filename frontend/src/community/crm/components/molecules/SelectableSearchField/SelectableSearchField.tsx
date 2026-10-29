@@ -21,6 +21,7 @@ interface Props {
   emptyMessage?: string;
   required?: boolean;
   errorMessage?: string;
+  positionStrategy?: "absolute" | "fixed";
 }
 
 const SelectableSearchField: FC<Props> = ({
@@ -38,7 +39,8 @@ const SelectableSearchField: FC<Props> = ({
   emptyMessage,
   isOpenOnFocus = true,
   required = false,
-  errorMessage
+  errorMessage,
+  positionStrategy = "absolute"
 }) => {
   if (selectedValue) {
     return (
@@ -78,6 +80,7 @@ const SelectableSearchField: FC<Props> = ({
       required={required}
       state={errorMessage ? "error" : "default"}
       errorMessage={errorMessage}
+      positionStrategy={positionStrategy}
     />
   );
 };

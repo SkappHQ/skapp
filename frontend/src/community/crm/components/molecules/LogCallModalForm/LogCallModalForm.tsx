@@ -119,8 +119,8 @@ const LogCallModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
   };
 
   return (
-    <div className="flex flex-col w-full h-full justify-between gap-[0.625rem] max-h-[78vh]">
-      <div className="flex flex-col gap-[0.625rem] overflow-y-auto pr-1">
+    <div className="flex flex-col w-full h-full justify-between gap-2 -mt-3 max-h-[calc(100vh-10rem)]">
+      <div className="flex flex-col gap-2 overflow-y-auto pr-1">
         <InputField
           id={FIELD_IDS.SUBJECT}
           name="subject"
@@ -207,7 +207,7 @@ const LogCallModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
           label={translateText(["labels", "comments"])}
           placeholder={translateText(["placeholders", "comments"])}
           onChange={handleChange}
-          rows={4}
+          rows={2}
           aria-label={translateAria(["comments"])}
         />
 
@@ -240,7 +240,7 @@ const LogCallModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
         </button>
       </div>
 
-      <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">
+      <div className="flex flex-row justify-end gap-[1rem]">
         <ButtonV2
           variant="tertiary"
           type="button"
