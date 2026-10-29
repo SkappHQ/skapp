@@ -1,36 +1,24 @@
 import { FC } from "react";
 
-import Icon from "~community/common/components/atoms/Icon/Icon";
-import { unitConversion } from "~community/common/constants/configs";
 import {
   SHORT_MONTH_YEAR_FORMAT,
   TIME_FORMAT_12_HOUR
 } from "~community/common/constants/timeConstants";
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { IconName } from "~community/common/types/IconTypes";
 import {
   formatDayWithOrdinalIndicator,
   instantInZone
 } from "~community/common/utils/dateTimeUtils";
 import OwnerAvatarChip from "~community/crm/components/atoms/OwnerAvatarChip/OwnerAvatarChip";
 import PropertyRow from "~community/crm/components/molecules/PropertyRow/PropertyRow";
+import SidePanelLinkButton from "~community/crm/components/molecules/SidePanelLinkButton/SidePanelLinkButton";
 import {
   CrmCallEntity,
   CrmOwnerEntity
 } from "~community/crm/types/CrmCommonTypes";
+import { formatCallDuration } from "~community/crm/utils/callUtil";
 import { getContactDisplayName } from "~community/crm/utils/contactUtil";
-
-const formatCallDuration = (totalMinutes: number): string => {
-  const hours = Math.floor(totalMinutes / unitConversion.MINUTES_PER_HOUR);
-  const minutes = totalMinutes % unitConversion.MINUTES_PER_HOUR;
-  const parts = [
-    ...(hours > 0 ? [`${hours}h`] : []),
-    ...(minutes > 0 || hours === 0 ? [`${minutes}m`] : [])
-  ];
-
-  return parts.join(" ");
-};
 
 interface Props {
   call: CrmCallEntity;
@@ -58,24 +46,6 @@ const SidePanelCallInfo: FC<Props> = ({
   const callDate = `${formatDayWithOrdinalIndicator(loggedAt)} ${loggedAt.toFormat(SHORT_MONTH_YEAR_FORMAT)}`;
   const callStartTime = loggedAt.toFormat(TIME_FORMAT_12_HOUR);
 
-  const renderLink = (label: string, onClick: () => void) => (
-    <button
-      type="button"
-      onClick={onClick}
-      className="inline-flex items-center gap-[4px] min-w-0 max-w-full bg-transparent border-0 p-0 cursor-pointer transition-opacity hover:opacity-80"
-    >
-      <span className="body2 leading-6 tracking-[0.5px] underline text-primary-text truncate">
-        {label}
-      </span>
-      <Icon
-        name={IconName.POP_OUT_ICON}
-        fill="var(--color-primary-text)"
-        width="16"
-        height="16"
-      />
-    </button>
-  );
-
   return (
     <div className="flex flex-col border border-secondary-accent rounded-xl p-3">
       <PropertyRow
@@ -86,7 +56,10 @@ const SidePanelCallInfo: FC<Props> = ({
           "contact"
         ])}
       >
-        {renderLink(getContactDisplayName(call.contact), onContactClick)}
+        <SidePanelLinkButton
+          label={getContactDisplayName(call.contact)}
+          onClick={onContactClick}
+        />
       </PropertyRow>
 
       <PropertyRow
@@ -149,7 +122,10 @@ const SidePanelCallInfo: FC<Props> = ({
         ])}
       >
         {call.company?.name ? (
-          renderLink(call.company.name, onCompanyClick)
+          <SidePanelLinkButton
+            label={call.company.name}
+            onClick={onCompanyClick}
+          />
         ) : (
           <span className="body2">{noValue}</span>
         )}
