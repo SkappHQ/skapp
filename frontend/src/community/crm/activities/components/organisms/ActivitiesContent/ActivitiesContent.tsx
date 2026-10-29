@@ -30,7 +30,7 @@ import {
   useGetActivityTasks
 } from "~community/crm/api/ActivityApi";
 import { useGetDealsByIds } from "~community/crm/api/DealApi";
-import LogCallModal from "~community/crm/components/molecules/LogCallModal/LogCallModal";
+import LogCallModalContent from "~community/crm/components/molecules/LogCallModalContent/LogCallModalContent";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
 import { useCrmStore } from "~community/crm/store/store";
 import { getMissingDealIds, mergeDeals } from "~community/crm/utils/dealUtil";
@@ -184,7 +184,7 @@ const ActivitiesContent: FC = () => {
         }
       />
       {isLogCallModalOpen && (
-        <LogCallModal onClose={() => setIsLogCallModalOpen(false)} />
+        <LogCallModalContent onClose={() => setIsLogCallModalOpen(false)} />
       )}
       <ActivityFeed
         activeTab={activeTab}
