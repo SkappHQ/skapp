@@ -62,10 +62,7 @@ const ActivityCallSidePanel: FC<Props> = ({ callId }) => {
     handleClose();
   }, [isError]);
 
-  // TODO: wire edit, delete, contact and company actions for the call side panel
-  const handleActionNotAvailable = (): void => {
-    return;
-  };
+  const handleActionNotAvailable = (): void => {};
 
   const openRecord = (url: string): void => {
     handleClose();
