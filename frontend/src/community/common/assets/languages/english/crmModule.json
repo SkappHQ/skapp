@@ -593,7 +593,8 @@
         "duration": "Duration",
         "activityOwner": "Activity owner",
         "relatedTo": "Related to",
-        "noValue": "-"
+        "noValue": "-",
+        "noLongerAvailable": "No longer available"
       }
     },
     "logCall": {

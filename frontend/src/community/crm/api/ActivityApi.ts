@@ -19,6 +19,7 @@ import {
 } from "~community/crm/activities/types/activityTypes";
 import { crmActivityEndpoints } from "~community/crm/api/utils/ApiEndpoints";
 import { crmActivityQueryKeys } from "~community/crm/api/utils/QueryKeys";
+import { CrmCallEntity } from "~community/crm/types/CrmCommonTypes";
 
 const fetchActivityFeed = async (
   params: ActivityFeedFilters
@@ -122,6 +123,22 @@ export const useGetActivityTasks = (
   useQuery({
     queryKey: crmActivityQueryKeys.TASKS(params),
     queryFn: () => fetchActivityTasks(params),
+    enabled,
+    refetchOnWindowFocus: false
+  });
+
+const fetchCallById = async (id: number): Promise<CrmCallEntity> => {
+  const response = await authFetch.get(crmActivityEndpoints.GET_CALL_BY_ID(id));
+  return response?.data?.results?.[0];
+};
+
+export const useGetCallById = (
+  id: number,
+  enabled: boolean
+): UseQueryResult<CrmCallEntity, AxiosError> =>
+  useQuery({
+    queryKey: crmActivityQueryKeys.CALL(id),
+    queryFn: () => fetchCallById(id),
     enabled,
     refetchOnWindowFocus: false
   });

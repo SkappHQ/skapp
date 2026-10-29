@@ -57,6 +57,7 @@ export interface CrmUiSliceTypes {
   selectedDealId: number | null;
   selectedTaskId: number | null;
   selectedDealStageId: number | null;
+  selectedCallId: number | null;
 
   isCrmSidePanelOpen: boolean;
   crmSidePanelType: CrmSidePanelTypes | null;
@@ -85,6 +86,7 @@ export interface CrmUiSliceTypes {
   setSelectedDealId: (selectedDealId: number | null) => void;
   setSelectedTaskId: (selectedTaskId: number | null) => void;
   setSelectedDealStageId: (selectedDealStageId: number | null) => void;
+  setSelectedCallId: (selectedCallId: number | null) => void;
 
   openCrmSidePanel: (crmSidePanelType: CrmSidePanelTypes) => void;
   closeCrmSidePanel: () => void;

@@ -1,4 +1,6 @@
 import { NextPage } from "next";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
@@ -12,7 +14,10 @@ import TaskModalController from "~community/crm/components/organisms/TaskModalCo
 import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmModalTypes } from "~community/crm/types/CrmTypes";
+import {
+  CrmModalTypes,
+  CrmSidePanelTypes
+} from "~community/crm/types/CrmTypes";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
@@ -20,16 +25,32 @@ const Contacts: NextPage = () => {
   const translateText = useTranslator("crmModule");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
-  const { setIsContactModalOpen, setContactModalType, selectedContactId } =
-    useCrmStore(
-      useShallow((store) => ({
-        setIsContactModalOpen: store.setIsContactModalOpen,
-        setContactModalType: store.setContactModalType,
-        selectedContactId: store.selectedContactId
-      }))
-    );
+  const router = useRouter();
+
+  const {
+    setIsContactModalOpen,
+    setContactModalType,
+    selectedContactId,
+    setSelectedContactId,
+    openCrmSidePanel
+  } = useCrmStore(
+    useShallow((store) => ({
+      setIsContactModalOpen: store.setIsContactModalOpen,
+      setContactModalType: store.setContactModalType,
+      selectedContactId: store.selectedContactId,
+      setSelectedContactId: store.setSelectedContactId,
+      openCrmSidePanel: store.openCrmSidePanel
+    }))
+  );
 
   const { isCrmInitialDataLoading } = useInitializeCrmData();
+
+  useEffect(() => {
+    if (!router.isReady || !router.query.contactId) return;
+
+    setSelectedContactId(Number(router.query.contactId));
+    openCrmSidePanel(CrmSidePanelTypes.CONTACT_SIDE_PANEL);
+  }, [router.isReady, router.query.contactId]);
 
   const onPrimaryButtonClick = () => {
     guardCrmCreate(CrmLimitResource.CONTACTS, () => {
