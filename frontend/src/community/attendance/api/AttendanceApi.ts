@@ -82,6 +82,9 @@ export const useGetEmployeeStatus = (enabled: boolean = true) => {
         setAttendanceParams("isLeavePending", params?.isLeavePending);
       } else {
         setAttendanceParams("slotType", AttendanceSlotType.READY);
+        setAttendanceParams("slotStartTime", null);
+        setAttendanceParams("breakHours", null);
+        setAttendanceParams("workHours", null);
       }
     }
   }, [isSuccess, data, setAttendanceParams]);
