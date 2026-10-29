@@ -9,6 +9,7 @@ export interface AttendanceSliceType extends Pick<
   | "isAutoClockOutMidnightModalOpen"
   | "setSlotType"
   | "setAttendanceParams"
+  | "resetAttendanceParams"
   | "setAttendanceLeaveStatus"
   | "setIsAttendanceModalOpen"
   | "setIsPreMidnightClockOutAlertOpen"
