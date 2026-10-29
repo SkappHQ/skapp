@@ -233,6 +233,10 @@ export const leavePolicyManagementRestrictedRoutes = [
   ROUTES.LEAVE.CREATE_LEAVE_POLICY
 ];
 
+export const leaveReportRestrictedRoutes = [
+  ROUTES.REPORT.LEAVE_BALANCE_UTILIZATION
+];
+
 export const userRolesRestrictedRoutes = [ROUTES.CONFIGURATIONS.USER_ROLES];
 
 export const oAuthCallbackRoutes = [

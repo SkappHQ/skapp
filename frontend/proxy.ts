@@ -21,6 +21,7 @@ import ROUTES, {
   employeeRestrictedRoutes,
   invoiceEmployeeRestrictedRoutes,
   leavePolicyManagementRestrictedRoutes,
+  leaveReportRestrictedRoutes,
   managerRestrictedRoutes,
   nonSuperAdminRestrictedRoutes,
   userRolesRestrictedRoutes
@@ -369,14 +370,14 @@ const resolveLeavePolicyManagementAccess: AccessGuard = ({
     ? redirectToUnauthorized(request)
     : null;
 
-// The leave balance report is for leave admins and super admins only, even though
-// other admins can open the rest of /report
 const resolveLeaveBalanceReportAccess: AccessGuard = ({
   request,
   currentPath,
   roles
 }) =>
-  currentPath.startsWith(ROUTES.REPORT.LEAVE_BALANCE_UTILIZATION) &&
+  leaveReportRestrictedRoutes.some((url) =>
+    currentPath.toLowerCase().startsWith(url)
+  ) &&
   !roles.includes(AdminTypes.LEAVE_ADMIN) &&
   !roles.includes(ROLE_SUPER_ADMIN)
     ? redirectToUnauthorized(request)
@@ -459,7 +460,6 @@ const ROUTE_ACCESS_GUARDS: AccessGuard[] = [
   resolveFirstTimePasswordAccess,
   resolveLeaveReportAccess,
   resolveLeavePolicyManagementAccess,
-  resolveLeaveBalanceReportAccess,
   resolveDashboardAccess
 ];
 
@@ -468,6 +468,7 @@ const ALLOWED_ROUTE_GUARDS: AccessGuard[] = [
   resolveSignAccess,
   resolveIntegrationsAccess,
   resolveReportAccess,
+  resolveLeaveBalanceReportAccess,
   resolveCrmAccess,
   resolveRestrictedRouteAccess,
   resolveInvoiceIntegrationsAccess
