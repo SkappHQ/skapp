@@ -13,6 +13,7 @@ import com.skapp.community.crmplanner.model.CrmActivityCall;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.payload.request.CrmActivityCallCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmActivityCallEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmActivityCallFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityCallDetailResponseDto;
@@ -36,6 +37,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.ZoneId;
 import java.util.List;
 
@@ -144,6 +146,52 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 
 		log.info("getCallById: execution ended");
 		return new ResponseEntityDto(false, response);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto createCall(CrmActivityCallCreateRequestDto requestDto) {
+		log.info("createCall: execution started");
+
+		CrmValidations.validateCallSubject(requestDto.getSubject());
+		CrmValidations.validateCallContactId(requestDto.getContactId());
+		CrmValidations.validateCallDurationMinutes(requestDto.getDurationMinutes());
+
+		User currentUser = userService.getCurrentUser();
+		Employee owner = requestDto.getOwnerId() != null
+				? crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser) : currentUser.getEmployee();
+
+		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
+
+		CrmActivityCall call = new CrmActivityCall();
+		call.setSubject(requestDto.getSubject());
+		call.setLoggedAt(requestDto.getLoggedAt() != null ? requestDto.getLoggedAt() : Instant.now());
+		call.setDurationMinutes(requestDto.getDurationMinutes());
+		call.setComments(requestDto.getComments());
+		call.setOwner(owner);
+		call.setContact(contact);
+
+		if (requestDto.getDealId() != null) {
+			CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+			if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, deal.getOwner().getEmployeeId())) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_VIEW_DENIED);
+			}
+			CrmValidations.validateCallDealMatchesContactCompany(deal, contact);
+			call.setDeal(deal);
+		}
+
+		if (requestDto.getCompanyId() != null) {
+			CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
+			call.setCompany(company);
+		}
+
+		CrmActivityCall savedCall = crmActivityCallDao.save(call);
+
+		log.info("createCall: execution ended");
+		return new ResponseEntityDto(false, crmMapper.crmActivityCallToCrmActivityCallResponseDto(savedCall));
 	}
 
 	@Override

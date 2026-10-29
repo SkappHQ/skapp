@@ -4,7 +4,6 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmActivityCallCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmActivityCallEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmActivityCallFilterDto;
-import com.skapp.community.crmplanner.service.CrmActivityCallCreateService;
 import com.skapp.community.crmplanner.service.CrmActivityCallService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -27,12 +26,10 @@ public class CrmActivityCallController {
 
 	private final CrmActivityCallService crmActivityCallService;
 
-	private final CrmActivityCallCreateService crmActivityCallCreateService;
-
 	@PostMapping
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> createCall(@RequestBody CrmActivityCallCreateRequestDto requestDto) {
-		ResponseEntityDto response = crmActivityCallCreateService.createCall(requestDto);
+		ResponseEntityDto response = crmActivityCallService.createCall(requestDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
