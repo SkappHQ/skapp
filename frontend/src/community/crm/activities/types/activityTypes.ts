@@ -123,11 +123,11 @@ export interface ActivityTaskResponse extends ActivityListItemBase {
 
 export interface ActivityCallCreatePayload {
   subject: string;
-  loggedAt?: string;
-  durationMinutes?: number;
+  loggedAt: string | null;
+  durationMinutes: number | null;
   contactId: number;
-  dealId?: number;
-  companyId?: number;
+  dealId: number | null;
+  companyId: number | null;
   ownerId: number;
-  comments?: string;
+  comments: string;
 }

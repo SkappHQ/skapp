@@ -1,7 +1,9 @@
+import { SmallModal } from "@rootcodelabs/skapp-ui";
 import { FormikHelpers, useFormik } from "formik";
 import { DateTime } from "luxon";
-import { FC, useEffect, useMemo } from "react";
+import { FC, useMemo, useState } from "react";
 
+import AreYouSureModal from "~community/common/components/molecules/AreYouSureModal/AreYouSureModal";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -22,20 +24,19 @@ import {
 } from "~community/crm/utils/callValidations";
 
 interface Props {
-  onCancel: () => void;
-  onSaved: () => void;
-  onDirtyChange: (isDirty: boolean) => void;
-  onPendingChange: (isPending: boolean) => void;
+  onClose: () => void;
 }
 
-const LogCallModalContent: FC<Props> = ({
-  onCancel,
-  onSaved,
-  onDirtyChange,
-  onPendingChange
-}) => {
+const LogCallModalContent: FC<Props> = ({ onClose }) => {
   const translateText = useTranslator("crmModule");
+  const translateCommon = useTranslator(
+    "commonComponents",
+    "userPromptModal",
+    "unsavedChangesModal"
+  );
   const { setToastMessage } = useToast();
+
+  const [isDiscardPromptOpen, setIsDiscardPromptOpen] = useState(false);
 
   const defaultOwner = useDefaultCrmOwner();
 
@@ -64,26 +65,22 @@ const LogCallModalContent: FC<Props> = ({
     ownerId: number
   ): ActivityCallCreatePayload => {
     const [hour, minute] = values.time.split(":").map(Number);
-    const loggedAt = values.date
-      ? DateTime.fromISO(values.date)
-          .set({ hour, minute, second: 0, millisecond: 0 })
-          .toUTC()
-          .toISO()
-      : null;
-    const comments = values.comments.trim();
-    const durationMinutes = values.duration.trim()
-      ? parseCallDurationToMinutes(values.duration)
-      : null;
 
     return {
       subject: values.subject.trim(),
+      loggedAt: values.date
+        ? DateTime.fromISO(values.date)
+            .set({ hour, minute })
+            .startOf("minute")
+            .toUTC()
+            .toISO()
+        : null,
+      durationMinutes: parseCallDurationToMinutes(values.duration),
       contactId,
       ownerId,
-      ...(loggedAt ? { loggedAt } : {}),
-      ...(durationMinutes !== null ? { durationMinutes } : {}),
-      ...(values.dealId ? { dealId: values.dealId } : {}),
-      ...(values.companyId ? { companyId: values.companyId } : {}),
-      ...(comments ? { comments } : {})
+      dealId: values.dealId,
+      companyId: values.companyId,
+      comments: values.comments.trim()
     };
   };
 
@@ -115,13 +112,9 @@ const LogCallModalContent: FC<Props> = ({
 
   const { values, dirty, setSubmitting, setStatus } = formik;
 
-  useEffect(() => {
-    onDirtyChange(dirty);
-  }, [dirty, onDirtyChange]);
-
   const handleSuccess = (): void => {
     setSubmitting(false);
-    onSaved();
+    onClose();
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
@@ -185,15 +178,43 @@ const LogCallModalContent: FC<Props> = ({
     handleError
   );
 
-  useEffect(() => {
-    onPendingChange(isPending);
-  }, [isPending, onPendingChange]);
+  const handleRequestClose = (): void => {
+    if (isPending) return;
+
+    if (dirty && !isDiscardPromptOpen) {
+      setIsDiscardPromptOpen(true);
+      return;
+    }
+
+    onClose();
+  };
 
   return (
-    <LogCallModalForm
-      formik={formik}
-      isPending={isPending}
-      onCancel={onCancel}
+    <SmallModal
+      isOpen
+      onClose={handleRequestClose}
+      modalHeader={
+        isDiscardPromptOpen
+          ? translateCommon(["title"])
+          : translateText(["activities", "logCall", "modal", "title"])
+      }
+      content={
+        <>
+          {isDiscardPromptOpen && (
+            <AreYouSureModal
+              onPrimaryBtnClick={() => setIsDiscardPromptOpen(false)}
+              onSecondaryBtnClick={onClose}
+            />
+          )}
+          <div className={isDiscardPromptOpen ? "hidden" : "contents"}>
+            <LogCallModalForm
+              formik={formik}
+              isPending={isPending}
+              onCancel={handleRequestClose}
+            />
+          </div>
+        </>
+      }
     />
   );
 };
