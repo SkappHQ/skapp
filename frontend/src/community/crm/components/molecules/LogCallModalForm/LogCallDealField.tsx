@@ -131,9 +131,9 @@ const LogCallDealField: FC<Props> = ({
         emptyMessage={translateText(["emptyStates", "noDeals"])}
       />
       {isClearedNoticeVisible && (
-        <output className="text-sm text-semantic-amber-text">
+        <span className="text-sm text-semantic-amber-text">
           {translateText(["notices", "dealCleared"])}
-        </output>
+        </span>
       )}
     </div>
   );

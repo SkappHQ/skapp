@@ -233,3 +233,7 @@ export function matchesMMDDYYYYSeparatedByHyphenOrSlashOrPeriod(): RegExp {
 export function matchInvalidEmailCharactersSearchPattern(): RegExp {
   return /[^a-zA-Z0-9 @._%+-]/g;
 }
+
+export function callDurationPattern(): RegExp {
+  return /^(?:\d+|\d+\s*h(?:\s*\d+\s*m)?|\d+\s*m)$/i;
+}

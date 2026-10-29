@@ -48,7 +48,7 @@ const LogCallModalContent: FC<Props> = ({ onCancel }) => {
   const formik = useFormik<CrmLogCallFormValues>({
     initialValues,
     validationSchema,
-    onSubmit: (_values, helpers) => helpers.setSubmitting(false),
+    onSubmit: () => {},
     validateOnChange: false,
     validateOnBlur: true,
     enableReinitialize: true
