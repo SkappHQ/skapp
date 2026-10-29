@@ -12,9 +12,13 @@ import {
   Theme,
   useTheme
 } from "@mui/material";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import {
+  ButtonV2,
+  SidebarCloseIcon,
+  SidebarOpenIcon
+} from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
-import { CSSProperties, JSX, useEffect, useMemo, useState } from "react";
+import { JSX, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
@@ -44,10 +48,8 @@ import getDrawerRoutes from "~community/common/utils/getDrawerRoutes";
 import { shouldActivateLink } from "~community/common/utils/keyboardUtils";
 import useCanViewLeavePolicies from "~community/leave/hooks/useCanViewLeavePolicies";
 import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
-import { useLeaveStore } from "~community/leave/store/store";
 import { useGetOrganizationCalendarStatus } from "~enterprise/common/api/CalendarApi";
 import Badge from "~enterprise/common/components/atoms/Badge/Badge";
-import SubmitRequestModalController from "~enterprise/common/components/organisms/SubmitRequestModalController/SubmitRequestModalController";
 import { SubmitRequestModalEnums } from "~enterprise/common/enums/Common";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import useS3Download from "~enterprise/common/hooks/useS3Download";
@@ -58,6 +60,7 @@ import FullScreenLoader from "../../molecules/FullScreenLoader/FullScreenLoader"
 import { StyledDrawer } from "./StyledDrawer";
 import {
   DRAWER_ITEM_ICON_SIZE,
+  DRAWER_TOGGLE_ICON_SIZE,
   getSelectedDrawerItemColor,
   styles
 } from "./styles";
@@ -118,12 +121,6 @@ const Drawer = (): JSX.Element => {
 
   const { data: organizationCalendarStatusData } =
     useGetOrganizationCalendarStatus();
-
-  const { setMyLeaveRequestModalType } = useLeaveStore(
-    useShallow((state) => ({
-      setMyLeaveRequestModalType: state.setMyLeaveRequestModalType
-    }))
-  );
 
   const notificationLeaveCount = useGetNotificationSummaryCount(
     NotificationSummaryType.LEAVE_REQUEST
@@ -222,7 +219,11 @@ const Drawer = (): JSX.Element => {
     }
   }, [organizationDetails, orgLoading]);
 
-  const { setSubmitRequestModalType } = useCommonEnterpriseStore();
+  const { setSubmitRequestModalType } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      setSubmitRequestModalType: state.setSubmitRequestModalType
+    }))
+  );
 
   const handleOpenSubmitRequestModal = () => {
     setSubmitRequestModalType(SubmitRequestModalEnums.SUBMIT_REQUEST);
@@ -315,11 +316,10 @@ const Drawer = (): JSX.Element => {
                     <ListItemIcon sx={classes.listItemIcon}>
                       {route?.icon && (
                         <Box sx={{ position: "relative", display: "flex" }}>
-                          <Icon
-                            name={route.icon}
+                          <route.icon
                             width={DRAWER_ITEM_ICON_SIZE}
                             height={DRAWER_ITEM_ICON_SIZE}
-                            fill={getSelectedDrawerItemColor(
+                            color={getSelectedDrawerItemColor(
                               theme,
                               router.pathname,
                               route?.url ?? null
@@ -493,7 +493,6 @@ const Drawer = (): JSX.Element => {
             >
               {translateText(["getHelp"])}
             </ButtonV2>
-            <SubmitRequestModalController />
           </Stack>
         )}
       </Stack>
@@ -512,21 +511,17 @@ const Drawer = (): JSX.Element => {
         }
       >
         <Box sx={classes.iconToggleBox}>
-          {[IconName.DRAWER_CLOSE_ICON, IconName.DRAWER_OPEN_ICON].map(
-            (icon, index) => {
-              const isVisible = isDrawerExpanded === (index === 0);
-              return (
-                <Icon
-                  key={icon}
-                  name={icon}
-                  fill={theme.palette.common.black}
-                  svgProps={{
-                    style: classes.iconToggle(isVisible) as CSSProperties
-                  }}
+          {[SidebarCloseIcon, SidebarOpenIcon].map((ToggleIcon, index) => {
+            const isVisible = isDrawerExpanded === (index === 0);
+            return (
+              <Box key={index} sx={classes.iconToggle(isVisible)}>
+                <ToggleIcon
+                  width={DRAWER_TOGGLE_ICON_SIZE}
+                  height={DRAWER_TOGGLE_ICON_SIZE}
                 />
-              );
-            }
-          )}
+              </Box>
+            );
+          })}
         </Box>
       </IconButton>
     </StyledDrawer>

@@ -96,4 +96,20 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 		return entityManager.createQuery(query).getResultList();
 	}
 
+	@Override
+	public CrmActivityCall findCallById(Long id) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmActivityCall> query = cb.createQuery(CrmActivityCall.class);
+		Root<CrmActivityCall> call = query.from(CrmActivityCall.class);
+
+		call.fetch(CrmActivityCall_.contact, JoinType.LEFT);
+		call.fetch(CrmActivityCall_.deal, JoinType.LEFT);
+		call.fetch(CrmActivityCall_.company, JoinType.LEFT);
+
+		query.select(call)
+			.where(cb.equal(call.get(CrmActivityCall_.id), id), cb.isFalse(call.get(CrmActivityCall_.isDeleted)));
+
+		return entityManager.createQuery(query).getResultStream().findFirst().orElse(null);
+	}
+
 }

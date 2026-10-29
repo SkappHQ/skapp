@@ -25,6 +25,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @UtilityClass
@@ -366,6 +367,35 @@ public class CrmValidations {
 	public static void validateActivityDateRange(LocalDate startDate, LocalDate endDate) {
 		if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_DATE_RANGE_INVALID);
+		}
+	}
+
+	public static void validateCallSubject(String subject) {
+		if (subject == null || subject.isBlank()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_SUBJECT_REQUIRED);
+		}
+	}
+
+	public static void validateCallContactId(Long contactId) {
+		if (contactId == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_CONTACT_REQUIRED);
+		}
+	}
+
+	public static void validateCallDurationMinutes(Integer durationMinutes) {
+		if (durationMinutes != null && durationMinutes < 0) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_DURATION_INVALID);
+		}
+	}
+
+	public static void validateCallDealMatchesContactCompany(CrmDeal deal, CrmContact contact) {
+		if (deal == null || contact == null) {
+			return;
+		}
+		Long dealCompanyId = deal.getCompany() != null ? deal.getCompany().getId() : null;
+		Long contactCompanyId = contact.getCompany() != null ? contact.getCompany().getId() : null;
+		if (!Objects.equals(dealCompanyId, contactCompanyId)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_DEAL_COMPANY_MISMATCH);
 		}
 	}
 

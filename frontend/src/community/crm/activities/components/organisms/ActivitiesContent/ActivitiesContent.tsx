@@ -5,6 +5,7 @@ import { useShallow } from "zustand/react/shallow";
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import ActivityCallSidePanel from "~community/crm/activities/components/organisms/ActivityCallSidePanel/ActivityCallSidePanel";
 import ActivityFeed from "~community/crm/activities/components/organisms/ActivityFeed/ActivityFeed";
 import ActivityToolbar from "~community/crm/activities/components/organisms/ActivityToolbar/ActivityToolbar";
 import { DEFAULT_ACTIVITY_TAB } from "~community/crm/activities/constants/activityConstants";
@@ -13,7 +14,9 @@ import {
   ActivityFeedResponse,
   ActivityFilterValues,
   ActivityListFilters,
-  ActivityTab
+  ActivityRow,
+  ActivityTab,
+  ActivityType
 } from "~community/crm/activities/types/activityTypes";
 import {
   toCallRow,
@@ -31,8 +34,10 @@ import {
 } from "~community/crm/api/ActivityApi";
 import { useGetDealsByIds } from "~community/crm/api/DealApi";
 import LogCallModalContent from "~community/crm/components/molecules/LogCallModalContent/LogCallModalContent";
+import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
 import { useCrmStore } from "~community/crm/store/store";
+import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 import { getMissingDealIds, mergeDeals } from "~community/crm/utils/dealUtil";
 
 const ActivitiesContent: FC = () => {
@@ -50,11 +55,23 @@ const ActivitiesContent: FC = () => {
 
   const isAllTab = activeTab === ActivityTab.ALL;
 
-  const { owners, deals, setDeals } = useCrmStore(
+  const {
+    owners,
+    deals,
+    selectedCallId,
+    isCrmSidePanelOpen,
+    setDeals,
+    setSelectedCallId,
+    openCrmSidePanel
+  } = useCrmStore(
     useShallow((store) => ({
       owners: store.owners,
       deals: store.deals,
-      setDeals: store.setDeals
+      selectedCallId: store.selectedCallId,
+      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+      setDeals: store.setDeals,
+      setSelectedCallId: store.setSelectedCallId,
+      openCrmSidePanel: store.openCrmSidePanel
     }))
   );
 
@@ -149,7 +166,12 @@ const ActivitiesContent: FC = () => {
   const hasActiveFilters =
     searchTerm.length > 0 || Object.keys(filters).length > 0;
 
-  const handleRowClick = (): void => {};
+  const handleRowClick = (row: ActivityRow): void => {
+    if (row.type !== ActivityType.CALL) return;
+
+    setSelectedCallId(row.id);
+    openCrmSidePanel(CrmSidePanelTypes.CALL_SIDE_PANEL);
+  };
 
   const handleToggleComplete = (): void => {};
 
@@ -199,6 +221,11 @@ const ActivitiesContent: FC = () => {
         onRowClick={handleRowClick}
         onToggleComplete={handleToggleComplete}
       />
+      {selectedCallId !== null && (
+        <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
+          <ActivityCallSidePanel callId={selectedCallId} />
+        </SidePanelWrapper>
+      )}
     </div>
   );
 };

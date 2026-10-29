@@ -56,10 +56,21 @@ const SidePanelCallInfo: FC<Props> = ({
           "contact"
         ])}
       >
-        <SidePanelLinkButton
-          label={getContactDisplayName(call.contact)}
-          onClick={onContactClick}
-        />
+        {call.contact ? (
+          <SidePanelLinkButton
+            label={getContactDisplayName(call.contact)}
+            onClick={onContactClick}
+          />
+        ) : (
+          <span className="body2">
+            {translateText([
+              "activities",
+              "callSidePanel",
+              "info",
+              "noLongerAvailable"
+            ])}
+          </span>
+        )}
       </PropertyRow>
 
       <PropertyRow

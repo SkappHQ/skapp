@@ -118,7 +118,7 @@ export interface CrmCallEntity {
   durationMinutes?: number;
   comments?: string;
   ownerId: number;
-  contact: CrmContactEntity;
+  contact?: CrmContactEntity;
   deal?: CrmDealEntity;
   company?: CrmCompanyEntity;
 }

@@ -33,6 +33,7 @@ const CrmUiSlice: StateCreator<
   selectedDealId: null,
   selectedTaskId: null,
   selectedDealStageId: null,
+  selectedCallId: null,
 
   isCrmSidePanelOpen: false,
   crmSidePanelType: null,
@@ -70,6 +71,7 @@ const CrmUiSlice: StateCreator<
   setSelectedTaskId: (selectedTaskId: number | null) => set({ selectedTaskId }),
   setSelectedDealStageId: (selectedDealStageId: number | null) =>
     set({ selectedDealStageId }),
+  setSelectedCallId: (selectedCallId: number | null) => set({ selectedCallId }),
 
   openCrmSidePanel: (crmSidePanelType: CrmSidePanelTypes) =>
     set({ isCrmSidePanelOpen: true, crmSidePanelType }),

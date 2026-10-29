@@ -1,14 +1,19 @@
-import { Box, TextField, TextFieldProps, Typography } from "@mui/material";
+import {
+  Box,
+  InputAdornment,
+  TextField,
+  TextFieldProps,
+  Typography
+} from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { LocalizationProvider, MobileTimePicker } from "@mui/x-date-pickers";
 import { AdapterLuxon } from "@mui/x-date-pickers/AdapterLuxon";
+import { TimesheetIcon } from "@rootcodelabs/skapp-ui";
 import { DateTime } from "luxon";
 import { useState } from "react";
 
 import { isTimePm } from "~community/attendance/utils/TimeUtils";
-import Icon from "~community/common/components/atoms/Icon/Icon";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
-import { IconName } from "~community/common/types/IconTypes";
 
 interface Props {
   time: Date;
@@ -51,8 +56,15 @@ const TimeInput = ({ time, setTime, label, error }: Props) => {
                 helperText={null}
                 inputProps={{
                   ...params.inputProps,
-                  "aria-label": `Choose ${label} time, selected time is ${DateTime.fromJSDate(time).toFormat("h:mm a")}`,
-                  endAdornment: <Icon name={IconName.TIME_SHEET_ICON} />
+                  "aria-label": `Choose ${label} time, selected time is ${DateTime.fromJSDate(time).toFormat("h:mm a")}`
+                }}
+                InputProps={{
+                  ...params.InputProps,
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <TimesheetIcon />
+                    </InputAdornment>
+                  )
                 }}
                 style={{
                   backgroundColor: error

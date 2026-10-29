@@ -15,6 +15,7 @@ import {
 } from "~community/common/providers/ToastProvider";
 import MyRequestModalController from "~community/leave/components/organisms/MyRequestModalController/MyRequestModalController";
 import QuickSetupModalController from "~enterprise/common/components/organisms/QuickSetupModalController/QuickSetupModalController";
+import SubmitRequestModalController from "~enterprise/common/components/organisms/SubmitRequestModalController/SubmitRequestModalController";
 
 import styles from "./styles";
 
@@ -93,6 +94,7 @@ const ContentWithDrawer = ({ children }: Props) => {
       <TimeWidgetPopupController />
       <MyRequestModalController />
       <QuickSetupModalController />
+      <SubmitRequestModalController />
     </>
   );
 };
