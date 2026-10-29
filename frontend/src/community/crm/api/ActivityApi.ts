@@ -1,12 +1,16 @@
 import {
   InfiniteData,
   UseInfiniteQueryResult,
+  UseMutationResult,
   UseQueryResult,
   useInfiniteQuery,
-  useQuery
+  useMutation,
+  useQuery,
+  useQueryClient
 } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 
+import { ErrorResponse } from "~community/common/types/CommonTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import {
   ActivityCallResponse,
@@ -14,12 +18,16 @@ import {
   ActivityFeedFilters,
   ActivityFeedResponse,
   ActivityListFilters,
+  ActivityMeetingCreatePayload,
   ActivityMeetingResponse,
   ActivityTaskResponse
 } from "~community/crm/activities/types/activityTypes";
 import { crmActivityEndpoints } from "~community/crm/api/utils/ApiEndpoints";
 import { crmActivityQueryKeys } from "~community/crm/api/utils/QueryKeys";
-import { CrmCallEntity } from "~community/crm/types/CrmCommonTypes";
+import {
+  CrmCallEntity,
+  CrmMeetingEntity
+} from "~community/crm/types/CrmCommonTypes";
 
 const fetchActivityFeed = async (
   params: ActivityFeedFilters
@@ -142,3 +150,63 @@ export const useGetCallById = (
     enabled,
     refetchOnWindowFocus: false
   });
+
+const fetchMeetingById = async (id: number): Promise<CrmMeetingEntity> => {
+  const response = await authFetch.get(
+    crmActivityEndpoints.GET_MEETING_BY_ID(id)
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useGetMeetingById = (
+  id: number,
+  enabled: boolean
+): UseQueryResult<CrmMeetingEntity, AxiosError> =>
+  useQuery({
+    queryKey: crmActivityQueryKeys.MEETING(id),
+    queryFn: () => fetchMeetingById(id),
+    enabled,
+    refetchOnWindowFocus: false
+  });
+
+const createMeeting = async (
+  payload: ActivityMeetingCreatePayload
+): Promise<void> => {
+  await authFetch.post(crmActivityEndpoints.CREATE_MEETING, payload);
+};
+
+export const useCreateMeeting = (
+  onSuccess: () => void,
+  onError: (error: ErrorResponse) => void
+): UseMutationResult<void, ErrorResponse, ActivityMeetingCreatePayload> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createMeeting,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
+      onSuccess();
+    },
+    onError
+  });
+};
+
+const deleteMeeting = async (id: number): Promise<void> => {
+  await authFetch.delete(crmActivityEndpoints.DELETE_MEETING(id));
+};
+
+export const useDeleteMeeting = (
+  onSuccess: () => void,
+  onError: (error: ErrorResponse) => void
+): UseMutationResult<void, ErrorResponse, number> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteMeeting,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
+      onSuccess();
+    },
+    onError
+  });
+};

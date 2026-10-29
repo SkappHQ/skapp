@@ -751,6 +751,17 @@
         "reset": "Reset filters",
         "apply": "Apply filters"
       }
+    },
+    "logMeeting": {
+      "modal": {
+        "validations": {
+          "subject": "Subject is required",
+          "date": "Date is required",
+          "attendees": "Please select at least one attendee",
+          "endTime": "End time must be after start time",
+          "owner": "Activity owner is required"
+        }
+      }
     }
   }
 }

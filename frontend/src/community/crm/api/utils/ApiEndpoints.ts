@@ -59,7 +59,11 @@ export const crmActivityEndpoints = {
   GET_CALL_BY_ID: (id: number) => `${moduleAPIPath.CRM}/activity/call/${id}`,
   GET_EMAILS: `${moduleAPIPath.CRM}/activity/email`,
   GET_MEETINGS: `${moduleAPIPath.CRM}/activity/meeting`,
-  GET_TASKS: `${moduleAPIPath.CRM}/activity/task`
+  GET_TASKS: `${moduleAPIPath.CRM}/activity/task`,
+  CREATE_MEETING: `${moduleAPIPath.CRM}/activity/meeting`,
+  GET_MEETING_BY_ID: (id: number) =>
+    `${moduleAPIPath.CRM}/activity/meeting/${id}`,
+  DELETE_MEETING: (id: number) => `${moduleAPIPath.CRM}/activity/meeting/${id}`
 };
 
 export const crmBoardEndpoints = {

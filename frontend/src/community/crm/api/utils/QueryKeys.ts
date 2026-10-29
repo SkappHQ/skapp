@@ -50,6 +50,7 @@ export const crmTaskQueryKeys = {
 };
 
 export const crmActivityQueryKeys = {
+  ALL: [CRM_ACTIVITIES],
   FEED: (params: ActivityFeedFilters) => [CRM_ACTIVITIES, "feed", params],
   CALLS: (params: ActivityListFilters) => [CRM_ACTIVITIES, "calls", params],
   CALL: (id: number) => [CRM_ACTIVITIES, "call", id],
@@ -59,7 +60,8 @@ export const crmActivityQueryKeys = {
     "meetings",
     params
   ],
-  TASKS: (params: ActivityListFilters) => [CRM_ACTIVITIES, "tasks", params]
+  TASKS: (params: ActivityListFilters) => [CRM_ACTIVITIES, "tasks", params],
+  MEETING: (id: number) => [CRM_ACTIVITIES, "meeting", id]
 };
 
 export const crmDealQueryKeys = {
