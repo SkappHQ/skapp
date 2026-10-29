@@ -8,8 +8,9 @@ import {
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 
 export const parseCallDurationToMinutes = (input: string): number | null => {
-  const [, hours, minutes] =
-    callDurationPartsPattern().exec(input.trim()) ?? [];
+  const match = callDurationPartsPattern().exec(input.trim());
+  const hours = match?.[1];
+  const minutes = match?.[2];
 
   if (!hours && !minutes) return null;
 
