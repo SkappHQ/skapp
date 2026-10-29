@@ -497,7 +497,6 @@ const Drawer = (): JSX.Element => {
             >
               {translateText(["getHelp"])}
             </ButtonV2>
-            <SubmitRequestModalController />
           </Stack>
         )}
       </Stack>
@@ -529,6 +528,7 @@ const Drawer = (): JSX.Element => {
           })}
         </Box>
       </IconButton>
+      <SubmitRequestModalController />
     </StyledDrawer>
   );
 };
