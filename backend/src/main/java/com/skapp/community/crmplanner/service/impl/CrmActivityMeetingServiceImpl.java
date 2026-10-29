@@ -1,17 +1,33 @@
 package com.skapp.community.crmplanner.service.impl;
 
+import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.StringUtils;
+import com.skapp.community.crmplanner.constant.CrmMessageConstant;
+import com.skapp.community.crmplanner.mapper.CrmMapper;
+import com.skapp.community.crmplanner.model.CrmActivityMeeting;
+import com.skapp.community.crmplanner.model.CrmActivityMeetingContact;
+import com.skapp.community.crmplanner.model.CrmActivityMeetingContactId;
+import com.skapp.community.crmplanner.model.CrmCompany;
+import com.skapp.community.crmplanner.model.CrmContact;
+import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.payload.request.CrmActivityMeetingCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmActivityMeetingFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityMeetingResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityMeetingDao;
+import com.skapp.community.crmplanner.repository.CrmCompanyDao;
+import com.skapp.community.crmplanner.repository.CrmContactDao;
+import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.service.CrmActivityMeetingService;
+import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
 import com.skapp.community.crmplanner.type.CrmActivityMeetingFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityMeetingSort;
 import com.skapp.community.crmplanner.util.CrmUtil;
+import com.skapp.community.crmplanner.util.CrmValidations;
+import com.skapp.community.peopleplanner.model.Employee;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
@@ -31,6 +47,16 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 	private final UserService userService;
 
 	private final TimeZoneService timeZoneService;
+
+	private final CrmMapper crmMapper;
+
+	private final CrmContactDao crmContactDao;
+
+	private final CrmDealDao crmDealDao;
+
+	private final CrmCompanyDao crmCompanyDao;
+
+	private final CrmOwnerResolverService crmOwnerResolver;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -68,6 +94,69 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 
 		log.info("getMeetings: execution ended");
 		return new ResponseEntityDto(false, meetings);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto createMeeting(CrmActivityMeetingCreateRequestDto requestDto) {
+		log.info("createMeeting: execution started");
+
+		CrmValidations.validateMeetingSubject(requestDto.getName());
+		CrmValidations.validateMeetingDate(requestDto.getMeetingDate());
+		CrmValidations.validateMeetingTimes(requestDto.getStartAt(), requestDto.getEndAt());
+		CrmValidations.validateMeetingAttendeeIds(requestDto.getContactIds());
+
+		User currentUser = userService.getCurrentUser();
+		Employee owner = requestDto.getOwnerId() != null
+				? crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser) : currentUser.getEmployee();
+
+		CrmActivityMeeting meeting = new CrmActivityMeeting();
+		meeting.setName(requestDto.getName());
+		meeting.setIsScheduled(false);
+		meeting.setMeetingDate(requestDto.getMeetingDate());
+		meeting.setStartAt(requestDto.getStartAt());
+		meeting.setEndAt(requestDto.getEndAt());
+		meeting.setComments(requestDto.getComments());
+		meeting.setOwner(owner);
+
+		List<CrmContact> contacts = requestDto.getContactIds()
+			.stream()
+			.map(contactId -> crmContactDao.findByIdAndIsDeletedFalse(contactId)
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND)))
+			.toList();
+
+		for (CrmContact contact : contacts) {
+			CrmActivityMeetingContact attendee = new CrmActivityMeetingContact();
+			attendee.setId(new CrmActivityMeetingContactId());
+			attendee.setMeeting(meeting);
+			attendee.setContact(contact);
+			meeting.getContacts().add(attendee);
+		}
+
+		if (requestDto.getDealId() != null) {
+			CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+			if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, deal.getOwner().getEmployeeId())) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_VIEW_DENIED);
+			}
+			CrmValidations.validateMeetingDealMatchesAttendeeCompanies(deal, contacts);
+			meeting.setDeal(deal);
+		}
+
+		if (requestDto.getCompanyId() != null) {
+			CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
+			meeting.setCompany(company);
+		}
+
+		CrmActivityMeeting savedMeeting = crmActivityMeetingDao.save(meeting);
+
+		CrmActivityMeetingResponseDto response = crmMapper
+			.crmActivityMeetingToCrmActivityMeetingResponseDto(savedMeeting);
+		response.setContactIds(contacts.stream().map(CrmContact::getId).toList());
+
+		log.info("createMeeting: execution ended");
+		return new ResponseEntityDto(false, response);
 	}
 
 }
