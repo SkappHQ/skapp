@@ -127,6 +127,24 @@ const LogCallModalContent: FC<Props> = ({
   const handleSuccess = (): void => {
     setSubmitting(false);
     onSaved();
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateText([
+        "activities",
+        "logCall",
+        "modal",
+        "toastMessages",
+        "addSuccessTitle"
+      ]),
+      description: translateText([
+        "activities",
+        "logCall",
+        "modal",
+        "toastMessages",
+        "addSuccessDescription"
+      ])
+    });
   };
 
   const handleError = (error: ErrorResponse): void => {
