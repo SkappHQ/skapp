@@ -107,6 +107,7 @@ const LogCallOwnerField: FC<Props> = ({ id, formik }) => {
     />
   ) : (
     <SearchableDropdown
+      positionStrategy="fixed"
       id={id}
       items={dropdownItems}
       onSelect={handleSelect}

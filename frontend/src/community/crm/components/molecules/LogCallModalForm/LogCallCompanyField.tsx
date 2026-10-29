@@ -123,6 +123,7 @@ const LogCallCompanyField: FC<Props> = ({ id, formik }) => {
 
   return (
     <SelectableSearchField
+      positionStrategy="fixed"
       id={id}
       label={translateText(["labels", "relatedTo"])}
       placeholder={translateText(["placeholders", "relatedTo"])}

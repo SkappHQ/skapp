@@ -126,6 +126,7 @@ const LogCallContactField: FC<Props> = ({ id, formik, onDealCleared }) => {
 
   return (
     <SelectableSearchField
+      positionStrategy="fixed"
       id={id}
       label={translateText(["labels", "contact"])}
       placeholder={translateText(["placeholders", "contact"])}

@@ -115,6 +115,7 @@ const LogCallDealField: FC<Props> = ({
   return (
     <div className="flex flex-col gap-1">
       <SelectableSearchField
+        positionStrategy="fixed"
         id={id}
         label={translateText(["labels", "deal"])}
         placeholder={translateText(["placeholders", "deal"])}
