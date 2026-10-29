@@ -1,6 +1,7 @@
 import { FC } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
+import { unitConversion } from "~community/common/constants/configs";
 import {
   SHORT_MONTH_YEAR_FORMAT,
   TIME_FORMAT_12_HOUR
@@ -19,6 +20,17 @@ import {
   CrmOwnerEntity
 } from "~community/crm/types/CrmCommonTypes";
 import { getContactDisplayName } from "~community/crm/utils/contactUtil";
+
+const formatCallDuration = (totalMinutes: number): string => {
+  const hours = Math.floor(totalMinutes / unitConversion.MINUTES_PER_HOUR);
+  const minutes = totalMinutes % unitConversion.MINUTES_PER_HOUR;
+  const parts = [
+    ...(hours > 0 ? [`${hours}h`] : []),
+    ...(minutes > 0 || hours === 0 ? [`${minutes}m`] : [])
+  ];
+
+  return parts.join(" ");
+};
 
 interface Props {
   call: CrmCallEntity;
@@ -104,12 +116,7 @@ const SidePanelCallInfo: FC<Props> = ({
       >
         <span className="body2">
           {call.durationMinutes != null
-            ? translateText(
-                ["activities", "callSidePanel", "info", "durationValue"],
-                {
-                  minutes: call.durationMinutes
-                }
-              )
+            ? formatCallDuration(call.durationMinutes)
             : noValue}
         </span>
       </PropertyRow>
