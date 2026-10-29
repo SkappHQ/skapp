@@ -88,6 +88,7 @@ const LogCallModalContent: FC<Props> = ({ onClose }) => {
     values: CrmLogCallFormValues,
     helpers: FormikHelpers<CrmLogCallFormValues>
   ): void => {
+    // TODO: remove this guard once contactId and ownerId are non-nullable in CrmLogCallFormValues
     if (!values.contactId || !values.ownerId) {
       helpers.setSubmitting(false);
       return;
