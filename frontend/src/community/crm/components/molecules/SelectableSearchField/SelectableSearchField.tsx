@@ -22,7 +22,7 @@ interface Props {
   emptyMessage?: string;
   required?: boolean;
   errorMessage?: string;
-  positionStrategy?: SearchableDropdownProps["positionStrategy"];
+  positionStrategy?: NonNullable<SearchableDropdownProps["positionStrategy"]>;
 }
 
 const SelectableSearchField: FC<Props> = ({
