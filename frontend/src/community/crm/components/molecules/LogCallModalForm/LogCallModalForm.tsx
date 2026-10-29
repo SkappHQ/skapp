@@ -24,16 +24,6 @@ import LogCallContactField from "./LogCallContactField";
 import LogCallDealField from "./LogCallDealField";
 import LogCallOwnerField from "./LogCallOwnerField";
 
-const FIELD_FOCUS_ORDER: {
-  field: keyof CrmLogCallFormValues;
-  elementId: string;
-}[] = [
-  { field: "subject", elementId: "log-call-subject" },
-  { field: "duration", elementId: "log-call-duration" },
-  { field: "contactId", elementId: "log-call-contact-input" },
-  { field: "ownerId", elementId: "log-call-owner-input" }
-];
-
 interface Props {
   formik: FormikProps<CrmLogCallFormValues>;
   onCancel: () => void;
@@ -79,12 +69,10 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
   useEffect(() => {
     if (submitCount === 0 || isSubmitting) return;
 
-    const firstInvalidField = FIELD_FOCUS_ORDER.find(
-      ({ field }) => errors[field]
-    );
+    const [firstInvalidField] = Object.keys(errors);
 
     if (firstInvalidField) {
-      document.getElementById(firstInvalidField.elementId)?.focus();
+      document.getElementById(`log-call-${firstInvalidField}-input`)?.focus();
     }
   }, [submitCount, isSubmitting]);
 
@@ -104,7 +92,7 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
     <div className="flex flex-col w-full h-full justify-between gap-2 -mt-3 max-h-[calc(100vh-10rem)]">
       <div className="flex flex-col gap-2 overflow-y-auto pr-1">
         <InputField
-          id="log-call-subject"
+          id="log-call-subject-input"
           name="subject"
           value={values.subject}
           label={translateText(["labels", "subject"])}
@@ -157,7 +145,7 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
         </div>
 
         <InputField
-          id="log-call-duration"
+          id="log-call-duration-input"
           name="duration"
           value={values.duration}
           label={translateText(["labels", "duration"])}
@@ -173,13 +161,13 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
         <div className="flex flex-row items-start gap-[0.625rem]">
           <div className="flex-1">
             <LogCallContactField
-              id="log-call-contact"
+              id="log-call-contactId"
               formik={formik}
               onDealCleared={handleDealCleared}
             />
           </div>
           <div className="flex-1">
-            <LogCallOwnerField id="log-call-owner" formik={formik} />
+            <LogCallOwnerField id="log-call-ownerId" formik={formik} />
           </div>
         </div>
 
