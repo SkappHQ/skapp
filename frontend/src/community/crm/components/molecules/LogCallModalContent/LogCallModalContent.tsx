@@ -1,15 +1,11 @@
 import { FormikHelpers, useFormik } from "formik";
+import { DateTime } from "luxon";
 import { FC, useEffect, useMemo } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
-import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { ErrorResponse } from "~community/common/types/CommonTypes";
-import {
-  instantInZone,
-  nowInZone
-} from "~community/common/utils/dateTimeUtils";
 import { ActivityCallCreatePayload } from "~community/crm/activities/types/activityTypes";
 import { useCreateCall } from "~community/crm/api/ActivityApi";
 import LogCallModalForm from "~community/crm/components/molecules/LogCallModalForm/LogCallModalForm";
@@ -39,13 +35,12 @@ const LogCallModalContent: FC<Props> = ({
   onPendingChange
 }) => {
   const translateText = useTranslator("crmModule");
-  const displayZone = useDisplayZone();
   const { setToastMessage } = useToast();
 
   const defaultOwner = useDefaultCrmOwner();
 
   const initialValues: CrmLogCallFormValues = useMemo(() => {
-    const now = nowInZone(displayZone);
+    const now = DateTime.now();
     const slotStart = now.set({
       minute: now.minute - (now.minute % CALL_TIME_SLOT_MINUTES)
     });
@@ -61,7 +56,7 @@ const LogCallModalContent: FC<Props> = ({
       dealId: null,
       companyId: null
     };
-  }, [defaultOwner, displayZone]);
+  }, [defaultOwner]);
 
   const toPayload = (
     values: CrmLogCallFormValues,
@@ -70,7 +65,7 @@ const LogCallModalContent: FC<Props> = ({
   ): ActivityCallCreatePayload => {
     const [hour, minute] = values.time.split(":").map(Number);
     const loggedAt = values.date
-      ? instantInZone(values.date, displayZone)
+      ? DateTime.fromISO(values.date)
           .set({ hour, minute, second: 0, millisecond: 0 })
           .toUTC()
           .toISO()

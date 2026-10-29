@@ -8,14 +8,10 @@ import {
   TextArea
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
+import { DateTime } from "luxon";
 import { FC, useState } from "react";
 
-import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import {
-  instantToPickedDay,
-  pickedDayToInstant
-} from "~community/common/utils/dateTimeUtils";
 import { CALL_TIME_OPTIONS } from "~community/crm/constants/callConstants";
 import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
 
@@ -76,7 +72,6 @@ const LogCallModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
     "logCall",
     "modal"
   );
-  const displayZone = useDisplayZone();
 
   const [isAssociationsOpen, setIsAssociationsOpen] = useState(false);
   const [isDealClearedNoticeVisible, setIsDealClearedNoticeVisible] =
@@ -107,13 +102,13 @@ const LogCallModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
   };
 
   const pickedDate = values.date
-    ? instantToPickedDay(values.date, displayZone)
+    ? DateTime.fromISO(values.date).startOf("day").toJSDate()
     : null;
 
   const handleDateSelect = (date?: Date) => {
     setFieldValue(
       "date",
-      date ? pickedDayToInstant(date, displayZone) : null,
+      date ? DateTime.fromJSDate(date).startOf("day").toUTC().toISO() : null,
       true
     );
   };
