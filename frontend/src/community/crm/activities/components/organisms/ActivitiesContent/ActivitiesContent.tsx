@@ -183,10 +183,9 @@ const ActivitiesContent: FC = () => {
           )
         }
       />
-      <LogCallModal
-        isOpen={isLogCallModalOpen}
-        onClose={() => setIsLogCallModalOpen(false)}
-      />
+      {isLogCallModalOpen && (
+        <LogCallModal onClose={() => setIsLogCallModalOpen(false)} />
+      )}
       <ActivityFeed
         activeTab={activeTab}
         pages={pages}
