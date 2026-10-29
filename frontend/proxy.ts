@@ -104,11 +104,7 @@ const adminRoutes = {
     ROUTES.LEAVE.LEAVE_POLICIES,
     ROUTES.REPORT.BASE
   ],
-  [AdminTypes.LEAVE_ADMIN]: [
-    ROUTES.LEAVE.BASE,
-    ROUTES.CONFIGURATIONS.BASE,
-    ROUTES.REPORT.BASE
-  ],
+  [AdminTypes.LEAVE_ADMIN]: [ROUTES.LEAVE.BASE, ROUTES.CONFIGURATIONS.BASE],
   [AdminTypes.ATTENDANCE_ADMIN]: [
     ROUTES.TIMESHEET.BASE,
     ROUTES.CONFIGURATIONS.BASE,
@@ -369,19 +365,6 @@ const resolveLeavePolicyManagementAccess: AccessGuard = ({
     ? redirectToUnauthorized(request)
     : null;
 
-// The leave balance report is for leave admins and super admins only, even though
-// other admins can open the rest of /report
-const resolveLeaveBalanceReportAccess: AccessGuard = ({
-  request,
-  currentPath,
-  roles
-}) =>
-  currentPath.startsWith(ROUTES.REPORT.LEAVE_BALANCE_UTILIZATION) &&
-  !roles.includes(AdminTypes.LEAVE_ADMIN) &&
-  !roles.includes(ROLE_SUPER_ADMIN)
-    ? redirectToUnauthorized(request)
-    : null;
-
 // Attendance-only employees land on their timesheet instead of the dashboard
 const resolveDashboardAccess: AccessGuard = ({
   request,
@@ -459,7 +442,6 @@ const ROUTE_ACCESS_GUARDS: AccessGuard[] = [
   resolveFirstTimePasswordAccess,
   resolveLeaveReportAccess,
   resolveLeavePolicyManagementAccess,
-  resolveLeaveBalanceReportAccess,
   resolveDashboardAccess
 ];
 
