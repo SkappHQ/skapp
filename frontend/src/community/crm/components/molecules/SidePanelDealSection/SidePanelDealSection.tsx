@@ -32,6 +32,7 @@ interface SidePanelDealSectionProps {
   defaultContact?: CrmContactEntity;
   showAddDealAction?: boolean;
   emptyDescription?: string;
+  emptyHeightClassName?: string;
   hasNextPage?: boolean;
   isFetchingNextPage?: boolean;
   onFetchNextPage?: () => void;
@@ -44,6 +45,7 @@ const SidePanelDealSection: FC<SidePanelDealSectionProps> = ({
   defaultContact,
   showAddDealAction = true,
   emptyDescription,
+  emptyHeightClassName = "h-[228px]",
   hasNextPage = false,
   isFetchingNextPage = false,
   onFetchNextPage
@@ -172,7 +174,7 @@ const SidePanelDealSection: FC<SidePanelDealSectionProps> = ({
             : undefined
         }
         className={{
-          wrapper: "h-[228px] bg-secondary-background rounded-lg"
+          wrapper: `${emptyHeightClassName} bg-secondary-background rounded-lg`
         }}
       />
     );

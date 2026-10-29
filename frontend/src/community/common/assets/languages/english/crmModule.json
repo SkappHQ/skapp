@@ -593,7 +593,6 @@
         "duration": "Duration",
         "activityOwner": "Activity owner",
         "relatedTo": "Related to",
-        "durationValue": "{{minutes}} min",
         "noValue": "-"
       }
     },
