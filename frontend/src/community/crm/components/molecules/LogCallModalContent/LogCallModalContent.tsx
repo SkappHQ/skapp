@@ -1,7 +1,6 @@
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
 import { FC, useMemo } from "react";
-import * as Yup from "yup";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import LogCallModalForm from "~community/crm/components/molecules/LogCallModalForm/LogCallModalForm";
@@ -11,18 +10,14 @@ import {
 } from "~community/crm/constants/callConstants";
 import { useDefaultCrmOwner } from "~community/crm/hooks/useDefaultCrmOwner";
 import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
+import { getCallValidationSchema } from "~community/crm/utils/callValidations";
 
 interface Props {
   onCancel: () => void;
 }
 
 const LogCallModalContent: FC<Props> = ({ onCancel }) => {
-  const translateText = useTranslator(
-    "crmModule",
-    "activities",
-    "logCall",
-    "modal"
-  );
+  const translateText = useTranslator("crmModule");
 
   const defaultOwner = useDefaultCrmOwner();
 
@@ -37,27 +32,16 @@ const LogCallModalContent: FC<Props> = ({ onCancel }) => {
       date: now.toUTC().toISO(),
       time: slotStart.toFormat(CALL_TIME_VALUE_FORMAT),
       duration: "",
-      contact: "",
+      contactId: null,
       ownerId: defaultOwner ? defaultOwner.employeeId : null,
       comments: "",
-      deal: "",
-      company: ""
+      dealId: null,
+      companyId: null
     };
   }, [defaultOwner]);
 
   const validationSchema = useMemo(
-    () =>
-      Yup.object().shape({
-        subject: Yup.string()
-          .trim()
-          .required(translateText(["validations", "subject"])),
-        contact: Yup.string()
-          .trim()
-          .required(translateText(["validations", "contact"])),
-        ownerId: Yup.number()
-          .typeError(translateText(["validations", "owner"]))
-          .required(translateText(["validations", "owner"]))
-      }),
+    () => getCallValidationSchema(translateText),
     [translateText]
   );
 

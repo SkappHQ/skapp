@@ -141,11 +141,14 @@
         "duration": "Call duration",
         "contact": "Call contact",
         "comments": "Call comments",
-        "deal": "Search deals",
-        "relatedTo": "Search companies",
+        "deal": "Call deal",
+        "relatedTo": "Call related company",
         "cancel": "Cancel log a call",
         "save": "Save call",
-        "removeOwner": "Remove activity owner"
+        "removeOwner": "Remove activity owner",
+        "clearContact": "Clear selected contact",
+        "clearDeal": "Clear selected deal",
+        "clearRelatedTo": "Clear selected company"
       }
     },
     "tabs": "Activity types",

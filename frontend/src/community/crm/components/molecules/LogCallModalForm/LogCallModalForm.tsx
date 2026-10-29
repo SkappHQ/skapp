@@ -5,11 +5,10 @@ import {
   DatePicker,
   Dropdown,
   InputField,
-  SearchIcon,
   TextArea
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -20,6 +19,9 @@ import {
 import { CALL_TIME_OPTIONS } from "~community/crm/constants/callConstants";
 import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
 
+import LogCallCompanyField from "./LogCallCompanyField";
+import LogCallContactField from "./LogCallContactField";
+import LogCallDealField from "./LogCallDealField";
 import LogCallOwnerField from "./LogCallOwnerField";
 
 interface Props {
@@ -36,6 +38,7 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
     handleBlur,
     dirty,
     isSubmitting,
+    submitCount,
     setFieldValue,
     submitForm
   } = formik;
@@ -55,6 +58,23 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
   const displayZone = useDisplayZone();
 
   const [isAssociationsOpen, setIsAssociationsOpen] = useState(false);
+  const [isDealClearedNoticeVisible, setIsDealClearedNoticeVisible] =
+    useState(false);
+
+  const handleDealCleared = (): void => {
+    setIsDealClearedNoticeVisible(true);
+    setIsAssociationsOpen(true);
+  };
+
+  useEffect(() => {
+    if (submitCount === 0 || isSubmitting) return;
+
+    const [firstInvalidField] = Object.keys(errors);
+
+    if (firstInvalidField) {
+      document.getElementById(`log-call-${firstInvalidField}-input`)?.focus();
+    }
+  }, [submitCount, isSubmitting]);
 
   const pickedDate = values.date
     ? instantToPickedDay(values.date, displayZone)
@@ -69,9 +89,10 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
   };
 
   return (
-    <div className="flex flex-col w-full h-full justify-between gap-[0.625rem] max-h-[78vh]">
-      <div className="flex flex-col gap-[0.625rem] overflow-y-auto pr-1">
+    <div className="flex flex-col w-full h-full justify-between gap-2 -mt-3 max-h-[calc(100vh-10rem)]">
+      <div className="flex flex-col gap-2 overflow-y-auto pr-1">
         <InputField
+          id="log-call-subject-input"
           name="subject"
           value={values.subject}
           label={translateText(["labels", "subject"])}
@@ -124,35 +145,29 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
         </div>
 
         <InputField
+          id="log-call-duration-input"
           name="duration"
           value={values.duration}
           label={translateText(["labels", "duration"])}
           placeholder={translateText(["placeholders", "duration"])}
+          errorMessage={touched.duration ? errors.duration : ""}
+          state={touched.duration && errors.duration ? "error" : "default"}
           onChange={handleChange}
+          onBlur={handleBlur}
           aria-label={translateAria(["duration"])}
           fullWidth
         />
 
         <div className="flex flex-row items-start gap-[0.625rem]">
           <div className="flex-1">
-            <InputField
-              name="contact"
-              title={values.contact}
-              value={values.contact}
-              label={translateText(["labels", "contact"])}
-              placeholder={translateText(["placeholders", "contact"])}
-              errorMessage={touched.contact ? errors.contact : ""}
-              state={touched.contact && errors.contact ? "error" : "default"}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              aria-label={translateAria(["contact"])}
-              rightIcon={<SearchIcon />}
-              fullWidth
-              required
+            <LogCallContactField
+              id="log-call-contactId"
+              formik={formik}
+              onDealCleared={handleDealCleared}
             />
           </div>
           <div className="flex-1">
-            <LogCallOwnerField formik={formik} />
+            <LogCallOwnerField id="log-call-ownerId" formik={formik} />
           </div>
         </div>
 
@@ -162,34 +177,19 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
           label={translateText(["labels", "comments"])}
           placeholder={translateText(["placeholders", "comments"])}
           onChange={handleChange}
-          rows={4}
+          rows={2}
           aria-label={translateAria(["comments"])}
         />
 
         {isAssociationsOpen && (
           <>
-            <InputField
-              name="deal"
-              title={values.deal}
-              value={values.deal}
-              label={translateText(["labels", "deal"])}
-              placeholder={translateText(["placeholders", "deal"])}
-              onChange={handleChange}
-              aria-label={translateAria(["deal"])}
-              rightIcon={<SearchIcon />}
-              fullWidth
+            <LogCallDealField
+              id="log-call-deal"
+              formik={formik}
+              isClearedNoticeVisible={isDealClearedNoticeVisible}
+              onDealChange={() => setIsDealClearedNoticeVisible(false)}
             />
-            <InputField
-              name="company"
-              title={values.company}
-              value={values.company}
-              label={translateText(["labels", "relatedTo"])}
-              placeholder={translateText(["placeholders", "relatedTo"])}
-              onChange={handleChange}
-              aria-label={translateAria(["relatedTo"])}
-              rightIcon={<SearchIcon />}
-              fullWidth
-            />
+            <LogCallCompanyField id="log-call-related-to" formik={formik} />
           </>
         )}
 
@@ -205,7 +205,7 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
         </button>
       </div>
 
-      <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">
+      <div className="flex flex-row justify-end gap-[1rem]">
         <ButtonV2
           variant="tertiary"
           type="button"

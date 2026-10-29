@@ -20,10 +20,11 @@ import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
 import { updateOwnerRecord } from "~community/crm/utils/commonUtil";
 
 interface Props {
+  id: string;
   formik: FormikProps<CrmLogCallFormValues>;
 }
 
-const LogCallOwnerField: FC<Props> = ({ formik }) => {
+const LogCallOwnerField: FC<Props> = ({ id, formik }) => {
   const { values, errors, setFieldValue } = formik;
 
   const translateText = useTranslator(
@@ -106,7 +107,8 @@ const LogCallOwnerField: FC<Props> = ({ formik }) => {
     />
   ) : (
     <SearchableDropdown
-      id="activity-owner-search"
+      positionStrategy="fixed"
+      id={id}
       items={dropdownItems}
       onSelect={handleSelect}
       label={translateText(["labels", "activityOwner"])}

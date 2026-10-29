@@ -628,12 +628,19 @@
           "save": "Save"
         },
         "emptyStates": {
-          "noOwners": "No owners found"
+          "noOwners": "No owners found",
+          "noContacts": "No contacts found",
+          "noDeals": "No deals found",
+          "noCompanies": "No companies found"
         },
         "validations": {
           "subject": "Subject is required",
           "contact": "Please select a contact",
-          "owner": "Activity owner is required"
+          "owner": "Activity owner is required",
+          "duration": "Please enter a valid duration (e.g. 1h 30m)"
+        },
+        "notices": {
+          "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
         }
       }
     },

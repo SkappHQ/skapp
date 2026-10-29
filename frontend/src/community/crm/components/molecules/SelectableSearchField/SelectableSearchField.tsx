@@ -2,7 +2,8 @@ import { ButtonV2, CloseIcon, InputField } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC } from "react";
 
 import SearchableDropdown, {
-  SearchableDropdownItem
+  SearchableDropdownItem,
+  SearchableDropdownProps
 } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 
 interface Props {
@@ -19,6 +20,9 @@ interface Props {
   items: SearchableDropdownItem[];
   onSelect: (item: SearchableDropdownItem) => void;
   emptyMessage?: string;
+  required?: boolean;
+  errorMessage?: string;
+  positionStrategy?: NonNullable<SearchableDropdownProps["positionStrategy"]>;
 }
 
 const SelectableSearchField: FC<Props> = ({
@@ -34,13 +38,18 @@ const SelectableSearchField: FC<Props> = ({
   items,
   onSelect,
   emptyMessage,
-  isOpenOnFocus = true
+  isOpenOnFocus = true,
+  required = false,
+  errorMessage,
+  positionStrategy = "absolute"
 }) => {
   if (selectedValue) {
     return (
       <InputField
         label={label}
         value={selectedValue}
+        title={selectedValue}
+        required={required}
         readOnly
         fullWidth
         variant="md"
@@ -69,6 +78,10 @@ const SelectableSearchField: FC<Props> = ({
       onSelect={onSelect}
       emptyMessage={emptyMessage}
       isOpenOnFocus={isOpenOnFocus}
+      required={required}
+      state={errorMessage ? "error" : "default"}
+      errorMessage={errorMessage}
+      positionStrategy={positionStrategy}
     />
   );
 };
