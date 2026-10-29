@@ -31,6 +31,8 @@ export const YEAR_MONTH_FORMAT = "yyyy-MM";
 
 export const FULL_MONTH_YEAR_FORMAT = "MMMM yyyy";
 
+export const SHORT_MONTH_YEAR_FORMAT = "MMM yyyy";
+
 export const TIME_FORMAT_12_HOUR = "h:mm a";
 
 export const monthAbbreviations = [

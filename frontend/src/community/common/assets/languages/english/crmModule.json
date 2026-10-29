@@ -579,6 +579,64 @@
     }
   },
   "activities": {
+    "callSidePanel": {
+      "comments": "Comments",
+      "noComments": "No comments added",
+      "dealsTitle": "Deals",
+      "noDealsDescription": "No deals are linked to this call",
+      "editCall": "Edit call",
+      "deleteCall": "Delete call",
+      "info": {
+        "contact": "Contact",
+        "date": "Date",
+        "startTime": "Start time",
+        "duration": "Duration",
+        "activityOwner": "Activity owner",
+        "relatedTo": "Related to",
+        "noValue": "-"
+      }
+    },
+    "logCall": {
+      "modal": {
+        "title": "Log a call",
+        "labels": {
+          "subject": "Subject",
+          "date": "Date",
+          "time": "Time",
+          "duration": "Duration",
+          "contact": "Contact",
+          "activityOwner": "Activity owner",
+          "comments": "Comments",
+          "deal": "Deal",
+          "relatedTo": "Related to"
+        },
+        "placeholders": {
+          "subject": "Enter subject",
+          "date": "Select date",
+          "time": "Select time",
+          "duration": "Enter duration",
+          "contact": "Enter name",
+          "comments": "Add message",
+          "deal": "Search deals",
+          "relatedTo": "Search companies",
+          "activityOwner": "Search owner"
+        },
+        "buttons": {
+          "addAssociations": "Add associations",
+          "hideAssociations": "Hide associations",
+          "cancel": "Cancel",
+          "save": "Save"
+        },
+        "emptyStates": {
+          "noOwners": "No owners found"
+        },
+        "validations": {
+          "subject": "Subject is required",
+          "contact": "Please select a contact",
+          "owner": "Activity owner is required"
+        }
+      }
+    },
     "page": {
       "title": "Activities",
       "pageHead": "Activities | Skapp"
@@ -684,47 +742,6 @@
         },
         "reset": "Reset filters",
         "apply": "Apply filters"
-      }
-    },
-    "logCall": {
-      "modal": {
-        "title": "Log a call",
-        "labels": {
-          "subject": "Subject",
-          "date": "Date",
-          "time": "Time",
-          "duration": "Duration",
-          "contact": "Contact",
-          "activityOwner": "Activity owner",
-          "comments": "Comments",
-          "deal": "Deal",
-          "relatedTo": "Related to"
-        },
-        "placeholders": {
-          "subject": "Enter subject",
-          "date": "Select date",
-          "time": "Select time",
-          "duration": "Enter duration",
-          "contact": "Enter name",
-          "comments": "Add message",
-          "deal": "Search deals",
-          "relatedTo": "Search companies",
-          "activityOwner": "Search owner"
-        },
-        "buttons": {
-          "addAssociations": "Add associations",
-          "hideAssociations": "Hide associations",
-          "cancel": "Cancel",
-          "save": "Save"
-        },
-        "emptyStates": {
-          "noOwners": "No owners found"
-        },
-        "validations": {
-          "subject": "Subject is required",
-          "contact": "Please select a contact",
-          "owner": "Activity owner is required"
-        }
       }
     }
   }
