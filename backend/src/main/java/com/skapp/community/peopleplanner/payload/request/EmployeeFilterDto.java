@@ -44,6 +44,8 @@ public class EmployeeFilterDto {
 
 	private String searchKeyword;
 
+	private List<Long> workLocationIds;
+
 	private Gender gender;
 
 	private List<String> nationality;
