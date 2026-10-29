@@ -638,10 +638,17 @@
           "subject": "Subject is required",
           "contact": "Please select a contact",
           "owner": "Activity owner is required",
-          "duration": "Please enter a valid duration (e.g. 1h 30m)"
+          "duration": "Please enter a valid duration (e.g. 1h 30m)",
+          "dealMismatch": "This deal's company doesn't match any linked contact — add a contact from that company or choose a different deal"
         },
         "notices": {
           "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
+        },
+        "toastMessages": {
+          "addSuccessTitle": "Call added successfully",
+          "addSuccessDescription": "Call has been added successfully",
+          "errorTitle": "Oops! Something went wrong",
+          "errorDescription": "Failed to log call"
         }
       }
     },
@@ -713,6 +720,7 @@
       "loadError": "Couldn't load your activities. Please refresh to try again."
     },
     "toolbar": {
+      "logCallBtn": "Log a call",
       "search": {
         "label": "Search activities",
         "resultCount_one": "{{count}} activity found",

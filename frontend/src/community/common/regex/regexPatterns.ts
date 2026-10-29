@@ -237,3 +237,7 @@ export function matchInvalidEmailCharactersSearchPattern(): RegExp {
 export function callDurationPattern(): RegExp {
   return /^\d+(?:\s*(?:h\s*\d+\s*m|[hm]))?$/i;
 }
+
+export function callDurationPartsPattern(): RegExp {
+  return /^(?:(\d+)\s*h)?\s*(?:(\d+)\s*m?)?$/i;
+}

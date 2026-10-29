@@ -1,5 +1,5 @@
 import { Tabs } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
+import { FC, ReactNode } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import ActivityFilterControl from "~community/crm/activities/components/molecules/ActivityFilterControl/ActivityFilterControl";
@@ -25,6 +25,7 @@ export interface ActivityToolbarProps {
   isTeamMembersError: boolean;
   timeZone?: string;
   showControls?: boolean;
+  action?: ReactNode;
 }
 
 const ActivityToolbar: FC<ActivityToolbarProps> = ({
@@ -41,7 +42,8 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
   teamMembers,
   isTeamMembersError,
   timeZone,
-  showControls = true
+  showControls = true,
+  action
 }) => {
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
@@ -70,9 +72,9 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
         />
       </div>
 
-      {showControls && (
-        <div className="flex items-center gap-3">
-          {isManager && (
+      {(showControls || action) && (
+        <div className="flex flex-wrap items-center gap-3">
+          {showControls && isManager && (
             <ActivityFilterControl
               id={`${id}-filter`}
               filters={filters}
@@ -83,20 +85,24 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
             />
           )}
 
-          <ActivitySearchField
-            id={`${id}-search`}
-            placeholder={translateText([
-              "activities",
-              "toolbar",
-              "search",
-              "placeholders",
-              activeTab.toLowerCase()
-            ])}
-            searchTerm={searchTerm}
-            onSearchChange={onSearchChange}
-            resultCount={resultCount}
-            isResultCountReady={isResultCountReady}
-          />
+          {showControls && (
+            <ActivitySearchField
+              id={`${id}-search`}
+              placeholder={translateText([
+                "activities",
+                "toolbar",
+                "search",
+                "placeholders",
+                activeTab.toLowerCase()
+              ])}
+              searchTerm={searchTerm}
+              onSearchChange={onSearchChange}
+              resultCount={resultCount}
+              isResultCountReady={isResultCountReady}
+            />
+          )}
+
+          {action && <div className="ml-auto shrink-0">{action}</div>}
         </div>
       )}
     </div>

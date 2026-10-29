@@ -120,3 +120,14 @@ export interface ActivityTaskResponse extends ActivityListItemBase {
   completedAt: string | null;
   contactId: number | null;
 }
+
+export interface ActivityCallCreatePayload {
+  subject: string;
+  loggedAt: string | null;
+  durationMinutes: number | null;
+  contactId: number;
+  dealId: number | null;
+  companyId: number | null;
+  ownerId: number;
+  comments: string;
+}
