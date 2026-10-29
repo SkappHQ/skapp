@@ -59,6 +59,9 @@ export const useGetEmployeeStatus = (enabled: boolean = true) => {
   const setAttendanceParams = useAttendanceStore(
     (state) => state.setAttendanceParams
   );
+  const resetAttendanceParams = useAttendanceStore(
+    (state) => state.resetAttendanceParams
+  );
   //const { setGeneralErrors } = useGeneralErrors();
   const query = useQuery({
     queryKey: getAttendanceQueryKeys.employeeStatus(),
@@ -81,13 +84,10 @@ export const useGetEmployeeStatus = (enabled: boolean = true) => {
         setAttendanceParams("workHours", params?.workHours);
         setAttendanceParams("isLeavePending", params?.isLeavePending);
       } else {
-        setAttendanceParams("slotType", AttendanceSlotType.READY);
-        setAttendanceParams("slotStartTime", null);
-        setAttendanceParams("breakHours", null);
-        setAttendanceParams("workHours", null);
+        resetAttendanceParams();
       }
     }
-  }, [isSuccess, data, setAttendanceParams]);
+  }, [isSuccess, data, setAttendanceParams, resetAttendanceParams]);
   return query;
 };
 

@@ -12,6 +12,7 @@ import {
 
 interface actionsTypes {
   setAttendanceParams: (key: string, value: string | null) => void;
+  resetAttendanceParams: () => void;
   setAttendanceLeaveStatus: (key: string, value: string | boolean) => void;
   setSlotType: (slotType: AttendanceSlotType) => AttendanceSlotType;
   setIsAttendanceModalOpen: (value: boolean) => void;

@@ -54,6 +54,13 @@ const attendanceSlice = (
     });
   },
 
+  resetAttendanceParams: () => {
+    set((state: AttendanceSliceType) => ({
+      ...state,
+      attendanceParams: { ...attendanceParams }
+    }));
+  },
+
   setAttendanceLeaveStatus: (key: string, value: string | boolean) => {
     set((state: AttendanceSliceType) => {
       return {
