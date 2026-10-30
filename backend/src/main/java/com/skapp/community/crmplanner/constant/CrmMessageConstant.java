@@ -98,7 +98,17 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_ACTIVITY_CALL_SUBJECT_REQUIRED("api.error.crm.activity.call-subject-required"),
 	CRM_ERROR_ACTIVITY_CALL_CONTACT_REQUIRED("api.error.crm.activity.call-contact-required"),
 	CRM_ERROR_ACTIVITY_CALL_DURATION_INVALID("api.error.crm.activity.call-duration-invalid"),
-	CRM_ERROR_ACTIVITY_CALL_DEAL_COMPANY_MISMATCH("api.error.crm.activity.call-deal-company-mismatch");
+	CRM_ERROR_ACTIVITY_CALL_DEAL_COMPANY_MISMATCH("api.error.crm.activity.call-deal-company-mismatch"),
+	CRM_ERROR_ACTIVITY_MEETING_SUBJECT_REQUIRED("api.error.crm.activity.meeting-subject-required"),
+	CRM_ERROR_ACTIVITY_MEETING_DATE_REQUIRED("api.error.crm.activity.meeting-date-required"),
+	CRM_ERROR_ACTIVITY_MEETING_TIME_RANGE_INVALID("api.error.crm.activity.meeting-time-range-invalid"),
+	CRM_ERROR_ACTIVITY_MEETING_ATTENDEES_REQUIRED("api.error.crm.activity.meeting-attendees-required"),
+	CRM_ERROR_ACTIVITY_MEETING_ATTENDEES_DUPLICATE("api.error.crm.activity.meeting-attendees-duplicate"),
+	CRM_ERROR_ACTIVITY_MEETING_DEAL_COMPANY_MISMATCH("api.error.crm.activity.meeting-deal-company-mismatch"),
+	CRM_ERROR_ACTIVITY_MEETING_NOT_FOUND("api.error.crm.activity.meeting-not-found"),
+	CRM_ERROR_ACTIVITY_MEETING_VIEW_DENIED("api.error.crm.activity.meeting-view-denied"),
+	CRM_ERROR_ACTIVITY_MEETING_DELETE_DENIED("api.error.crm.activity.meeting-delete-denied"),
+	CRM_SUCCESS_ACTIVITY_MEETING_DELETED("api.success.crm.activity.meeting-deleted");
 
 	private final String messageKey;
 
