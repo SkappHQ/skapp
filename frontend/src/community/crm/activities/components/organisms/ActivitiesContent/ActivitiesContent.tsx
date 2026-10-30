@@ -7,6 +7,7 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import ActivityCallSidePanel from "~community/crm/activities/components/organisms/ActivityCallSidePanel/ActivityCallSidePanel";
 import ActivityFeed from "~community/crm/activities/components/organisms/ActivityFeed/ActivityFeed";
+import ActivityMeetingSidePanel from "~community/crm/activities/components/organisms/ActivityMeetingSidePanel/ActivityMeetingSidePanel";
 import ActivityToolbar from "~community/crm/activities/components/organisms/ActivityToolbar/ActivityToolbar";
 import { DEFAULT_ACTIVITY_TAB } from "~community/crm/activities/constants/activityConstants";
 import {
@@ -59,18 +60,22 @@ const ActivitiesContent: FC = () => {
     owners,
     deals,
     selectedCallId,
+    selectedMeetingId,
     isCrmSidePanelOpen,
     setDeals,
     setSelectedCallId,
+    setSelectedMeetingId,
     openCrmSidePanel
   } = useCrmStore(
     useShallow((store) => ({
       owners: store.owners,
       deals: store.deals,
       selectedCallId: store.selectedCallId,
+      selectedMeetingId: store.selectedMeetingId,
       isCrmSidePanelOpen: store.isCrmSidePanelOpen,
       setDeals: store.setDeals,
       setSelectedCallId: store.setSelectedCallId,
+      setSelectedMeetingId: store.setSelectedMeetingId,
       openCrmSidePanel: store.openCrmSidePanel
     }))
   );
@@ -167,10 +172,18 @@ const ActivitiesContent: FC = () => {
     searchTerm.length > 0 || Object.keys(filters).length > 0;
 
   const handleRowClick = (row: ActivityRow): void => {
-    if (row.type !== ActivityType.CALL) return;
-
-    setSelectedCallId(row.id);
-    openCrmSidePanel(CrmSidePanelTypes.CALL_SIDE_PANEL);
+    switch (row.type) {
+      case ActivityType.CALL:
+        setSelectedCallId(row.id);
+        openCrmSidePanel(CrmSidePanelTypes.CALL_SIDE_PANEL);
+        break;
+      case ActivityType.MEETING:
+        setSelectedMeetingId(row.id);
+        openCrmSidePanel(CrmSidePanelTypes.MEETING_SIDE_PANEL);
+        break;
+      default:
+        break;
+    }
   };
 
   const handleToggleComplete = (): void => {};
@@ -224,6 +237,11 @@ const ActivitiesContent: FC = () => {
       {selectedCallId !== null && (
         <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
           <ActivityCallSidePanel callId={selectedCallId} />
+        </SidePanelWrapper>
+      )}
+      {selectedMeetingId !== null && (
+        <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
+          <ActivityMeetingSidePanel meetingId={selectedMeetingId} />
         </SidePanelWrapper>
       )}
     </div>
