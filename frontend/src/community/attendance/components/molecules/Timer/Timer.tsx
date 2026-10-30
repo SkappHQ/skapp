@@ -62,7 +62,11 @@ const Timer = ({ disabled }: TimerProps): JSX.Element => {
 
   useEffect(() => {
     const currentDate = new Date().toDateString();
-    if (!employeeStatusData || !slotStartDay || currentDate === slotStartDay) {
+    if (
+      !employeeStatusData?.data?.results?.length ||
+      !slotStartDay ||
+      currentDate === slotStartDay
+    ) {
       return;
     }
     if (

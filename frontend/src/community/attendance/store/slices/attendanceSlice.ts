@@ -42,7 +42,7 @@ const attendanceSlice = (
     return slotType;
   },
 
-  setAttendanceParams: (key: string, value: string) => {
+  setAttendanceParams: (key: string, value: string | null) => {
     set((state: AttendanceSliceType) => {
       return {
         ...state,
@@ -52,6 +52,13 @@ const attendanceSlice = (
         }
       };
     });
+  },
+
+  resetAttendanceParams: () => {
+    set((state: AttendanceSliceType) => ({
+      ...state,
+      attendanceParams: { ...attendanceParams }
+    }));
   },
 
   setAttendanceLeaveStatus: (key: string, value: string | boolean) => {
