@@ -131,3 +131,15 @@ export interface ActivityCallCreatePayload {
   ownerId: number;
   comments: string;
 }
+
+export interface ActivityMeetingCreatePayload {
+  name: string;
+  meetingDate: string | null;
+  startAt: string | null;
+  endAt: string | null;
+  contactIds: number[];
+  dealId: number | null;
+  companyId: number | null;
+  ownerId: number;
+  comments: string;
+}

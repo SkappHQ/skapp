@@ -145,7 +145,6 @@
         "relatedTo": "Call related company",
         "cancel": "Cancel log a call",
         "save": "Save call",
-        "removeOwner": "Remove activity owner",
         "clearContact": "Clear selected contact",
         "clearDeal": "Clear selected deal",
         "clearRelatedTo": "Clear selected company"
@@ -172,6 +171,9 @@
       "closeFilters": "Close filters",
       "clearTeamMember": "Clear team member filter",
       "teamMember": "Team member, selected"
+    },
+    "logActivity": {
+      "removeOwner": "Remove activity owner"
     }
   }
 }
