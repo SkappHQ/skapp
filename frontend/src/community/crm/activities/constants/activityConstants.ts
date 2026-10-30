@@ -1,4 +1,3 @@
-import { DateTime, Interval } from "luxon";
 import { ComponentType, SVGProps } from "react";
 
 import {
@@ -45,24 +44,3 @@ export const ACTIVITY_TYPE_ICON_MAP: Record<
 };
 
 export const ACTIVITY_TIME_SLOT_MINUTES = 30;
-
-export const ACTIVITY_TIME_VALUE_FORMAT = "HH:mm";
-
-export const ACTIVITY_TIME_LABEL_FORMAT = "hh:mm a";
-
-const dayStart = DateTime.utc().startOf("day");
-
-export const ACTIVITY_TIME_OPTIONS = Interval.fromDateTimes(
-  dayStart,
-  dayStart.plus({ days: 1 })
-)
-  .splitBy({ minutes: ACTIVITY_TIME_SLOT_MINUTES })
-  .map(({ start }) => {
-    const value = start!.toFormat(ACTIVITY_TIME_VALUE_FORMAT);
-
-    return {
-      id: value,
-      value,
-      label: start!.toFormat(ACTIVITY_TIME_LABEL_FORMAT)
-    };
-  });
