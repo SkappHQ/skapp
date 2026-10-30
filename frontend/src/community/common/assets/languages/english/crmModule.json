@@ -720,7 +720,8 @@
         },
         "reset": "Reset filters",
         "apply": "Apply filters"
-      }
+      },
+      "logMeetingBtn": "Log a meeting"
     },
     "logMeeting": {
       "modal": {
