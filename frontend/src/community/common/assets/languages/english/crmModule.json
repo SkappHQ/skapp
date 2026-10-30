@@ -580,21 +580,12 @@
   },
   "activities": {
     "callSidePanel": {
-      "comments": "Comments",
-      "noComments": "No comments added",
-      "dealsTitle": "Deals",
       "noDealsDescription": "No deals are linked to this call",
       "editCall": "Edit call",
       "deleteCall": "Delete call",
       "info": {
         "contact": "Contact",
-        "date": "Date",
-        "startTime": "Start time",
-        "duration": "Duration",
-        "activityOwner": "Activity owner",
-        "relatedTo": "Related to",
-        "noValue": "-",
-        "noLongerAvailable": "No longer available"
+        "duration": "Duration"
       }
     },
     "logCall": {
@@ -789,6 +780,27 @@
       },
       "toastMessages": {
         "errorTitle": "Oops! Something went wrong"
+      }
+    },
+    "activitySidePanel": {
+      "comments": "Comments",
+      "noComments": "No comments added",
+      "dealsTitle": "Deals",
+      "info": {
+        "date": "Date",
+        "startTime": "Start time",
+        "activityOwner": "Activity owner",
+        "relatedTo": "Related to",
+        "noValue": "-",
+        "noLongerAvailable": "No longer available"
+      }
+    },
+    "meetingSidePanel": {
+      "noDealsDescription": "No deals are linked to this meeting",
+      "deleteMeeting": "Delete meeting",
+      "info": {
+        "attendees": "Attendees",
+        "endTime": "End time"
       }
     }
   }
