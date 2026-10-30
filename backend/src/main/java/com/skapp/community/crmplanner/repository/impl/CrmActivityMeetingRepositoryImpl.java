@@ -33,6 +33,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -109,7 +110,8 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 			.multiselect(meeting.get(CrmActivityMeeting_.id), meeting.get(CrmActivityMeeting_.name),
 					meeting.get(CrmActivityMeeting_.isScheduled), meeting.get(CrmActivityMeeting_.meetingVenue),
 					meeting.get(CrmActivityMeeting_.location), meeting.get(CrmActivityMeeting_.startAt),
-					meeting.get(CrmActivityMeeting_.endAt), ownerId, deal.get(CrmDeal_.id), company.get(CrmCompany_.id))
+					meeting.get(CrmActivityMeeting_.endAt), ownerId, deal.get(CrmDeal_.id), company.get(CrmCompany_.id),
+					meeting.get(CrmActivityMeeting_.meetingDate), meeting.get(CrmActivityMeeting_.comments))
 			.where(predicates.toArray(new Predicate[0]))
 			.orderBy(orders);
 
@@ -128,6 +130,8 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 				dto.setOwnerId(row.get(7, Long.class));
 				dto.setDealId(row.get(8, Long.class));
 				dto.setCompanyId(row.get(9, Long.class));
+				dto.setMeetingDate(row.get(10, LocalDate.class));
+				dto.setComments(row.get(11, String.class));
 				return dto;
 			})
 			.toList();
