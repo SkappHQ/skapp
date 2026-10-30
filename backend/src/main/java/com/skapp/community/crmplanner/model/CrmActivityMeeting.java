@@ -15,6 +15,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,6 +23,7 @@ import lombok.Setter;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Getter
@@ -82,5 +84,8 @@ public class CrmActivityMeeting extends Auditable<String> {
 
 	@Column(name = "is_deleted")
 	private Boolean isDeleted = false;
+
+	@OneToMany(mappedBy = "meeting")
+	private List<CrmActivityMeetingContact> contacts;
 
 }
