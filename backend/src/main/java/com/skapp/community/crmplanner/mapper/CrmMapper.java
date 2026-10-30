@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.mapper;
 
 import com.skapp.community.crmplanner.model.CrmActivityCall;
 import com.skapp.community.crmplanner.model.CrmActivityMeeting;
+import com.skapp.community.crmplanner.model.CrmActivityMeetingContact;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
@@ -112,11 +113,15 @@ public interface CrmMapper {
 	@Mapping(target = "ownerId", source = "owner.employeeId")
 	@Mapping(target = "dealId", source = "deal.id")
 	@Mapping(target = "companyId", source = "company.id")
-	@Mapping(target = "contactIds", ignore = true)
 	CrmActivityMeetingResponseDto crmActivityMeetingToCrmActivityMeetingResponseDto(CrmActivityMeeting meeting);
 
+	@Mapping(target = "id", source = "contact.id")
+	@Mapping(target = "name", source = "contact.name")
+	@Mapping(target = "companyId", source = "contact.company.id")
+	CrmContactLookupResponseDto crmActivityMeetingContactToCrmContactLookupResponseDto(
+			CrmActivityMeetingContact attendee);
+
 	@Mapping(target = "ownerId", source = "owner.employeeId")
-	@Mapping(target = "contacts", ignore = true)
 	CrmActivityMeetingDetailResponseDto crmActivityMeetingToCrmActivityMeetingDetailResponseDto(
 			CrmActivityMeeting meeting);
 

@@ -19,6 +19,7 @@ import com.skapp.community.crmplanner.payload.request.CrmActivityMeetingFilterDt
 import com.skapp.community.crmplanner.payload.response.CrmActivityMeetingDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityMeetingResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
+import com.skapp.community.crmplanner.repository.CrmActivityMeetingContactDao;
 import com.skapp.community.crmplanner.repository.CrmActivityMeetingDao;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
@@ -38,7 +39,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZoneId;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -46,6 +46,8 @@ import java.util.stream.Collectors;
 public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService {
 
 	private final CrmActivityMeetingDao crmActivityMeetingDao;
+
+	private final CrmActivityMeetingContactDao crmActivityMeetingContactDao;
 
 	private final UserService userService;
 
@@ -127,14 +129,6 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND);
 		}
 
-		meeting.setContacts(contacts.stream().map(contact -> {
-			CrmActivityMeetingContact attendee = new CrmActivityMeetingContact();
-			attendee.setId(new CrmActivityMeetingContactId());
-			attendee.setMeeting(meeting);
-			attendee.setContact(contact);
-			return attendee;
-		}).collect(Collectors.toList()));
-
 		if (requestDto.getDealId() != null) {
 			CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
@@ -152,6 +146,14 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 		}
 
 		CrmActivityMeeting savedMeeting = crmActivityMeetingDao.save(meeting);
+
+		crmActivityMeetingContactDao.saveAll(contacts.stream().map(contact -> {
+			CrmActivityMeetingContact attendee = new CrmActivityMeetingContact();
+			attendee.setId(new CrmActivityMeetingContactId(savedMeeting.getId(), contact.getId()));
+			attendee.setMeeting(savedMeeting);
+			attendee.setContact(contact);
+			return attendee;
+		}).toList());
 
 		CrmActivityMeetingResponseDto response = crmMapper
 			.crmActivityMeetingToCrmActivityMeetingResponseDto(savedMeeting);
