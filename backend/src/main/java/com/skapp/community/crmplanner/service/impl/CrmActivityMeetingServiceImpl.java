@@ -38,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZoneId;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -121,11 +122,10 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 		meeting.setComments(requestDto.getComments());
 		meeting.setOwner(owner);
 
-		List<CrmContact> contacts = requestDto.getContactIds()
-			.stream()
-			.map(contactId -> crmContactDao.findByIdAndIsDeletedFalse(contactId)
-				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND)))
-			.toList();
+		List<CrmContact> contacts = crmContactDao.findByIdInAndIsDeletedFalseOrderByIdAsc(requestDto.getContactIds());
+		if (contacts.size() != requestDto.getContactIds().size()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND);
+		}
 
 		meeting.setContacts(contacts.stream().map(contact -> {
 			CrmActivityMeetingContact attendee = new CrmActivityMeetingContact();
@@ -133,7 +133,7 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 			attendee.setMeeting(meeting);
 			attendee.setContact(contact);
 			return attendee;
-		}).toList());
+		}).collect(Collectors.toList()));
 
 		if (requestDto.getDealId() != null) {
 			CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
