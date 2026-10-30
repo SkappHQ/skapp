@@ -44,10 +44,8 @@ import getDrawerRoutes from "~community/common/utils/getDrawerRoutes";
 import { shouldActivateLink } from "~community/common/utils/keyboardUtils";
 import useCanViewLeavePolicies from "~community/leave/hooks/useCanViewLeavePolicies";
 import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
-import { useLeaveStore } from "~community/leave/store/store";
 import { useGetOrganizationCalendarStatus } from "~enterprise/common/api/CalendarApi";
 import Badge from "~enterprise/common/components/atoms/Badge/Badge";
-import SubmitRequestModalController from "~enterprise/common/components/organisms/SubmitRequestModalController/SubmitRequestModalController";
 import { SubmitRequestModalEnums } from "~enterprise/common/enums/Common";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import useS3Download from "~enterprise/common/hooks/useS3Download";
@@ -114,12 +112,6 @@ const Drawer = (): JSX.Element => {
 
   const { data: organizationCalendarStatusData } =
     useGetOrganizationCalendarStatus();
-
-  const { setMyLeaveRequestModalType } = useLeaveStore(
-    useShallow((state) => ({
-      setMyLeaveRequestModalType: state.setMyLeaveRequestModalType
-    }))
-  );
 
   const notificationLeaveCount = useGetNotificationSummaryCount(
     NotificationSummaryType.LEAVE_REQUEST
@@ -218,7 +210,11 @@ const Drawer = (): JSX.Element => {
     }
   }, [organizationDetails, orgLoading]);
 
-  const { setSubmitRequestModalType } = useCommonEnterpriseStore();
+  const { setSubmitRequestModalType } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      setSubmitRequestModalType: state.setSubmitRequestModalType
+    }))
+  );
 
   const handleOpenSubmitRequestModal = () => {
     setSubmitRequestModalType(SubmitRequestModalEnums.SUBMIT_REQUEST);
@@ -487,7 +483,6 @@ const Drawer = (): JSX.Element => {
             >
               {translateText(["getHelp"])}
             </ButtonV2>
-            <SubmitRequestModalController />
           </Stack>
         )}
       </Stack>
