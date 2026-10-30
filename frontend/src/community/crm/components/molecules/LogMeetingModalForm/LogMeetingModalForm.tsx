@@ -71,7 +71,7 @@ const LogMeetingModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
     ? DateTime.fromISO(values.date).startOf("day").toJSDate()
     : null;
 
-  const handleDateSelect = (date?: Date) => {
+  const handleDateSelect = (date?: Date): void => {
     setFieldValue(
       "date",
       date ? DateTime.fromJSDate(date).startOf("day").toUTC().toISO() : null,

@@ -64,7 +64,10 @@ const LogMeetingModalContent: FC<Props> = ({ onClose }) => {
     const toInstant = (time: string): string | null => {
       if (!time) return null;
 
-      const [hour, minute] = time.split(":").map(Number);
+      const { hour, minute } = DateTime.fromFormat(
+        time,
+        CALL_TIME_VALUE_FORMAT
+      );
 
       return meetingDate
         .set({ hour, minute })
