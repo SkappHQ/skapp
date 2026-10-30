@@ -98,7 +98,9 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_ACTIVITY_CALL_SUBJECT_REQUIRED("api.error.crm.activity.call-subject-required"),
 	CRM_ERROR_ACTIVITY_CALL_CONTACT_REQUIRED("api.error.crm.activity.call-contact-required"),
 	CRM_ERROR_ACTIVITY_CALL_DURATION_INVALID("api.error.crm.activity.call-duration-invalid"),
-	CRM_ERROR_ACTIVITY_CALL_DEAL_COMPANY_MISMATCH("api.error.crm.activity.call-deal-company-mismatch");
+	CRM_ERROR_ACTIVITY_CALL_DEAL_COMPANY_MISMATCH("api.error.crm.activity.call-deal-company-mismatch"),
+	CRM_ERROR_ACTIVITY_MEETING_NOT_FOUND("api.error.crm.activity.meeting-not-found"),
+	CRM_ERROR_ACTIVITY_MEETING_VIEW_DENIED("api.error.crm.activity.meeting-view-denied");
 
 	private final String messageKey;
 

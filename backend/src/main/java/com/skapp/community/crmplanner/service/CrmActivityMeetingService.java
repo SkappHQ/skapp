@@ -7,4 +7,6 @@ public interface CrmActivityMeetingService {
 
 	ResponseEntityDto getMeetings(CrmActivityMeetingFilterDto filterDto);
 
+	ResponseEntityDto getMeetingById(Long id);
+
 }

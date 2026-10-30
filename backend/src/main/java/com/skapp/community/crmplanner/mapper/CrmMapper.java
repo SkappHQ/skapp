@@ -1,6 +1,7 @@
 package com.skapp.community.crmplanner.mapper;
 
 import com.skapp.community.crmplanner.model.CrmActivityCall;
+import com.skapp.community.crmplanner.model.CrmActivityMeeting;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
@@ -11,6 +12,7 @@ import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityCallDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityCallResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmActivityMeetingDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactLookupResponseDto;
@@ -105,5 +107,10 @@ public interface CrmMapper {
 
 	@Mapping(target = "ownerId", source = "owner.employeeId")
 	CrmActivityCallDetailResponseDto crmActivityCallToCrmActivityCallDetailResponseDto(CrmActivityCall call);
+
+	@Mapping(target = "ownerId", source = "owner.employeeId")
+	@Mapping(target = "contacts", ignore = true)
+	CrmActivityMeetingDetailResponseDto crmActivityMeetingToCrmActivityMeetingDetailResponseDto(
+			CrmActivityMeeting meeting);
 
 }

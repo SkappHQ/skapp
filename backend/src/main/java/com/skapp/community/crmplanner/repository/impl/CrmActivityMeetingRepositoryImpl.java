@@ -155,4 +155,22 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 		return meetings;
 	}
 
+	@Override
+	public CrmActivityMeeting findMeetingById(Long id) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmActivityMeeting> query = cb.createQuery(CrmActivityMeeting.class);
+		Root<CrmActivityMeeting> meeting = query.from(CrmActivityMeeting.class);
+
+		meeting.fetch(CrmActivityMeeting_.contacts, JoinType.LEFT)
+			.fetch(CrmActivityMeetingContact_.contact, JoinType.LEFT);
+		meeting.fetch(CrmActivityMeeting_.deal, JoinType.LEFT);
+		meeting.fetch(CrmActivityMeeting_.company, JoinType.LEFT);
+
+		query.select(meeting)
+			.where(cb.equal(meeting.get(CrmActivityMeeting_.id), id),
+					cb.isFalse(meeting.get(CrmActivityMeeting_.isDeleted)));
+
+		return entityManager.createQuery(query).getResultStream().findFirst().orElse(null);
+	}
+
 }
