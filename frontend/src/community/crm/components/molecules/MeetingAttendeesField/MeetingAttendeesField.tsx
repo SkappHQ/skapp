@@ -119,7 +119,7 @@ const MeetingAttendeesField: FC<Props> = ({ id, formik, onDealCleared }) => {
         items={dropdownItems}
         onSelect={handleSelect}
         label={translateText(["labels", "attendees"])}
-        placeholder={translateActivityText(["placeholders", "contact"])}
+        placeholder={translateText(["placeholders", "attendees"])}
         value={searchTerm}
         onChange={(event) => setSearchTerm(event.target.value)}
         isOpenOnFocus={isSearchActive}
