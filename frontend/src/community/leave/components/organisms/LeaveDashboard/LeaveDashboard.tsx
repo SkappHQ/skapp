@@ -24,6 +24,8 @@ import AvailableChip from "~community/leave/components/molecules/LeaveDashboardC
 import AwayChip from "~community/leave/components/molecules/LeaveDashboardChips/AwayChip";
 import HolidayChip from "~community/leave/components/molecules/LeaveDashboardChips/HolidayChip";
 import LeaveTypeBreakdownChart from "~community/leave/components/molecules/LeaveUtilizationGraph/LeaveTypeBreakdownChart";
+import PolicyOnLeaveTodayCard from "~community/leave/components/molecules/PolicyOnLeaveTodayCard/PolicyOnLeaveTodayCard";
+import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useLeaveStore } from "~community/leave/store/store";
 import {
   LeaveRequest,
@@ -57,6 +59,8 @@ const LeaveDashboard = (): JSX.Element => {
     setOnLeaveModalTitle,
     setTodaysAvailability
   } = useLeaveStore((state) => state);
+
+  const { isLeavePoliciesEnabled } = useLeavePoliciesEnabled();
 
   const today = DateTime.now().toFormat(DATE_FORMAT);
 
@@ -173,17 +177,24 @@ const LeaveDashboard = (): JSX.Element => {
       </Box>
       <Grid container spacing={1}>
         <Grid sx={{ width: { xs: "100%", md: "32.5%" } }}>
-          <AnalyticCard
-            title={translateText(["todayAvailability"]) ?? ""}
-            isExpandable={!!todaysAvailability}
-            onExpand={handleTodaysAvailabilityModalOpen}
-            accessibility={{
-              tabIndex: 0,
-              role: "button"
-            }}
-          >
-            {todaysAvailability && resourceDetails()}
-          </AnalyticCard>
+          {isLeavePoliciesEnabled ? (
+            <PolicyOnLeaveTodayCard
+              teamId={teamId}
+              enabled={isFetchingEnabled}
+            />
+          ) : (
+            <AnalyticCard
+              title={translateText(["todayAvailability"]) ?? ""}
+              isExpandable={!!todaysAvailability}
+              onExpand={handleTodaysAvailabilityModalOpen}
+              accessibility={{
+                tabIndex: 0,
+                role: "button"
+              }}
+            >
+              {todaysAvailability && resourceDetails()}
+            </AnalyticCard>
+          )}
         </Grid>
         <Grid sx={{ width: { xs: "100%", md: "32.5%" } }}>
           <AnalyticCard
