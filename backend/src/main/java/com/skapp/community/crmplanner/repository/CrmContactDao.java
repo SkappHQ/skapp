@@ -4,6 +4,7 @@ import com.skapp.community.crmplanner.model.CrmContact;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -14,6 +15,8 @@ public interface CrmContactDao extends JpaRepository<CrmContact, Long>, CrmConta
 	boolean existsByEmailIgnoreCaseAndIsDeletedFalseAndIdNot(String email, Long id);
 
 	Optional<CrmContact> findByIdAndIsDeletedFalse(Long id);
+
+	List<CrmContact> findByIdInAndIsDeletedFalseOrderByIdAsc(List<Long> ids);
 
 	long countByIsDeletedFalse();
 
