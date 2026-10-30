@@ -116,7 +116,7 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
             id="log-meeting-startTime-input"
             options={getActivityTimeOptions()}
             value={values.startTime}
-            onChange={(value) => setFieldValue("startTime", value)}
+            onChange={(value) => setFieldValue("startTime", value, true)}
             label={translateText(["labels", "startTime"])}
             placeholder={translateActivityText(["placeholders", "time"])}
             variant="primary"
@@ -131,7 +131,7 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
             id="log-meeting-endTime-input"
             options={getActivityTimeOptions()}
             value={values.endTime}
-            onChange={(value) => setFieldValue("endTime", value)}
+            onChange={(value) => setFieldValue("endTime", value, true)}
             label={translateText(["labels", "endTime"])}
             placeholder={translateActivityText(["placeholders", "time"])}
             variant={errors.endTime ? "primary-error" : "primary"}
