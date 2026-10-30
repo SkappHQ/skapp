@@ -13,7 +13,6 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onDelete: () => void;
-  onContactClick: (contactId: number) => void;
   onCompanyClick: () => void;
 }
 
@@ -22,7 +21,6 @@ const MeetingSidePanel: FC<Props> = ({
   isOpen,
   onClose,
   onDelete,
-  onContactClick,
   onCompanyClick
 }) => {
   const translateText = useTranslator(
@@ -63,7 +61,6 @@ const MeetingSidePanel: FC<Props> = ({
           <SidePanelMeetingInfo
             meeting={meeting}
             owner={owners[meeting.ownerId]}
-            onContactClick={onContactClick}
             onCompanyClick={onCompanyClick}
           />
         )

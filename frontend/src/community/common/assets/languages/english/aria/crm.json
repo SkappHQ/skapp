@@ -187,7 +187,8 @@
       "removeOwner": "Remove activity owner"
     },
     "meetingSidePanel": {
-      "kebabMenu": "Meeting actions"
+      "kebabMenu": "Meeting actions",
+      "attendees": "Meeting attendees"
     }
   }
 }
