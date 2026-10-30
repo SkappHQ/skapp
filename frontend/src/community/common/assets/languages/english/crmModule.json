@@ -744,6 +744,8 @@
           "attendees": "Attendees"
         },
         "toastMessages": {
+          "addSuccessTitle": "Meeting added successfully",
+          "addSuccessDescription": "Meeting has been added successfully",
           "errorDescription": "Failed to save meeting"
         },
         "notices": {

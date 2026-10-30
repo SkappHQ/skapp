@@ -40,9 +40,12 @@ const LogMeetingModalContent: FC<Props> = ({ onClose }) => {
 
     return {
       subject: "",
-      date: now.toUTC().toISO(),
+      date: now.startOf("day").toUTC().toISO(),
       startTime: slotStart.toFormat(TIME_FORMAT_24_HOUR),
-      endTime: slotStart.plus({ hours: 1 }).toFormat(TIME_FORMAT_24_HOUR),
+      endTime: DateTime.min(
+        slotStart.plus({ hours: 1 }),
+        getTimeSlotStart(slotStart.endOf("day"))
+      ).toFormat(TIME_FORMAT_24_HOUR),
       contactIds: [],
       ownerId: defaultOwner ? defaultOwner.employeeId : null,
       comments: "",
@@ -102,6 +105,24 @@ const LogMeetingModalContent: FC<Props> = ({ onClose }) => {
   const handleSuccess = (): void => {
     setSubmitting(false);
     onClose();
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateText([
+        "activities",
+        "logMeeting",
+        "modal",
+        "toastMessages",
+        "addSuccessTitle"
+      ]),
+      description: translateText([
+        "activities",
+        "logMeeting",
+        "modal",
+        "toastMessages",
+        "addSuccessDescription"
+      ])
+    });
   };
 
   const handleError = (): void => {
