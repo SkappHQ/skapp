@@ -165,13 +165,18 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
         </div>
       </div>
 
-      <MeetingAttendeesField
-        id="log-meeting-contactIds"
-        formik={formik}
-        onDealCleared={handleDealCleared}
-      />
-
-      <ActivityOwnerField id="log-meeting-ownerId" formik={formik} />
+      <div className="flex flex-row items-start gap-[0.625rem]">
+        <div className="flex-1 min-w-0">
+          <MeetingAttendeesField
+            id="log-meeting-contactIds"
+            formik={formik}
+            onDealCleared={handleDealCleared}
+          />
+        </div>
+        <div className="flex-1">
+          <ActivityOwnerField id="log-meeting-ownerId" formik={formik} />
+        </div>
+      </div>
 
       <TextArea
         name="comments"
