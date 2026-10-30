@@ -16,12 +16,16 @@ import {
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
+import {
+  CrmLogCallFormValues,
+  CrmLogMeetingFormValues
+} from "~community/crm/types/CrmCommonTypes";
 import { updateOwnerRecord } from "~community/crm/utils/commonUtil";
 
 interface Props {
   id: string;
-  formik: FormikProps<CrmLogCallFormValues>;
+  formik:
+    FormikProps<CrmLogCallFormValues> | FormikProps<CrmLogMeetingFormValues>;
 }
 
 const LogCallOwnerField: FC<Props> = ({ id, formik }) => {

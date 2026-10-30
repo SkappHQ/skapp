@@ -768,6 +768,14 @@
           "attendees": "Please select at least one attendee",
           "endTime": "End time must be after start time",
           "owner": "Activity owner is required"
+        },
+        "title": "Log a meeting",
+        "labels": {
+          "startTime": "Start time",
+          "endTime": "End time"
+        },
+        "toastMessages": {
+          "errorDescription": "Failed to save meeting"
         }
       }
     }
