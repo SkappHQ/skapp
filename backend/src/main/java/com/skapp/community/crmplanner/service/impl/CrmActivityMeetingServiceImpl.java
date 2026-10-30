@@ -147,13 +147,14 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 
 		CrmActivityMeeting savedMeeting = crmActivityMeetingDao.save(meeting);
 
-		crmActivityMeetingContactDao.saveAll(contacts.stream().map(contact -> {
+		List<CrmActivityMeetingContact> attendees = contacts.stream().map(contact -> {
 			CrmActivityMeetingContact attendee = new CrmActivityMeetingContact();
 			attendee.setId(new CrmActivityMeetingContactId(savedMeeting.getId(), contact.getId()));
 			attendee.setMeeting(savedMeeting);
 			attendee.setContact(contact);
 			return attendee;
-		}).toList());
+		}).toList();
+		crmActivityMeetingContactDao.saveAll(attendees);
 
 		CrmActivityMeetingResponseDto response = crmMapper
 			.crmActivityMeetingToCrmActivityMeetingResponseDto(savedMeeting);
