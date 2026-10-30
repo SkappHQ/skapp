@@ -2,23 +2,17 @@ import { DateTime } from "luxon";
 import * as Yup from "yup";
 
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
-import { CALL_TIME_VALUE_FORMAT } from "~community/crm/constants/callConstants";
+import { ACTIVITY_TIME_VALUE_FORMAT } from "~community/crm/activities/constants/activityConstants";
+import {
+  getActivityOwnerValidation,
+  getActivitySubjectValidation
+} from "~community/crm/activities/utils/activityValidations";
 
 export const getMeetingValidationSchema = (
   translator: TranslatorFunctionType
 ) =>
   Yup.object().shape({
-    subject: Yup.string()
-      .trim()
-      .required(
-        translator([
-          "activities",
-          "logMeeting",
-          "modal",
-          "validations",
-          "subject"
-        ])
-      ),
+    subject: getActivitySubjectValidation(translator),
     date: Yup.string()
       .nullable()
       .required(
@@ -40,8 +34,8 @@ export const getMeetingValidationSchema = (
         if (!startTime || !endTime) return true;
 
         return (
-          DateTime.fromFormat(endTime, CALL_TIME_VALUE_FORMAT) >
-          DateTime.fromFormat(startTime, CALL_TIME_VALUE_FORMAT)
+          DateTime.fromFormat(endTime, ACTIVITY_TIME_VALUE_FORMAT) >
+          DateTime.fromFormat(startTime, ACTIVITY_TIME_VALUE_FORMAT)
         );
       }
     ),
@@ -57,15 +51,5 @@ export const getMeetingValidationSchema = (
           "attendees"
         ])
       ),
-    ownerId: Yup.number()
-      .nullable()
-      .required(
-        translator([
-          "activities",
-          "logMeeting",
-          "modal",
-          "validations",
-          "owner"
-        ])
-      )
+    ownerId: getActivityOwnerValidation(translator)
   });
