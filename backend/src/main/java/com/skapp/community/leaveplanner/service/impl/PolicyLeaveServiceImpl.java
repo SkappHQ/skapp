@@ -29,6 +29,7 @@ import com.skapp.community.leaveplanner.payload.PolicyLeaveBalanceDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveDateWindowDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveUsageDto;
 import com.skapp.community.leaveplanner.payload.email.LeaveEmailDynamicFields;
+import com.skapp.community.leaveplanner.payload.request.PolicyEmployeesOnLeaveFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveAttachmentDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveAvailabilityRequestDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestDto;
@@ -36,6 +37,7 @@ import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestFilter
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestUpdateDto;
 import com.skapp.community.leaveplanner.payload.response.EmployeePolicyBalanceResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveNotificationNudgeResponseDto;
+import com.skapp.community.leaveplanner.payload.response.PolicyEmployeesOnLeaveResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveAvailabilityResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveRequestResponseDto;
 import com.skapp.community.leaveplanner.repository.EmployeeLeavePolicyDao;
@@ -61,6 +63,7 @@ import com.skapp.community.leaveplanner.util.PolicyLeaveUsageLookup;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.Holiday;
+import com.skapp.community.peopleplanner.payload.response.HolidayResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeManagerDao;
 import com.skapp.community.peopleplanner.repository.HolidayDao;
 import com.skapp.community.peopleplanner.util.PeopleUtil;
@@ -77,12 +80,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.time.Instant;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.MonthDay;
 import java.time.Year;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -413,6 +418,44 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 	@Override
 	@Transactional(readOnly = true)
+	public ResponseEntityDto getEmployeesOnLeaveToday(@NonNull PolicyEmployeesOnLeaveFilterDto filterDto) {
+		log.info("getEmployeesOnLeaveToday: execution started");
+		requireLeavePoliciesEnabled();
+
+		LocalDate today = timeZoneService.currentOrganizationDate();
+		PolicyEmployeesOnLeaveResponseDto responseDto = new PolicyEmployeesOnLeaveResponseDto();
+		responseDto.setDate(today);
+
+		List<HolidayResponseDto> nonWorkingDays = resolveNonWorkingDays(today);
+		if (!nonWorkingDays.isEmpty()) {
+			responseDto.setIsNonWorkingDay(true);
+			responseDto.setHolidays(nonWorkingDays);
+			log.info("getEmployeesOnLeaveToday: execution ended on a non-working day");
+			return new ResponseEntityDto(false, responseDto);
+		}
+
+		User currentUser = userService.getCurrentUser();
+		Long supervisorEmployeeId = LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser) ? null
+				: currentUser.getEmployee().getEmployeeId();
+		List<Long> teamIds = resolveTeamIds(filterDto.getTeamIds());
+
+		long onLeaveCount = policyLeaveRequestDao.findApprovedRequestsOnDate(today, teamIds, supervisorEmployeeId)
+			.stream()
+			.map(leaveRequest -> leaveRequest.getEmployee().getEmployeeId())
+			.distinct()
+			.count();
+		long employeeCount = policyLeaveRequestDao.countEmployeesInScope(teamIds, supervisorEmployeeId);
+
+		responseDto.setIsNonWorkingDay(false);
+		responseDto.setOnLeaveCount(onLeaveCount);
+		responseDto.setOnlineCount(employeeCount - onLeaveCount);
+
+		log.info("getEmployeesOnLeaveToday: execution ended");
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
 	public Map<Long, PolicyLeaveBalanceDto> calculateBalancesForYear(Long employeeId,
 			List<EmployeeLeavePolicy> assignments, Integer year) {
 		log.info("calculateBalancesForYear: execution started");
@@ -462,6 +505,29 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		pageDto.setItems(
 				leaveMapper.policyLeaveRequestListToPolicyLeaveRequestResponseDtoList(leaveRequests.getContent()));
 		return pageDto;
+	}
+
+	private List<HolidayResponseDto> resolveNonWorkingDays(LocalDate date) {
+		List<HolidayResponseDto> nonWorkingDays = new ArrayList<>(
+				leaveMapper.holidaysToHolidayResponseDtoList(holidayDao.findAllByIsActiveTrueAndDate(date)));
+
+		boolean isWorkingDay = timeConfigDao.findAll()
+			.stream()
+			.anyMatch(timeConfig -> timeConfig.getDay() == date.getDayOfWeek());
+		if (!isWorkingDay) {
+			HolidayResponseDto dayOff = new HolidayResponseDto();
+			dayOff.setDate(date);
+			dayOff.setName(PolicyLeaveConstant.NON_WORKING_DAY_NAME);
+			nonWorkingDays.add(dayOff);
+		}
+		return nonWorkingDays;
+	}
+
+	private List<Long> resolveTeamIds(List<Long> teamIds) {
+		if (CollectionUtils.isEmpty(teamIds) || teamIds.contains(PolicyLeaveConstant.ALL_TEAMS_ID)) {
+			return List.of();
+		}
+		return teamIds;
 	}
 
 	private boolean isOwnRequest(PolicyLeaveRequest leaveRequest, Employee currentEmployee) {
