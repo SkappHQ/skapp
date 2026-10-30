@@ -212,23 +212,3 @@ export const useCreateMeeting = (
     onError
   });
 };
-
-const deleteMeeting = async (id: number): Promise<void> => {
-  await authFetch.delete(crmActivityEndpoints.DELETE_MEETING(id));
-};
-
-export const useDeleteMeeting = (
-  onSuccess: () => void,
-  onError: (error: ErrorResponse) => void
-): UseMutationResult<void, ErrorResponse, number> => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: deleteMeeting,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
-      onSuccess();
-    },
-    onError
-  });
-};
