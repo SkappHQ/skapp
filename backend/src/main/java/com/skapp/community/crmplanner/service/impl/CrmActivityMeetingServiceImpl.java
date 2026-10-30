@@ -5,7 +5,6 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
-import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.StringUtils;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
@@ -60,8 +59,6 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 	private final CrmCompanyDao crmCompanyDao;
 
 	private final CrmOwnerResolverService crmOwnerResolver;
-
-	private final MessageUtil messageUtil;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -130,13 +127,13 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND)))
 			.toList();
 
-		for (CrmContact contact : contacts) {
+		meeting.setContacts(contacts.stream().map(contact -> {
 			CrmActivityMeetingContact attendee = new CrmActivityMeetingContact();
 			attendee.setId(new CrmActivityMeetingContactId());
 			attendee.setMeeting(meeting);
 			attendee.setContact(contact);
-			meeting.getContacts().add(attendee);
-		}
+			return attendee;
+		}).toList());
 
 		if (requestDto.getDealId() != null) {
 			CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
@@ -207,29 +204,6 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 
 		log.info("getMeetingById: execution ended");
 		return new ResponseEntityDto(false, response);
-	}
-
-	@Override
-	@Transactional
-	public ResponseEntityDto deleteMeeting(Long id) {
-		log.info("deleteMeeting: execution started");
-
-		CrmActivityMeeting meeting = crmActivityMeetingDao.findMeetingById(id);
-		if (meeting == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_MEETING_NOT_FOUND);
-		}
-
-		User currentUser = userService.getCurrentUser();
-		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, meeting.getOwner().getEmployeeId())) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_MEETING_DELETE_DENIED);
-		}
-
-		meeting.setIsDeleted(true);
-		crmActivityMeetingDao.save(meeting);
-
-		log.info("deleteMeeting: execution ended");
-		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_ACTIVITY_MEETING_DELETED),
-				false);
 	}
 
 }

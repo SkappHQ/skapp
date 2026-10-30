@@ -12,6 +12,4 @@ public interface CrmActivityMeetingService {
 
 	ResponseEntityDto getMeetingById(Long id);
 
-	ResponseEntityDto deleteMeeting(Long id);
-
 }

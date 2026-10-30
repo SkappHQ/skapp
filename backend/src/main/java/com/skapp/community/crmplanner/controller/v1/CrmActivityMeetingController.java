@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,13 +42,6 @@ public class CrmActivityMeetingController {
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getMeetingById(@PathVariable Long id) {
 		ResponseEntityDto response = crmActivityMeetingService.getMeetingById(id);
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
-	@DeleteMapping("/{id}")
-	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
-	public ResponseEntity<ResponseEntityDto> deleteMeeting(@PathVariable Long id) {
-		ResponseEntityDto response = crmActivityMeetingService.deleteMeeting(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

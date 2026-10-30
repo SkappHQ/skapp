@@ -24,7 +24,6 @@ import lombok.Setter;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -88,6 +87,6 @@ public class CrmActivityMeeting extends Auditable<String> {
 	private Boolean isDeleted = false;
 
 	@OneToMany(mappedBy = "meeting", cascade = CascadeType.PERSIST)
-	private List<CrmActivityMeetingContact> contacts = new ArrayList<>();
+	private List<CrmActivityMeetingContact> contacts;
 
 }
