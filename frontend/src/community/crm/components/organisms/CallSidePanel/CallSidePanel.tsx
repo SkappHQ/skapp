@@ -9,7 +9,7 @@ import { useCrmStore } from "~community/crm/store/store";
 import { CrmCallEntity } from "~community/crm/types/CrmCommonTypes";
 
 interface Props {
-  call: CrmCallEntity;
+  call?: CrmCallEntity;
   isOpen: boolean;
   onClose: () => void;
   onEdit: () => void;
@@ -40,7 +40,7 @@ const CallSidePanel: FC<Props> = ({
     <ActivitySidePanel
       id="call"
       isOpen={isOpen}
-      isLoading={false}
+      isLoading={!call}
       onClose={onClose}
       icon={
         <PhoneFilledIcon
@@ -60,17 +60,19 @@ const CallSidePanel: FC<Props> = ({
       onDelete={onDelete}
       menuAriaLabel={translateAria(["kebabMenu"])}
       emptyDealsDescription={translateText(["noDealsDescription"])}
-      title={call.subject}
-      comments={call.comments}
-      deal={call.deal}
-      info={
-        <SidePanelCallInfo
-          call={call}
-          owner={owners[call.ownerId]}
-          onContactClick={onContactClick}
-          onCompanyClick={onCompanyClick}
-        />
-      }
+      {...(call && {
+        title: call.subject,
+        comments: call.comments,
+        deal: call.deal,
+        info: (
+          <SidePanelCallInfo
+            call={call}
+            owner={owners[call.ownerId]}
+            onContactClick={onContactClick}
+            onCompanyClick={onCompanyClick}
+          />
+        )
+      })}
     />
   );
 };

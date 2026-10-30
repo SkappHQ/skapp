@@ -1,8 +1,7 @@
+import { DateTime } from "luxon";
 import { FC } from "react";
 
-import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { instantInZone } from "~community/common/utils/dateTimeUtils";
 import PropertyRow from "~community/crm/components/molecules/PropertyRow/PropertyRow";
 import SidePanelActivityInfo from "~community/crm/components/molecules/SidePanelActivityInfo/SidePanelActivityInfo";
 import SidePanelLinkButton from "~community/crm/components/molecules/SidePanelLinkButton/SidePanelLinkButton";
@@ -38,9 +37,7 @@ const SidePanelCallInfo: FC<Props> = ({
     "activitySidePanel",
     "info"
   );
-  const displayZone = useDisplayZone();
-
-  const loggedAt = instantInZone(call.loggedAt, displayZone);
+  const loggedAt = DateTime.fromISO(call.loggedAt);
 
   return (
     <SidePanelActivityInfo

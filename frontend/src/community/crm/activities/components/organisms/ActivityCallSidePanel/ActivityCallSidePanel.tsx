@@ -1,4 +1,3 @@
-import { SidePanel } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import { FC, useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -8,9 +7,6 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useGetCallById } from "~community/crm/api/ActivityApi";
-import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
-import SidePanelHeaderSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
-import ActivitySidePanelSkeleton from "~community/crm/components/organisms/ActivitySidePanel/ActivitySidePanelSkeleton";
 import CallSidePanel from "~community/crm/components/organisms/CallSidePanel/CallSidePanel";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
@@ -80,22 +76,6 @@ const ActivityCallSidePanel: FC<Props> = ({ callId }) => {
       openRecord(ROUTES.CRM.COMPANY_DETAIL(call.company.id));
     }
   };
-
-  if (!call) {
-    return (
-      <SidePanel
-        isOpen={isOpen}
-        onClose={handleClose}
-        closeOnBackdropClick
-        header={<SidePanelHeaderSkeleton isShowLastUpdate={false} />}
-        headerActions={<SidePanelHeaderActionsSkeleton />}
-      >
-        <div aria-busy="true">
-          <ActivitySidePanelSkeleton />
-        </div>
-      </SidePanel>
-    );
-  }
 
   return (
     <CallSidePanel

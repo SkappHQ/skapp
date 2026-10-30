@@ -3,9 +3,7 @@ import { DateTime } from "luxon";
 import { FC } from "react";
 
 import { TIME_FORMAT_12_HOUR } from "~community/common/constants/timeConstants";
-import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { instantInZone } from "~community/common/utils/dateTimeUtils";
 import PropertyRow from "~community/crm/components/molecules/PropertyRow/PropertyRow";
 import SidePanelActivityInfo from "~community/crm/components/molecules/SidePanelActivityInfo/SidePanelActivityInfo";
 import {
@@ -42,7 +40,6 @@ const SidePanelMeetingInfo: FC<Props> = ({
     "activities",
     "meetingSidePanel"
   );
-  const displayZone = useDisplayZone();
 
   return (
     <div className="flex flex-col gap-4">
@@ -74,15 +71,13 @@ const SidePanelMeetingInfo: FC<Props> = ({
       <SidePanelActivityInfo
         date={DateTime.fromISO(meeting.meetingDate)}
         {...(meeting.startAt && {
-          startTime: instantInZone(meeting.startAt, displayZone)
+          startTime: DateTime.fromISO(meeting.startAt)
         })}
         secondaryRow={
           <PropertyRow label={translateText(["endTime"])}>
             <span className="body2">
               {meeting.endAt
-                ? instantInZone(meeting.endAt, displayZone).toFormat(
-                    TIME_FORMAT_12_HOUR
-                  )
+                ? DateTime.fromISO(meeting.endAt).toFormat(TIME_FORMAT_12_HOUR)
                 : translateActivityText(["noValue"])}
             </span>
           </PropertyRow>
