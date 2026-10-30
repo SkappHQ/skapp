@@ -13,7 +13,7 @@ import SidePanelLinkButton from "~community/crm/components/molecules/SidePanelLi
 import { CrmOwnerEntity } from "~community/crm/types/CrmCommonTypes";
 
 interface Props {
-  primaryRow: ReactNode;
+  primaryRow?: ReactNode;
   date: DateTime;
   startTime?: DateTime;
   secondaryRow: ReactNode;
