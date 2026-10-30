@@ -1,5 +1,5 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, ReactNode, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
@@ -34,6 +34,7 @@ import {
 } from "~community/crm/api/ActivityApi";
 import { useGetDealsByIds } from "~community/crm/api/DealApi";
 import LogCallModalContent from "~community/crm/components/molecules/LogCallModalContent/LogCallModalContent";
+import LogMeetingModalContent from "~community/crm/components/molecules/LogMeetingModalContent/LogMeetingModalContent";
 import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
 import { useCrmStore } from "~community/crm/store/store";
@@ -52,6 +53,7 @@ const ActivitiesContent: FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<ActivityFilterValues>({});
   const [isLogCallModalOpen, setIsLogCallModalOpen] = useState(false);
+  const [isLogMeetingModalOpen, setIsLogMeetingModalOpen] = useState(false);
 
   const isAllTab = activeTab === ActivityTab.ALL;
 
@@ -175,6 +177,27 @@ const ActivitiesContent: FC = () => {
 
   const handleToggleComplete = (): void => {};
 
+  const toolbarActions: Partial<Record<ActivityTab, ReactNode>> = {
+    [ActivityTab.CALLS]: (
+      <ButtonV2
+        variant="primary"
+        type="button"
+        onClick={() => setIsLogCallModalOpen(true)}
+      >
+        {translateText(["activities", "toolbar", "logCallBtn"])}
+      </ButtonV2>
+    ),
+    [ActivityTab.MEETINGS]: (
+      <ButtonV2
+        variant="primary"
+        type="button"
+        onClick={() => setIsLogMeetingModalOpen(true)}
+      >
+        {translateText(["activities", "toolbar", "logMeetingBtn"])}
+      </ButtonV2>
+    )
+  };
+
   return (
     <div className="flex flex-col w-full gap-4 pt-5.5 lg:pt-1">
       <ActivityToolbar
@@ -193,20 +216,15 @@ const ActivitiesContent: FC = () => {
         showControls={
           isLoading || isError || hasActiveFilters || rows.length > 0
         }
-        action={
-          activeTab === ActivityTab.CALLS && (
-            <ButtonV2
-              variant="primary"
-              type="button"
-              onClick={() => setIsLogCallModalOpen(true)}
-            >
-              {translateText(["activities", "toolbar", "logCallBtn"])}
-            </ButtonV2>
-          )
-        }
+        action={toolbarActions[activeTab]}
       />
       {isLogCallModalOpen && (
         <LogCallModalContent onClose={() => setIsLogCallModalOpen(false)} />
+      )}
+      {isLogMeetingModalOpen && (
+        <LogMeetingModalContent
+          onClose={() => setIsLogMeetingModalOpen(false)}
+        />
       )}
       <ActivityFeed
         activeTab={activeTab}
