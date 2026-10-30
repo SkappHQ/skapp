@@ -14,6 +14,7 @@ import {
   toDateFieldValue,
   toPickerDate
 } from "~community/crm/activities/utils/activityUtil";
+import ActivityAssociations from "~community/crm/components/molecules/ActivityAssociations/ActivityAssociations";
 import ActivityDealField from "~community/crm/components/molecules/ActivityDealField/ActivityDealField";
 import ActivityOwnerField from "~community/crm/components/molecules/ActivityOwnerField/ActivityOwnerField";
 import ActivityRelatedToField from "~community/crm/components/molecules/ActivityRelatedToField/ActivityRelatedToField";
@@ -58,8 +59,14 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
 
   const contacts = useCrmStore((state) => state.contacts);
 
+  const [isAssociationsOpen, setIsAssociationsOpen] = useState(false);
   const [isDealClearedNoticeVisible, setIsDealClearedNoticeVisible] =
     useState(false);
+
+  const handleDealCleared = (): void => {
+    setIsDealClearedNoticeVisible(true);
+    setIsAssociationsOpen(true);
+  };
 
   const attendeeCompanyIds = Array.from(
     new Set(getContactCompanyIds(contacts, values.contactIds))
@@ -161,25 +168,7 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
       <MeetingAttendeesField
         id="log-meeting-contactIds"
         formik={formik}
-        onDealCleared={() => setIsDealClearedNoticeVisible(true)}
-      />
-
-      <ActivityDealField
-        id="log-meeting-deal"
-        formik={formik}
-        fieldAriaLabel={translateAria(["deal"])}
-        clearedNoticeText={translateText(["notices", "dealCleared"])}
-        isClearedNoticeVisible={isDealClearedNoticeVisible}
-        onDealChange={() => setIsDealClearedNoticeVisible(false)}
-        {...(attendeeCompanyIds.length === 1 && {
-          filterCompanyId: attendeeCompanyIds[0]
-        })}
-      />
-
-      <ActivityRelatedToField
-        id="log-meeting-related-to"
-        formik={formik}
-        fieldAriaLabel={translateAria(["relatedTo"])}
+        onDealCleared={handleDealCleared}
       />
 
       <ActivityOwnerField id="log-meeting-ownerId" formik={formik} />
@@ -193,6 +182,28 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
         rows={2}
         aria-label={translateAria(["comments"])}
       />
+
+      <ActivityAssociations
+        isOpen={isAssociationsOpen}
+        onToggle={() => setIsAssociationsOpen(!isAssociationsOpen)}
+      >
+        <ActivityDealField
+          id="log-meeting-deal"
+          formik={formik}
+          fieldAriaLabel={translateAria(["deal"])}
+          clearedNoticeText={translateText(["notices", "dealCleared"])}
+          isClearedNoticeVisible={isDealClearedNoticeVisible}
+          onDealChange={() => setIsDealClearedNoticeVisible(false)}
+          {...(attendeeCompanyIds.length === 1 && {
+            filterCompanyId: attendeeCompanyIds[0]
+          })}
+        />
+        <ActivityRelatedToField
+          id="log-meeting-related-to"
+          formik={formik}
+          fieldAriaLabel={translateAria(["relatedTo"])}
+        />
+      </ActivityAssociations>
     </div>
   );
 };
