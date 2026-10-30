@@ -6,6 +6,10 @@ import {
   callDurationPattern
 } from "~community/common/regex/regexPatterns";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
+import {
+  getActivityOwnerValidation,
+  getActivitySubjectValidation
+} from "~community/crm/activities/utils/activityValidations";
 
 export const parseCallDurationToMinutes = (input: string): number | null => {
   const match = callDurationPartsPattern().exec(input.trim());
@@ -21,11 +25,7 @@ export const parseCallDurationToMinutes = (input: string): number | null => {
 
 export const getCallValidationSchema = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
-    subject: Yup.string()
-      .trim()
-      .required(
-        translator(["activities", "logCall", "modal", "validations", "subject"])
-      ),
+    subject: getActivitySubjectValidation(translator),
     duration: Yup.string()
       .trim()
       .matches(callDurationPattern(), {
@@ -43,9 +43,5 @@ export const getCallValidationSchema = (translator: TranslatorFunctionType) =>
       .required(
         translator(["activities", "logCall", "modal", "validations", "contact"])
       ),
-    ownerId: Yup.number()
-      .nullable()
-      .required(
-        translator(["activities", "logCall", "modal", "validations", "owner"])
-      )
+    ownerId: getActivityOwnerValidation(translator)
   });

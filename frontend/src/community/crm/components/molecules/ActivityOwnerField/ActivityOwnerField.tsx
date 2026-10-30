@@ -28,21 +28,11 @@ interface Props {
     FormikProps<CrmLogCallFormValues> | FormikProps<CrmLogMeetingFormValues>;
 }
 
-const LogCallOwnerField: FC<Props> = ({ id, formik }) => {
+const ActivityOwnerField: FC<Props> = ({ id, formik }) => {
   const { values, errors, setFieldValue } = formik;
 
-  const translateText = useTranslator(
-    "crmModule",
-    "activities",
-    "logCall",
-    "modal"
-  );
-  const translateAria = useTranslator(
-    "crmAria",
-    "activities",
-    "logCall",
-    "modal"
-  );
+  const translateText = useTranslator("crmModule", "activities", "logActivity");
+  const translateAria = useTranslator("crmAria", "activities", "logActivity");
 
   const { isSuperAdmin, isCrmAdmin, isCrmSalesManager } = useSessionData();
 
@@ -126,4 +116,4 @@ const LogCallOwnerField: FC<Props> = ({ id, formik }) => {
   );
 };
 
-export default LogCallOwnerField;
+export default ActivityOwnerField;

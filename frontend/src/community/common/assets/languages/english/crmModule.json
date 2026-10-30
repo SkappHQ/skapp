@@ -601,43 +601,29 @@
       "modal": {
         "title": "Log a call",
         "labels": {
-          "subject": "Subject",
-          "date": "Date",
           "time": "Time",
           "duration": "Duration",
           "contact": "Contact",
-          "activityOwner": "Activity owner",
-          "comments": "Comments",
           "deal": "Deal",
           "relatedTo": "Related to"
         },
         "placeholders": {
-          "subject": "Enter subject",
-          "date": "Select date",
-          "time": "Select time",
           "duration": "Enter duration",
           "contact": "Enter name",
-          "comments": "Add message",
           "deal": "Search deals",
-          "relatedTo": "Search companies",
-          "activityOwner": "Search owner"
+          "relatedTo": "Search companies"
         },
         "buttons": {
           "addAssociations": "Add associations",
-          "hideAssociations": "Hide associations",
-          "cancel": "Cancel",
-          "save": "Save"
+          "hideAssociations": "Hide associations"
         },
         "emptyStates": {
-          "noOwners": "No owners found",
           "noContacts": "No contacts found",
           "noDeals": "No deals found",
           "noCompanies": "No companies found"
         },
         "validations": {
-          "subject": "Subject is required",
           "contact": "Please select a contact",
-          "owner": "Activity owner is required",
           "duration": "Please enter a valid duration (e.g. 1h 30m)",
           "dealMismatch": "This deal's company doesn't match any linked contact — add a contact from that company or choose a different deal"
         },
@@ -647,7 +633,6 @@
         "toastMessages": {
           "addSuccessTitle": "Call added successfully",
           "addSuccessDescription": "Call has been added successfully",
-          "errorTitle": "Oops! Something went wrong",
           "errorDescription": "Failed to log call"
         }
       }
@@ -763,11 +748,9 @@
     "logMeeting": {
       "modal": {
         "validations": {
-          "subject": "Subject is required",
           "date": "Date is required",
           "attendees": "Please select at least one attendee",
-          "endTime": "End time must be after start time",
-          "owner": "Activity owner is required"
+          "endTime": "End time must be after start time"
         },
         "title": "Log a meeting",
         "labels": {
@@ -777,6 +760,35 @@
         "toastMessages": {
           "errorDescription": "Failed to save meeting"
         }
+      }
+    },
+    "logActivity": {
+      "labels": {
+        "subject": "Subject",
+        "date": "Date",
+        "comments": "Comments",
+        "activityOwner": "Activity owner"
+      },
+      "placeholders": {
+        "subject": "Enter subject",
+        "date": "Select date",
+        "time": "Select time",
+        "comments": "Add message",
+        "activityOwner": "Search owner"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "save": "Save"
+      },
+      "emptyStates": {
+        "noOwners": "No owners found"
+      },
+      "validations": {
+        "subject": "Subject is required",
+        "owner": "Activity owner is required"
+      },
+      "toastMessages": {
+        "errorTitle": "Oops! Something went wrong"
       }
     }
   }

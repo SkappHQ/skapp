@@ -1,19 +1,19 @@
-import { SmallModal } from "@rootcodelabs/skapp-ui";
 import { FormikHelpers, useFormik } from "formik";
 import { DateTime } from "luxon";
-import { FC, useMemo, useState } from "react";
+import { FC, useMemo } from "react";
 
-import AreYouSureModal from "~community/common/components/molecules/AreYouSureModal/AreYouSureModal";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { ACTIVITY_TIME_VALUE_FORMAT } from "~community/crm/activities/constants/activityConstants";
 import { ActivityMeetingCreatePayload } from "~community/crm/activities/types/activityTypes";
-import { useCreateMeeting } from "~community/crm/api/ActivityApi";
-import LogMeetingModalForm from "~community/crm/components/molecules/LogMeetingModalForm/LogMeetingModalForm";
 import {
-  CALL_TIME_SLOT_MINUTES,
-  CALL_TIME_VALUE_FORMAT
-} from "~community/crm/constants/callConstants";
+  getTimeSlotStart,
+  toActivityInstant
+} from "~community/crm/activities/utils/activityUtil";
+import { useCreateMeeting } from "~community/crm/api/ActivityApi";
+import LogActivityModal from "~community/crm/components/molecules/LogActivityModal/LogActivityModal";
+import LogMeetingModalForm from "~community/crm/components/molecules/LogMeetingModalForm/LogMeetingModalForm";
 import { useDefaultCrmOwner } from "~community/crm/hooks/useDefaultCrmOwner";
 import { CrmLogMeetingFormValues } from "~community/crm/types/CrmCommonTypes";
 import { getMeetingValidationSchema } from "~community/crm/utils/meetingValidations";
@@ -24,28 +24,27 @@ interface Props {
 
 const LogMeetingModalContent: FC<Props> = ({ onClose }) => {
   const translateText = useTranslator("crmModule");
-  const translateCommon = useTranslator(
-    "commonComponents",
-    "userPromptModal",
-    "unsavedChangesModal"
+  const translateAria = useTranslator(
+    "crmAria",
+    "activities",
+    "logMeeting",
+    "modal"
   );
   const { setToastMessage } = useToast();
-
-  const [isDiscardPromptOpen, setIsDiscardPromptOpen] = useState(false);
 
   const defaultOwner = useDefaultCrmOwner();
 
   const initialValues: CrmLogMeetingFormValues = useMemo(() => {
     const now = DateTime.now();
-    const slotStart = now.set({
-      minute: now.minute - (now.minute % CALL_TIME_SLOT_MINUTES)
-    });
+    const slotStart = getTimeSlotStart(now);
 
     return {
       subject: "",
       date: now.toUTC().toISO(),
-      startTime: slotStart.toFormat(CALL_TIME_VALUE_FORMAT),
-      endTime: slotStart.plus({ hours: 1 }).toFormat(CALL_TIME_VALUE_FORMAT),
+      startTime: slotStart.toFormat(ACTIVITY_TIME_VALUE_FORMAT),
+      endTime: slotStart
+        .plus({ hours: 1 })
+        .toFormat(ACTIVITY_TIME_VALUE_FORMAT),
       contactIds: [],
       ownerId: defaultOwner ? defaultOwner.employeeId : null,
       comments: "",
@@ -59,28 +58,11 @@ const LogMeetingModalContent: FC<Props> = ({ onClose }) => {
     date: string,
     ownerId: number
   ): ActivityMeetingCreatePayload => {
-    const meetingDate = DateTime.fromISO(date);
-
-    const toInstant = (time: string): string | null => {
-      if (!time) return null;
-
-      const { hour, minute } = DateTime.fromFormat(
-        time,
-        CALL_TIME_VALUE_FORMAT
-      );
-
-      return meetingDate
-        .set({ hour, minute })
-        .startOf("minute")
-        .toUTC()
-        .toISO();
-    };
-
     return {
       name: values.subject.trim(),
-      meetingDate: meetingDate.toISODate(),
-      startAt: toInstant(values.startTime),
-      endAt: toInstant(values.endTime),
+      meetingDate: DateTime.fromISO(date).toISODate(),
+      startAt: toActivityInstant(date, values.startTime),
+      endAt: toActivityInstant(date, values.endTime),
       contactIds: values.contactIds,
       dealId: values.dealId,
       companyId: values.companyId,
@@ -115,7 +97,7 @@ const LogMeetingModalContent: FC<Props> = ({ onClose }) => {
     enableReinitialize: true
   });
 
-  const { dirty, setSubmitting } = formik;
+  const { dirty, isSubmitting, setSubmitting, submitForm } = formik;
 
   const handleSuccess = (): void => {
     setSubmitting(false);
@@ -129,8 +111,7 @@ const LogMeetingModalContent: FC<Props> = ({ onClose }) => {
       toastType: ToastType.ERROR,
       title: translateText([
         "activities",
-        "logCall",
-        "modal",
+        "logActivity",
         "toastMessages",
         "errorTitle"
       ]),
@@ -150,44 +131,19 @@ const LogMeetingModalContent: FC<Props> = ({ onClose }) => {
     handleError
   );
 
-  const handleRequestClose = (): void => {
-    if (isPending) return;
-
-    if (dirty && !isDiscardPromptOpen) {
-      setIsDiscardPromptOpen(true);
-      return;
-    }
-
-    onClose();
-  };
-
   return (
-    <SmallModal
-      isOpen
-      onClose={handleRequestClose}
-      modalHeader={
-        isDiscardPromptOpen
-          ? translateCommon(["title"])
-          : translateText(["activities", "logMeeting", "modal", "title"])
-      }
-      content={
-        <>
-          {isDiscardPromptOpen && (
-            <AreYouSureModal
-              onPrimaryBtnClick={() => setIsDiscardPromptOpen(false)}
-              onSecondaryBtnClick={onClose}
-            />
-          )}
-          <div className={isDiscardPromptOpen ? "hidden" : "contents"}>
-            <LogMeetingModalForm
-              formik={formik}
-              isPending={isPending}
-              onCancel={handleRequestClose}
-            />
-          </div>
-        </>
-      }
-    />
+    <LogActivityModal
+      title={translateText(["activities", "logMeeting", "modal", "title"])}
+      isDirty={dirty}
+      isPending={isPending}
+      isSubmitting={isSubmitting}
+      cancelAriaLabel={translateAria(["cancel"])}
+      saveAriaLabel={translateAria(["save"])}
+      onSave={submitForm}
+      onClose={onClose}
+    >
+      <LogMeetingModalForm formik={formik} />
+    </LogActivityModal>
   );
 };
 
