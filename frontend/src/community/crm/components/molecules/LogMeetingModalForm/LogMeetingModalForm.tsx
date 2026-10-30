@@ -170,6 +170,7 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
           <MeetingAttendeesField
             id="log-meeting-contactIds"
             formik={formik}
+            isFromDifferentCompanies={attendeeCompanyIds.length > 1}
             onDealCleared={handleDealCleared}
           />
         </div>
