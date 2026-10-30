@@ -610,8 +610,7 @@
         },
         "validations": {
           "contact": "Please select a contact",
-          "duration": "Please enter a valid duration (e.g. 1h 30m)",
-          "dealMismatch": "This deal's company doesn't match any linked contact — add a contact from that company or choose a different deal"
+          "duration": "Please enter a valid duration (e.g. 1h 30m)"
         },
         "notices": {
           "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
@@ -789,7 +788,8 @@
       },
       "validations": {
         "subject": "Subject is required",
-        "owner": "Activity owner is required"
+        "owner": "Activity owner is required",
+        "dealMismatch": "This deal's company doesn't match any linked contact — add a contact from that company or choose a different deal"
       },
       "toastMessages": {
         "errorTitle": "Oops! Something went wrong"

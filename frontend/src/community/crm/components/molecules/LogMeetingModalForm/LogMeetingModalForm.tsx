@@ -22,6 +22,7 @@ import MeetingAttendeesField from "~community/crm/components/molecules/MeetingAt
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmLogMeetingFormValues } from "~community/crm/types/CrmCommonTypes";
 import { getContactCompanyIds } from "~community/crm/utils/contactUtil";
+import { isDealMatchingCompany } from "~community/crm/utils/dealUtil";
 
 interface Props {
   formik: FormikProps<CrmLogMeetingFormValues>;
@@ -58,6 +59,7 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
   );
 
   const contacts = useCrmStore((state) => state.contacts);
+  const deals = useCrmStore((state) => state.deals);
 
   const [isAssociationsOpen, setIsAssociationsOpen] = useState(false);
   const [isDealClearedNoticeVisible, setIsDealClearedNoticeVisible] =
@@ -70,6 +72,16 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
 
   const attendeeCompanyIds = Array.from(
     new Set(getContactCompanyIds(contacts, values.contactIds))
+  );
+
+  const selectedDeal = values.dealId ? deals[values.dealId] : null;
+
+  const isDealMismatch = Boolean(
+    selectedDeal &&
+      values.contactIds.length > 0 &&
+      !values.contactIds.some((contactId) =>
+        isDealMatchingCompany(selectedDeal, contacts[contactId]?.companyId)
+      )
   );
 
   useEffect(() => {
@@ -202,6 +214,9 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
           onDealChange={() => setIsDealClearedNoticeVisible(false)}
           {...(attendeeCompanyIds.length === 1 && {
             filterCompanyId: attendeeCompanyIds[0]
+          })}
+          {...(isDealMismatch && {
+            errorMessage: translateActivityText(["validations", "dealMismatch"])
           })}
         />
         <ActivityRelatedToField

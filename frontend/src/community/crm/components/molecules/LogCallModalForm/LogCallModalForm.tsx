@@ -201,7 +201,7 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
           onDealChange={() => setIsDealClearedNoticeVisible(false)}
           {...(contactCompanyId && { filterCompanyId: contactCompanyId })}
           {...(isDealMismatch && {
-            errorMessage: translateText(["validations", "dealMismatch"])
+            errorMessage: translateActivityText(["validations", "dealMismatch"])
           })}
         />
         <ActivityRelatedToField
