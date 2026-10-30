@@ -88,7 +88,7 @@ const LogMeetingModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
           value={values.subject}
           label={translateCallText(["labels", "subject"])}
           placeholder={translateCallText(["placeholders", "subject"])}
-          errorMessage={touched.subject ? errors.subject : ""}
+          {...(touched.subject && { errorMessage: errors.subject })}
           state={touched.subject && errors.subject ? "error" : "default"}
           onChange={handleChange}
           onBlur={handleBlur}
