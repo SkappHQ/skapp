@@ -9,8 +9,8 @@ import { FormikProps } from "formik";
 import { FC, useEffect } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { ACTIVITY_TIME_OPTIONS } from "~community/crm/activities/constants/activityConstants";
 import {
+  getActivityTimeOptions,
   toDateFieldValue,
   toPickerDate
 } from "~community/crm/activities/utils/activityUtil";
@@ -63,10 +63,10 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
     }
   }, [submitCount, isSubmitting]);
 
-  const pickedDate = toPickerDate(values.date);
+  const pickedDate = values.date ? toPickerDate(values.date) : null;
 
   const handleDateSelect = (date?: Date): void => {
-    setFieldValue("date", toDateFieldValue(date), true);
+    setFieldValue("date", date ? toDateFieldValue(date) : null, true);
   };
 
   return (
@@ -114,7 +114,7 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
         <div className="flex-1">
           <Dropdown
             id="log-meeting-startTime-input"
-            options={ACTIVITY_TIME_OPTIONS}
+            options={getActivityTimeOptions()}
             value={values.startTime}
             onChange={(value) => setFieldValue("startTime", value)}
             label={translateText(["labels", "startTime"])}
@@ -129,7 +129,7 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
         <div className="flex-1">
           <Dropdown
             id="log-meeting-endTime-input"
-            options={ACTIVITY_TIME_OPTIONS}
+            options={getActivityTimeOptions()}
             value={values.endTime}
             onChange={(value) => setFieldValue("endTime", value)}
             label={translateText(["labels", "endTime"])}
