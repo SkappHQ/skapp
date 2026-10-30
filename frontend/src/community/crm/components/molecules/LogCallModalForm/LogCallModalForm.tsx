@@ -9,8 +9,8 @@ import { FormikProps } from "formik";
 import { FC, useEffect, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { ACTIVITY_TIME_OPTIONS } from "~community/crm/activities/constants/activityConstants";
 import {
+  getActivityTimeOptions,
   toDateFieldValue,
   toPickerDate
 } from "~community/crm/activities/utils/activityUtil";
@@ -90,10 +90,10 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
     }
   }, [submitCount, isSubmitting]);
 
-  const pickedDate = toPickerDate(values.date);
+  const pickedDate = values.date ? toPickerDate(values.date) : null;
 
   const handleDateSelect = (date?: Date): void => {
-    setFieldValue("date", toDateFieldValue(date), true);
+    setFieldValue("date", date ? toDateFieldValue(date) : null, true);
   };
 
   return (
@@ -137,7 +137,7 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
         </div>
         <div className="flex-1">
           <Dropdown
-            options={ACTIVITY_TIME_OPTIONS}
+            options={getActivityTimeOptions()}
             value={values.time}
             onChange={(value) => setFieldValue("time", value)}
             label={translateText(["labels", "time"])}
