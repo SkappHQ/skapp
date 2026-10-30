@@ -2,11 +2,11 @@ import { FormikHelpers, useFormik } from "formik";
 import { DateTime } from "luxon";
 import { FC, useMemo } from "react";
 
+import { TIME_FORMAT_24_HOUR } from "~community/common/constants/timeConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { ErrorResponse } from "~community/common/types/CommonTypes";
-import { ACTIVITY_TIME_VALUE_FORMAT } from "~community/crm/activities/constants/activityConstants";
 import { ActivityCallCreatePayload } from "~community/crm/activities/types/activityTypes";
 import {
   getTimeSlotStart,
@@ -45,7 +45,7 @@ const LogCallModalContent: FC<Props> = ({ onClose }) => {
     return {
       subject: "",
       date: now.toUTC().toISO(),
-      time: getTimeSlotStart(now).toFormat(ACTIVITY_TIME_VALUE_FORMAT),
+      time: getTimeSlotStart(now).toFormat(TIME_FORMAT_24_HOUR),
       duration: "",
       contactId: null,
       ownerId: defaultOwner ? defaultOwner.employeeId : null,
@@ -62,9 +62,10 @@ const LogCallModalContent: FC<Props> = ({ onClose }) => {
   ): ActivityCallCreatePayload => {
     return {
       subject: values.subject.trim(),
-      loggedAt: values.date
-        ? toActivityInstant(values.date, values.time)
-        : null,
+      loggedAt:
+        values.date && values.time
+          ? toActivityInstant(values.date, values.time)
+          : null,
       durationMinutes: parseCallDurationToMinutes(values.duration),
       contactId,
       ownerId,
