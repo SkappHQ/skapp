@@ -2,10 +2,10 @@ import { FormikHelpers, useFormik } from "formik";
 import { DateTime } from "luxon";
 import { FC, useMemo } from "react";
 
+import { TIME_FORMAT_24_HOUR } from "~community/common/constants/timeConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { ACTIVITY_TIME_VALUE_FORMAT } from "~community/crm/activities/constants/activityConstants";
 import { ActivityMeetingCreatePayload } from "~community/crm/activities/types/activityTypes";
 import {
   getTimeSlotStart,
@@ -41,10 +41,8 @@ const LogMeetingModalContent: FC<Props> = ({ onClose }) => {
     return {
       subject: "",
       date: now.toUTC().toISO(),
-      startTime: slotStart.toFormat(ACTIVITY_TIME_VALUE_FORMAT),
-      endTime: slotStart
-        .plus({ hours: 1 })
-        .toFormat(ACTIVITY_TIME_VALUE_FORMAT),
+      startTime: slotStart.toFormat(TIME_FORMAT_24_HOUR),
+      endTime: slotStart.plus({ hours: 1 }).toFormat(TIME_FORMAT_24_HOUR),
       contactIds: [],
       ownerId: defaultOwner ? defaultOwner.employeeId : null,
       comments: "",
@@ -61,8 +59,10 @@ const LogMeetingModalContent: FC<Props> = ({ onClose }) => {
     return {
       name: values.subject.trim(),
       meetingDate: DateTime.fromISO(date).toISODate(),
-      startAt: toActivityInstant(date, values.startTime),
-      endAt: toActivityInstant(date, values.endTime),
+      startAt: values.startTime
+        ? toActivityInstant(date, values.startTime)
+        : null,
+      endAt: values.endTime ? toActivityInstant(date, values.endTime) : null,
       contactIds: values.contactIds,
       dealId: values.dealId,
       companyId: values.companyId,
