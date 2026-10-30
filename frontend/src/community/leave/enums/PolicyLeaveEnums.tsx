@@ -7,6 +7,14 @@ export enum PolicyLeaveModalEnums {
   DISCARD_CHANGES = "DISCARD_CHANGES"
 }
 
+export enum PolicyOnLeaveTodayStatus {
+  NON_WORKING_DAY = "NON_WORKING_DAY",
+  NO_EMPLOYEES = "NO_EMPLOYEES",
+  ALL_AVAILABLE = "ALL_AVAILABLE",
+  ALL_AWAY = "ALL_AWAY",
+  PARTIALLY_AWAY = "PARTIALLY_AWAY"
+}
+
 export enum PolicyLeaveToastEnums {
   APPLY_SUCCESS = "APPLY_SUCCESS",
   APPLY_ERROR = "APPLY_ERROR",

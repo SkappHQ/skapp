@@ -8,7 +8,10 @@ import {
   ApplyPolicyLeaveErrorKeys,
   LeaveStatusEnums
 } from "~community/leave/enums/MyRequestEnums";
-import { PolicyLeaveToastEnums } from "~community/leave/enums/PolicyLeaveEnums";
+import {
+  PolicyLeaveToastEnums,
+  PolicyOnLeaveTodayStatus
+} from "~community/leave/enums/PolicyLeaveEnums";
 import {
   PolicyLeaveFormErrors,
   PolicyLeaveRequestParams,
@@ -18,6 +21,7 @@ import {
 import {
   EmployeePolicyBalanceType,
   PolicyBalanceDisabledReason,
+  PolicyEmployeesOnLeaveType,
   PolicyLeaveRequestQueryParams,
   PolicyLeaveRequestStatus,
   PolicyLeaveValidationFailure
@@ -289,4 +293,26 @@ export const getPolicyLeaveRequestQueryParams = (
     status: status.length ? status.join(",") : undefined,
     policyId: policyId.length ? policyId.join(",") : undefined
   };
+};
+
+export const getPolicyOnLeaveTodayStatus = (
+  onLeaveToday: PolicyEmployeesOnLeaveType
+): PolicyOnLeaveTodayStatus => {
+  if (onLeaveToday.isNonWorkingDay) {
+    return PolicyOnLeaveTodayStatus.NON_WORKING_DAY;
+  }
+
+  const onLeaveCount = onLeaveToday.onLeaveCount ?? 0;
+  const onlineCount = onLeaveToday.onlineCount ?? 0;
+
+  if (onLeaveCount === 0 && onlineCount === 0) {
+    return PolicyOnLeaveTodayStatus.NO_EMPLOYEES;
+  }
+  if (onLeaveCount === 0) {
+    return PolicyOnLeaveTodayStatus.ALL_AVAILABLE;
+  }
+  if (onlineCount === 0) {
+    return PolicyOnLeaveTodayStatus.ALL_AWAY;
+  }
+  return PolicyOnLeaveTodayStatus.PARTIALLY_AWAY;
 };
