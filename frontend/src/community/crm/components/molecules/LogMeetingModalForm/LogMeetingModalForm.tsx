@@ -6,7 +6,7 @@ import {
   TextArea
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { FC, useEffect } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { ACTIVITY_TIME_OPTIONS } from "~community/crm/activities/constants/activityConstants";
@@ -14,8 +14,13 @@ import {
   toDateFieldValue,
   toPickerDate
 } from "~community/crm/activities/utils/activityUtil";
+import ActivityDealField from "~community/crm/components/molecules/ActivityDealField/ActivityDealField";
 import ActivityOwnerField from "~community/crm/components/molecules/ActivityOwnerField/ActivityOwnerField";
+import ActivityRelatedToField from "~community/crm/components/molecules/ActivityRelatedToField/ActivityRelatedToField";
+import MeetingAttendeesField from "~community/crm/components/molecules/MeetingAttendeesField/MeetingAttendeesField";
+import { useCrmStore } from "~community/crm/store/store";
 import { CrmLogMeetingFormValues } from "~community/crm/types/CrmCommonTypes";
+import { getContactCompanyIds } from "~community/crm/utils/contactUtil";
 
 interface Props {
   formik: FormikProps<CrmLogMeetingFormValues>;
@@ -49,6 +54,15 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
     "activities",
     "logMeeting",
     "modal"
+  );
+
+  const contacts = useCrmStore((state) => state.contacts);
+
+  const [isDealClearedNoticeVisible, setIsDealClearedNoticeVisible] =
+    useState(false);
+
+  const attendeeCompanyIds = Array.from(
+    new Set(getContactCompanyIds(contacts, values.contactIds))
   );
 
   useEffect(() => {
@@ -143,6 +157,30 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
           />
         </div>
       </div>
+
+      <MeetingAttendeesField
+        id="log-meeting-contactIds"
+        formik={formik}
+        onDealCleared={() => setIsDealClearedNoticeVisible(true)}
+      />
+
+      <ActivityDealField
+        id="log-meeting-deal"
+        formik={formik}
+        fieldAriaLabel={translateAria(["deal"])}
+        clearedNoticeText={translateText(["notices", "dealCleared"])}
+        isClearedNoticeVisible={isDealClearedNoticeVisible}
+        onDealChange={() => setIsDealClearedNoticeVisible(false)}
+        {...(attendeeCompanyIds.length === 1 && {
+          filterCompanyId: attendeeCompanyIds[0]
+        })}
+      />
+
+      <ActivityRelatedToField
+        id="log-meeting-related-to"
+        formik={formik}
+        fieldAriaLabel={translateAria(["relatedTo"])}
+      />
 
       <ActivityOwnerField id="log-meeting-ownerId" formik={formik} />
 
