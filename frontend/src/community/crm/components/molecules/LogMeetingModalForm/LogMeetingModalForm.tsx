@@ -78,10 +78,10 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
 
   const isDealMismatch = Boolean(
     selectedDeal &&
-      values.contactIds.length > 0 &&
-      !values.contactIds.some((contactId) =>
-        isDealMatchingCompany(selectedDeal, contacts[contactId]?.companyId)
-      )
+    values.contactIds.length > 0 &&
+    !values.contactIds.some((contactId) =>
+      isDealMatchingCompany(selectedDeal, contacts[contactId]?.companyId)
+    )
   );
 
   useEffect(() => {
