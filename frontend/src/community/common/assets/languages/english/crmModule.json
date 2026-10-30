@@ -742,6 +742,9 @@
         "notices": {
           "differentCompanies": "Attendees are from different companies",
           "dealCleared": "Deal cleared — it doesn't match any attendee's company."
+        },
+        "placeholders": {
+          "attendees": "Select attendees"
         }
       }
     },
