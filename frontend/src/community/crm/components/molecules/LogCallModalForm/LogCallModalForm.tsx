@@ -14,12 +14,14 @@ import {
   toDateFieldValue,
   toPickerDate
 } from "~community/crm/activities/utils/activityUtil";
+import ActivityAssociations from "~community/crm/components/molecules/ActivityAssociations/ActivityAssociations";
+import ActivityDealField from "~community/crm/components/molecules/ActivityDealField/ActivityDealField";
 import ActivityOwnerField from "~community/crm/components/molecules/ActivityOwnerField/ActivityOwnerField";
+import ActivityRelatedToField from "~community/crm/components/molecules/ActivityRelatedToField/ActivityRelatedToField";
+import { useCrmStore } from "~community/crm/store/store";
 import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
 
-import LogCallCompanyField from "./LogCallCompanyField";
 import LogCallContactField from "./LogCallContactField";
-import LogCallDealField from "./LogCallDealField";
 
 interface Props {
   formik: FormikProps<CrmLogCallFormValues>;
@@ -55,6 +57,12 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
     "activities",
     "logActivity"
   );
+
+  const contacts = useCrmStore((state) => state.contacts);
+
+  const contactCompanyId = values.contactId
+    ? contacts[values.contactId]?.companyId
+    : null;
 
   const [isAssociationsOpen, setIsAssociationsOpen] = useState(false);
   const [isDealClearedNoticeVisible, setIsDealClearedNoticeVisible] =
@@ -180,33 +188,28 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
         aria-label={translateAria(["comments"])}
       />
 
-      {isAssociationsVisible && (
-        <>
-          <LogCallDealField
-            id="log-call-deal"
-            formik={formik}
-            errorMessage={
-              isDealMismatch
-                ? translateText(["validations", "dealMismatch"])
-                : ""
-            }
-            isClearedNoticeVisible={isDealClearedNoticeVisible}
-            onDealChange={() => setIsDealClearedNoticeVisible(false)}
-          />
-          <LogCallCompanyField id="log-call-related-to" formik={formik} />
-        </>
-      )}
-
-      <button
-        type="button"
-        className="self-start text-sm text-primary-text underline"
-        aria-expanded={isAssociationsVisible}
-        onClick={() => setIsAssociationsOpen(!isAssociationsVisible)}
+      <ActivityAssociations
+        isOpen={isAssociationsVisible}
+        onToggle={() => setIsAssociationsOpen(!isAssociationsVisible)}
       >
-        {isAssociationsVisible
-          ? translateText(["buttons", "hideAssociations"])
-          : translateText(["buttons", "addAssociations"])}
-      </button>
+        <ActivityDealField
+          id="log-call-deal"
+          formik={formik}
+          fieldAriaLabel={translateAria(["deal"])}
+          clearedNoticeText={translateText(["notices", "dealCleared"])}
+          isClearedNoticeVisible={isDealClearedNoticeVisible}
+          onDealChange={() => setIsDealClearedNoticeVisible(false)}
+          {...(contactCompanyId && { filterCompanyId: contactCompanyId })}
+          {...(isDealMismatch && {
+            errorMessage: translateActivityText(["validations", "dealMismatch"])
+          })}
+        />
+        <ActivityRelatedToField
+          id="log-call-related-to"
+          formik={formik}
+          fieldAriaLabel={translateAria(["relatedTo"])}
+        />
+      </ActivityAssociations>
     </div>
   );
 };

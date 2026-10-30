@@ -603,29 +603,14 @@
         "labels": {
           "time": "Time",
           "duration": "Duration",
-          "contact": "Contact",
-          "deal": "Deal",
-          "relatedTo": "Related to"
+          "contact": "Contact"
         },
         "placeholders": {
-          "duration": "Enter duration",
-          "contact": "Enter name",
-          "deal": "Search deals",
-          "relatedTo": "Search companies"
-        },
-        "buttons": {
-          "addAssociations": "Add associations",
-          "hideAssociations": "Hide associations"
-        },
-        "emptyStates": {
-          "noContacts": "No contacts found",
-          "noDeals": "No deals found",
-          "noCompanies": "No companies found"
+          "duration": "Enter duration"
         },
         "validations": {
           "contact": "Please select a contact",
-          "duration": "Please enter a valid duration (e.g. 1h 30m)",
-          "dealMismatch": "This deal's company doesn't match any linked contact — add a contact from that company or choose a different deal"
+          "duration": "Please enter a valid duration (e.g. 1h 30m)"
         },
         "notices": {
           "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
@@ -755,12 +740,20 @@
         "title": "Log a meeting",
         "labels": {
           "startTime": "Start time",
-          "endTime": "End time"
+          "endTime": "End time",
+          "attendees": "Attendees"
         },
         "toastMessages": {
           "addSuccessTitle": "Meeting added successfully",
           "addSuccessDescription": "Meeting has been added successfully",
           "errorDescription": "Failed to save meeting"
+        },
+        "notices": {
+          "differentCompanies": "Attendees are from different companies",
+          "dealCleared": "Deal cleared — it doesn't match any attendee's company."
+        },
+        "placeholders": {
+          "attendees": "Select attendees"
         }
       }
     },
@@ -769,25 +762,36 @@
         "subject": "Subject",
         "date": "Date",
         "comments": "Comments",
-        "activityOwner": "Activity owner"
+        "activityOwner": "Activity owner",
+        "deal": "Deal",
+        "relatedTo": "Related to"
       },
       "placeholders": {
         "subject": "Enter subject",
         "date": "Select date",
         "time": "Select time",
         "comments": "Add message",
-        "activityOwner": "Search owner"
+        "activityOwner": "Search owner",
+        "contact": "Enter name",
+        "deal": "Search deals",
+        "relatedTo": "Search companies"
       },
       "buttons": {
         "cancel": "Cancel",
-        "save": "Save"
+        "save": "Save",
+        "addAssociations": "Add associations",
+        "hideAssociations": "Hide associations"
       },
       "emptyStates": {
-        "noOwners": "No owners found"
+        "noOwners": "No owners found",
+        "noContacts": "No contacts found",
+        "noDeals": "No deals found",
+        "noCompanies": "No companies found"
       },
       "validations": {
         "subject": "Subject is required",
-        "owner": "Activity owner is required"
+        "owner": "Activity owner is required",
+        "dealMismatch": "This deal's company doesn't match any linked contact — add a contact from that company or choose a different deal"
       },
       "toastMessages": {
         "errorTitle": "Oops! Something went wrong"
