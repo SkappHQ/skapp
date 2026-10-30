@@ -27,10 +27,6 @@ export const getActivityTimeOptions = () => {
     });
 };
 
-export const isTimeAfter = (time: string, otherTime: string): boolean =>
-  DateTime.fromFormat(time, TIME_FORMAT_24_HOUR) >
-  DateTime.fromFormat(otherTime, TIME_FORMAT_24_HOUR);
-
 export const toPickerDate = (isoDate: string): Date =>
   DateTime.fromISO(isoDate).startOf("day").toJSDate();
 

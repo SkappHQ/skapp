@@ -1,10 +1,10 @@
 import * as Yup from "yup";
 
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
-import { isTimeAfter } from "~community/crm/activities/utils/activityUtil";
 import {
   getActivityOwnerValidation,
-  getActivitySubjectValidation
+  getActivitySubjectValidation,
+  isEndTimeAfterStartTime
 } from "~community/crm/activities/utils/activityValidations";
 
 export const getMeetingValidationSchema = (
@@ -27,13 +27,7 @@ export const getMeetingValidationSchema = (
         "validations",
         "endTime"
       ]),
-      function (endTime) {
-        const { startTime } = this.parent;
-
-        if (!startTime || !endTime) return true;
-
-        return isTimeAfter(endTime, startTime);
-      }
+      isEndTimeAfterStartTime
     ),
     contactIds: Yup.array()
       .of(Yup.number())
