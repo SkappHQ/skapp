@@ -1,8 +1,7 @@
-import { DateTime } from "luxon";
 import * as Yup from "yup";
 
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
-import { ACTIVITY_TIME_VALUE_FORMAT } from "~community/crm/activities/constants/activityConstants";
+import { isTimeAfter } from "~community/crm/activities/utils/activityUtil";
 import {
   getActivityOwnerValidation,
   getActivitySubjectValidation
@@ -33,10 +32,7 @@ export const getMeetingValidationSchema = (
 
         if (!startTime || !endTime) return true;
 
-        return (
-          DateTime.fromFormat(endTime, ACTIVITY_TIME_VALUE_FORMAT) >
-          DateTime.fromFormat(startTime, ACTIVITY_TIME_VALUE_FORMAT)
-        );
+        return isTimeAfter(endTime, startTime);
       }
     ),
     contactIds: Yup.array()
