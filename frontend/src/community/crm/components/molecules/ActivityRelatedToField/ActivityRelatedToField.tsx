@@ -15,7 +15,10 @@ import {
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
+import {
+  CrmLogCallFormValues,
+  CrmLogMeetingFormValues
+} from "~community/crm/types/CrmCommonTypes";
 import { CrmCompanyFilterRequest } from "~community/crm/types/CrmTypes";
 import {
   getMissingCompanyIds,
@@ -24,24 +27,16 @@ import {
 
 interface Props {
   id: string;
-  formik: FormikProps<CrmLogCallFormValues>;
+  formik:
+    FormikProps<CrmLogCallFormValues> | FormikProps<CrmLogMeetingFormValues>;
+  fieldAriaLabel: string;
 }
 
-const LogCallCompanyField: FC<Props> = ({ id, formik }) => {
+const ActivityRelatedToField: FC<Props> = ({ id, formik, fieldAriaLabel }) => {
   const { values, setFieldValue } = formik;
 
-  const translateText = useTranslator(
-    "crmModule",
-    "activities",
-    "logCall",
-    "modal"
-  );
-  const translateAria = useTranslator(
-    "crmAria",
-    "activities",
-    "logCall",
-    "modal"
-  );
+  const translateText = useTranslator("crmModule", "activities", "logActivity");
+  const translateAria = useTranslator("crmAria", "activities", "logActivity");
 
   const { companies, setCompanies } = useCrmStore(
     useShallow((store) => ({
@@ -130,7 +125,7 @@ const LogCallCompanyField: FC<Props> = ({ id, formik }) => {
       selectedValue={selectedCompany?.name ? selectedCompany.name : ""}
       onClear={handleClear}
       clearAriaLabel={translateAria(["clearRelatedTo"])}
-      fieldAriaLabel={translateAria(["relatedTo"])}
+      fieldAriaLabel={fieldAriaLabel}
       searchValue={searchTerm}
       onSearchChange={(event) => setSearchTerm(event.target.value)}
       items={dropdownItems}
@@ -141,4 +136,4 @@ const LogCallCompanyField: FC<Props> = ({ id, formik }) => {
   );
 };
 
-export default LogCallCompanyField;
+export default ActivityRelatedToField;
