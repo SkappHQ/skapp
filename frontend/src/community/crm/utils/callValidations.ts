@@ -1,7 +1,23 @@
 import * as Yup from "yup";
 
-import { callDurationPattern } from "~community/common/regex/regexPatterns";
+import { unitConversion } from "~community/common/constants/configs";
+import {
+  callDurationPartsPattern,
+  callDurationPattern
+} from "~community/common/regex/regexPatterns";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
+
+export const parseCallDurationToMinutes = (input: string): number | null => {
+  const match = callDurationPartsPattern().exec(input.trim());
+  const hours = match?.[1];
+  const minutes = match?.[2];
+
+  if (!hours && !minutes) return null;
+
+  return (
+    Number(hours ?? 0) * unitConversion.MINUTES_PER_HOUR + Number(minutes ?? 0)
+  );
+};
 
 export const getCallValidationSchema = (translator: TranslatorFunctionType) =>
   Yup.object().shape({

@@ -8,14 +8,10 @@ import {
   TextArea
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
+import { DateTime } from "luxon";
 import { FC, useEffect, useState } from "react";
 
-import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import {
-  instantToPickedDay,
-  pickedDayToInstant
-} from "~community/common/utils/dateTimeUtils";
 import { CALL_TIME_OPTIONS } from "~community/crm/constants/callConstants";
 import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
 
@@ -26,13 +22,15 @@ import LogCallOwnerField from "./LogCallOwnerField";
 
 interface Props {
   formik: FormikProps<CrmLogCallFormValues>;
+  isPending: boolean;
   onCancel: () => void;
 }
 
-const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
+const LogCallModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
   const {
     values,
     errors,
+    status,
     touched,
     handleChange,
     handleBlur,
@@ -55,11 +53,17 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
     "logCall",
     "modal"
   );
-  const displayZone = useDisplayZone();
 
   const [isAssociationsOpen, setIsAssociationsOpen] = useState(false);
   const [isDealClearedNoticeVisible, setIsDealClearedNoticeVisible] =
     useState(false);
+
+  const isDealMismatch =
+    Boolean(status) &&
+    status.mismatchedDealId === values.dealId &&
+    status.mismatchedContactId === values.contactId;
+
+  const isAssociationsVisible = isAssociationsOpen || isDealMismatch;
 
   const handleDealCleared = (): void => {
     setIsDealClearedNoticeVisible(true);
@@ -77,13 +81,13 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
   }, [submitCount, isSubmitting]);
 
   const pickedDate = values.date
-    ? instantToPickedDay(values.date, displayZone)
+    ? DateTime.fromISO(values.date).startOf("day").toJSDate()
     : null;
 
   const handleDateSelect = (date?: Date) => {
     setFieldValue(
       "date",
-      date ? pickedDayToInstant(date, displayZone) : null,
+      date ? DateTime.fromJSDate(date).startOf("day").toUTC().toISO() : null,
       true
     );
   };
@@ -181,11 +185,16 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
           aria-label={translateAria(["comments"])}
         />
 
-        {isAssociationsOpen && (
+        {isAssociationsVisible && (
           <>
             <LogCallDealField
               id="log-call-deal"
               formik={formik}
+              errorMessage={
+                isDealMismatch
+                  ? translateText(["validations", "dealMismatch"])
+                  : ""
+              }
               isClearedNoticeVisible={isDealClearedNoticeVisible}
               onDealChange={() => setIsDealClearedNoticeVisible(false)}
             />
@@ -196,10 +205,10 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
         <button
           type="button"
           className="self-start text-sm text-primary-text underline"
-          aria-expanded={isAssociationsOpen}
-          onClick={() => setIsAssociationsOpen((open) => !open)}
+          aria-expanded={isAssociationsVisible}
+          onClick={() => setIsAssociationsOpen(!isAssociationsVisible)}
         >
-          {isAssociationsOpen
+          {isAssociationsVisible
             ? translateText(["buttons", "hideAssociations"])
             : translateText(["buttons", "addAssociations"])}
         </button>
@@ -209,7 +218,7 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
         <ButtonV2
           variant="tertiary"
           type="button"
-          disabled={isSubmitting}
+          disabled={isPending || isSubmitting}
           onClick={onCancel}
           icon={<CloseIcon />}
           iconPosition="end"
@@ -221,7 +230,8 @@ const LogCallModalForm: FC<Props> = ({ formik, onCancel }) => {
           variant="primary"
           type="button"
           onClick={submitForm}
-          disabled={isSubmitting || !dirty}
+          disabled={isPending || isSubmitting || !dirty}
+          isLoading={isPending}
           aria-label={translateAria(["save"])}
         >
           {translateText(["buttons", "save"])}

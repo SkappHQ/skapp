@@ -1,8 +1,10 @@
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import useSessionData from "~community/common/hooks/useSessionData";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import ActivityCallSidePanel from "~community/crm/activities/components/organisms/ActivityCallSidePanel/ActivityCallSidePanel";
 import ActivityFeed from "~community/crm/activities/components/organisms/ActivityFeed/ActivityFeed";
 import ActivityToolbar from "~community/crm/activities/components/organisms/ActivityToolbar/ActivityToolbar";
@@ -31,6 +33,7 @@ import {
   useGetActivityTasks
 } from "~community/crm/api/ActivityApi";
 import { useGetDealsByIds } from "~community/crm/api/DealApi";
+import LogCallModalContent from "~community/crm/components/molecules/LogCallModalContent/LogCallModalContent";
 import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
 import { useCrmStore } from "~community/crm/store/store";
@@ -38,6 +41,7 @@ import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 import { getMissingDealIds, mergeDeals } from "~community/crm/utils/dealUtil";
 
 const ActivitiesContent: FC = () => {
+  const translateText = useTranslator("crmModule");
   const displayZone = useDisplayZone();
   const { isCrmSalesManager } = useSessionData();
   const isManager = Boolean(isCrmSalesManager);
@@ -47,6 +51,7 @@ const ActivitiesContent: FC = () => {
   const [activeTab, setActiveTab] = useState<ActivityTab>(DEFAULT_ACTIVITY_TAB);
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<ActivityFilterValues>({});
+  const [isLogCallModalOpen, setIsLogCallModalOpen] = useState(false);
 
   const isAllTab = activeTab === ActivityTab.ALL;
 
@@ -188,7 +193,21 @@ const ActivitiesContent: FC = () => {
         showControls={
           isLoading || isError || hasActiveFilters || rows.length > 0
         }
+        action={
+          activeTab === ActivityTab.CALLS && (
+            <ButtonV2
+              variant="primary"
+              type="button"
+              onClick={() => setIsLogCallModalOpen(true)}
+            >
+              {translateText(["activities", "toolbar", "logCallBtn"])}
+            </ButtonV2>
+          )
+        }
       />
+      {isLogCallModalOpen && (
+        <LogCallModalContent onClose={() => setIsLogCallModalOpen(false)} />
+      )}
       <ActivityFeed
         activeTab={activeTab}
         pages={pages}
