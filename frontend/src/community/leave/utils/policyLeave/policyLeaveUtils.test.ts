@@ -1,5 +1,6 @@
 import { PolicyOnLeaveTodayStatus } from "~community/leave/enums/PolicyLeaveEnums";
 import { PolicyEmployeesOnLeaveType } from "~community/leave/types/PolicyLeaveTypes";
+import { HolidayDurationType } from "~community/people/types/HolidayTypes";
 
 import { getPolicyOnLeaveTodayStatus } from "./policyLeaveUtils";
 
@@ -25,7 +26,7 @@ describe("getPolicyOnLeaveTodayStatus", () => {
               id: 1,
               date: "2025-06-11",
               name: "Founders Day",
-              holidayDuration: "FULL_DAY"
+              holidayDuration: HolidayDurationType.FULLDAY
             }
           ],
           onLeaveCount: null,

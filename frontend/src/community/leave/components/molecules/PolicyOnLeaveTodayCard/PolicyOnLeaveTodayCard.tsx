@@ -65,6 +65,7 @@ const PolicyOnLeaveTodayCard: FC<Props> = ({ teamId, enabled }) => {
             )}
           </Box>
         );
+      case PolicyOnLeaveTodayStatus.NO_EMPLOYEES:
       default:
         return <Typography sx={classes.analytic}>{"-"}</Typography>;
     }

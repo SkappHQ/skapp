@@ -60,21 +60,25 @@ const LeaveDashboard = (): JSX.Element => {
     setTodaysAvailability
   } = useLeaveStore((state) => state);
 
-  const { isLeavePoliciesEnabled } = useLeavePoliciesEnabled();
+  const { isLeavePoliciesEnabled, isLoading: isPolicyConfigLoading } =
+    useLeavePoliciesEnabled();
+
+  const isLegacyAvailabilityEnabled =
+    isFetchingEnabled && !isPolicyConfigLoading && !isLeavePoliciesEnabled;
 
   const today = DateTime.now().toFormat(DATE_FORMAT);
 
   const { data: todaysAvailability } = useGetAvailability(
     teamId,
     today,
-    isFetchingEnabled
+    isLegacyAvailabilityEnabled
   );
 
   const { data: todaysResourceAvailability } = useGetResourceAvailability(
     teamId,
     today,
     today,
-    isFetchingEnabled
+    isLegacyAvailabilityEnabled
   );
   const { data: pendingLeaves } = useGetPendingLeavesData(teamId);
 
@@ -177,7 +181,12 @@ const LeaveDashboard = (): JSX.Element => {
       </Box>
       <Grid container spacing={1}>
         <Grid sx={{ width: { xs: "100%", md: "32.5%" } }}>
-          {isLeavePoliciesEnabled ? (
+          {isPolicyConfigLoading ? (
+            <AnalyticCard
+              title={translateText(["todayAvailability"]) ?? ""}
+              isExpandable={false}
+            />
+          ) : isLeavePoliciesEnabled ? (
             <PolicyOnLeaveTodayCard
               teamId={teamId}
               enabled={isFetchingEnabled}

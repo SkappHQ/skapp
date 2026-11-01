@@ -5,6 +5,7 @@ import {
 } from "~community/common/types/CommonTypes";
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
 import { PolicyType } from "~community/leave/types/LeavePolicyTypes";
+import { HolidayDurationType } from "~community/people/types/HolidayTypes";
 
 export enum PolicyBalanceDisabledReason {
   FULLY_UTILIZED = "FULLY_UTILIZED",
@@ -144,7 +145,7 @@ export interface PolicyOnLeaveHolidayType {
   id: number | null;
   date: string;
   name: string;
-  holidayDuration: string | null;
+  holidayDuration: HolidayDurationType | null;
 }
 
 export interface PolicyEmployeesOnLeaveType {
