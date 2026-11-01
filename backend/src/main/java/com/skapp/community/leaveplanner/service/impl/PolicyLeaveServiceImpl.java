@@ -439,11 +439,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 				: currentUser.getEmployee().getEmployeeId();
 		List<Long> teamIds = resolveTeamIds(filterDto.getTeamIds());
 
-		long onLeaveCount = policyLeaveRequestDao.findApprovedRequestsOnDate(today, teamIds, supervisorEmployeeId)
-			.stream()
-			.map(leaveRequest -> leaveRequest.getEmployee().getEmployeeId())
-			.distinct()
-			.count();
+		long onLeaveCount = policyLeaveRequestDao.countEmployeesOnApprovedLeaveOnDate(today, teamIds,
+				supervisorEmployeeId);
 		long employeeCount = policyLeaveRequestDao.countEmployeesInScope(teamIds, supervisorEmployeeId);
 
 		responseDto.setIsNonWorkingDay(false);

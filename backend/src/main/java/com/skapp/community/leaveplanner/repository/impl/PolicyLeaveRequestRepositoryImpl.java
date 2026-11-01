@@ -192,24 +192,23 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 	}
 
 	@Override
-	public List<PolicyLeaveRequest> findApprovedRequestsOnDate(LocalDate date, List<Long> teamIds,
-			Long supervisorEmployeeId) {
+	public long countEmployeesOnApprovedLeaveOnDate(LocalDate date, List<Long> teamIds, Long supervisorEmployeeId) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
-		CriteriaQuery<PolicyLeaveRequest> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveRequest.class);
+		CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
 		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
-		fetchPolicy(root);
-		root.fetch(PolicyLeaveRequest_.employee, JoinType.INNER);
+		Join<PolicyLeaveRequest, Employee> employee = root.join(PolicyLeaveRequest_.employee);
 
-		List<Predicate> predicates = buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery,
-				root.join(PolicyLeaveRequest_.employee), teamIds, supervisorEmployeeId);
+		List<Predicate> predicates = buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee, teamIds,
+				supervisorEmployeeId);
 		predicates.add(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.status), LeaveRequestStatus.APPROVED));
 		predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get(PolicyLeaveRequest_.startDate), date));
 		predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), date));
 
-		criteriaQuery.select(root).distinct(true).where(predicates.toArray(new Predicate[0]));
+		criteriaQuery.select(criteriaBuilder.countDistinct(employee.get(Employee_.employeeId)))
+			.where(predicates.toArray(new Predicate[0]));
 
-		return entityManager.createQuery(criteriaQuery).getResultList();
+		return entityManager.createQuery(criteriaQuery).getSingleResult();
 	}
 
 	@Override
