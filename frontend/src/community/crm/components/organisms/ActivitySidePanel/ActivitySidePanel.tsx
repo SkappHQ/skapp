@@ -129,7 +129,7 @@ const ActivitySidePanel: FC<Props> = ({
             <div className="flex flex-col gap-1">
               <p className="subtitle1">{translateText(["comments"])}</p>
               <p className="subtitle3 max-h-24 overflow-y-auto break-words">
-                {comments ? comments : translateText(["noComments"])}
+                {comments ?? translateText(["noComments"])}
               </p>
             </div>
 
