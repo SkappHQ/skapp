@@ -125,10 +125,10 @@ export interface ActivityCallCreatePayload {
   subject: string;
   loggedAt: string | null;
   durationMinutes: number | null;
-  contactId: number;
+  contactId: number | null;
   dealId: number | null;
   companyId: number | null;
-  ownerId: number;
+  ownerId: number | null;
   comments: string;
 }
 
