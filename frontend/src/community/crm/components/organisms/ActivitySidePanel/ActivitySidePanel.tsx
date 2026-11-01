@@ -69,8 +69,6 @@ const ActivitySidePanel: FC<Props> = ({
     setDeals(mergeDeals(deals, [deal]));
   }, [deal]);
 
-  const dealId = deal?.id;
-
   const actionItems: MenuItemProps[] = [
     ...menuItems,
     {
@@ -139,7 +137,7 @@ const ActivitySidePanel: FC<Props> = ({
               <h2 className="h2">{translateText(["dealsTitle"])}</h2>
               <hr className="border-secondary-accent" />
               <SidePanelDealSection
-                dealIds={dealId && deals[dealId] ? [dealId] : []}
+                dealIds={deal?.id && deals[deal.id] ? [deal.id] : []}
                 showAddDealAction={false}
                 emptyHeightClassName="h-[163px]"
                 emptyDescription={emptyDealsDescription}

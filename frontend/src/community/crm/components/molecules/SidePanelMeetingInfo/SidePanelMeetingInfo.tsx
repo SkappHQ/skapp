@@ -23,18 +23,7 @@ const SidePanelMeetingInfo: FC<Props> = ({
   owner,
   onCompanyClick
 }) => {
-  const translateText = useTranslator(
-    "crmModule",
-    "activities",
-    "meetingSidePanel",
-    "info"
-  );
-  const translateActivityText = useTranslator(
-    "crmModule",
-    "activities",
-    "activitySidePanel",
-    "info"
-  );
+  const translateText = useTranslator("crmModule", "activities");
   const translateAria = useTranslator(
     "crmAria",
     "activities",
@@ -44,7 +33,9 @@ const SidePanelMeetingInfo: FC<Props> = ({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-2 border border-secondary-accent rounded-xl p-3">
-        <p className="subtitle1">{translateText(["attendees"])}</p>
+        <p className="subtitle1">
+          {translateText(["meetingSidePanel", "info", "attendees"])}
+        </p>
         {meeting.contacts.length > 0 ? (
           <AvatarGroup
             ariaLabel={translateAria(["attendees"])}
@@ -63,7 +54,7 @@ const SidePanelMeetingInfo: FC<Props> = ({
           />
         ) : (
           <span className="body2">
-            {translateActivityText(["noLongerAvailable"])}
+            {translateText(["activitySidePanel", "info", "noLongerAvailable"])}
           </span>
         )}
       </div>
@@ -74,11 +65,13 @@ const SidePanelMeetingInfo: FC<Props> = ({
           startTime: DateTime.fromISO(meeting.startAt)
         })}
         secondaryRow={
-          <PropertyRow label={translateText(["endTime"])}>
+          <PropertyRow
+            label={translateText(["meetingSidePanel", "info", "endTime"])}
+          >
             <span className="body2">
               {meeting.endAt
                 ? DateTime.fromISO(meeting.endAt).toFormat(TIME_FORMAT_12_HOUR)
-                : translateActivityText(["noValue"])}
+                : translateText(["activitySidePanel", "info", "noValue"])}
             </span>
           </PropertyRow>
         }

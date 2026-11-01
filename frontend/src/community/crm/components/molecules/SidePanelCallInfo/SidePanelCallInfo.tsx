@@ -25,24 +25,15 @@ const SidePanelCallInfo: FC<Props> = ({
   onContactClick,
   onCompanyClick
 }) => {
-  const translateText = useTranslator(
-    "crmModule",
-    "activities",
-    "callSidePanel",
-    "info"
-  );
-  const translateActivityText = useTranslator(
-    "crmModule",
-    "activities",
-    "activitySidePanel",
-    "info"
-  );
+  const translateText = useTranslator("crmModule", "activities");
   const loggedAt = DateTime.fromISO(call.loggedAt);
 
   return (
     <SidePanelActivityInfo
       primaryRow={
-        <PropertyRow label={translateText(["contact"])}>
+        <PropertyRow
+          label={translateText(["callSidePanel", "info", "contact"])}
+        >
           {call.contact ? (
             <SidePanelLinkButton
               label={getContactDisplayName(call.contact)}
@@ -50,7 +41,11 @@ const SidePanelCallInfo: FC<Props> = ({
             />
           ) : (
             <span className="body2">
-              {translateActivityText(["noLongerAvailable"])}
+              {translateText([
+                "activitySidePanel",
+                "info",
+                "noLongerAvailable"
+              ])}
             </span>
           )}
         </PropertyRow>
@@ -58,11 +53,13 @@ const SidePanelCallInfo: FC<Props> = ({
       date={loggedAt}
       startTime={loggedAt}
       secondaryRow={
-        <PropertyRow label={translateText(["duration"])}>
+        <PropertyRow
+          label={translateText(["callSidePanel", "info", "duration"])}
+        >
           <span className="body2">
             {call.durationMinutes != null
               ? formatCallDuration(call.durationMinutes)
-              : translateActivityText(["noValue"])}
+              : translateText(["activitySidePanel", "info", "noValue"])}
           </span>
         </PropertyRow>
       }
