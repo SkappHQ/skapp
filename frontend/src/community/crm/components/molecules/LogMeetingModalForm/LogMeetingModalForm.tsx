@@ -6,7 +6,7 @@ import {
   TextArea
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { FC, useEffect } from "react";
+import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -22,46 +22,16 @@ interface Props {
 }
 
 const LogMeetingModalForm: FC<Props> = ({ formik }) => {
-  const {
-    values,
-    errors,
-    touched,
-    handleChange,
-    handleBlur,
-    isSubmitting,
-    submitCount,
-    setFieldValue
-  } = formik;
+  const { values, errors, touched, handleChange, handleBlur, setFieldValue } =
+    formik;
 
-  const translateText = useTranslator(
-    "crmModule",
-    "activities",
-    "logMeeting",
-    "modal"
-  );
-  const translateActivityText = useTranslator(
-    "crmModule",
-    "activities",
-    "logActivity"
-  );
+  const translateText = useTranslator("crmModule", "activities");
   const translateAria = useTranslator(
     "crmAria",
     "activities",
     "logMeeting",
     "modal"
   );
-
-  useEffect(() => {
-    if (submitCount === 0 || isSubmitting) return;
-
-    const [firstInvalidField] = Object.keys(errors);
-
-    if (firstInvalidField) {
-      document
-        .getElementById(`log-meeting-${firstInvalidField}-input`)
-        ?.focus();
-    }
-  }, [submitCount, isSubmitting]);
 
   const pickedDate = values.date ? toPickerDate(values.date) : null;
 
@@ -75,8 +45,8 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
         id="log-meeting-subject-input"
         name="subject"
         value={values.subject}
-        label={translateActivityText(["labels", "subject"])}
-        placeholder={translateActivityText(["placeholders", "subject"])}
+        label={translateText(["logActivity", "labels", "subject"])}
+        placeholder={translateText(["logActivity", "placeholders", "subject"])}
         {...(touched.subject && { errorMessage: errors.subject })}
         state={touched.subject && errors.subject ? "error" : "default"}
         onChange={handleChange}
@@ -97,8 +67,8 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
             id="log-meeting-date-input"
             name="date"
             value={pickedDate ? pickedDate.toLocaleDateString() : ""}
-            label={translateActivityText(["labels", "date"])}
-            placeholder={translateActivityText(["placeholders", "date"])}
+            label={translateText(["logActivity", "labels", "date"])}
+            placeholder={translateText(["logActivity", "placeholders", "date"])}
             errorMessage={errors.date}
             state={errors.date ? "error" : "default"}
             aria-label={translateAria(["date"])}
@@ -117,8 +87,13 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
             options={getActivityTimeOptions()}
             value={values.startTime}
             onChange={(value) => setFieldValue("startTime", value, true)}
-            label={translateText(["labels", "startTime"])}
-            placeholder={translateActivityText(["placeholders", "time"])}
+            label={translateText([
+              "logMeeting",
+              "modal",
+              "labels",
+              "startTime"
+            ])}
+            placeholder={translateText(["logActivity", "placeholders", "time"])}
             variant="primary"
             className="rounded-lg"
             ariaLabel={translateAria(["startTime"])}
@@ -132,8 +107,8 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
             options={getActivityTimeOptions()}
             value={values.endTime}
             onChange={(value) => setFieldValue("endTime", value, true)}
-            label={translateText(["labels", "endTime"])}
-            placeholder={translateActivityText(["placeholders", "time"])}
+            label={translateText(["logMeeting", "modal", "labels", "endTime"])}
+            placeholder={translateText(["logActivity", "placeholders", "time"])}
             variant={errors.endTime ? "primary-error" : "primary"}
             errorMessage={errors.endTime}
             className="rounded-lg"
@@ -149,8 +124,8 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
       <TextArea
         name="comments"
         value={values.comments}
-        label={translateActivityText(["labels", "comments"])}
-        placeholder={translateActivityText(["placeholders", "comments"])}
+        label={translateText(["logActivity", "labels", "comments"])}
+        placeholder={translateText(["logActivity", "placeholders", "comments"])}
         onChange={handleChange}
         rows={2}
         aria-label={translateAria(["comments"])}

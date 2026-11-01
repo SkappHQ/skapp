@@ -44,7 +44,7 @@ const LogCallModalContent: FC<Props> = ({ onClose }) => {
 
     return {
       subject: "",
-      date: now.toUTC().toISO(),
+      date: now.startOf("day").toUTC().toISO(),
       time: getTimeSlotStart(now).toFormat(TIME_FORMAT_24_HOUR),
       duration: "",
       contactId: null,

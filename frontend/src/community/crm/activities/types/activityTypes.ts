@@ -140,6 +140,6 @@ export interface ActivityMeetingCreatePayload {
   contactIds: number[];
   dealId: number | null;
   companyId: number | null;
-  ownerId: number;
+  ownerId: number | null;
   comments: string;
 }
