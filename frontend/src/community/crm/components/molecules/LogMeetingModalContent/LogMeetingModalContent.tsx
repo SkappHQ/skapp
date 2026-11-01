@@ -1,4 +1,4 @@
-import { FormikHelpers, useFormik } from "formik";
+import { useFormik } from "formik";
 import { DateTime } from "luxon";
 import { FC, useMemo } from "react";
 
@@ -8,6 +8,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { ActivityMeetingCreatePayload } from "~community/crm/activities/types/activityTypes";
 import {
+  getActivityEndTimeSlot,
   getTimeSlotStart,
   toActivityInstant
 } from "~community/crm/activities/utils/activityUtil";
@@ -42,10 +43,7 @@ const LogMeetingModalContent: FC<Props> = ({ onClose }) => {
       subject: "",
       date: now.startOf("day").toUTC().toISO(),
       startTime: slotStart.toFormat(TIME_FORMAT_24_HOUR),
-      endTime: DateTime.min(
-        slotStart.plus({ hours: 1 }),
-        getTimeSlotStart(slotStart.endOf("day"))
-      ).toFormat(TIME_FORMAT_24_HOUR),
+      endTime: getActivityEndTimeSlot(slotStart).toFormat(TIME_FORMAT_24_HOUR),
       contactIds: [],
       ownerId: defaultOwner ? defaultOwner.employeeId : null,
       comments: "",
@@ -55,35 +53,31 @@ const LogMeetingModalContent: FC<Props> = ({ onClose }) => {
   }, [defaultOwner]);
 
   const toPayload = (
-    values: CrmLogMeetingFormValues,
-    date: string,
-    ownerId: number
+    values: CrmLogMeetingFormValues
   ): ActivityMeetingCreatePayload => {
     return {
       name: values.subject.trim(),
-      meetingDate: DateTime.fromISO(date).toISODate(),
-      startAt: values.startTime
-        ? toActivityInstant(date, values.startTime)
+      meetingDate: values.date
+        ? DateTime.fromISO(values.date).toISODate()
         : null,
-      endAt: values.endTime ? toActivityInstant(date, values.endTime) : null,
+      startAt:
+        values.date && values.startTime
+          ? toActivityInstant(values.date, values.startTime)
+          : null,
+      endAt:
+        values.date && values.endTime
+          ? toActivityInstant(values.date, values.endTime)
+          : null,
       contactIds: values.contactIds,
       dealId: values.dealId,
       companyId: values.companyId,
-      ownerId,
+      ownerId: values.ownerId,
       comments: values.comments.trim()
     };
   };
 
-  const handleSubmit = (
-    values: CrmLogMeetingFormValues,
-    helpers: FormikHelpers<CrmLogMeetingFormValues>
-  ): void => {
-    if (!values.date || !values.ownerId) {
-      helpers.setSubmitting(false);
-      return;
-    }
-
-    createMeeting(toPayload(values, values.date, values.ownerId));
+  const handleSubmit = (values: CrmLogMeetingFormValues): void => {
+    createMeeting(toPayload(values));
   };
 
   const validationSchema = useMemo(
