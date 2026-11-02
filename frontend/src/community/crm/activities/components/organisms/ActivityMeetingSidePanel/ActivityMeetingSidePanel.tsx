@@ -38,7 +38,11 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId }) => {
     isCrmSidePanelOpen &&
     crmSidePanelType === CrmSidePanelTypes.MEETING_SIDE_PANEL;
 
-  const { data: meeting, isError } = useGetMeetingById(meetingId, isOpen);
+  const {
+    data: meeting,
+    isError,
+    isFetching
+  } = useGetMeetingById(meetingId, isOpen);
 
   const handleClose = (): void => {
     setSelectedMeetingId(null);
@@ -46,7 +50,7 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId }) => {
   };
 
   useEffect(() => {
-    if (!isError) return;
+    if (!isError || isFetching) return;
 
     setToastMessage({
       open: true,
@@ -56,9 +60,9 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId }) => {
       isIcon: true
     });
     handleClose();
-  }, [isError]);
+  }, [isError, isFetching]);
 
-  const handleDelete = (): void => {};
+  const handleActionNotAvailable = (): void => {};
 
   const handleCompanyClick = (): void => {
     if (meeting?.company?.id) {
@@ -72,7 +76,7 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId }) => {
       {...(meeting && { meeting })}
       isOpen={isOpen}
       onClose={handleClose}
-      onDelete={handleDelete}
+      onDelete={handleActionNotAvailable}
       onCompanyClick={handleCompanyClick}
     />
   );
