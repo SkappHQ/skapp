@@ -46,6 +46,7 @@ import {
   TOTAL_PERCENTAGE
 } from "~community/leave/constants/stringConstants";
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
+import { MyRequestModalEnums } from "~community/leave/enums/MyRequestEnums";
 import {
   PolicyLeaveModalEnums,
   PolicyLeaveToastEnums
@@ -53,7 +54,10 @@ import {
 import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 import { useLeaveStore } from "~community/leave/store/store";
 import { MyLeaveRequestPayloadType } from "~community/leave/types/MyRequests";
-import { PolicyLeaveValidationFailure } from "~community/leave/types/PolicyLeaveTypes";
+import {
+  PolicyLeaveRequestType,
+  PolicyLeaveValidationFailure
+} from "~community/leave/types/PolicyLeaveTypes";
 import {
   getDurationInitialValue,
   getDurationSelectorDisabledOptions
@@ -74,6 +78,10 @@ import {
   useGetUserPersonalDetails
 } from "~community/people/api/PeopleApi";
 import { useGetMyTeams } from "~community/people/api/TeamApi";
+import {
+  useIsGoogleCalendarConnected,
+  useIsMicrosoftCalendarConnected
+} from "~enterprise/common/api/CalendarApi";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
@@ -125,6 +133,13 @@ const ApplyPolicyLeaveModal = () => {
   const isCalendarSelectionInvalid = useLeaveStore(
     (state) => state.isApplyLeaveModalBtnDisabled
   );
+  const setMyLeaveRequestModalType = useLeaveStore(
+    (state) => state.setMyLeaveRequestModalType
+  );
+  const setLeaveRequestId = useLeaveStore((state) => state.setLeaveRequestId);
+
+  const { data: isGoogleConnected } = useIsGoogleCalendarConnected();
+  const { data: isMicrosoftConnected } = useIsMicrosoftCalendarConnected();
 
   const hasUnsavedChanges = usePolicyLeaveStore(selectHasUnsavedChanges);
 
@@ -183,7 +198,7 @@ const ApplyPolicyLeaveModal = () => {
 
   const { mutate: checkAvailability } = useCheckPolicyLeaveAvailability();
 
-  const onApplySuccess = () => {
+  const onApplySuccess = (data: PolicyLeaveRequestType) => {
     handlePolicyLeaveToast({
       type: PolicyLeaveToastEnums.APPLY_SUCCESS,
       setToastMessage,
@@ -191,6 +206,14 @@ const ApplyPolicyLeaveModal = () => {
     });
     sendEvent(GoogleAnalyticsTypes.GA4_LEAVE_REQUEST_APPLIED);
     setModalType(PolicyLeaveModalEnums.NONE);
+
+    if (
+      environment === appModes.ENTERPRISE &&
+      (isGoogleConnected || isMicrosoftConnected)
+    ) {
+      setLeaveRequestId(data.leaveRequestId);
+      setMyLeaveRequestModalType(MyRequestModalEnums.MARK_OUT_OF_OFFICE);
+    }
   };
 
   const onApplyError = (messageKey: string) => {
