@@ -25,6 +25,8 @@ import java.time.LocalDate;
 
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -121,6 +123,12 @@ class PolicyLeaveControllerIntegrationTest {
 
 	private ResultActions performGetOnLeave(String authToken, String... teamIds) throws Exception {
 		return mvc.perform(get(ENDPOINT + "/on-leave").param("teamIds", teamIds)
+			.accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(authToken)));
+	}
+
+	private ResultActions performGetOnLeaveByTeam(String authToken, String... teamIds) throws Exception {
+		return mvc.perform(get(ENDPOINT + "/on-leave/by-team").param("teamIds", teamIds)
 			.accept(MediaType.APPLICATION_JSON)
 			.with(SecurityTestUtils.bearerToken(authToken)));
 	}
@@ -266,6 +274,177 @@ class PolicyLeaveControllerIntegrationTest {
 		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED, USER2_LEAVE_EMPLOYEE })
 		void getEmployeesOnLeaveToday_LeaveEmployee_ReturnsForbidden() throws Exception {
 			performGetOnLeave(leaveEmployeeToken()).andDo(print()).andExpect(status().isForbidden());
+		}
+
+	}
+
+	@Nested
+	@DisplayName("Get Employees On Leave Today By Team")
+	class GetEmployeesOnLeaveTodayByTeamTests {
+
+		@Test
+		@DisplayName("Lists an employee with morning and evening half days today once with both requests")
+		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED, SEED_LEAVE_TYPE, SEED_POLICY, SEED_HALF_DAY_LEAVE_TODAY,
+				SEED_SECOND_HALF_DAY_LEAVE_TODAY })
+		void getEmployeesOnLeaveTodayByTeam_TwoHalfDaysSameEmployee_ListedOnceWithBothRequests() throws Exception {
+			performGetOnLeaveByTeam(leaveAdminToken()).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath("$.results[0].date").value("2025-06-11"))
+				.andExpect(jsonPath("$.results[0].isNonWorkingDay").value(false))
+				.andExpect(jsonPath("$.results[0].onLeaveCount").value(1))
+				.andExpect(jsonPath("$.results[0].onlineCount").value(4))
+				.andExpect(jsonPath("$.results[0].employees", hasSize(1)))
+				.andExpect(jsonPath("$.results[0].employees[0].employee.employeeId").value(2))
+				.andExpect(jsonPath("$.results[0].employees[0].employee.firstName").value("Employee User Two"))
+				.andExpect(jsonPath("$.results[0].employees[0].leaveRequests", hasSize(2)))
+				.andExpect(jsonPath("$.results[0].employees[0].leaveRequests[*].leaveState",
+						containsInAnyOrder("HALFDAY_MORNING", "HALFDAY_EVENING")))
+				.andExpect(jsonPath("$.results[0].employees[0].leaveRequests[0].policyId").value(500))
+				.andExpect(jsonPath("$.results[0].employees[0].leaveRequests[0].policyName").value("Annual Policy"))
+				.andExpect(jsonPath("$.results[0].employees[0].leaveRequests[0].leaveType.name").value("PolicyAnnual"))
+				.andExpect(jsonPath("$.results[0].employees[0].leaveRequests[0].startDate").value("2025-06-11"))
+				.andExpect(jsonPath("$.results[0].employees[0].leaveRequests[0].endDate").value("2025-06-11"));
+		}
+
+		@Test
+		@DisplayName("Lists an approved multi day leave that spans today")
+		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED, SEED_LEAVE_TYPE, SEED_POLICY,
+				SEED_MULTI_DAY_LEAVE_SPANNING_TODAY })
+		void getEmployeesOnLeaveTodayByTeam_MultiDaySpanningToday_Listed() throws Exception {
+			performGetOnLeaveByTeam(leaveAdminToken()).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].employees", hasSize(1)))
+				.andExpect(jsonPath("$.results[0].employees[0].employee.employeeId").value(3))
+				.andExpect(jsonPath("$.results[0].employees[0].leaveRequests[0].startDate").value("2025-06-09"))
+				.andExpect(jsonPath("$.results[0].employees[0].leaveRequests[0].endDate").value("2025-06-13"))
+				.andExpect(jsonPath("$.results[0].employees[0].leaveRequests[0].leaveState").value("FULLDAY"));
+		}
+
+		@Test
+		@DisplayName("Sorts the employees on leave by name")
+		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED, SEED_LEAVE_TYPE, SEED_POLICY, SEED_HALF_DAY_LEAVE_TODAY,
+				SEED_APPROVED_LEAVE_TODAY_FOR_EMPLOYEES_1_AND_4 })
+		void getEmployeesOnLeaveTodayByTeam_SeveralEmployees_SortedByName() throws Exception {
+			performGetOnLeaveByTeam(leaveAdminToken()).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].onLeaveCount").value(3))
+				.andExpect(jsonPath("$.results[0].onlineCount").value(2))
+				.andExpect(jsonPath("$.results[0].employees[*].employee.employeeId", contains(1, 2, 4)));
+		}
+
+		@Test
+		@DisplayName("Excludes pending, cancelled, denied and revoked requests")
+		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED, SEED_LEAVE_TYPE, SEED_POLICY, SEED_UNAPPROVED_LEAVE_TODAY })
+		void getEmployeesOnLeaveTodayByTeam_UnapprovedRequests_Excluded() throws Exception {
+			performGetOnLeaveByTeam(leaveAdminToken()).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].onLeaveCount").value(0))
+				.andExpect(jsonPath("$.results[0].onlineCount").value(5))
+				.andExpect(jsonPath("$.results[0].employees", hasSize(0)));
+		}
+
+		@Test
+		@DisplayName("Excludes approved requests that end before or start after today")
+		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED, SEED_LEAVE_TYPE, SEED_POLICY, SEED_APPROVED_LEAVE_NOT_TODAY })
+		void getEmployeesOnLeaveTodayByTeam_ApprovedNotCoveringToday_Excluded() throws Exception {
+			performGetOnLeaveByTeam(leaveAdminToken()).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].onLeaveCount").value(0))
+				.andExpect(jsonPath("$.results[0].employees", hasSize(0)));
+		}
+
+		@Test
+		@DisplayName("Excludes terminated employees and inactive users")
+		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED, SEED_LEAVE_TYPE, SEED_POLICY,
+				SEED_APPROVED_LEAVE_TODAY_FOR_EMPLOYEES_1_AND_4, TERMINATE_EMPLOYEE_4, DEACTIVATE_USER_5 })
+		void getEmployeesOnLeaveTodayByTeam_InactiveEmployees_Excluded() throws Exception {
+			performGetOnLeaveByTeam(leaveAdminToken()).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].onLeaveCount").value(1))
+				.andExpect(jsonPath("$.results[0].onlineCount").value(2))
+				.andExpect(jsonPath("$.results[0].employees[*].employee.employeeId", contains(1)));
+		}
+
+		@Test
+		@DisplayName("Narrows the counts and employees to the requested teams")
+		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED, SEED_LEAVE_TYPE, SEED_POLICY, SEED_HALF_DAY_LEAVE_TODAY,
+				SEED_APPROVED_LEAVE_TODAY_FOR_EMPLOYEES_1_AND_4 })
+		void getEmployeesOnLeaveTodayByTeam_TeamFilter_NarrowsToTeamMembers() throws Exception {
+			performGetOnLeaveByTeam(leaveAdminToken(), "1").andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].onLeaveCount").value(1))
+				.andExpect(jsonPath("$.results[0].onlineCount").value(0))
+				.andExpect(jsonPath("$.results[0].employees[*].employee.employeeId", contains(1)));
+		}
+
+		@Test
+		@DisplayName("Treats a team id of -1 as all teams")
+		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED, SEED_LEAVE_TYPE, SEED_POLICY, SEED_HALF_DAY_LEAVE_TODAY,
+				SEED_APPROVED_LEAVE_TODAY_FOR_EMPLOYEES_1_AND_4 })
+		void getEmployeesOnLeaveTodayByTeam_AllTeams_ReturnsOrganization() throws Exception {
+			performGetOnLeaveByTeam(leaveAdminToken(), "-1").andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].onLeaveCount").value(3))
+				.andExpect(jsonPath("$.results[0].onlineCount").value(2))
+				.andExpect(jsonPath("$.results[0].employees[*].employee.employeeId", contains(1, 2, 4)));
+		}
+
+		@Test
+		@DisplayName("A leave manager only sees the people they supervise")
+		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED, SEED_LEAVE_TYPE, SEED_POLICY, SEED_HALF_DAY_LEAVE_TODAY,
+				SEED_SECOND_HALF_DAY_LEAVE_TODAY, SEED_APPROVED_LEAVE_TODAY_FOR_EMPLOYEES_1_AND_4,
+				USER3_LEAVE_MANAGER })
+		void getEmployeesOnLeaveTodayByTeam_LeaveManager_ScopedToSupervisees() throws Exception {
+			performGetOnLeaveByTeam(leaveManagerToken()).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].onLeaveCount").value(1))
+				.andExpect(jsonPath("$.results[0].onlineCount").value(0))
+				.andExpect(jsonPath("$.results[0].employees", hasSize(1)))
+				.andExpect(jsonPath("$.results[0].employees[0].employee.employeeId").value(2))
+				.andExpect(jsonPath("$.results[0].employees[0].leaveRequests", hasSize(2)));
+		}
+
+		@Test
+		@DisplayName("Returns the holiday and no employees when today is a holiday")
+		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED, SEED_LEAVE_TYPE, SEED_POLICY, SEED_HALF_DAY_LEAVE_TODAY,
+				SEED_HOLIDAY_TODAY })
+		void getEmployeesOnLeaveTodayByTeam_Holiday_ReturnsNonWorkingDay() throws Exception {
+			performGetOnLeaveByTeam(leaveAdminToken()).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].isNonWorkingDay").value(true))
+				.andExpect(jsonPath("$.results[0].holidays", hasSize(1)))
+				.andExpect(jsonPath("$.results[0].holidays[0].name").value("Founders Day"))
+				.andExpect(jsonPath("$.results[0].onLeaveCount").doesNotExist())
+				.andExpect(jsonPath("$.results[0].employees").doesNotExist());
+		}
+
+		@Test
+		@DisplayName("Returns a day off and no employees when today is not a working day")
+		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED, SEED_LEAVE_TYPE, SEED_POLICY, SEED_HALF_DAY_LEAVE_TODAY,
+				REMOVE_WEDNESDAY_FROM_WORKING_DAYS })
+		void getEmployeesOnLeaveTodayByTeam_NonWorkingDay_ReturnsDayOff() throws Exception {
+			performGetOnLeaveByTeam(leaveAdminToken()).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].isNonWorkingDay").value(true))
+				.andExpect(jsonPath("$.results[0].holidays", hasSize(1)))
+				.andExpect(jsonPath("$.results[0].holidays[0].name").value("Day Off!"))
+				.andExpect(jsonPath("$.results[0].onLeaveCount").doesNotExist())
+				.andExpect(jsonPath("$.results[0].employees").doesNotExist());
+		}
+
+		@Test
+		@DisplayName("Returns bad request when leave policies are not enabled")
+		@Sql(statements = { SEED_LEAVE_TYPE, SEED_POLICY, SEED_HALF_DAY_LEAVE_TODAY })
+		void getEmployeesOnLeaveTodayByTeam_LeavePoliciesDisabled_ReturnsBadRequest() throws Exception {
+			performGetOnLeaveByTeam(leaveAdminToken()).andDo(print()).andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Returns forbidden for a leave employee")
+		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED, USER2_LEAVE_EMPLOYEE })
+		void getEmployeesOnLeaveTodayByTeam_LeaveEmployee_ReturnsForbidden() throws Exception {
+			performGetOnLeaveByTeam(leaveEmployeeToken()).andDo(print()).andExpect(status().isForbidden());
 		}
 
 	}

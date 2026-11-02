@@ -37,6 +37,8 @@ import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestFilter
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestUpdateDto;
 import com.skapp.community.leaveplanner.payload.response.EmployeePolicyBalanceResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveNotificationNudgeResponseDto;
+import com.skapp.community.leaveplanner.payload.response.PolicyEmployeeOnLeaveResponseDto;
+import com.skapp.community.leaveplanner.payload.response.PolicyEmployeesOnLeaveByTeamResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyEmployeesOnLeaveResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveAvailabilityResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveRequestResponseDto;
@@ -88,6 +90,7 @@ import java.time.LocalDate;
 import java.time.MonthDay;
 import java.time.Year;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -96,11 +99,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class PolicyLeaveServiceImpl implements PolicyLeaveService {
+
+	private static final Comparator<PolicyEmployeeOnLeaveResponseDto> EMPLOYEE_NAME_ORDER = Comparator
+		.comparing((PolicyEmployeeOnLeaveResponseDto employeeOnLeave) -> employeeOnLeave.getEmployee().getFirstName(),
+				Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER))
+		.thenComparing(employeeOnLeave -> employeeOnLeave.getEmployee().getLastName(),
+				Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER))
+		.thenComparing(employeeOnLeave -> employeeOnLeave.getEmployee().getEmployeeId());
 
 	private final TimeZoneService timeZoneService;
 
@@ -424,30 +435,44 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 		LocalDate today = timeZoneService.currentOrganizationDate();
 		PolicyEmployeesOnLeaveResponseDto responseDto = new PolicyEmployeesOnLeaveResponseDto();
-		responseDto.setDate(today);
-
-		List<HolidayResponseDto> nonWorkingDays = resolveNonWorkingDays(today);
-		if (!nonWorkingDays.isEmpty()) {
-			responseDto.setIsNonWorkingDay(true);
-			responseDto.setHolidays(nonWorkingDays);
+		if (populateNonWorkingDay(responseDto, today)) {
 			log.info("getEmployeesOnLeaveToday: execution ended on a non-working day");
 			return new ResponseEntityDto(false, responseDto);
 		}
 
-		User currentUser = userService.getCurrentUser();
-		Long supervisorEmployeeId = LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser) ? null
-				: currentUser.getEmployee().getEmployeeId();
+		Long supervisorEmployeeId = resolveOnLeaveSupervisorEmployeeId();
 		List<Long> teamIds = resolveTeamIds(filterDto.getTeamIds());
 
 		long onLeaveCount = policyLeaveRequestDao.countEmployeesOnApprovedLeaveOnDate(today, teamIds,
 				supervisorEmployeeId);
-		long employeeCount = policyLeaveRequestDao.countEmployeesInScope(teamIds, supervisorEmployeeId);
-
-		responseDto.setIsNonWorkingDay(false);
-		responseDto.setOnLeaveCount(onLeaveCount);
-		responseDto.setOnlineCount(employeeCount - onLeaveCount);
+		populateOnLeaveCounts(responseDto, onLeaveCount, teamIds, supervisorEmployeeId);
 
 		log.info("getEmployeesOnLeaveToday: execution ended");
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getEmployeesOnLeaveTodayByTeam(@NonNull PolicyEmployeesOnLeaveFilterDto filterDto) {
+		log.info("getEmployeesOnLeaveTodayByTeam: execution started");
+		requireLeavePoliciesEnabled();
+
+		LocalDate today = timeZoneService.currentOrganizationDate();
+		PolicyEmployeesOnLeaveByTeamResponseDto responseDto = new PolicyEmployeesOnLeaveByTeamResponseDto();
+		if (populateNonWorkingDay(responseDto, today)) {
+			log.info("getEmployeesOnLeaveTodayByTeam: execution ended on a non-working day");
+			return new ResponseEntityDto(false, responseDto);
+		}
+
+		Long supervisorEmployeeId = resolveOnLeaveSupervisorEmployeeId();
+		List<Long> teamIds = resolveTeamIds(filterDto.getTeamIds());
+
+		List<PolicyEmployeeOnLeaveResponseDto> employeesOnLeave = groupLeaveRequestsByEmployee(
+				policyLeaveRequestDao.findApprovedRequestsOnDate(today, teamIds, supervisorEmployeeId));
+		populateOnLeaveCounts(responseDto, employeesOnLeave.size(), teamIds, supervisorEmployeeId);
+		responseDto.setEmployees(employeesOnLeave);
+
+		log.info("getEmployeesOnLeaveTodayByTeam: execution ended");
 		return new ResponseEntityDto(false, responseDto);
 	}
 
@@ -502,6 +527,45 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		pageDto.setItems(
 				leaveMapper.policyLeaveRequestListToPolicyLeaveRequestResponseDtoList(leaveRequests.getContent()));
 		return pageDto;
+	}
+
+	private boolean populateNonWorkingDay(PolicyEmployeesOnLeaveResponseDto responseDto, LocalDate date) {
+		List<HolidayResponseDto> nonWorkingDays = resolveNonWorkingDays(date);
+		boolean isNonWorkingDay = !nonWorkingDays.isEmpty();
+
+		responseDto.setDate(date);
+		responseDto.setIsNonWorkingDay(isNonWorkingDay);
+		if (isNonWorkingDay) {
+			responseDto.setHolidays(nonWorkingDays);
+		}
+		return isNonWorkingDay;
+	}
+
+	private Long resolveOnLeaveSupervisorEmployeeId() {
+		User currentUser = userService.getCurrentUser();
+		return LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser) ? null
+				: currentUser.getEmployee().getEmployeeId();
+	}
+
+	private void populateOnLeaveCounts(PolicyEmployeesOnLeaveResponseDto responseDto, long onLeaveCount,
+			List<Long> teamIds, Long supervisorEmployeeId) {
+		long employeeCount = policyLeaveRequestDao.countEmployeesInScope(teamIds, supervisorEmployeeId);
+		responseDto.setOnLeaveCount(onLeaveCount);
+		responseDto.setOnlineCount(employeeCount - onLeaveCount);
+	}
+
+	private List<PolicyEmployeeOnLeaveResponseDto> groupLeaveRequestsByEmployee(
+			List<PolicyLeaveRequest> leaveRequests) {
+		Map<Long, List<PolicyLeaveRequest>> requestsByEmployeeId = leaveRequests.stream()
+			.collect(Collectors.groupingBy(leaveRequest -> leaveRequest.getEmployee().getEmployeeId(),
+					LinkedHashMap::new, Collectors.toList()));
+
+		return requestsByEmployeeId.values()
+			.stream()
+			.map(employeeRequests -> leaveMapper.employeeAndPolicyLeaveRequestsToPolicyEmployeeOnLeaveResponseDto(
+					employeeRequests.getFirst().getEmployee(), employeeRequests))
+			.sorted(EMPLOYEE_NAME_ORDER)
+			.toList();
 	}
 
 	private List<HolidayResponseDto> resolveNonWorkingDays(LocalDate date) {

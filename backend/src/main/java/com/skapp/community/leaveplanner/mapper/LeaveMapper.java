@@ -33,8 +33,10 @@ import com.skapp.community.leaveplanner.payload.response.LeaveRequestResponseDto
 import com.skapp.community.leaveplanner.payload.response.LeaveRequestWithEmployeeResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveTypeBasicDetailsResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveTypeResponseDto;
+import com.skapp.community.leaveplanner.payload.response.PolicyEmployeeOnLeaveResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveRequestResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeDetailResponseDto;
+import com.skapp.community.leaveplanner.payload.response.PolicyOnLeaveRequestResponseDto;
 import com.skapp.community.leaveplanner.payload.response.SummarizedLeaveEntitlementBalanceDto;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Holiday;
@@ -191,6 +193,21 @@ public interface LeaveMapper {
 			PolicyLeaveRequest policyLeaveRequest);
 
 	List<PolicyLeaveRequestResponseDto> policyLeaveRequestListToPolicyLeaveRequestResponseDtoList(
+			List<PolicyLeaveRequest> policyLeaveRequests);
+
+	@Mapping(target = "leaveRequestId", source = "id")
+	@Mapping(target = "policyId", source = "policy.id")
+	@Mapping(target = "policyName", source = "policy.name")
+	@Mapping(target = "leaveType", source = "policy.leaveType")
+	PolicyOnLeaveRequestResponseDto policyLeaveRequestToPolicyOnLeaveRequestResponseDto(
+			PolicyLeaveRequest policyLeaveRequest);
+
+	List<PolicyOnLeaveRequestResponseDto> policyLeaveRequestListToPolicyOnLeaveRequestResponseDtoList(
+			List<PolicyLeaveRequest> policyLeaveRequests);
+
+	@Mapping(target = "employee", source = "employee")
+	@Mapping(target = "leaveRequests", source = "policyLeaveRequests")
+	PolicyEmployeeOnLeaveResponseDto employeeAndPolicyLeaveRequestsToPolicyEmployeeOnLeaveResponseDto(Employee employee,
 			List<PolicyLeaveRequest> policyLeaveRequests);
 
 }

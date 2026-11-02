@@ -34,6 +34,8 @@ public interface PolicyLeaveService {
 
 	ResponseEntityDto getEmployeesOnLeaveToday(PolicyEmployeesOnLeaveFilterDto policyEmployeesOnLeaveFilterDto);
 
+	ResponseEntityDto getEmployeesOnLeaveTodayByTeam(PolicyEmployeesOnLeaveFilterDto policyEmployeesOnLeaveFilterDto);
+
 	Map<Long, PolicyLeaveBalanceDto> calculateBalancesForYear(Long employeeId, List<EmployeeLeavePolicy> assignments,
 			Integer year);
 
