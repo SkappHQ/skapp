@@ -85,6 +85,20 @@ public class PolicyLeaveController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Get the people on approved policy leave today with their leave requests",
+			description = "Today is the current date in the organization's timezone. Half day leave counts as on leave. "
+					+ "Leave admins see every active employee and managers see the people they supervise, "
+					+ "optionally narrowed to teams; a team id of -1 or no team ids means all teams. "
+					+ "Each employee appears once with all of today's approved requests, sorted by name. "
+					+ "On a holiday or non-working day the holidays are returned instead of the counts and employees")
+	@GetMapping("/on-leave/by-team")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_MANAGER')")
+	public ResponseEntity<ResponseEntityDto> getEmployeesOnLeaveTodayByTeam(
+			@Valid PolicyEmployeesOnLeaveFilterDto policyEmployeesOnLeaveFilterDto) {
+		ResponseEntityDto response = policyLeaveService.getEmployeesOnLeaveTodayByTeam(policyEmployeesOnLeaveFilterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	@Operation(summary = "Check availability against a policy before submitting",
 			description = "Real-time balance and date validation; reports the failure reason instead of erroring")
 	@PostMapping("/availability")

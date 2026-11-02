@@ -34,6 +34,8 @@ public interface PolicyLeaveRequestRepository {
 
 	long countEmployeesOnApprovedLeaveOnDate(LocalDate date, List<Long> teamIds, Long supervisorEmployeeId);
 
+	List<PolicyLeaveRequest> findApprovedRequestsOnDate(LocalDate date, List<Long> teamIds, Long supervisorEmployeeId);
+
 	long countEmployeesInScope(List<Long> teamIds, Long supervisorEmployeeId);
 
 }

@@ -201,14 +201,35 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 
 		List<Predicate> predicates = buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee, teamIds,
 				supervisorEmployeeId);
-		predicates.add(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.status), LeaveRequestStatus.APPROVED));
-		predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get(PolicyLeaveRequest_.startDate), date));
-		predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), date));
+		predicates.addAll(buildApprovedOnDatePredicates(criteriaBuilder, root, date));
 
 		criteriaQuery.select(criteriaBuilder.countDistinct(employee.get(Employee_.employeeId)))
 			.where(predicates.toArray(new Predicate[0]));
 
 		return entityManager.createQuery(criteriaQuery).getSingleResult();
+	}
+
+	@Override
+	public List<PolicyLeaveRequest> findApprovedRequestsOnDate(LocalDate date, List<Long> teamIds,
+			Long supervisorEmployeeId) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<PolicyLeaveRequest> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveRequest.class);
+		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
+		fetchPolicy(root);
+		root.fetch(PolicyLeaveRequest_.employee, JoinType.INNER);
+
+		List<Predicate> predicates = buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery,
+				root.join(PolicyLeaveRequest_.employee), teamIds, supervisorEmployeeId);
+		predicates.addAll(buildApprovedOnDatePredicates(criteriaBuilder, root, date));
+
+		criteriaQuery.select(root)
+			.distinct(true)
+			.where(predicates.toArray(new Predicate[0]))
+			.orderBy(criteriaBuilder.asc(root.get(PolicyLeaveRequest_.startDate)),
+					criteriaBuilder.asc(root.get(PolicyLeaveRequest_.id)));
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
 	@Override
@@ -289,6 +310,13 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		}
 
 		return predicates;
+	}
+
+	private List<Predicate> buildApprovedOnDatePredicates(CriteriaBuilder criteriaBuilder,
+			Root<PolicyLeaveRequest> root, LocalDate date) {
+		return List.of(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.status), LeaveRequestStatus.APPROVED),
+				criteriaBuilder.lessThanOrEqualTo(root.get(PolicyLeaveRequest_.startDate), date),
+				criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), date));
 	}
 
 	private List<Predicate> buildEmployeeScopePredicates(CriteriaBuilder criteriaBuilder,
