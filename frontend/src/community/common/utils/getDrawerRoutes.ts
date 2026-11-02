@@ -375,6 +375,13 @@ const getDrawerRoutes = ({
               return null;
             }
 
+            if (
+              subRoute.id === "4E" &&
+              process.env.NEXT_PUBLIC_CRM_ACTIVITIES_ENABLED !== "true"
+            ) {
+              return null;
+            }
+
             // Add notification count to "All Requests" if there are pending requests
             if (subRoute.id === "2B" && notificationLeaveCount > 0) {
               return {
