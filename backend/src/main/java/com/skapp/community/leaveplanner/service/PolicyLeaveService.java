@@ -7,6 +7,7 @@ import com.skapp.community.leaveplanner.payload.request.PolicyLeaveAvailabilityR
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestUpdateDto;
+import com.skapp.community.leaveplanner.payload.request.PolicyPendingLeaveCountFilterDto;
 
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,9 @@ public interface PolicyLeaveService {
 	ResponseEntityDto getCurrentUserPolicyLeaveRequests(PolicyLeaveRequestFilterDto policyLeaveRequestFilterDto);
 
 	ResponseEntityDto getSupervisedPolicyLeaveRequests(PolicyLeaveRequestFilterDto policyLeaveRequestFilterDto);
+
+	ResponseEntityDto getSupervisedPendingPolicyLeaveCount(
+			PolicyPendingLeaveCountFilterDto policyPendingLeaveCountFilterDto);
 
 	ResponseEntityDto getPolicyLeaveRequestById(Long id);
 

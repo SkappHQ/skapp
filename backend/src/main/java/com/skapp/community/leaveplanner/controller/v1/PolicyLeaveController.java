@@ -5,6 +5,7 @@ import com.skapp.community.leaveplanner.payload.request.PolicyLeaveAvailabilityR
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestUpdateDto;
+import com.skapp.community.leaveplanner.payload.request.PolicyPendingLeaveCountFilterDto;
 import com.skapp.community.leaveplanner.service.PolicyLeaveService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -68,6 +69,19 @@ public class PolicyLeaveController {
 	public ResponseEntity<ResponseEntityDto> getSupervisedPolicyLeaveRequests(
 			@Valid PolicyLeaveRequestFilterDto policyLeaveRequestFilterDto) {
 		ResponseEntityDto response = policyLeaveService.getSupervisedPolicyLeaveRequests(policyLeaveRequestFilterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get how many policy leave requests are waiting on the current user's approval",
+			description = "Counts the PENDING requests raised by the people the current user supervises, using the "
+					+ "same scope as the pending requests table, so the dashboard badge always matches its total. "
+					+ "Optionally narrowed to teams; a team id of -1 or no team ids means all teams")
+	@GetMapping("/requests/pending-count")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_MANAGER')")
+	public ResponseEntity<ResponseEntityDto> getSupervisedPendingPolicyLeaveCount(
+			@Valid PolicyPendingLeaveCountFilterDto policyPendingLeaveCountFilterDto) {
+		ResponseEntityDto response = policyLeaveService
+			.getSupervisedPendingPolicyLeaveCount(policyPendingLeaveCountFilterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

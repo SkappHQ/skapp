@@ -14,7 +14,10 @@ import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.EmployeeManager_;
+import com.skapp.community.peopleplanner.model.EmployeeTeam;
+import com.skapp.community.peopleplanner.model.EmployeeTeam_;
 import com.skapp.community.peopleplanner.model.Employee_;
+import com.skapp.community.peopleplanner.model.Team_;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.util.PeopleUtil;
 import jakarta.persistence.EntityManager;
@@ -29,6 +32,7 @@ import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -185,6 +189,33 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
+	@Override
+	public long countSupervisedPendingRequests(Long supervisorEmployeeId, List<Long> teamIds) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
+		Root<PolicyLeaveRequest> root = countQuery.from(PolicyLeaveRequest.class);
+		Join<PolicyLeaveRequest, Employee> employee = root.join(PolicyLeaveRequest_.employee);
+
+		List<Predicate> predicates = buildSupervisionPredicates(criteriaBuilder, employee,
+				employee.join(Employee_.user), supervisorEmployeeId);
+		predicates.add(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.status), LeaveRequestStatus.PENDING));
+
+		if (!CollectionUtils.isEmpty(teamIds)) {
+			Subquery<Long> teamMembers = countQuery.subquery(Long.class);
+			Root<EmployeeTeam> employeeTeam = teamMembers.from(EmployeeTeam.class);
+			teamMembers.select(employeeTeam.get(EmployeeTeam_.employee).get(Employee_.employeeId))
+				.where(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teamIds));
+
+			predicates.add(employee.get(Employee_.employeeId).in(teamMembers));
+		}
+
+		countQuery.select(criteriaBuilder.countDistinct(root.get(PolicyLeaveRequest_.id)))
+			.where(predicates.toArray(new Predicate[0]));
+
+		return entityManager.createQuery(countQuery).getSingleResult();
+	}
+
 	private void fetchPolicy(Root<PolicyLeaveRequest> root) {
 		Fetch<PolicyLeaveRequest, LeavePolicy> policy = root.fetch(PolicyLeaveRequest_.policy, JoinType.LEFT);
 		policy.fetch(LeavePolicy_.leaveType, JoinType.LEFT);
@@ -212,16 +243,8 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 	private List<Predicate> buildSupervisorPredicates(CriteriaBuilder criteriaBuilder, Root<PolicyLeaveRequest> root,
 			Join<PolicyLeaveRequest, Employee> employee, Long supervisorEmployeeId,
 			PolicyLeaveRequestFilterDto filterDto) {
-		List<Predicate> predicates = new ArrayList<>();
-
 		Join<Employee, User> user = employee.join(Employee_.user);
-		Join<Employee, EmployeeManager> employeeManagers = employee.join(Employee_.employeeManagers);
-		Join<EmployeeManager, Employee> supervisor = employeeManagers.join(EmployeeManager_.manager);
-
-		predicates.add(criteriaBuilder.equal(user.get(User_.isActive), true));
-		predicates.add(criteriaBuilder
-			.not(employee.get(Employee_.ACCOUNT_STATUS).in(AccountStatus.TERMINATED, AccountStatus.DELETED)));
-		predicates.add(criteriaBuilder.equal(supervisor.get(Employee_.employeeId), supervisorEmployeeId));
+		List<Predicate> predicates = buildSupervisionPredicates(criteriaBuilder, employee, user, supervisorEmployeeId);
 
 		if (!CollectionUtils.isEmpty(filterDto.getStatus())) {
 			predicates.add(root.get(PolicyLeaveRequest_.status).in(filterDto.getStatus()));
@@ -247,6 +270,21 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		if (filterDto.getSearchKeyword() != null && !filterDto.getSearchKeyword().trim().isEmpty()) {
 			predicates.add(findByEmailName(filterDto.getSearchKeyword().trim(), criteriaBuilder, employee, user));
 		}
+
+		return predicates;
+	}
+
+	private List<Predicate> buildSupervisionPredicates(CriteriaBuilder criteriaBuilder,
+			Join<PolicyLeaveRequest, Employee> employee, Join<Employee, User> user, Long supervisorEmployeeId) {
+		List<Predicate> predicates = new ArrayList<>();
+
+		Join<Employee, EmployeeManager> employeeManagers = employee.join(Employee_.employeeManagers);
+		Join<EmployeeManager, Employee> supervisor = employeeManagers.join(EmployeeManager_.manager);
+
+		predicates.add(criteriaBuilder.equal(user.get(User_.isActive), true));
+		predicates.add(criteriaBuilder
+			.not(employee.get(Employee_.ACCOUNT_STATUS).in(AccountStatus.TERMINATED, AccountStatus.DELETED)));
+		predicates.add(criteriaBuilder.equal(supervisor.get(Employee_.employeeId), supervisorEmployeeId));
 
 		return predicates;
 	}
