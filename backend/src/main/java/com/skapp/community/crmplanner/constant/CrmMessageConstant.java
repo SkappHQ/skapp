@@ -99,6 +99,7 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_ACTIVITY_CALL_CONTACT_REQUIRED("api.error.crm.activity.call-contact-required"),
 	CRM_ERROR_ACTIVITY_CALL_DURATION_INVALID("api.error.crm.activity.call-duration-invalid"),
 	CRM_ERROR_ACTIVITY_CALL_DEAL_COMPANY_MISMATCH("api.error.crm.activity.call-deal-company-mismatch"),
+	CRM_ERROR_ACTIVITY_TASK_PRIORITY_REQUIRED("api.error.crm.activity.task-priority-required"),
 	CRM_ERROR_ACTIVITY_MEETING_SUBJECT_REQUIRED("api.error.crm.activity.meeting-subject-required"),
 	CRM_ERROR_ACTIVITY_MEETING_DATE_REQUIRED("api.error.crm.activity.meeting-date-required"),
 	CRM_ERROR_ACTIVITY_MEETING_TIME_RANGE_INVALID("api.error.crm.activity.meeting-time-range-invalid"),

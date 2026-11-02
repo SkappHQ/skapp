@@ -10,6 +10,7 @@ import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.type.CrmActivityTaskPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageColors;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.peopleplanner.util.Validations;
@@ -396,6 +397,23 @@ public class CrmValidations {
 		Long contactCompanyId = contact.getCompany() != null ? contact.getCompany().getId() : null;
 		if (!Objects.equals(dealCompanyId, contactCompanyId)) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_DEAL_COMPANY_MISMATCH);
+		}
+	}
+
+	public static void validateActivityTaskPriority(CrmActivityTaskPriority priority) {
+		if (priority == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_TASK_PRIORITY_REQUIRED);
+		}
+	}
+
+	public static void validateActivityTaskDealMatchesContactCompany(CrmDeal deal, CrmContact contact) {
+		if (deal == null || contact == null) {
+			return;
+		}
+		Long dealCompanyId = deal.getCompany() != null ? deal.getCompany().getId() : null;
+		Long contactCompanyId = contact.getCompany() != null ? contact.getCompany().getId() : null;
+		if (!Objects.equals(dealCompanyId, contactCompanyId)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_DEAL_COMPANY_MISMATCH);
 		}
 	}
 

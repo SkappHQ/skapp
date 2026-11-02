@@ -97,4 +97,20 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 		return entityManager.createQuery(query).getResultList();
 	}
 
+	@Override
+	public CrmActivityTask findTaskById(Long id) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmActivityTask> query = cb.createQuery(CrmActivityTask.class);
+		Root<CrmActivityTask> task = query.from(CrmActivityTask.class);
+
+		task.fetch(CrmActivityTask_.contact, JoinType.LEFT);
+		task.fetch(CrmActivityTask_.deal, JoinType.LEFT);
+		task.fetch(CrmActivityTask_.company, JoinType.LEFT);
+
+		query.select(task)
+			.where(cb.equal(task.get(CrmActivityTask_.id), id), cb.isFalse(task.get(CrmActivityTask_.isDeleted)));
+
+		return entityManager.createQuery(query).getResultStream().findFirst().orElse(null);
+	}
+
 }
