@@ -23,7 +23,9 @@ import {
   PolicyLeaveRequestPayload,
   PolicyLeaveRequestQueryParams,
   PolicyLeaveRequestResponse,
-  PolicyLeaveRequestType
+  PolicyLeaveRequestType,
+  PolicyPendingLeaveCountResponse,
+  PolicyPendingLeaveCountType
 } from "~community/leave/types/PolicyLeaveTypes";
 import { getPolicyLeaveRequestQueryParams } from "~community/leave/utils/policyLeave/policyLeaveUtils";
 
@@ -44,6 +46,28 @@ export const useGetMyPolicyBalances = (
     queryKey: policyLeaveQueryKeys.MY_POLICY_BALANCES(year),
     queryFn: () => getMyPolicyBalances(year),
     enabled,
+    refetchOnWindowFocus: false
+  });
+};
+
+const getPolicyPendingLeaveCount = async (
+  teamId: number | string
+): Promise<PolicyPendingLeaveCountType> => {
+  const response = await authFetch.get<PolicyPendingLeaveCountResponse>(
+    policyLeaveEndPoints.GET_PENDING_LEAVE_COUNT,
+    { params: { teamIds: teamId } }
+  );
+  return response.data.results[0];
+};
+
+export const useGetPolicyPendingLeaveCount = (
+  teamId: number | string,
+  enabled = true
+): UseQueryResult<PolicyPendingLeaveCountType> => {
+  return useQuery({
+    queryKey: policyLeaveQueryKeys.PENDING_LEAVE_COUNT(teamId),
+    queryFn: () => getPolicyPendingLeaveCount(teamId),
+    enabled: enabled && teamId !== "",
     refetchOnWindowFocus: false
   });
 };
@@ -143,6 +167,9 @@ export const useApplyPolicyLeave = (
       });
       queryClient.invalidateQueries({
         queryKey: policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS(year)
+      });
+      queryClient.invalidateQueries({
+        queryKey: policyLeaveQueryKeys.ALL_PENDING_LEAVE_COUNT()
       });
       onSuccess(data);
     },

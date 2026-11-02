@@ -315,6 +315,14 @@ export const policyLeaveQueryKeys = {
     ...policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS(queryParams.year),
     "page",
     queryParams
+  ],
+  ALL_PENDING_LEAVE_COUNT: () => [
+    ...policyLeaveQueryKeys.ALL,
+    "pending-leave-count"
+  ],
+  PENDING_LEAVE_COUNT: (teamId: number | string) => [
+    ...policyLeaveQueryKeys.ALL_PENDING_LEAVE_COUNT(),
+    teamId
   ]
 };
 

@@ -19,16 +19,19 @@ import {
   useGetPendingLeavesData,
   useGetResourceAvailability
 } from "~community/leave/api/LeaveDashboard";
+import { useGetPolicyPendingLeaveCount } from "~community/leave/api/PolicyLeaveApi";
 import AvailabilityCalendarWidget from "~community/leave/components/molecules/AvailabilityCalendar/AvailabilityCalendarWidget";
 import AvailableChip from "~community/leave/components/molecules/LeaveDashboardChips/AvailableChip";
 import AwayChip from "~community/leave/components/molecules/LeaveDashboardChips/AwayChip";
 import HolidayChip from "~community/leave/components/molecules/LeaveDashboardChips/HolidayChip";
 import LeaveTypeBreakdownChart from "~community/leave/components/molecules/LeaveUtilizationGraph/LeaveTypeBreakdownChart";
+import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useLeaveStore } from "~community/leave/store/store";
 import {
   LeaveRequest,
   ResourceAvailabilityRecord
 } from "~community/leave/types/ResourceAvailabilityTypes";
+import { getNewPendingLeaveRequestCount } from "~community/leave/utils/dashboardUtils";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 
@@ -72,7 +75,19 @@ const LeaveDashboard = (): JSX.Element => {
     today,
     isFetchingEnabled
   );
-  const { data: pendingLeaves } = useGetPendingLeavesData(teamId);
+
+  const { isLeavePoliciesEnabled, isLoading: isPolicyConfigLoading } =
+    useLeavePoliciesEnabled();
+
+  const { data: pendingLeaves } = useGetPendingLeavesData(
+    teamId,
+    !isPolicyConfigLoading && !isLeavePoliciesEnabled
+  );
+
+  const { data: policyPendingLeaveCount } = useGetPolicyPendingLeaveCount(
+    teamId,
+    isFetchingEnabled && isLeavePoliciesEnabled
+  );
 
   const { data: absenceRate } = useGetAbsenceRate(teamId, isFetchingEnabled);
   const {
@@ -86,8 +101,17 @@ const LeaveDashboard = (): JSX.Element => {
     triggerOnMount: true
   });
 
-  const newPendingRequests =
-    pendingLeaves?.[0]?.items?.length - viewedPendingLeaveCount;
+  const pendingLeaveCount: number | undefined = isLeavePoliciesEnabled
+    ? policyPendingLeaveCount?.pendingCount
+    : pendingLeaves?.[0]?.items?.length;
+
+  const isPendingLeavesExpandable =
+    !isPolicyConfigLoading && !!pendingLeaveCount;
+
+  const newPendingRequests = getNewPendingLeaveRequestCount(
+    pendingLeaveCount,
+    viewedPendingLeaveCount
+  );
 
   const todaysAwayEmployees: LeaveRequest[] =
     todaysResourceAvailability?.find(
@@ -99,6 +123,12 @@ const LeaveDashboard = (): JSX.Element => {
     setOnLeaveModalTitle(availabilityModalText(["awayToday"]));
     setIsOnLeaveModalOpen(true);
     setIsManagerModal(true);
+  };
+
+  const handlePendingLeavesExpand = (): void => {
+    setPendingLeaveCount(pendingLeaveCount ?? 0);
+    setViewedPendingLeaveCount(pendingLeaveCount ?? 0);
+    router.replace(ROUTES.LEAVE.LEAVE_PENDING);
   };
 
   useEffect(() => {
@@ -188,21 +218,17 @@ const LeaveDashboard = (): JSX.Element => {
         <Grid sx={{ width: { xs: "100%", md: "32.5%" } }}>
           <AnalyticCard
             title={translateText(["pendingLeaves"]) ?? ""}
-            isExpandable={pendingLeaves?.[0]?.items?.length > 0}
-            onExpand={() => {
-              (setPendingLeaveCount(pendingLeaves?.[0]?.items?.length),
-                setViewedPendingLeaveCount(pendingLeaves?.[0]?.items?.length),
-                router.replace(ROUTES.LEAVE.LEAVE_PENDING));
-            }}
+            isExpandable={isPendingLeavesExpandable}
+            onExpand={handlePendingLeavesExpand}
             accessibility={{
               tabIndex: 0,
               role: "button"
             }}
           >
-            {pendingLeaves?.[0]?.items?.length > 0 ? (
+            {isPolicyConfigLoading ? null : isPendingLeavesExpandable ? (
               <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                 <Typography sx={classes.analytic}>
-                  {pendingLeaves?.[0]?.items?.length}
+                  {pendingLeaveCount}
                 </Typography>
                 {newPendingRequests > 0 && (
                   <Stack

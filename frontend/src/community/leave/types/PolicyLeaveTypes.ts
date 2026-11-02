@@ -140,6 +140,14 @@ export interface PolicyLeaveRequestPageResponse {
   results: PolicyLeaveRequestPageType[];
 }
 
+export interface PolicyPendingLeaveCountType {
+  pendingCount: number;
+}
+
+export interface PolicyPendingLeaveCountResponse {
+  results: PolicyPendingLeaveCountType[];
+}
+
 export interface PolicyLeaveRequestQueryParams {
   page: number;
   size: number;
