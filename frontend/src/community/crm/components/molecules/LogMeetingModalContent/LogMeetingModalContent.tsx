@@ -102,6 +102,24 @@ const LogMeetingModalContent: FC<Props> = ({ onClose }) => {
   const handleSuccess = (): void => {
     setSubmitting(false);
     onClose();
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateText([
+        "activities",
+        "logMeeting",
+        "modal",
+        "toastMessages",
+        "addSuccessTitle"
+      ]),
+      description: translateText([
+        "activities",
+        "logMeeting",
+        "modal",
+        "toastMessages",
+        "addSuccessDescription"
+      ])
+    });
   };
 
   const handleError = (): void => {

@@ -683,6 +683,7 @@
     },
     "toolbar": {
       "logCallBtn": "Log a call",
+      "logMeetingBtn": "Log a meeting",
       "search": {
         "label": "Search activities",
         "resultCount_one": "{{count}} activity found",
@@ -720,8 +721,7 @@
         },
         "reset": "Reset filters",
         "apply": "Apply filters"
-      },
-      "logMeetingBtn": "Log a meeting"
+      }
     },
     "logMeeting": {
       "modal": {
@@ -737,6 +737,8 @@
           "attendees": "Attendees"
         },
         "toastMessages": {
+          "addSuccessTitle": "Meeting added successfully",
+          "addSuccessDescription": "Meeting has been added successfully",
           "errorDescription": "Failed to save meeting"
         },
         "notices": {
