@@ -6,6 +6,7 @@ import com.skapp.community.leaveplanner.payload.request.PolicyLeaveAvailabilityR
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestUpdateDto;
+import com.skapp.community.leaveplanner.payload.request.PolicyResourceAvailabilityFilterDto;
 import com.skapp.community.leaveplanner.service.PolicyLeaveService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -82,6 +83,21 @@ public class PolicyLeaveController {
 	public ResponseEntity<ResponseEntityDto> getEmployeesOnLeaveToday(
 			@Valid PolicyEmployeesOnLeaveFilterDto policyEmployeesOnLeaveFilterDto) {
 		ResponseEntityDto response = policyLeaveService.getEmployeesOnLeaveToday(policyEmployeesOnLeaveFilterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get team availability for each day in a date range",
+			description = "One entry per day between the start and end dates, both inclusive, with the approved "
+					+ "policy leave on that day, how many people are on leave and how many are available. "
+					+ "Half day leave counts as on leave for that day. Holidays and non-working days are flagged "
+					+ "and listed in the holidays. Leave admins see every active employee; everyone else sees the "
+					+ "people they supervise and the members of their own teams, optionally narrowed to teams. "
+					+ "A team id of -1 or no team ids means all teams. The range can cover at most 62 days")
+	@GetMapping("/resource-availability")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE', 'ROLE_PM_GUEST_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> getResourceAvailability(
+			@Valid PolicyResourceAvailabilityFilterDto policyResourceAvailabilityFilterDto) {
+		ResponseEntityDto response = policyLeaveService.getResourceAvailability(policyResourceAvailabilityFilterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

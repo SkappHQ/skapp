@@ -87,6 +87,26 @@ class PolicyLeaveControllerIntegrationTest {
 
 	private static final String REMOVE_WEDNESDAY_FROM_WORKING_DAYS = "DELETE FROM time_config WHERE day_of_week = 'WEDNESDAY'";
 
+	private static final String RANGE_START = "2025-06-09";
+
+	private static final String RANGE_END = "2025-06-15";
+
+	private static final String SEED_LEAVES_CROSSING_RANGE_BOUNDARIES = "INSERT INTO lv_leave_request (id, employee_id, policy_id, start_date, end_date, leave_state, status, duration_days) VALUES "
+			+ "(981, 4, 500, '2025-06-05', '2025-06-10', 'FULLDAY', 'APPROVED', 4), "
+			+ "(982, 5, 500, '2025-06-14', '2025-06-20', 'FULLDAY', 'APPROVED', 5)";
+
+	private static final String SEED_LEAVES_OUTSIDE_RANGE = "INSERT INTO lv_leave_request (id, employee_id, policy_id, start_date, end_date, leave_state, status, duration_days) VALUES "
+			+ "(983, 4, 500, '2025-06-02', '2025-06-08', 'FULLDAY', 'APPROVED', 5), "
+			+ "(984, 5, 500, '2025-06-16', '2025-06-17', 'FULLDAY', 'APPROVED', 2)";
+
+	private static final String SEED_HOLIDAY_IN_RANGE = "INSERT INTO holiday (id, date, name, holiday_duration, is_active) "
+			+ "VALUES (default, '2025-06-10', 'Founders Day', 'FULL_DAY', true)";
+
+	private static final String REMOVE_SATURDAY_FROM_WORKING_DAYS = "DELETE FROM time_config WHERE day_of_week = 'SATURDAY'";
+
+	private static final String SEED_TEAMS_FOR_EMPLOYEE_2 = "INSERT INTO employee_team (id, team_id, employee_id, is_supervisor) VALUES "
+			+ "(default, 2, 2, false), (default, 2, 4, false), (default, 3, 5, false)";
+
 	private final AuthorityService authorityService;
 
 	private final JwtService jwtService;
@@ -121,6 +141,15 @@ class PolicyLeaveControllerIntegrationTest {
 
 	private ResultActions performGetOnLeave(String authToken, String... teamIds) throws Exception {
 		return mvc.perform(get(ENDPOINT + "/on-leave").param("teamIds", teamIds)
+			.accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(authToken)));
+	}
+
+	private ResultActions performGetResourceAvailability(String authToken, String startDate, String endDate,
+			String... teamIds) throws Exception {
+		return mvc.perform(get(ENDPOINT + "/resource-availability").param("startDate", startDate)
+			.param("endDate", endDate)
+			.param("teamIds", teamIds)
 			.accept(MediaType.APPLICATION_JSON)
 			.with(SecurityTestUtils.bearerToken(authToken)));
 	}
@@ -266,6 +295,199 @@ class PolicyLeaveControllerIntegrationTest {
 		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED, USER2_LEAVE_EMPLOYEE })
 		void getEmployeesOnLeaveToday_LeaveEmployee_ReturnsForbidden() throws Exception {
 			performGetOnLeave(leaveEmployeeToken()).andDo(print()).andExpect(status().isForbidden());
+		}
+
+	}
+
+	@Nested
+	@DisplayName("Get Resource Availability")
+	class GetResourceAvailabilityTests {
+
+		@Test
+		@DisplayName("Returns one entry per day, inclusive of both range dates")
+		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED })
+		void getResourceAvailability_ValidRange_ReturnsEveryDay() throws Exception {
+			performGetResourceAvailability(leaveAdminToken(), RANGE_START, RANGE_END).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath("$.results", hasSize(7)))
+				.andExpect(jsonPath("$.results[0].date").value(RANGE_START))
+				.andExpect(jsonPath("$.results[0].dayOfWeek").value("MONDAY"))
+				.andExpect(jsonPath("$.results[0].isNonWorkingDay").value(false))
+				.andExpect(jsonPath("$.results[0].leaveCount").value(0))
+				.andExpect(jsonPath("$.results[0].availableCount").value(5))
+				.andExpect(jsonPath("$.results[0].leaveRequests", hasSize(0)))
+				.andExpect(jsonPath("$.results[6].date").value(RANGE_END));
+		}
+
+		@Test
+		@DisplayName("Shows multi day leave on the days it overlaps, including leave crossing the range boundaries")
+		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED, SEED_LEAVE_TYPE, SEED_POLICY,
+				SEED_LEAVES_CROSSING_RANGE_BOUNDARIES, SEED_MULTI_DAY_LEAVE_SPANNING_TODAY, SEED_LEAVES_OUTSIDE_RANGE })
+		void getResourceAvailability_MultiDayLeave_ShownOnOverlappingDays() throws Exception {
+			performGetResourceAvailability(leaveAdminToken(), RANGE_START, RANGE_END).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].leaveCount").value(2))
+				.andExpect(jsonPath("$.results[0].availableCount").value(3))
+				.andExpect(jsonPath("$.results[1].leaveCount").value(2))
+				.andExpect(jsonPath("$.results[2].leaveCount").value(1))
+				.andExpect(jsonPath("$.results[2].leaveRequests[0].leaveRequestId").value(972))
+				.andExpect(jsonPath("$.results[2].leaveRequests[0].employee.employeeId").value(3))
+				.andExpect(jsonPath("$.results[2].leaveRequests[0].policyName").value("Annual Policy"))
+				.andExpect(jsonPath("$.results[2].leaveRequests[0].leaveType.name").value("PolicyAnnual"))
+				.andExpect(jsonPath("$.results[2].leaveRequests[0].leaveType.colorCode").value("#FFC107"))
+				.andExpect(jsonPath("$.results[2].leaveRequests[0].leaveType.emojiCode").value("U+1F3D6"))
+				.andExpect(jsonPath("$.results[2].leaveRequests[0].startDate").value("2025-06-09"))
+				.andExpect(jsonPath("$.results[2].leaveRequests[0].endDate").value("2025-06-13"))
+				.andExpect(jsonPath("$.results[2].leaveRequests[0].leaveState").value("FULLDAY"))
+				.andExpect(jsonPath("$.results[5].leaveCount").value(1))
+				.andExpect(jsonPath("$.results[5].leaveRequests[0].leaveRequestId").value(982))
+				.andExpect(jsonPath("$.results[6].leaveCount").value(1))
+				.andExpect(jsonPath("$.results[6].availableCount").value(4));
+		}
+
+		@Test
+		@DisplayName("Counts an employee with two half days on the same day once and lists both requests")
+		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED, SEED_LEAVE_TYPE, SEED_POLICY, SEED_HALF_DAY_LEAVE_TODAY,
+				SEED_SECOND_HALF_DAY_LEAVE_TODAY })
+		void getResourceAvailability_HalfDays_CountedAsOnLeave() throws Exception {
+			performGetResourceAvailability(leaveAdminToken(), RANGE_START, RANGE_END).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[1].leaveCount").value(0))
+				.andExpect(jsonPath("$.results[2].leaveCount").value(1))
+				.andExpect(jsonPath("$.results[2].availableCount").value(4))
+				.andExpect(jsonPath("$.results[2].leaveRequests", hasSize(2)))
+				.andExpect(jsonPath("$.results[2].leaveRequests[0].leaveState").value("HALFDAY_MORNING"))
+				.andExpect(jsonPath("$.results[2].leaveRequests[1].leaveState").value("HALFDAY_EVENING"))
+				.andExpect(jsonPath("$.results[3].leaveCount").value(0));
+		}
+
+		@Test
+		@DisplayName("Flags holidays and non-working days and lists them in the holidays")
+		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED, SEED_LEAVE_TYPE, SEED_POLICY,
+				SEED_LEAVES_CROSSING_RANGE_BOUNDARIES, SEED_HOLIDAY_IN_RANGE, REMOVE_SATURDAY_FROM_WORKING_DAYS })
+		void getResourceAvailability_HolidaysAndNonWorkingDays_Flagged() throws Exception {
+			performGetResourceAvailability(leaveAdminToken(), RANGE_START, RANGE_END).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].isNonWorkingDay").value(false))
+				.andExpect(jsonPath("$.results[0].holidays", hasSize(0)))
+				.andExpect(jsonPath("$.results[1].isNonWorkingDay").value(true))
+				.andExpect(jsonPath("$.results[1].holidays", hasSize(1)))
+				.andExpect(jsonPath("$.results[1].holidays[0].name").value("Founders Day"))
+				.andExpect(jsonPath("$.results[1].leaveCount").value(1))
+				.andExpect(jsonPath("$.results[5].dayOfWeek").value("SATURDAY"))
+				.andExpect(jsonPath("$.results[5].isNonWorkingDay").value(true))
+				.andExpect(jsonPath("$.results[5].holidays", hasSize(1)))
+				.andExpect(jsonPath("$.results[5].holidays[0].name").value("Day Off!"))
+				.andExpect(jsonPath("$.results[6].isNonWorkingDay").value(false));
+		}
+
+		@Test
+		@DisplayName("Excludes pending, cancelled, denied and revoked requests")
+		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED, SEED_LEAVE_TYPE, SEED_POLICY, SEED_UNAPPROVED_LEAVE_TODAY })
+		void getResourceAvailability_UnapprovedRequests_Excluded() throws Exception {
+			performGetResourceAvailability(leaveAdminToken(), RANGE_START, RANGE_END).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[1].leaveCount").value(0))
+				.andExpect(jsonPath("$.results[1].leaveRequests", hasSize(0)))
+				.andExpect(jsonPath("$.results[2].leaveCount").value(0))
+				.andExpect(jsonPath("$.results[2].availableCount").value(5))
+				.andExpect(jsonPath("$.results[2].leaveRequests", hasSize(0)))
+				.andExpect(jsonPath("$.results[3].leaveCount").value(0));
+		}
+
+		@Test
+		@DisplayName("Narrows the leave and the counts to the requested teams")
+		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED, SEED_LEAVE_TYPE, SEED_POLICY,
+				SEED_APPROVED_LEAVE_TODAY_FOR_EMPLOYEES_1_AND_4 })
+		void getResourceAvailability_TeamFilter_NarrowsToTeamMembers() throws Exception {
+			performGetResourceAvailability(leaveAdminToken(), RANGE_START, RANGE_END, "1").andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[2].leaveCount").value(1))
+				.andExpect(jsonPath("$.results[2].availableCount").value(0))
+				.andExpect(jsonPath("$.results[2].leaveRequests", hasSize(1)))
+				.andExpect(jsonPath("$.results[2].leaveRequests[0].employee.employeeId").value(1));
+		}
+
+		@Test
+		@DisplayName("Treats a team id of -1 as all teams")
+		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED, SEED_LEAVE_TYPE, SEED_POLICY,
+				SEED_APPROVED_LEAVE_TODAY_FOR_EMPLOYEES_1_AND_4 })
+		void getResourceAvailability_AllTeams_ReturnsOrganizationCounts() throws Exception {
+			performGetResourceAvailability(leaveAdminToken(), RANGE_START, RANGE_END, "-1").andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[2].leaveCount").value(2))
+				.andExpect(jsonPath("$.results[2].availableCount").value(3));
+		}
+
+		@Test
+		@DisplayName("A leave employee sees the members of their own teams")
+		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED, SEED_LEAVE_TYPE, SEED_POLICY,
+				SEED_LEAVES_CROSSING_RANGE_BOUNDARIES, USER2_LEAVE_EMPLOYEE, SEED_TEAMS_FOR_EMPLOYEE_2 })
+		void getResourceAvailability_LeaveEmployee_ScopedToOwnTeams() throws Exception {
+			performGetResourceAvailability(leaveEmployeeToken(), RANGE_START, RANGE_END, "2").andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].leaveCount").value(1))
+				.andExpect(jsonPath("$.results[0].availableCount").value(1))
+				.andExpect(jsonPath("$.results[0].leaveRequests[0].employee.employeeId").value(4))
+				.andExpect(jsonPath("$.results[5].leaveCount").value(0))
+				.andExpect(jsonPath("$.results[5].availableCount").value(2));
+		}
+
+		@Test
+		@DisplayName("A leave employee sees nobody in a team they do not belong to")
+		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED, SEED_LEAVE_TYPE, SEED_POLICY,
+				SEED_LEAVES_CROSSING_RANGE_BOUNDARIES, USER2_LEAVE_EMPLOYEE, SEED_TEAMS_FOR_EMPLOYEE_2 })
+		void getResourceAvailability_LeaveEmployeeOtherTeam_ReturnsNobody() throws Exception {
+			performGetResourceAvailability(leaveEmployeeToken(), RANGE_START, RANGE_END, "3").andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[5].leaveCount").value(0))
+				.andExpect(jsonPath("$.results[5].availableCount").value(0))
+				.andExpect(jsonPath("$.results[5].leaveRequests", hasSize(0)));
+		}
+
+		@Test
+		@DisplayName("Accepts a range of exactly 62 days")
+		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED })
+		void getResourceAvailability_MaximumRange_ReturnsEveryDay() throws Exception {
+			performGetResourceAvailability(leaveAdminToken(), "2025-06-01", "2025-08-01").andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results", hasSize(62)));
+		}
+
+		@Test
+		@DisplayName("Returns bad request when the range is longer than 62 days")
+		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED })
+		void getResourceAvailability_RangeTooLong_ReturnsBadRequest() throws Exception {
+			performGetResourceAvailability(leaveAdminToken(), "2025-06-01", "2025-08-02").andDo(print())
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Returns bad request when the end date is before the start date")
+		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED })
+		void getResourceAvailability_EndBeforeStart_ReturnsBadRequest() throws Exception {
+			performGetResourceAvailability(leaveAdminToken(), RANGE_END, RANGE_START).andDo(print())
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Returns bad request when a date is missing")
+		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED })
+		void getResourceAvailability_MissingDate_ReturnsBadRequest() throws Exception {
+			mvc.perform(get(ENDPOINT + "/resource-availability").param("startDate", RANGE_START)
+				.accept(MediaType.APPLICATION_JSON)
+				.with(SecurityTestUtils.bearerToken(leaveAdminToken())))
+				.andDo(print())
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Returns bad request when leave policies are not enabled")
+		@Sql(statements = { SEED_LEAVE_TYPE, SEED_POLICY, SEED_HALF_DAY_LEAVE_TODAY })
+		void getResourceAvailability_LeavePoliciesDisabled_ReturnsBadRequest() throws Exception {
+			performGetResourceAvailability(leaveAdminToken(), RANGE_START, RANGE_END).andDo(print())
+				.andExpect(status().isBadRequest());
 		}
 
 	}

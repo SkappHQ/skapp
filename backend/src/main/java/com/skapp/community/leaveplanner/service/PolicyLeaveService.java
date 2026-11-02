@@ -8,6 +8,7 @@ import com.skapp.community.leaveplanner.payload.request.PolicyLeaveAvailabilityR
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestUpdateDto;
+import com.skapp.community.leaveplanner.payload.request.PolicyResourceAvailabilityFilterDto;
 
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,8 @@ public interface PolicyLeaveService {
 	ResponseEntityDto getPolicyLeaveRequestNudgeStatus(Long id);
 
 	ResponseEntityDto getEmployeesOnLeaveToday(PolicyEmployeesOnLeaveFilterDto policyEmployeesOnLeaveFilterDto);
+
+	ResponseEntityDto getResourceAvailability(PolicyResourceAvailabilityFilterDto policyResourceAvailabilityFilterDto);
 
 	Map<Long, PolicyLeaveBalanceDto> calculateBalancesForYear(Long employeeId, List<EmployeeLeavePolicy> assignments,
 			Integer year);
