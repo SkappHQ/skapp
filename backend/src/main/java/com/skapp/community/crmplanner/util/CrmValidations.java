@@ -23,6 +23,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -433,6 +434,30 @@ public class CrmValidations {
 					contact.getCompany() != null ? contact.getCompany().getId() : null));
 		if (!isCompanyMatched) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_MEETING_DEAL_COMPANY_MISMATCH);
+		}
+	}
+
+	public static void validateEmailSubject(String subject) {
+		if (subject == null || subject.isBlank()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_EMAIL_SUBJECT_REQUIRED);
+		}
+	}
+
+	public static void validateEmailLoggedAt(Instant loggedAt) {
+		if (loggedAt == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_EMAIL_LOGGED_AT_REQUIRED);
+		}
+	}
+
+	public static void validateEmailRecipientIds(List<Long> toIds, List<Long> ccIds, List<Long> bccIds) {
+		if (toIds == null || toIds.isEmpty()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_EMAIL_TO_REQUIRED);
+		}
+		List<Long> contactIds = new ArrayList<>(toIds);
+		contactIds.addAll(ccIds);
+		contactIds.addAll(bccIds);
+		if (new HashSet<>(contactIds).size() != contactIds.size()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_EMAIL_RECIPIENTS_DUPLICATE);
 		}
 	}
 

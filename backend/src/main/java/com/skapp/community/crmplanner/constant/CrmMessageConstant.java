@@ -106,7 +106,14 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_ACTIVITY_MEETING_ATTENDEES_DUPLICATE("api.error.crm.activity.meeting-attendees-duplicate"),
 	CRM_ERROR_ACTIVITY_MEETING_DEAL_COMPANY_MISMATCH("api.error.crm.activity.meeting-deal-company-mismatch"),
 	CRM_ERROR_ACTIVITY_MEETING_NOT_FOUND("api.error.crm.activity.meeting-not-found"),
-	CRM_ERROR_ACTIVITY_MEETING_VIEW_DENIED("api.error.crm.activity.meeting-view-denied");
+	CRM_ERROR_ACTIVITY_MEETING_VIEW_DENIED("api.error.crm.activity.meeting-view-denied"),
+	CRM_ERROR_ACTIVITY_EMAIL_NOT_FOUND("api.error.crm.activity.email-not-found"),
+	CRM_ERROR_ACTIVITY_EMAIL_VIEW_DENIED("api.error.crm.activity.email-view-denied"),
+	CRM_ERROR_ACTIVITY_EMAIL_EDIT_DENIED("api.error.crm.activity.email-edit-denied"),
+	CRM_ERROR_ACTIVITY_EMAIL_SUBJECT_REQUIRED("api.error.crm.activity.email-subject-required"),
+	CRM_ERROR_ACTIVITY_EMAIL_LOGGED_AT_REQUIRED("api.error.crm.activity.email-logged-at-required"),
+	CRM_ERROR_ACTIVITY_EMAIL_TO_REQUIRED("api.error.crm.activity.email-to-required"),
+	CRM_ERROR_ACTIVITY_EMAIL_RECIPIENTS_DUPLICATE("api.error.crm.activity.email-recipients-duplicate");
 
 	private final String messageKey;
 

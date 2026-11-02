@@ -139,4 +139,20 @@ public class CrmActivityEmailRepositoryImpl implements CrmActivityEmailRepositor
 		return emails;
 	}
 
+	@Override
+	public CrmActivityEmail findEmailById(Long id) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmActivityEmail> query = cb.createQuery(CrmActivityEmail.class);
+		Root<CrmActivityEmail> email = query.from(CrmActivityEmail.class);
+
+		email.fetch(CrmActivityEmail_.contacts, JoinType.LEFT).fetch(CrmActivityEmailContact_.contact, JoinType.LEFT);
+		email.fetch(CrmActivityEmail_.deal, JoinType.LEFT);
+		email.fetch(CrmActivityEmail_.company, JoinType.LEFT);
+
+		query.select(email)
+			.where(cb.equal(email.get(CrmActivityEmail_.id), id), cb.isFalse(email.get(CrmActivityEmail_.isDeleted)));
+
+		return entityManager.createQuery(query).getResultStream().findFirst().orElse(null);
+	}
+
 }
