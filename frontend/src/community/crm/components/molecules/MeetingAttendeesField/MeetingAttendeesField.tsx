@@ -61,7 +61,6 @@ const MeetingAttendeesField: FC<Props> = ({
   );
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [hasFilledRelatedTo, setHasFilledRelatedTo] = useState(false);
 
   const { isSearchActive, lookupItems, dropdownItems } =
     useContactLookup(searchTerm);
@@ -94,11 +93,6 @@ const MeetingAttendeesField: FC<Props> = ({
     setContacts(updateContactRecord(contacts, [contact]));
     setFieldValue("contactIds", [...values.contactIds, contact.id], true);
     clearMismatchedDeal([...attendees, contact]);
-
-    if (!hasFilledRelatedTo && !values.companyId && contact.companyId) {
-      setFieldValue("companyId", contact.companyId);
-      setHasFilledRelatedTo(true);
-    }
   };
 
   const handleRemove = (contactId: number): void => {
