@@ -1,3 +1,4 @@
+import { daysTypes } from "~community/common/constants/stringConstants";
 import {
   LeaveStates,
   SortKeyTypes,
@@ -158,6 +159,45 @@ export interface PolicyEmployeesOnLeaveType {
 
 export interface PolicyEmployeesOnLeaveResponse {
   results: PolicyEmployeesOnLeaveType[];
+}
+
+export interface PolicyResourceAvailabilityParams {
+  teamIds: number | string | null;
+  startDate: string;
+  endDate: string;
+  enabled?: boolean;
+}
+
+export interface PolicyResourceAvailabilityEmployeeType {
+  employeeId: number;
+  firstName: string;
+  middleName: string | null;
+  lastName: string;
+  authPic: string | null;
+}
+
+export interface PolicyResourceAvailabilityLeaveRequestType {
+  leaveRequestId: number;
+  employee: PolicyResourceAvailabilityEmployeeType;
+  policyName: string;
+  leaveType: PolicyLeaveTypeDetailType;
+  startDate: string;
+  endDate: string;
+  leaveState: LeaveStates;
+}
+
+export interface PolicyResourceAvailabilityDayType {
+  date: string;
+  dayOfWeek: daysTypes;
+  isNonWorkingDay: boolean;
+  holidays: PolicyOnLeaveHolidayType[];
+  leaveCount: number;
+  availableCount: number;
+  leaveRequests: PolicyResourceAvailabilityLeaveRequestType[];
+}
+
+export interface PolicyResourceAvailabilityResponse {
+  results: PolicyResourceAvailabilityDayType[];
 }
 
 export interface PolicyLeaveRequestQueryParams {

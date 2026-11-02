@@ -79,7 +79,8 @@ export const policyLeaveEndPoints = {
   CHECK_POLICY_LEAVE_AVAILABILITY: `${moduleAPIPath.LEAVE}/policy-leave/availability`,
   APPLY_POLICY_LEAVE: `${moduleAPIPath.LEAVE}/policy-leave`,
   GET_MY_POLICY_LEAVE_REQUESTS: `${moduleAPIPath.LEAVE}/policy-leave`,
-  GET_EMPLOYEES_ON_LEAVE_TODAY: `${moduleAPIPath.LEAVE}/policy-leave/on-leave`
+  GET_EMPLOYEES_ON_LEAVE_TODAY: `${moduleAPIPath.LEAVE}/policy-leave/on-leave`,
+  GET_RESOURCE_AVAILABILITY: `${moduleAPIPath.LEAVE}/policy-leave/resource-availability`
 };
 
 export const policyLeaveReviewEndPoints = {

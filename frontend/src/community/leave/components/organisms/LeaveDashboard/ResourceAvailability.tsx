@@ -2,7 +2,7 @@ import { Stack } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { Box } from "@mui/system";
 import { DateTime } from "luxon";
-import { JSX, useState } from "react";
+import { JSX, useMemo, useState } from "react";
 
 import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
 import { FilledArrow } from "~community/common/components/atoms/FilledArrow/FilledArrow";
@@ -12,10 +12,16 @@ import { AdminTypes } from "~community/common/types/AuthTypes";
 import { getMonthName } from "~community/common/utils/dateTimeUtils";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
 import { useGetResourceAvailabilityCalendar } from "~community/leave/api/LeaveDashboard";
+import { useGetPolicyResourceAvailability } from "~community/leave/api/PolicyLeaveApi";
 import AvailabilityCalendarCard from "~community/leave/components/molecules/AvailabilityCalendar/AvailabilityCalendarCard";
 import AvailabilityWidgetSkeleton from "~community/leave/components/molecules/AvailabilityCalendar/AvailabilityWidgetSkeleton";
+import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { ResourceAvailabilityRecord } from "~community/leave/types/ResourceAvailabilityTypes";
 import { getNavigateDays } from "~community/leave/utils/dashboardUtils";
+import {
+  getResourceAvailabilityCalendarRange,
+  toResourceAvailabilityRecords
+} from "~community/leave/utils/policyLeave/policyLeaveUtils";
 
 const ResourceAvailabilityCalendar = (): JSX.Element => {
   const { data: timeConfigData } = useDefaultCapacity();
@@ -27,12 +33,55 @@ const ResourceAvailabilityCalendar = (): JSX.Element => {
   const [teamIds, setTeamIds] = useState<(string | number)[]>([-1]);
   const [_, setTeamNames] = useState<(string | number)[]>([]);
 
-  const { data: resourceAvailbility, isLoading: isResourceAvailbilityLoading } =
-    useGetResourceAvailabilityCalendar(
-      teamIds?.join(),
-      year,
-      getMonthName(month)
-    );
+  const { isLeavePoliciesEnabled, isLoading: isPolicyConfigLoading } =
+    useLeavePoliciesEnabled();
+
+  const {
+    data: legacyResourceAvailability,
+    isLoading: isLegacyResourceAvailabilityLoading
+  } = useGetResourceAvailabilityCalendar(
+    teamIds?.join(),
+    year,
+    getMonthName(month),
+    !isPolicyConfigLoading && !isLeavePoliciesEnabled
+  );
+
+  const { startDate, endDate } = getResourceAvailabilityCalendarRange(
+    year,
+    month
+  );
+
+  const {
+    data: policyResourceAvailability,
+    isLoading: isPolicyResourceAvailabilityLoading
+  } = useGetPolicyResourceAvailability({
+    teamIds: teamIds?.join(),
+    startDate,
+    endDate,
+    enabled: isLeavePoliciesEnabled
+  });
+
+  const workingDays = useMemo(
+    () => timeConfigData?.map((config) => config.day) ?? [],
+    [timeConfigData]
+  );
+
+  const resourceAvailbility = useMemo(() => {
+    if (!isLeavePoliciesEnabled) return legacyResourceAvailability;
+    return policyResourceAvailability
+      ? toResourceAvailabilityRecords(policyResourceAvailability, workingDays)
+      : undefined;
+  }, [
+    isLeavePoliciesEnabled,
+    legacyResourceAvailability,
+    policyResourceAvailability,
+    workingDays
+  ]);
+
+  const isResourceAvailbilityLoading =
+    isPolicyConfigLoading ||
+    isLegacyResourceAvailabilityLoading ||
+    isPolicyResourceAvailabilityLoading;
 
   return (
     <Box>

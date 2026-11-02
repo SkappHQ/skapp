@@ -25,7 +25,10 @@ import {
   PolicyLeaveRequestPayload,
   PolicyLeaveRequestQueryParams,
   PolicyLeaveRequestResponse,
-  PolicyLeaveRequestType
+  PolicyLeaveRequestType,
+  PolicyResourceAvailabilityDayType,
+  PolicyResourceAvailabilityParams,
+  PolicyResourceAvailabilityResponse
 } from "~community/leave/types/PolicyLeaveTypes";
 import { getPolicyLeaveRequestQueryParams } from "~community/leave/utils/policyLeave/policyLeaveUtils";
 
@@ -68,6 +71,39 @@ export const useGetPolicyEmployeesOnLeaveToday = (
     queryKey: policyLeaveQueryKeys.EMPLOYEES_ON_LEAVE_TODAY(teamId),
     queryFn: () => getPolicyEmployeesOnLeaveToday(teamId),
     enabled: enabled && teamId !== "",
+    refetchOnWindowFocus: false
+  });
+};
+
+const getPolicyResourceAvailability = async (
+  teamIds: number | string | null,
+  startDate: string,
+  endDate: string
+): Promise<PolicyResourceAvailabilityDayType[]> => {
+  const response = await authFetch.get<PolicyResourceAvailabilityResponse>(
+    policyLeaveEndPoints.GET_RESOURCE_AVAILABILITY,
+    { params: { teamIds, startDate, endDate } }
+  );
+  return response.data.results;
+};
+
+export const useGetPolicyResourceAvailability = ({
+  teamIds,
+  startDate,
+  endDate,
+  enabled = true
+}: PolicyResourceAvailabilityParams): UseQueryResult<
+  PolicyResourceAvailabilityDayType[]
+> => {
+  return useQuery({
+    queryKey: policyLeaveQueryKeys.RESOURCE_AVAILABILITY(
+      teamIds,
+      startDate,
+      endDate
+    ),
+    queryFn: () => getPolicyResourceAvailability(teamIds, startDate, endDate),
+    enabled:
+      enabled && teamIds !== null && teamIds !== "" && !!startDate && !!endDate,
     refetchOnWindowFocus: false
   });
 };
@@ -170,6 +206,9 @@ export const useApplyPolicyLeave = (
       });
       queryClient.invalidateQueries({
         queryKey: policyLeaveQueryKeys.ALL_EMPLOYEES_ON_LEAVE_TODAY()
+      });
+      queryClient.invalidateQueries({
+        queryKey: policyLeaveQueryKeys.ALL_RESOURCE_AVAILABILITY()
       });
       onSuccess(data);
     },

@@ -1,8 +1,17 @@
+import { DateTime } from "luxon";
 import { SetStateAction } from "react";
 
+import { leaveDurationTypes } from "~community/attendance/types/attendanceTypes";
+import { daysTypes } from "~community/common/constants/stringConstants";
+import { DATE_FORMAT } from "~community/common/constants/timeConstants";
+import { DayOfWeek } from "~community/common/enums/CommonEnums";
 import { ToastType } from "~community/common/enums/ComponentEnums";
-import { FileUploadType } from "~community/common/types/CommonTypes";
+import {
+  FileUploadType,
+  LeaveRequestStates
+} from "~community/common/types/CommonTypes";
 import { ToastProps } from "~community/common/types/ToastTypes";
+import { getOrdinalIndicator } from "~community/common/utils/dateTimeUtils";
 import { SUCCESS_TOAST_DURATION_MS } from "~community/leave/constants/stringConstants";
 import {
   ApplyPolicyLeaveErrorKeys,
@@ -18,14 +27,19 @@ import {
   PolicyLeaveStore,
   initialPolicyLeaveFormErrors
 } from "~community/leave/store/policyLeaveStore";
+import { ResourceAvailabilityPayload } from "~community/leave/types/MyRequests";
 import {
   EmployeePolicyBalanceType,
   PolicyBalanceDisabledReason,
   PolicyEmployeesOnLeaveType,
   PolicyLeaveRequestQueryParams,
   PolicyLeaveRequestStatus,
-  PolicyLeaveValidationFailure
+  PolicyLeaveValidationFailure,
+  PolicyResourceAvailabilityDayType,
+  PolicyResourceAvailabilityLeaveRequestType
 } from "~community/leave/types/PolicyLeaveTypes";
+import { ResourceAvailabilityRecord } from "~community/leave/types/ResourceAvailabilityTypes";
+import { HolidayDurationType } from "~community/people/types/HolidayTypes";
 
 export type TranslateFn = (
   key: string[],
@@ -316,3 +330,104 @@ export const getPolicyOnLeaveTodayStatus = (
   }
   return PolicyOnLeaveTodayStatus.PARTIALLY_AWAY;
 };
+
+export const getResourceAvailabilityCalendarRange = (
+  year: number,
+  month: number
+): { startDate: string; endDate: string } => {
+  const firstOfMonth = DateTime.local(year, month, 1);
+
+  return {
+    startDate: firstOfMonth.startOf("week").toFormat(DATE_FORMAT),
+    endDate: firstOfMonth.endOf("month").endOf("week").toFormat(DATE_FORMAT)
+  };
+};
+
+const getWorkingResourceAvailabilityDays = (
+  days: PolicyResourceAvailabilityDayType[],
+  workingDays: daysTypes[]
+): PolicyResourceAvailabilityDayType[] => {
+  if (!workingDays.length) return days;
+  return days.filter((day) => workingDays.includes(day.dayOfWeek));
+};
+
+const toResourceAvailabilityDateLabel = (date: string): string => {
+  const dateTime = DateTime.fromISO(date).setLocale("en");
+  return `${dateTime.day}${getOrdinalIndicator(dateTime.day)} ${dateTime.toFormat("LLL")}`.toUpperCase();
+};
+
+const toResourceAvailabilityDayOfWeek = (dayOfWeek: daysTypes): DayOfWeek =>
+  dayOfWeek.slice(0, 3) as DayOfWeek;
+
+const toResourceAvailabilityLeaveType = (
+  leaveRequest: PolicyResourceAvailabilityLeaveRequestType
+) => ({
+  typeId: leaveRequest.leaveType.id,
+  name: leaveRequest.policyName,
+  emojiCode: leaveRequest.leaveType.emojiCode,
+  colorCode: leaveRequest.leaveType.colorCode
+});
+
+export const toResourceAvailabilityRecords = (
+  days: PolicyResourceAvailabilityDayType[],
+  workingDays: daysTypes[]
+): ResourceAvailabilityRecord[] =>
+  getWorkingResourceAvailabilityDays(days, workingDays).map((day) => ({
+    date: toResourceAvailabilityDateLabel(day.date),
+    actualDate: day.date,
+    dayOfWeek: toResourceAvailabilityDayOfWeek(day.dayOfWeek),
+    leaveCount: day.leaveCount,
+    availableCount: day.availableCount,
+    holidays: day.holidays.map((holiday) => ({
+      id: String(holiday.id ?? ""),
+      name: holiday.name,
+      holidayDuration: holiday.holidayDuration as unknown as leaveDurationTypes
+    })),
+    leaveRequests: day.leaveRequests.map((leaveRequest) => ({
+      leaveRequestId: leaveRequest.leaveRequestId,
+      leaveState: leaveRequest.leaveState,
+      status: LeaveRequestStates.APPROVED,
+      startDate: leaveRequest.startDate,
+      endDate: leaveRequest.endDate,
+      leaveType: toResourceAvailabilityLeaveType(leaveRequest),
+      employee: {
+        employeeId: leaveRequest.employee.employeeId,
+        firstName: leaveRequest.employee.firstName,
+        middleName: leaveRequest.employee.middleName,
+        lastName: leaveRequest.employee.lastName,
+        authPic: leaveRequest.employee.authPic ?? ""
+      }
+    }))
+  }));
+
+export const toResourceAvailabilityPayloads = (
+  days: PolicyResourceAvailabilityDayType[],
+  workingDays: daysTypes[]
+): ResourceAvailabilityPayload[] =>
+  getWorkingResourceAvailabilityDays(days, workingDays).map((day) => ({
+    date: toResourceAvailabilityDateLabel(day.date),
+    dayOfWeek: toResourceAvailabilityDayOfWeek(day.dayOfWeek),
+    leaveCount: day.leaveCount,
+    availableCount: day.availableCount,
+    holidays: day.holidays.map((holiday) => ({
+      id: holiday.id ?? 0,
+      name: holiday.name,
+      holidayDuration: holiday.holidayDuration ?? HolidayDurationType.NONE
+    })),
+    leaveRequests: day.leaveRequests.map((leaveRequest) => ({
+      leaveRequestId: leaveRequest.leaveRequestId,
+      leaveState: leaveRequest.leaveState,
+      status: LeaveStatusEnums.APPROVED,
+      startDate: leaveRequest.startDate,
+      endDate: leaveRequest.endDate,
+      leaveType: toResourceAvailabilityLeaveType(leaveRequest),
+      reviewer: null,
+      employee: {
+        employeeId: leaveRequest.employee.employeeId,
+        firstName: leaveRequest.employee.firstName,
+        middleName: leaveRequest.employee.middleName ?? "",
+        lastName: leaveRequest.employee.lastName,
+        authPic: leaveRequest.employee.authPic ?? ""
+      }
+    }))
+  }));
