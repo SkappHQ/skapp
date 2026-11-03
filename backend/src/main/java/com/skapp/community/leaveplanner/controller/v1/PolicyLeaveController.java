@@ -72,11 +72,6 @@ public class PolicyLeaveController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get how many people are on approved policy leave today",
-			description = "Today is the current date in the organization's timezone. Half day leave counts as on leave. "
-					+ "Leave admins see every active employee and managers see the people they supervise, "
-					+ "optionally narrowed to teams; a team id of -1 or no team ids means all teams. "
-					+ "On a holiday or non-working day the holidays are returned instead of the counts")
 	@GetMapping("/on-leave")
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_MANAGER')")
 	public ResponseEntity<ResponseEntityDto> getEmployeesOnLeaveToday(

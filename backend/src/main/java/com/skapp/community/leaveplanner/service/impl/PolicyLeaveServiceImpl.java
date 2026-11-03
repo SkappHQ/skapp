@@ -87,7 +87,6 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.MonthDay;
 import java.time.Year;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -426,11 +425,11 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		PolicyEmployeesOnLeaveResponseDto responseDto = new PolicyEmployeesOnLeaveResponseDto();
 		responseDto.setDate(today);
 
-		List<HolidayResponseDto> nonWorkingDays = resolveNonWorkingDays(today);
-		if (!nonWorkingDays.isEmpty()) {
+		List<HolidayResponseDto> holidays = leaveMapper
+			.holidaysToHolidayResponseDtoList(holidayDao.findAllByIsActiveTrueAndDate(today));
+		if (!holidays.isEmpty() || !isWorkingDay(today)) {
 			responseDto.setIsNonWorkingDay(true);
-			responseDto.setHolidays(nonWorkingDays);
-			log.info("getEmployeesOnLeaveToday: execution ended on a non-working day");
+			responseDto.setHolidays(holidays);
 			return new ResponseEntityDto(false, responseDto);
 		}
 
@@ -504,20 +503,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		return pageDto;
 	}
 
-	private List<HolidayResponseDto> resolveNonWorkingDays(LocalDate date) {
-		List<HolidayResponseDto> nonWorkingDays = new ArrayList<>(
-				leaveMapper.holidaysToHolidayResponseDtoList(holidayDao.findAllByIsActiveTrueAndDate(date)));
-
-		boolean isWorkingDay = timeConfigDao.findAll()
-			.stream()
-			.anyMatch(timeConfig -> timeConfig.getDay() == date.getDayOfWeek());
-		if (!isWorkingDay) {
-			HolidayResponseDto dayOff = new HolidayResponseDto();
-			dayOff.setDate(date);
-			dayOff.setName(PolicyLeaveConstant.NON_WORKING_DAY_NAME);
-			nonWorkingDays.add(dayOff);
-		}
-		return nonWorkingDays;
+	private boolean isWorkingDay(LocalDate date) {
+		return timeConfigDao.findAll().stream().anyMatch(timeConfig -> timeConfig.getDay() == date.getDayOfWeek());
 	}
 
 	private List<Long> resolveTeamIds(List<Long> teamIds) {
