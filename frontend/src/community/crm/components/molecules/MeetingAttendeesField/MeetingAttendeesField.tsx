@@ -7,6 +7,7 @@ import SearchableDropdown, {
   SearchableDropdownItem
 } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import ActivityWarningTooltip from "~community/crm/components/atoms/ActivityWarningTooltip/ActivityWarningTooltip";
 import { useContactLookup } from "~community/crm/hooks/useContactLookup";
 import { useCrmStore } from "~community/crm/store/store";
 import {
@@ -14,19 +15,25 @@ import {
   CrmLogMeetingFormValues
 } from "~community/crm/types/CrmCommonTypes";
 import {
-  getContactCompanyIds,
   getContactDisplayName,
   updateContactRecord
 } from "~community/crm/utils/contactUtil";
+import { isDealMatchingCompany } from "~community/crm/utils/dealUtil";
 
 interface Props {
   id: string;
   formik: FormikProps<CrmLogMeetingFormValues>;
+  isFromDifferentCompanies: boolean;
   onDealCleared: () => void;
 }
 
-const MeetingAttendeesField: FC<Props> = ({ id, formik, onDealCleared }) => {
-  const { values, errors, setFieldValue } = formik;
+const MeetingAttendeesField: FC<Props> = ({
+  id,
+  formik,
+  isFromDifferentCompanies,
+  onDealCleared
+}) => {
+  const { values, errors, touched, setFieldValue } = formik;
 
   const translateText = useTranslator(
     "crmModule",
@@ -55,28 +62,25 @@ const MeetingAttendeesField: FC<Props> = ({ id, formik, onDealCleared }) => {
   );
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [hasFilledRelatedTo, setHasFilledRelatedTo] = useState(false);
 
-  const { isSearchActive, lookupItems, dropdownItems } =
+  const { isSearchActive, isLoading, lookupItems, dropdownItems } =
     useContactLookup(searchTerm);
 
   const attendees = values.contactIds.map((contactId) => contacts[contactId]);
 
-  const isFromDifferentCompanies =
-    new Set(getContactCompanyIds(contacts, values.contactIds)).size > 1;
-
   const clearMismatchedDeal = (nextAttendees: CrmContactEntity[]): void => {
     const selectedDeal = values.dealId ? deals[values.dealId] : null;
 
-    if (!selectedDeal) return;
+    if (!selectedDeal || nextAttendees.length === 0) return;
 
+    const wasDealMatched = attendees.some((attendee) =>
+      isDealMatchingCompany(selectedDeal, attendee.companyId)
+    );
     const isDealMatched = nextAttendees.some((attendee) =>
-      selectedDeal.companyId
-        ? selectedDeal.companyId === attendee.companyId
-        : !attendee.companyId
+      isDealMatchingCompany(selectedDeal, attendee.companyId)
     );
 
-    if (isDealMatched) return;
+    if (!wasDealMatched || isDealMatched) return;
 
     setFieldValue("dealId", null);
     onDealCleared();
@@ -91,13 +95,8 @@ const MeetingAttendeesField: FC<Props> = ({ id, formik, onDealCleared }) => {
     if (!contact?.id || values.contactIds.includes(contact.id)) return;
 
     setContacts(updateContactRecord(contacts, [contact]));
-    setFieldValue("contactIds", [...values.contactIds, contact.id]);
+    setFieldValue("contactIds", [...values.contactIds, contact.id], true);
     clearMismatchedDeal([...attendees, contact]);
-
-    if (!hasFilledRelatedTo && !values.companyId && contact.companyId) {
-      setFieldValue("companyId", contact.companyId);
-      setHasFilledRelatedTo(true);
-    }
   };
 
   const handleRemove = (contactId: number): void => {
@@ -105,7 +104,7 @@ const MeetingAttendeesField: FC<Props> = ({ id, formik, onDealCleared }) => {
       (attendeeId) => attendeeId !== contactId
     );
 
-    setFieldValue("contactIds", nextContactIds);
+    setFieldValue("contactIds", nextContactIds, true);
     clearMismatchedDeal(
       nextContactIds.map((attendeeId) => contacts[attendeeId])
     );
@@ -124,8 +123,12 @@ const MeetingAttendeesField: FC<Props> = ({ id, formik, onDealCleared }) => {
         onChange={(event) => setSearchTerm(event.target.value)}
         isOpenOnFocus={isSearchActive}
         emptyMessage={translateActivityText(["emptyStates", "noContacts"])}
-        state={errors.contactIds ? "error" : "default"}
-        {...(errors.contactIds && { errorMessage: String(errors.contactIds) })}
+        {...(isLoading && {
+          loadingMessage: translateActivityText(["emptyStates", "searching"])
+        })}
+        state={touched.contactIds && errors.contactIds ? "error" : "default"}
+        {...(touched.contactIds &&
+          errors.contactIds && { errorMessage: String(errors.contactIds) })}
         required
       />
 
@@ -156,9 +159,10 @@ const MeetingAttendeesField: FC<Props> = ({ id, formik, onDealCleared }) => {
       )}
 
       {isFromDifferentCompanies && (
-        <span className="text-sm text-semantic-amber-text">
-          {translateText(["notices", "differentCompanies"])}
-        </span>
+        <ActivityWarningTooltip
+          id={`${id}-companies`}
+          text={translateText(["tooltips", "differentCompanies"])}
+        />
       )}
     </div>
   );
