@@ -4,11 +4,15 @@ import { FC, useMemo } from "react";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { ErrorResponse } from "~community/common/types/CommonTypes";
 import { ActivityTaskCreatePayload } from "~community/crm/activities/types/activityTypes";
 import { useCreateTask } from "~community/crm/api/ActivityApi";
 import AddActivityTaskModalForm from "~community/crm/components/molecules/AddActivityTaskModalForm/AddActivityTaskModalForm";
 import LogActivityModal from "~community/crm/components/molecules/LogActivityModal/LogActivityModal";
-import { CrmPriorityEnum } from "~community/crm/enums/common";
+import {
+  CrmErrorMessageKeyEnum,
+  CrmPriorityEnum
+} from "~community/crm/enums/common";
 import { useDefaultCrmOwner } from "~community/crm/hooks/useDefaultCrmOwner";
 import { CrmAddTaskFormValues } from "~community/crm/types/CrmCommonTypes";
 import { getActivityTaskValidationSchema } from "~community/crm/utils/activityTaskValidations";
@@ -76,7 +80,8 @@ const AddActivityTaskModalContent: FC<Props> = ({ onClose }) => {
     enableReinitialize: true
   });
 
-  const { dirty, isSubmitting, setSubmitting, submitForm } = formik;
+  const { values, dirty, isSubmitting, setSubmitting, setStatus, submitForm } =
+    formik;
 
   const handleSuccess = (): void => {
     setSubmitting(false);
@@ -101,8 +106,23 @@ const AddActivityTaskModalContent: FC<Props> = ({ onClose }) => {
     });
   };
 
-  const handleError = (): void => {
+  const handleError = (error: ErrorResponse): void => {
     setSubmitting(false);
+
+    if (
+      error.response?.data?.results?.[0]?.messageKey ===
+      CrmErrorMessageKeyEnum.TASK_DEAL_COMPANY_MISMATCH
+    ) {
+      setStatus({
+        mismatchedDealId: values.dealId,
+        mismatchedContactId: values.contactId
+      });
+      requestAnimationFrame(() => {
+        document.getElementById("add-task-deal-input")?.focus();
+      });
+      return;
+    }
+
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
