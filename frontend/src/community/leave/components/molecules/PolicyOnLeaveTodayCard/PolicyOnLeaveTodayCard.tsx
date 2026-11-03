@@ -39,7 +39,11 @@ const PolicyOnLeaveTodayCard: FC<Props> = ({ teamId, enabled }) => {
   ): JSX.Element => {
     switch (getPolicyOnLeaveTodayStatus(availability)) {
       case PolicyOnLeaveTodayStatus.NON_WORKING_DAY:
-        return <HolidayChip text={availability.holidays?.[0]?.name ?? ""} />;
+        return (
+          <HolidayChip
+            text={availability.holidays?.[0]?.name ?? translateText(["dayOff"])}
+          />
+        );
       case PolicyOnLeaveTodayStatus.ALL_AVAILABLE:
         return (
           <Box sx={classes.chipRow}>
