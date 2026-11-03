@@ -15,6 +15,8 @@ public class PolicyResourceAvailabilityLeaveRequestResponseDto {
 
 	private EmployeeBasicDetailsResponseDto employee;
 
+	private EmployeeBasicDetailsResponseDto reviewer;
+
 	private String policyName;
 
 	private PolicyLeaveTypeDetailResponseDto leaveType;

@@ -240,6 +240,7 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
 		fetchPolicy(root);
 		root.fetch(PolicyLeaveRequest_.employee, JoinType.INNER);
+		root.fetch(PolicyLeaveRequest_.reviewer, JoinType.LEFT);
 		Join<PolicyLeaveRequest, Employee> employee = root.join(PolicyLeaveRequest_.employee);
 
 		List<Predicate> predicates = buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee, teamIds,
