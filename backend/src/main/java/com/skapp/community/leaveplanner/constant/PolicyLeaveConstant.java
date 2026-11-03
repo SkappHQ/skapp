@@ -32,6 +32,4 @@ public class PolicyLeaveConstant {
 
 	public static final long ALL_TEAMS_ID = -1L;
 
-	public static final int MAX_RESOURCE_AVAILABILITY_DAYS = 62;
-
 }

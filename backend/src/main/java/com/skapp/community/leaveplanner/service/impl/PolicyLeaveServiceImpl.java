@@ -91,7 +91,6 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.MonthDay;
 import java.time.Year;
-import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -551,11 +550,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		}
 		if (endDate.isBefore(startDate)) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INVALID_DATE_RANGE);
-		}
-		if (ChronoUnit.DAYS.between(startDate, endDate) >= PolicyLeaveConstant.MAX_RESOURCE_AVAILABILITY_DAYS) {
-			throw new ModuleException(
-					LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_RESOURCE_AVAILABILITY_RANGE_TOO_LONG,
-					new String[] { String.valueOf(PolicyLeaveConstant.MAX_RESOURCE_AVAILABILITY_DAYS) });
 		}
 	}
 
