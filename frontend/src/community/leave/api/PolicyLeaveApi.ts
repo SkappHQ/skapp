@@ -15,6 +15,8 @@ import { initialPolicyLeaveRequestParams } from "~community/leave/store/policyLe
 import {
   EmployeePolicyBalanceType,
   EmployeePolicyBalancesResponse,
+  PolicyEmployeesOnLeaveResponse,
+  PolicyEmployeesOnLeaveType,
   PolicyLeaveAvailabilityPayload,
   PolicyLeaveAvailabilityResponse,
   PolicyLeaveAvailabilityType,
@@ -44,6 +46,28 @@ export const useGetMyPolicyBalances = (
     queryKey: policyLeaveQueryKeys.MY_POLICY_BALANCES(year),
     queryFn: () => getMyPolicyBalances(year),
     enabled,
+    refetchOnWindowFocus: false
+  });
+};
+
+const getPolicyEmployeesOnLeaveToday = async (
+  teamId: number | string
+): Promise<PolicyEmployeesOnLeaveType> => {
+  const response = await authFetch.get<PolicyEmployeesOnLeaveResponse>(
+    policyLeaveEndPoints.GET_EMPLOYEES_ON_LEAVE_TODAY,
+    { params: { teamIds: teamId } }
+  );
+  return response.data.results[0];
+};
+
+export const useGetPolicyEmployeesOnLeaveToday = (
+  teamId: number | string,
+  enabled = true
+): UseQueryResult<PolicyEmployeesOnLeaveType> => {
+  return useQuery({
+    queryKey: policyLeaveQueryKeys.EMPLOYEES_ON_LEAVE_TODAY(teamId),
+    queryFn: () => getPolicyEmployeesOnLeaveToday(teamId),
+    enabled: enabled && teamId !== "",
     refetchOnWindowFocus: false
   });
 };
@@ -143,6 +167,9 @@ export const useApplyPolicyLeave = (
       });
       queryClient.invalidateQueries({
         queryKey: policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS(year)
+      });
+      queryClient.invalidateQueries({
+        queryKey: policyLeaveQueryKeys.ALL_EMPLOYEES_ON_LEAVE_TODAY()
       });
       onSuccess(data);
     },

@@ -34,4 +34,8 @@ public interface PolicyLeaveRequestRepository {
 
 	long countSupervisedPendingRequests(Long supervisorEmployeeId, List<Long> teamIds);
 
+	long countEmployeesOnApprovedLeaveOnDate(LocalDate date, List<Long> teamIds, Long supervisorEmployeeId);
+
+	long countEmployeesInScope(List<Long> teamIds, Long supervisorEmployeeId);
+
 }

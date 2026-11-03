@@ -1,6 +1,7 @@
 package com.skapp.community.leaveplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.leaveplanner.payload.request.PolicyEmployeesOnLeaveFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveAvailabilityRequestDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestFilterDto;
@@ -78,6 +79,14 @@ public class PolicyLeaveController {
 			@Valid PolicyPendingLeaveCountFilterDto policyPendingLeaveCountFilterDto) {
 		ResponseEntityDto response = policyLeaveService
 			.getSupervisedPendingPolicyLeaveCount(policyPendingLeaveCountFilterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@GetMapping("/on-leave")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_MANAGER')")
+	public ResponseEntity<ResponseEntityDto> getEmployeesOnLeaveToday(
+			@Valid PolicyEmployeesOnLeaveFilterDto policyEmployeesOnLeaveFilterDto) {
+		ResponseEntityDto response = policyLeaveService.getEmployeesOnLeaveToday(policyEmployeesOnLeaveFilterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

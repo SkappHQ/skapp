@@ -1,20 +1,20 @@
-import { SmallModal } from "@rootcodelabs/skapp-ui";
-import { FormikHelpers, useFormik } from "formik";
+import { useFormik } from "formik";
 import { DateTime } from "luxon";
-import { FC, useMemo, useState } from "react";
+import { FC, useMemo } from "react";
 
-import AreYouSureModal from "~community/common/components/molecules/AreYouSureModal/AreYouSureModal";
+import { TIME_FORMAT_24_HOUR } from "~community/common/constants/timeConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { ErrorResponse } from "~community/common/types/CommonTypes";
 import { ActivityCallCreatePayload } from "~community/crm/activities/types/activityTypes";
-import { useCreateCall } from "~community/crm/api/ActivityApi";
-import LogCallModalForm from "~community/crm/components/molecules/LogCallModalForm/LogCallModalForm";
 import {
-  CALL_TIME_SLOT_MINUTES,
-  CALL_TIME_VALUE_FORMAT
-} from "~community/crm/constants/callConstants";
+  getTimeSlotStart,
+  toActivityInstant
+} from "~community/crm/activities/utils/activityUtil";
+import { useCreateCall } from "~community/crm/api/ActivityApi";
+import LogActivityModal from "~community/crm/components/molecules/LogActivityModal/LogActivityModal";
+import LogCallModalForm from "~community/crm/components/molecules/LogCallModalForm/LogCallModalForm";
 import { CrmErrorMessageKeyEnum } from "~community/crm/enums/common";
 import { useDefaultCrmOwner } from "~community/crm/hooks/useDefaultCrmOwner";
 import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
@@ -29,27 +29,23 @@ interface Props {
 
 const LogCallModalContent: FC<Props> = ({ onClose }) => {
   const translateText = useTranslator("crmModule");
-  const translateCommon = useTranslator(
-    "commonComponents",
-    "userPromptModal",
-    "unsavedChangesModal"
+  const translateAria = useTranslator(
+    "crmAria",
+    "activities",
+    "logCall",
+    "modal"
   );
   const { setToastMessage } = useToast();
-
-  const [isDiscardPromptOpen, setIsDiscardPromptOpen] = useState(false);
 
   const defaultOwner = useDefaultCrmOwner();
 
   const initialValues: CrmLogCallFormValues = useMemo(() => {
     const now = DateTime.now();
-    const slotStart = now.set({
-      minute: now.minute - (now.minute % CALL_TIME_SLOT_MINUTES)
-    });
 
     return {
       subject: "",
-      date: now.toUTC().toISO(),
-      time: slotStart.toFormat(CALL_TIME_VALUE_FORMAT),
+      date: now.startOf("day").toUTC().toISO(),
+      time: getTimeSlotStart(now).toFormat(TIME_FORMAT_24_HOUR),
       duration: "",
       contactId: null,
       ownerId: defaultOwner ? defaultOwner.employeeId : null,
@@ -60,41 +56,25 @@ const LogCallModalContent: FC<Props> = ({ onClose }) => {
   }, [defaultOwner]);
 
   const toPayload = (
-    values: CrmLogCallFormValues,
-    contactId: number,
-    ownerId: number
+    values: CrmLogCallFormValues
   ): ActivityCallCreatePayload => {
-    const [hour, minute] = values.time.split(":").map(Number);
-
     return {
       subject: values.subject.trim(),
-      loggedAt: values.date
-        ? DateTime.fromISO(values.date)
-            .set({ hour, minute })
-            .startOf("minute")
-            .toUTC()
-            .toISO()
-        : null,
+      loggedAt:
+        values.date && values.time
+          ? toActivityInstant(values.date, values.time)
+          : null,
       durationMinutes: parseCallDurationToMinutes(values.duration),
-      contactId,
-      ownerId,
+      contactId: values.contactId,
+      ownerId: values.ownerId,
       dealId: values.dealId,
       companyId: values.companyId,
       comments: values.comments.trim()
     };
   };
 
-  const handleSubmit = (
-    values: CrmLogCallFormValues,
-    helpers: FormikHelpers<CrmLogCallFormValues>
-  ): void => {
-    // TODO: remove this guard once contactId and ownerId are non-nullable in CrmLogCallFormValues
-    if (!values.contactId || !values.ownerId) {
-      helpers.setSubmitting(false);
-      return;
-    }
-
-    createCall(toPayload(values, values.contactId, values.ownerId));
+  const handleSubmit = (values: CrmLogCallFormValues): void => {
+    createCall(toPayload(values));
   };
 
   const validationSchema = useMemo(
@@ -111,7 +91,8 @@ const LogCallModalContent: FC<Props> = ({ onClose }) => {
     enableReinitialize: true
   });
 
-  const { values, dirty, setSubmitting, setStatus } = formik;
+  const { values, dirty, isSubmitting, setSubmitting, setStatus, submitForm } =
+    formik;
 
   const handleSuccess = (): void => {
     setSubmitting(false);
@@ -158,8 +139,7 @@ const LogCallModalContent: FC<Props> = ({ onClose }) => {
       toastType: ToastType.ERROR,
       title: translateText([
         "activities",
-        "logCall",
-        "modal",
+        "logActivity",
         "toastMessages",
         "errorTitle"
       ]),
@@ -179,44 +159,19 @@ const LogCallModalContent: FC<Props> = ({ onClose }) => {
     handleError
   );
 
-  const handleRequestClose = (): void => {
-    if (isPending) return;
-
-    if (dirty && !isDiscardPromptOpen) {
-      setIsDiscardPromptOpen(true);
-      return;
-    }
-
-    onClose();
-  };
-
   return (
-    <SmallModal
-      isOpen
-      onClose={handleRequestClose}
-      modalHeader={
-        isDiscardPromptOpen
-          ? translateCommon(["title"])
-          : translateText(["activities", "logCall", "modal", "title"])
-      }
-      content={
-        <>
-          {isDiscardPromptOpen && (
-            <AreYouSureModal
-              onPrimaryBtnClick={() => setIsDiscardPromptOpen(false)}
-              onSecondaryBtnClick={onClose}
-            />
-          )}
-          <div className={isDiscardPromptOpen ? "hidden" : "contents"}>
-            <LogCallModalForm
-              formik={formik}
-              isPending={isPending}
-              onCancel={handleRequestClose}
-            />
-          </div>
-        </>
-      }
-    />
+    <LogActivityModal
+      title={translateText(["activities", "logCall", "modal", "title"])}
+      isDirty={dirty}
+      isPending={isPending}
+      isSubmitting={isSubmitting}
+      cancelAriaLabel={translateAria(["cancel"])}
+      saveAriaLabel={translateAria(["save"])}
+      onSave={submitForm}
+      onClose={onClose}
+    >
+      <LogCallModalForm formik={formik} />
+    </LogActivityModal>
   );
 };
 

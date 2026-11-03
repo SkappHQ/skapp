@@ -145,7 +145,6 @@
         "relatedTo": "Call related company",
         "cancel": "Cancel log a call",
         "save": "Save call",
-        "removeOwner": "Remove activity owner",
         "clearContact": "Clear selected contact",
         "clearDeal": "Clear selected deal",
         "clearRelatedTo": "Clear selected company"
@@ -172,6 +171,24 @@
       "closeFilters": "Close filters",
       "clearTeamMember": "Clear team member filter",
       "teamMember": "Team member, selected"
+    },
+    "logMeeting": {
+      "modal": {
+        "subject": "Meeting subject",
+        "date": "Meeting date",
+        "startTime": "Meeting start time",
+        "endTime": "Meeting end time",
+        "comments": "Meeting comments",
+        "cancel": "Cancel log a meeting",
+        "save": "Save meeting"
+      }
+    },
+    "logActivity": {
+      "removeOwner": "Remove activity owner"
+    },
+    "meetingSidePanel": {
+      "kebabMenu": "Meeting actions",
+      "attendees": "Meeting attendees"
     }
   }
 }

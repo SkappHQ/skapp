@@ -24,6 +24,8 @@ import AvailableChip from "~community/leave/components/molecules/LeaveDashboardC
 import AwayChip from "~community/leave/components/molecules/LeaveDashboardChips/AwayChip";
 import HolidayChip from "~community/leave/components/molecules/LeaveDashboardChips/HolidayChip";
 import LeaveTypeBreakdownChart from "~community/leave/components/molecules/LeaveUtilizationGraph/LeaveTypeBreakdownChart";
+import PolicyOnLeaveTodayCard from "~community/leave/components/molecules/PolicyOnLeaveTodayCard/PolicyOnLeaveTodayCard";
+import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useLeaveStore } from "~community/leave/store/store";
 import {
   LeaveRequest,
@@ -58,19 +60,25 @@ const LeaveDashboard = (): JSX.Element => {
     setTodaysAvailability
   } = useLeaveStore((state) => state);
 
+  const { isLeavePoliciesEnabled, isLoading: isPolicyConfigLoading } =
+    useLeavePoliciesEnabled();
+
+  const isLegacyAvailabilityEnabled =
+    isFetchingEnabled && !isPolicyConfigLoading && !isLeavePoliciesEnabled;
+
   const today = DateTime.now().toFormat(DATE_FORMAT);
 
   const { data: todaysAvailability } = useGetAvailability(
     teamId,
     today,
-    isFetchingEnabled
+    isLegacyAvailabilityEnabled
   );
 
   const { data: todaysResourceAvailability } = useGetResourceAvailability(
     teamId,
     today,
     today,
-    isFetchingEnabled
+    isLegacyAvailabilityEnabled
   );
   const { data: pendingLeaves } = useGetPendingLeavesData(teamId);
 
@@ -157,6 +165,37 @@ const LeaveDashboard = (): JSX.Element => {
     }
   };
 
+  const renderTodaysAvailabilityCard = () => {
+    if (isPolicyConfigLoading) {
+      return (
+        <AnalyticCard
+          title={translateText(["todayAvailability"]) ?? ""}
+          isExpandable={false}
+        />
+      );
+    }
+
+    if (isLeavePoliciesEnabled) {
+      return (
+        <PolicyOnLeaveTodayCard teamId={teamId} enabled={isFetchingEnabled} />
+      );
+    }
+
+    return (
+      <AnalyticCard
+        title={translateText(["todayAvailability"]) ?? ""}
+        isExpandable={!!todaysAvailability}
+        onExpand={handleTodaysAvailabilityModalOpen}
+        accessibility={{
+          tabIndex: 0,
+          role: "button"
+        }}
+      >
+        {todaysAvailability && resourceDetails()}
+      </AnalyticCard>
+    );
+  };
+
   return (
     <Box sx={classes.container}>
       <Box sx={classes.header}>
@@ -173,17 +212,7 @@ const LeaveDashboard = (): JSX.Element => {
       </Box>
       <Grid container spacing={1}>
         <Grid sx={{ width: { xs: "100%", md: "32.5%" } }}>
-          <AnalyticCard
-            title={translateText(["todayAvailability"]) ?? ""}
-            isExpandable={!!todaysAvailability}
-            onExpand={handleTodaysAvailabilityModalOpen}
-            accessibility={{
-              tabIndex: 0,
-              role: "button"
-            }}
-          >
-            {todaysAvailability && resourceDetails()}
-          </AnalyticCard>
+          {renderTodaysAvailabilityCard()}
         </Grid>
         <Grid sx={{ width: { xs: "100%", md: "32.5%" } }}>
           <AnalyticCard

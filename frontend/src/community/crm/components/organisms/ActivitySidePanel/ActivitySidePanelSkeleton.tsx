@@ -3,7 +3,7 @@ import { FC } from "react";
 import SkeletonShape from "~community/crm/components/atoms/SkeletonShape/SkeletonShape";
 import TaskRowSkeleton from "~community/crm/components/molecules/TaskRow/TaskRowSkeleton";
 
-const CallSidePanelSkeleton: FC = () => (
+const ActivitySidePanelSkeleton: FC = () => (
   <div className="flex gap-6 pb-4" aria-hidden="true">
     <div className="flex flex-col flex-1 gap-6">
       <div className="flex flex-col gap-1">
@@ -83,4 +83,4 @@ const CallSidePanelSkeleton: FC = () => (
   </div>
 );
 
-export default CallSidePanelSkeleton;
+export default ActivitySidePanelSkeleton;
