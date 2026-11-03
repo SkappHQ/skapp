@@ -72,10 +72,6 @@ public class PolicyLeaveController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get how many policy leave requests are waiting on the current user's approval",
-			description = "Counts the PENDING requests raised by the people the current user supervises, using the "
-					+ "same scope as the pending requests table, so the dashboard badge always matches its total. "
-					+ "Optionally narrowed to teams; a team id of -1 or no team ids means all teams")
 	@GetMapping("/requests/pending-count")
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_MANAGER')")
 	public ResponseEntity<ResponseEntityDto> getSupervisedPendingPolicyLeaveCount(

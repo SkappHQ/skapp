@@ -7,6 +7,6 @@ import lombok.Setter;
 @Setter
 public class PolicyPendingLeaveCountResponseDto {
 
-	private Long pendingCount;
+	private long pendingCount;
 
 }
