@@ -133,10 +133,9 @@ const MeetingAttendeesField: FC<Props> = ({
       />
 
       {values.contactIds.length > 0 && (
-        <div
-          role="group"
+        <fieldset
           aria-label={translateAria(["attendees"])}
-          className="flex flex-wrap gap-2"
+          className="flex min-w-0 flex-wrap gap-2"
         >
           {values.contactIds.map((contactId) => {
             const contactName = getContactDisplayName(contacts[contactId]);
@@ -155,7 +154,7 @@ const MeetingAttendeesField: FC<Props> = ({
               />
             );
           })}
-        </div>
+        </fieldset>
       )}
 
       {isFromDifferentCompanies && (
