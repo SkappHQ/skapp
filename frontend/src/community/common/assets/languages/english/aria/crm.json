@@ -185,6 +185,10 @@
     },
     "logActivity": {
       "removeOwner": "Remove activity owner"
+    },
+    "meetingSidePanel": {
+      "kebabMenu": "Meeting actions",
+      "attendees": "Meeting attendees"
     }
   }
 }
