@@ -323,6 +323,14 @@ export const policyLeaveQueryKeys = {
   PENDING_LEAVE_COUNT: (teamId: number | string) => [
     ...policyLeaveQueryKeys.ALL_PENDING_LEAVE_COUNT(),
     teamId
+  ],
+  ALL_EMPLOYEES_ON_LEAVE_TODAY: () => [
+    ...policyLeaveQueryKeys.ALL,
+    "employees-on-leave-today"
+  ],
+  EMPLOYEES_ON_LEAVE_TODAY: (teamId: number | string) => [
+    ...policyLeaveQueryKeys.ALL_EMPLOYEES_ON_LEAVE_TODAY(),
+    teamId
   ]
 };
 
