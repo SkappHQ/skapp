@@ -81,7 +81,10 @@ const LeaveDashboard = (): JSX.Element => {
 
   const { data: pendingLeaves } = useGetPendingLeavesData(
     teamId,
-    !isPolicyConfigLoading && !isLeavePoliciesEnabled
+    isFetchingEnabled &&
+      teamId !== "" &&
+      !isPolicyConfigLoading &&
+      !isLeavePoliciesEnabled
   );
 
   const { data: policyPendingLeaveCount } = useGetPolicyPendingLeaveCount(
@@ -101,15 +104,15 @@ const LeaveDashboard = (): JSX.Element => {
     triggerOnMount: true
   });
 
-  const pendingLeaveCount: number | undefined = isLeavePoliciesEnabled
+  const currentPendingLeaveCount: number | undefined = isLeavePoliciesEnabled
     ? policyPendingLeaveCount?.pendingCount
     : pendingLeaves?.[0]?.items?.length;
 
   const isPendingLeavesExpandable =
-    !isPolicyConfigLoading && !!pendingLeaveCount;
+    !isPolicyConfigLoading && !!currentPendingLeaveCount;
 
   const newPendingRequests = getNewPendingLeaveRequestCount(
-    pendingLeaveCount,
+    currentPendingLeaveCount,
     viewedPendingLeaveCount
   );
 
@@ -126,9 +129,47 @@ const LeaveDashboard = (): JSX.Element => {
   };
 
   const handlePendingLeavesExpand = (): void => {
-    setPendingLeaveCount(pendingLeaveCount ?? 0);
-    setViewedPendingLeaveCount(pendingLeaveCount ?? 0);
+    setPendingLeaveCount(currentPendingLeaveCount ?? 0);
+    setViewedPendingLeaveCount(currentPendingLeaveCount ?? 0);
     router.replace(ROUTES.LEAVE.LEAVE_PENDING);
+  };
+
+  const renderPendingLeavesContent = (): JSX.Element | null => {
+    if (isPolicyConfigLoading) {
+      return null;
+    }
+
+    if (!isPendingLeavesExpandable) {
+      return <Typography sx={classes.analytic}>{"-"}</Typography>;
+    }
+
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+        <Typography sx={classes.analytic}>
+          {currentPendingLeaveCount}
+        </Typography>
+        {newPendingRequests > 0 && (
+          <Stack
+            sx={{
+              flexDirection: "row",
+              gap: 1,
+              alignItems: "center",
+              backgroundColor: theme.palette.amber.mid,
+              padding: "0.25rem .75rem",
+              borderRadius: 10,
+              height: "2rem"
+            }}
+          >
+            <Typography
+              sx={{ color: theme.palette.amber.chipText }}
+              variant="caption"
+            >
+              {`${newPendingRequests} ${translateText(["newRequest"])}`}
+            </Typography>
+          </Stack>
+        )}
+      </div>
+    );
   };
 
   useEffect(() => {
@@ -225,35 +266,7 @@ const LeaveDashboard = (): JSX.Element => {
               role: "button"
             }}
           >
-            {isPolicyConfigLoading ? null : isPendingLeavesExpandable ? (
-              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <Typography sx={classes.analytic}>
-                  {pendingLeaveCount}
-                </Typography>
-                {newPendingRequests > 0 && (
-                  <Stack
-                    sx={{
-                      flexDirection: "row",
-                      gap: 1,
-                      alignItems: "center",
-                      backgroundColor: theme.palette.amber.mid,
-                      padding: "0.25rem .75rem",
-                      borderRadius: 10,
-                      height: "2rem"
-                    }}
-                  >
-                    <Typography
-                      sx={{ color: theme.palette.amber.chipText }}
-                      variant="caption"
-                    >
-                      {`${newPendingRequests} ${translateText(["newRequest"])}`}
-                    </Typography>
-                  </Stack>
-                )}
-              </div>
-            ) : (
-              <Typography sx={classes.analytic}>{"-"}</Typography>
-            )}
+            {renderPendingLeavesContent()}
           </AnalyticCard>
         </Grid>
 

@@ -52,7 +52,7 @@ export const useGetMyPolicyBalances = (
 
 const getPolicyPendingLeaveCount = async (
   teamId: number | string
-): Promise<PolicyPendingLeaveCountType> => {
+): Promise<PolicyPendingLeaveCountType | undefined> => {
   const response = await authFetch.get<PolicyPendingLeaveCountResponse>(
     policyLeaveEndPoints.GET_PENDING_LEAVE_COUNT,
     { params: { teamIds: teamId } }
@@ -63,12 +63,11 @@ const getPolicyPendingLeaveCount = async (
 export const useGetPolicyPendingLeaveCount = (
   teamId: number | string,
   enabled = true
-): UseQueryResult<PolicyPendingLeaveCountType> => {
+): UseQueryResult<PolicyPendingLeaveCountType | undefined> => {
   return useQuery({
     queryKey: policyLeaveQueryKeys.PENDING_LEAVE_COUNT(teamId),
     queryFn: () => getPolicyPendingLeaveCount(teamId),
-    enabled: enabled && teamId !== "",
-    refetchOnWindowFocus: false
+    enabled: enabled && teamId !== ""
   });
 };
 
