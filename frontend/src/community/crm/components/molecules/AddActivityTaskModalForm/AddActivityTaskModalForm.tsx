@@ -30,8 +30,15 @@ interface Props {
 }
 
 const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
-  const { values, errors, touched, handleChange, handleBlur, setFieldValue } =
-    formik;
+  const {
+    values,
+    errors,
+    status,
+    touched,
+    handleChange,
+    handleBlur,
+    setFieldValue
+  } = formik;
 
   const translateText = useTranslator("crmModule", "activities");
   const translateAria = useTranslator(
@@ -61,11 +68,17 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
 
   const selectedDeal = values.dealId ? deals[values.dealId] : null;
 
-  const isDealMismatch = Boolean(
-    selectedDeal &&
-    values.contactId &&
-    !isDealMatchingCompany(selectedDeal, contactCompanyId)
-  );
+  const isDealMismatch =
+    Boolean(
+      selectedDeal &&
+      values.contactId &&
+      !isDealMatchingCompany(selectedDeal, contactCompanyId)
+    ) ||
+    (Boolean(status) &&
+      status.mismatchedDealId === values.dealId &&
+      status.mismatchedContactId === values.contactId);
+
+  const isAssociationsVisible = isAssociationsOpen || isDealMismatch;
 
   const dueDate = values.dueAt
     ? instantToPickedDay(values.dueAt, displayZone)
@@ -176,8 +189,8 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
       />
 
       <ActivityAssociations
-        isOpen={isAssociationsOpen}
-        onToggle={() => setIsAssociationsOpen(!isAssociationsOpen)}
+        isOpen={isAssociationsVisible}
+        onToggle={() => setIsAssociationsOpen(!isAssociationsVisible)}
       >
         <ActivityDealField
           id="add-task-deal"
