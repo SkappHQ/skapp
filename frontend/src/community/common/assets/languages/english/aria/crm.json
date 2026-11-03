@@ -133,6 +133,23 @@
     "callSidePanel": {
       "kebabMenu": "Call actions"
     },
+    "logEmail": {
+      "modal": {
+        "from": "Email from address",
+        "date": "Email date",
+        "time": "Email time",
+        "to": "Email to recipients",
+        "cc": "Email cc recipients",
+        "bcc": "Email bcc recipients",
+        "removeRecipient": "Remove recipient {{name}}",
+        "subject": "Email subject",
+        "description": "Email description",
+        "deal": "Email deal",
+        "relatedTo": "Email related company",
+        "cancel": "Cancel log email",
+        "save": "Save email"
+      }
+    },
     "logCall": {
       "modal": {
         "subject": "Call subject",

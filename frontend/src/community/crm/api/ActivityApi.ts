@@ -15,6 +15,7 @@ import authFetch from "~community/common/utils/axiosInterceptor";
 import {
   ActivityCallCreatePayload,
   ActivityCallResponse,
+  ActivityEmailCreatePayload,
   ActivityEmailResponse,
   ActivityFeedFilters,
   ActivityFeedResponse,
@@ -95,6 +96,28 @@ export const useGetActivityEmails = (
     enabled,
     refetchOnWindowFocus: false
   });
+
+const createEmail = async (
+  payload: ActivityEmailCreatePayload
+): Promise<void> => {
+  await authFetch.post(crmActivityEndpoints.CREATE_EMAIL, payload);
+};
+
+export const useCreateEmail = (
+  onSuccess: () => void,
+  onError: (error: ErrorResponse) => void
+): UseMutationResult<void, ErrorResponse, ActivityEmailCreatePayload> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createEmail,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
+      onSuccess();
+    },
+    onError
+  });
+};
 
 const fetchActivityMeetings = async (
   params: ActivityListFilters
