@@ -1,5 +1,5 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { FC, ReactNode, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
@@ -177,26 +177,20 @@ const ActivitiesContent: FC = () => {
 
   const handleToggleComplete = (): void => {};
 
-  const toolbarActions: Partial<Record<ActivityTab, ReactNode>> = {
-    [ActivityTab.CALLS]: (
-      <ButtonV2
-        variant="primary"
-        type="button"
-        onClick={() => setIsLogCallModalOpen(true)}
-      >
-        {translateText(["activities", "toolbar", "logCallBtn"])}
-      </ButtonV2>
-    ),
-    [ActivityTab.MEETINGS]: (
-      <ButtonV2
-        variant="primary"
-        type="button"
-        onClick={() => setIsLogMeetingModalOpen(true)}
-      >
-        {translateText(["activities", "toolbar", "logMeetingBtn"])}
-      </ButtonV2>
-    )
+  const toolbarActions: Partial<
+    Record<ActivityTab, { labelKey: string; onClick: () => void }>
+  > = {
+    [ActivityTab.CALLS]: {
+      labelKey: "logCallBtn",
+      onClick: () => setIsLogCallModalOpen(true)
+    },
+    [ActivityTab.MEETINGS]: {
+      labelKey: "logMeetingBtn",
+      onClick: () => setIsLogMeetingModalOpen(true)
+    }
   };
+
+  const toolbarAction = toolbarActions[activeTab];
 
   return (
     <div className="flex flex-col w-full gap-4 pt-5.5 lg:pt-1">
@@ -216,7 +210,17 @@ const ActivitiesContent: FC = () => {
         showControls={
           isLoading || isError || hasActiveFilters || rows.length > 0
         }
-        action={toolbarActions[activeTab]}
+        action={
+          toolbarAction && (
+            <ButtonV2
+              variant="primary"
+              type="button"
+              onClick={toolbarAction.onClick}
+            >
+              {translateText(["activities", "toolbar", toolbarAction.labelKey])}
+            </ButtonV2>
+          )
+        }
       />
       {isLogCallModalOpen && (
         <LogCallModalContent onClose={() => setIsLogCallModalOpen(false)} />
