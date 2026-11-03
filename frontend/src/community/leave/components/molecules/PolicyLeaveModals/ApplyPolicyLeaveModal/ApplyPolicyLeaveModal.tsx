@@ -205,9 +205,14 @@ const ApplyPolicyLeaveModal = () => {
       translateText
     });
     sendEvent(GoogleAnalyticsTypes.GA4_LEAVE_REQUEST_APPLIED);
+
+    const isApplyModalOpen =
+      usePolicyLeaveStore.getState().modalType ===
+      PolicyLeaveModalEnums.APPLY_POLICY_LEAVE;
     setModalType(PolicyLeaveModalEnums.NONE);
 
     if (
+      isApplyModalOpen &&
       environment === appModes.ENTERPRISE &&
       (isGoogleConnected || isMicrosoftConnected)
     ) {
