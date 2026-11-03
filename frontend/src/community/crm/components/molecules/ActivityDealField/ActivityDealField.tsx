@@ -136,9 +136,9 @@ const ActivityDealField: FC<Props> = ({
         {...(errorMessage && { errorMessage })}
       />
       {isClearedNoticeVisible && (
-        <span role="status" className="text-sm text-semantic-amber-text">
+        <output className="text-sm text-semantic-amber-text">
           {clearedNoticeText}
-        </span>
+        </output>
       )}
     </div>
   );
