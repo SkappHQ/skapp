@@ -177,9 +177,12 @@ const ActivitiesContent: FC = () => {
 
   const handleToggleComplete = (): void => {};
 
-  const toolbarActions: Partial<
-    Record<ActivityTab, { labelKey: string; onClick: () => void }>
+  const toolbarActions: Record<
+    ActivityTab,
+    { labelKey: string; onClick: () => void } | null
   > = {
+    [ActivityTab.ALL]: null,
+    [ActivityTab.TASKS]: null,
     [ActivityTab.CALLS]: {
       labelKey: "logCallBtn",
       onClick: () => setIsLogCallModalOpen(true)
@@ -187,10 +190,9 @@ const ActivitiesContent: FC = () => {
     [ActivityTab.MEETINGS]: {
       labelKey: "logMeetingBtn",
       onClick: () => setIsLogMeetingModalOpen(true)
-    }
+    },
+    [ActivityTab.EMAILS]: null
   };
-
-  const toolbarAction = toolbarActions[activeTab];
 
   return (
     <div className="flex flex-col w-full gap-4 pt-5.5 lg:pt-1">
@@ -211,13 +213,17 @@ const ActivitiesContent: FC = () => {
           isLoading || isError || hasActiveFilters || rows.length > 0
         }
         action={
-          toolbarAction && (
+          toolbarActions[activeTab] && (
             <ButtonV2
               variant="primary"
               type="button"
-              onClick={toolbarAction.onClick}
+              onClick={toolbarActions[activeTab].onClick}
             >
-              {translateText(["activities", "toolbar", toolbarAction.labelKey])}
+              {translateText([
+                "activities",
+                "toolbar",
+                toolbarActions[activeTab].labelKey
+              ])}
             </ButtonV2>
           )
         }
