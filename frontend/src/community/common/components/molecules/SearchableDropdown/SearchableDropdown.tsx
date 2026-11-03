@@ -227,9 +227,9 @@ const SearchableDropdown: FC<SearchableDropdownProps> = ({
         >
           <div>
             {loadingMessage && (
-              <p role="status" className="px-4 py-2 body2">
+              <output className="block px-4 py-2 body2">
                 {loadingMessage}
-              </p>
+              </output>
             )}
             {!loadingMessage && items.length === 0 && emptyMessage && (
               <div>

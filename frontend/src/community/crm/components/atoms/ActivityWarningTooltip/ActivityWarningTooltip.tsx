@@ -11,12 +11,11 @@ interface Props {
 
 const ActivityWarningTooltip: FC<Props> = ({ id, text }) => (
   <Tooltip id={`${id}-tooltip`} content={text} position="bottom">
-    <span
+    <button
       id={id}
-      tabIndex={0}
-      role="img"
+      type="button"
       aria-label={text}
-      className="inline-flex w-fit"
+      className="inline-flex w-fit bg-transparent border-0 p-0 cursor-default"
     >
       <Icon
         name={IconName.WARNING_ICON}
@@ -24,7 +23,7 @@ const ActivityWarningTooltip: FC<Props> = ({ id, text }) => (
         width="16"
         height="16"
       />
-    </span>
+    </button>
   </Tooltip>
 );
 
