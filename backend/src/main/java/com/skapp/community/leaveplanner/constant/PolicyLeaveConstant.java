@@ -32,8 +32,6 @@ public class PolicyLeaveConstant {
 
 	public static final long ALL_TEAMS_ID = -1L;
 
-	public static final String NON_WORKING_DAY_NAME = "Day Off!";
-
 	public static final int MAX_RESOURCE_AVAILABILITY_DAYS = 62;
 
 }

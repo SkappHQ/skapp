@@ -146,7 +146,9 @@ public enum LeaveMessageConstant implements MessageConstant {
 	LEAVE_ERROR_POLICY_LEAVE_INVALID_PAGE("api.error.leave.policy-leave-invalid-page"),
 	LEAVE_ERROR_POLICY_LEAVE_INVALID_YEAR("api.error.leave.policy-leave-invalid-year"),
 	LEAVE_ERROR_POLICY_LEAVE_INVALID_PAGE_SIZE("api.error.leave.policy-leave-invalid-page-size"),
-	LEAVE_ERROR_POLICY_LEAVE_SEARCH_KEYWORD_MAX_LENGTH("api.error.leave.policy-leave-search-keyword-max-length");
+	LEAVE_ERROR_POLICY_LEAVE_SEARCH_KEYWORD_MAX_LENGTH("api.error.leave.policy-leave-search-keyword-max-length"),
+	LEAVE_ERROR_POLICY_LEAVE_RESOURCE_AVAILABILITY_RANGE_TOO_LONG(
+			"api.error.leave.policy-leave-resource-availability-range-too-long");
 
 	private final String messageKey;
 

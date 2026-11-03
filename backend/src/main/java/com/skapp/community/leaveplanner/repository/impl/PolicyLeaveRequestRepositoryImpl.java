@@ -233,7 +233,7 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 
 	@Override
 	public List<PolicyLeaveRequest> findApprovedRequestsInRange(LocalDate startDate, LocalDate endDate,
-			List<Long> teamIds, Long supervisorEmployeeId, boolean includeOwnTeams) {
+			List<Long> teamIds, Long supervisorEmployeeId) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<PolicyLeaveRequest> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveRequest.class);
@@ -243,7 +243,7 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		Join<PolicyLeaveRequest, Employee> employee = root.join(PolicyLeaveRequest_.employee);
 
 		List<Predicate> predicates = buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee, teamIds,
-				supervisorEmployeeId, includeOwnTeams);
+				supervisorEmployeeId, true);
 		predicates.add(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.status), LeaveRequestStatus.APPROVED));
 		predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get(PolicyLeaveRequest_.startDate), endDate));
 		predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), startDate));
@@ -357,20 +357,8 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 				.where(criteriaBuilder.equal(employeeManager.get(EmployeeManager_.manager).get(Employee_.employeeId),
 						supervisorEmployeeId));
 
-			Subquery<Long> supervisedTeams = criteriaQuery.subquery(Long.class);
-			Root<EmployeeTeam> supervisorTeam = supervisedTeams.from(EmployeeTeam.class);
-			supervisedTeams.select(supervisorTeam.get(EmployeeTeam_.team).get(Team_.teamId))
-				.where(criteriaBuilder.equal(supervisorTeam.get(EmployeeTeam_.employee).get(Employee_.employeeId),
-						supervisorEmployeeId), criteriaBuilder.isTrue(supervisorTeam.get(EmployeeTeam_.isSupervisor)));
-
-			Subquery<Long> supervisedTeamMembers = criteriaQuery.subquery(Long.class);
-			Root<EmployeeTeam> teamMember = supervisedTeamMembers.from(EmployeeTeam.class);
-			supervisedTeamMembers.select(teamMember.get(EmployeeTeam_.employee).get(Employee_.employeeId))
-				.where(teamMember.get(EmployeeTeam_.team).get(Team_.teamId).in(supervisedTeams));
-
 			List<Predicate> scopePredicates = new ArrayList<>();
 			scopePredicates.add(employee.get(Employee_.employeeId).in(managedEmployees));
-			scopePredicates.add(employee.get(Employee_.employeeId).in(supervisedTeamMembers));
 
 			if (includeOwnTeams) {
 				Subquery<Long> ownTeams = criteriaQuery.subquery(Long.class);
@@ -385,6 +373,22 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 					.where(ownTeamMember.get(EmployeeTeam_.team).get(Team_.teamId).in(ownTeams));
 
 				scopePredicates.add(employee.get(Employee_.employeeId).in(ownTeamMembers));
+				scopePredicates.add(criteriaBuilder.equal(employee.get(Employee_.employeeId), supervisorEmployeeId));
+			}
+			else {
+				Subquery<Long> supervisedTeams = criteriaQuery.subquery(Long.class);
+				Root<EmployeeTeam> supervisorTeam = supervisedTeams.from(EmployeeTeam.class);
+				supervisedTeams.select(supervisorTeam.get(EmployeeTeam_.team).get(Team_.teamId))
+					.where(criteriaBuilder.equal(supervisorTeam.get(EmployeeTeam_.employee).get(Employee_.employeeId),
+							supervisorEmployeeId),
+							criteriaBuilder.isTrue(supervisorTeam.get(EmployeeTeam_.isSupervisor)));
+
+				Subquery<Long> supervisedTeamMembers = criteriaQuery.subquery(Long.class);
+				Root<EmployeeTeam> teamMember = supervisedTeamMembers.from(EmployeeTeam.class);
+				supervisedTeamMembers.select(teamMember.get(EmployeeTeam_.employee).get(Employee_.employeeId))
+					.where(teamMember.get(EmployeeTeam_.team).get(Team_.teamId).in(supervisedTeams));
+
+				scopePredicates.add(employee.get(Employee_.employeeId).in(supervisedTeamMembers));
 			}
 
 			predicates.add(criteriaBuilder.or(scopePredicates.toArray(new Predicate[0])));

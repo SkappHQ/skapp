@@ -73,11 +73,6 @@ public class PolicyLeaveController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get how many people are on approved policy leave today",
-			description = "Today is the current date in the organization's timezone. Half day leave counts as on leave. "
-					+ "Leave admins see every active employee and managers see the people they supervise, "
-					+ "optionally narrowed to teams; a team id of -1 or no team ids means all teams. "
-					+ "On a holiday or non-working day the holidays are returned instead of the counts")
 	@GetMapping("/on-leave")
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_MANAGER')")
 	public ResponseEntity<ResponseEntityDto> getEmployeesOnLeaveToday(
@@ -86,13 +81,6 @@ public class PolicyLeaveController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get team availability for each day in a date range",
-			description = "One entry per day between the start and end dates, both inclusive, with the approved "
-					+ "policy leave on that day, how many people are on leave and how many are available. "
-					+ "Half day leave counts as on leave for that day. Holidays and non-working days are flagged "
-					+ "and listed in the holidays. Leave admins see every active employee; everyone else sees the "
-					+ "people they supervise and the members of their own teams, optionally narrowed to teams. "
-					+ "A team id of -1 or no team ids means all teams. The range can cover at most 62 days")
 	@GetMapping("/resource-availability")
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE', 'ROLE_PM_GUEST_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> getResourceAvailability(

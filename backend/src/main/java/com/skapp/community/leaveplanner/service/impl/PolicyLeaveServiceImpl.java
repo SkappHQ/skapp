@@ -66,7 +66,6 @@ import com.skapp.community.leaveplanner.util.PolicyLeaveUsageLookup;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.Holiday;
-import com.skapp.community.peopleplanner.payload.request.EmployeeBasicDetailsResponseDto;
 import com.skapp.community.peopleplanner.payload.response.HolidayResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeManagerDao;
 import com.skapp.community.peopleplanner.repository.HolidayDao;
@@ -93,7 +92,6 @@ import java.time.LocalDate;
 import java.time.MonthDay;
 import java.time.Year;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -433,11 +431,11 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		PolicyEmployeesOnLeaveResponseDto responseDto = new PolicyEmployeesOnLeaveResponseDto();
 		responseDto.setDate(today);
 
-		List<HolidayResponseDto> nonWorkingDays = resolveNonWorkingDays(today);
-		if (!nonWorkingDays.isEmpty()) {
+		List<HolidayResponseDto> holidays = leaveMapper
+			.holidaysToHolidayResponseDtoList(holidayDao.findAllByIsActiveTrueAndDate(today));
+		if (!holidays.isEmpty() || !resolveWorkingDays().contains(today.getDayOfWeek())) {
 			responseDto.setIsNonWorkingDay(true);
-			responseDto.setHolidays(nonWorkingDays);
-			log.info("getEmployeesOnLeaveToday: execution ended on a non-working day");
+			responseDto.setHolidays(holidays);
 			return new ResponseEntityDto(false, responseDto);
 		}
 
@@ -474,9 +472,9 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		List<Long> teamIds = resolveTeamIds(filterDto.getTeamIds());
 
 		List<PolicyResourceAvailabilityLeaveRequestResponseDto> leaveRequests = policyLeaveRequestDao
-			.findApprovedRequestsInRange(startDate, endDate, teamIds, viewerEmployeeId, true)
+			.findApprovedRequestsInRange(startDate, endDate, teamIds, viewerEmployeeId)
 			.stream()
-			.map(this::toResourceAvailabilityLeaveRequest)
+			.map(leaveMapper::policyLeaveRequestToPolicyResourceAvailabilityLeaveRequestResponseDto)
 			.toList();
 		long employeeCount = policyLeaveRequestDao.countEmployeesInScope(teamIds, viewerEmployeeId, true);
 		Map<LocalDate, List<Holiday>> holidaysByDate = holidayDao
@@ -490,7 +488,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 					holidaysByDate.getOrDefault(date, List.of()), workingDays))
 			.toList();
 
-		log.info("getResourceAvailability: execution ended with {} day(s)", days.size());
+		log.info("getResourceAvailability: execution ended");
 		return new ResponseEntityDto(false, days);
 	}
 
@@ -555,7 +553,9 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INVALID_DATE_RANGE);
 		}
 		if (ChronoUnit.DAYS.between(startDate, endDate) >= PolicyLeaveConstant.MAX_RESOURCE_AVAILABILITY_DAYS) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_REQUEST_DATE_RANGE_INVALID);
+			throw new ModuleException(
+					LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_RESOURCE_AVAILABILITY_RANGE_TOO_LONG,
+					new String[] { String.valueOf(PolicyLeaveConstant.MAX_RESOURCE_AVAILABILITY_DAYS) });
 		}
 	}
 
@@ -570,57 +570,17 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 			.map(leaveRequest -> leaveRequest.getEmployee().getEmployeeId())
 			.distinct()
 			.count();
-		List<HolidayResponseDto> nonWorkingDays = resolveNonWorkingDays(date, holidays, workingDays);
+		List<HolidayResponseDto> holidaysOnDate = leaveMapper.holidaysToHolidayResponseDtoList(holidays);
 
 		PolicyResourceAvailabilityResponseDto responseDto = new PolicyResourceAvailabilityResponseDto();
 		responseDto.setDate(date);
 		responseDto.setDayOfWeek(date.getDayOfWeek());
-		responseDto.setIsNonWorkingDay(!nonWorkingDays.isEmpty());
-		responseDto.setHolidays(nonWorkingDays);
+		responseDto.setIsNonWorkingDay(!holidaysOnDate.isEmpty() || !workingDays.contains(date.getDayOfWeek()));
+		responseDto.setHolidays(holidaysOnDate);
 		responseDto.setLeaveCount(leaveCount);
 		responseDto.setAvailableCount(Math.max(0, employeeCount - leaveCount));
 		responseDto.setLeaveRequests(leaveRequestsOnDate);
 		return responseDto;
-	}
-
-	private PolicyResourceAvailabilityLeaveRequestResponseDto toResourceAvailabilityLeaveRequest(
-			PolicyLeaveRequest leaveRequest) {
-		Employee employee = leaveRequest.getEmployee();
-		EmployeeBasicDetailsResponseDto employeeDto = new EmployeeBasicDetailsResponseDto();
-		employeeDto.setEmployeeId(employee.getEmployeeId());
-		employeeDto.setFirstName(employee.getFirstName());
-		employeeDto.setMiddleName(employee.getMiddleName());
-		employeeDto.setLastName(employee.getLastName());
-		employeeDto.setAuthPic(employee.getAuthPic());
-
-		PolicyResourceAvailabilityLeaveRequestResponseDto responseDto = new PolicyResourceAvailabilityLeaveRequestResponseDto();
-		responseDto.setLeaveRequestId(leaveRequest.getId());
-		responseDto.setEmployee(employeeDto);
-		responseDto.setPolicyName(leaveRequest.getPolicy().getName());
-		responseDto.setLeaveType(
-				leaveMapper.policyLeaveTypeToPolicyLeaveTypeDetailResponseDto(leaveRequest.getPolicy().getLeaveType()));
-		responseDto.setStartDate(leaveRequest.getStartDate());
-		responseDto.setEndDate(leaveRequest.getEndDate());
-		responseDto.setLeaveState(leaveRequest.getLeaveState());
-		return responseDto;
-	}
-
-	private List<HolidayResponseDto> resolveNonWorkingDays(LocalDate date) {
-		return resolveNonWorkingDays(date, holidayDao.findAllByIsActiveTrueAndDate(date), resolveWorkingDays());
-	}
-
-	private List<HolidayResponseDto> resolveNonWorkingDays(LocalDate date, List<Holiday> holidays,
-			Set<DayOfWeek> workingDays) {
-		List<HolidayResponseDto> nonWorkingDays = new ArrayList<>(
-				leaveMapper.holidaysToHolidayResponseDtoList(holidays));
-
-		if (!workingDays.contains(date.getDayOfWeek())) {
-			HolidayResponseDto dayOff = new HolidayResponseDto();
-			dayOff.setDate(date);
-			dayOff.setName(PolicyLeaveConstant.NON_WORKING_DAY_NAME);
-			nonWorkingDays.add(dayOff);
-		}
-		return nonWorkingDays;
 	}
 
 	private Set<DayOfWeek> resolveWorkingDays() {
