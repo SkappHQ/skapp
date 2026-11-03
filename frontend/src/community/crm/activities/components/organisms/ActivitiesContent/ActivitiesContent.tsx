@@ -34,6 +34,7 @@ import {
   useGetActivityTasks
 } from "~community/crm/api/ActivityApi";
 import { useGetDealsByIds } from "~community/crm/api/DealApi";
+import AddActivityTaskModalContent from "~community/crm/components/molecules/AddActivityTaskModalContent/AddActivityTaskModalContent";
 import LogCallModalContent from "~community/crm/components/molecules/LogCallModalContent/LogCallModalContent";
 import LogMeetingModalContent from "~community/crm/components/molecules/LogMeetingModalContent/LogMeetingModalContent";
 import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
@@ -55,6 +56,7 @@ const ActivitiesContent: FC = () => {
   const [filters, setFilters] = useState<ActivityFilterValues>({});
   const [isLogCallModalOpen, setIsLogCallModalOpen] = useState(false);
   const [isLogMeetingModalOpen, setIsLogMeetingModalOpen] = useState(false);
+  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
 
   const isAllTab = activeTab === ActivityTab.ALL;
 
@@ -195,7 +197,10 @@ const ActivitiesContent: FC = () => {
     { labelKey: string; onClick: () => void } | null
   > = {
     [ActivityTab.ALL]: null,
-    [ActivityTab.TASKS]: null,
+    [ActivityTab.TASKS]: {
+      labelKey: "addTaskBtn",
+      onClick: () => setIsAddTaskModalOpen(true)
+    },
     [ActivityTab.CALLS]: {
       labelKey: "logCallBtn",
       onClick: () => setIsLogCallModalOpen(true)
@@ -247,6 +252,11 @@ const ActivitiesContent: FC = () => {
       {isLogMeetingModalOpen && (
         <LogMeetingModalContent
           onClose={() => setIsLogMeetingModalOpen(false)}
+        />
+      )}
+      {isAddTaskModalOpen && (
+        <AddActivityTaskModalContent
+          onClose={() => setIsAddTaskModalOpen(false)}
         />
       )}
       <ActivityFeed
