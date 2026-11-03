@@ -27,6 +27,7 @@ import {
 import { crmActivityEndpoints } from "~community/crm/api/utils/ApiEndpoints";
 import { crmActivityQueryKeys } from "~community/crm/api/utils/QueryKeys";
 import {
+  CrmActivityTaskEntity,
   CrmCallEntity,
   CrmMeetingEntity
 } from "~community/crm/types/CrmCommonTypes";
@@ -235,3 +236,19 @@ export const useCreateTask = (
     onError
   });
 };
+
+const fetchTaskById = async (id: number): Promise<CrmActivityTaskEntity> => {
+  const response = await authFetch.get(crmActivityEndpoints.GET_TASK_BY_ID(id));
+  return response?.data?.results?.[0];
+};
+
+export const useGetActivityTaskById = (
+  id: number,
+  enabled: boolean
+): UseQueryResult<CrmActivityTaskEntity, AxiosError> =>
+  useQuery({
+    queryKey: crmActivityQueryKeys.TASK(id),
+    queryFn: () => fetchTaskById(id),
+    enabled,
+    refetchOnWindowFocus: false
+  });

@@ -607,6 +607,13 @@
         }
       }
     },
+    "taskSidePanel": {
+      "noDealsDescription": "No deals are linked to this task",
+      "deleteTask": "Delete task",
+      "info": {
+        "dueDate": "Due date"
+      }
+    },
     "callSidePanel": {
       "noDealsDescription": "No deals are linked to this call",
       "editCall": "Edit call",

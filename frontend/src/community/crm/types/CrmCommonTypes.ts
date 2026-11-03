@@ -191,3 +191,17 @@ export interface CrmAddTaskFormValues {
   companyId: number | null;
   notes: string;
 }
+
+export interface CrmActivityTaskEntity {
+  id: number;
+  name: string;
+  priority: CrmPriorityEnum;
+  dueAt: string;
+  isCompleted: boolean;
+  completedAt?: string;
+  notes?: string;
+  ownerId: number;
+  contact?: CrmContactEntity;
+  deal?: CrmDealEntity;
+  company?: CrmCompanyEntity;
+}
