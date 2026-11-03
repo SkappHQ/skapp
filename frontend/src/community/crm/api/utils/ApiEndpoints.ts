@@ -61,6 +61,7 @@ export const crmActivityEndpoints = {
   GET_EMAILS: `${moduleAPIPath.CRM}/activity/email`,
   GET_MEETINGS: `${moduleAPIPath.CRM}/activity/meeting`,
   GET_TASKS: `${moduleAPIPath.CRM}/activity/task`,
+  EDIT_TASK: (id: number) => `${moduleAPIPath.CRM}/activity/task/${id}`,
   CREATE_MEETING: `${moduleAPIPath.CRM}/activity/meeting`,
   GET_MEETING_BY_ID: (id: number) =>
     `${moduleAPIPath.CRM}/activity/meeting/${id}`

@@ -27,7 +27,8 @@ import { crmActivityEndpoints } from "~community/crm/api/utils/ApiEndpoints";
 import { crmActivityQueryKeys } from "~community/crm/api/utils/QueryKeys";
 import {
   CrmCallEntity,
-  CrmMeetingEntity
+  CrmMeetingEntity,
+  CrmTaskCompletionPayload
 } from "~community/crm/types/CrmCommonTypes";
 
 const fetchActivityFeed = async (
@@ -134,6 +135,21 @@ export const useGetActivityTasks = (
     queryFn: () => fetchActivityTasks(params),
     enabled,
     refetchOnWindowFocus: false
+  });
+
+const updateTaskCompletion = async ({
+  id,
+  isCompleted
+}: CrmTaskCompletionPayload): Promise<void> => {
+  await authFetch.patch(crmActivityEndpoints.EDIT_TASK(id), { isCompleted });
+};
+
+export const useUpdateTaskCompletion = (
+  onError: (error: ErrorResponse, payload: CrmTaskCompletionPayload) => void
+): UseMutationResult<void, ErrorResponse, CrmTaskCompletionPayload> =>
+  useMutation({
+    mutationFn: updateTaskCompletion,
+    onError
   });
 
 const createCall = async (

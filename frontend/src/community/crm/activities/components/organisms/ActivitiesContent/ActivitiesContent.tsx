@@ -2,9 +2,11 @@ import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import ActivityCallSidePanel from "~community/crm/activities/components/organisms/ActivityCallSidePanel/ActivityCallSidePanel";
 import ActivityFeed from "~community/crm/activities/components/organisms/ActivityFeed/ActivityFeed";
 import ActivityToolbar from "~community/crm/activities/components/organisms/ActivityToolbar/ActivityToolbar";
@@ -30,7 +32,8 @@ import {
   useGetActivityEmails,
   useGetActivityFeed,
   useGetActivityMeetings,
-  useGetActivityTasks
+  useGetActivityTasks,
+  useUpdateTaskCompletion
 } from "~community/crm/api/ActivityApi";
 import { useGetDealsByIds } from "~community/crm/api/DealApi";
 import LogCallModalContent from "~community/crm/components/molecules/LogCallModalContent/LogCallModalContent";
@@ -43,6 +46,7 @@ import { getMissingDealIds, mergeDeals } from "~community/crm/utils/dealUtil";
 const ActivitiesContent: FC = () => {
   const translateText = useTranslator("crmModule");
   const displayZone = useDisplayZone();
+  const { setToastMessage } = useToast();
   const { isCrmSalesManager } = useSessionData();
   const isManager = Boolean(isCrmSalesManager);
 
@@ -51,6 +55,9 @@ const ActivitiesContent: FC = () => {
   const [activeTab, setActiveTab] = useState<ActivityTab>(DEFAULT_ACTIVITY_TAB);
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<ActivityFilterValues>({});
+  const [taskCompletions, setTaskCompletions] = useState<
+    Record<number, boolean>
+  >({});
   const [isLogCallModalOpen, setIsLogCallModalOpen] = useState(false);
 
   const isAllTab = activeTab === ActivityTab.ALL;
@@ -127,7 +134,14 @@ const ActivitiesContent: FC = () => {
     if (activeTab === ActivityTab.MEETINGS && meetings.data)
       return toSingleFeedPage(meetings.data.map(toMeetingRow));
     if (activeTab === ActivityTab.TASKS && tasks.data)
-      return toSingleFeedPage(tasks.data.map(toTaskRow));
+      return toSingleFeedPage(
+        tasks.data.map((task) => {
+          const row = toTaskRow(task);
+          return row.id in taskCompletions
+            ? { ...row, isCompleted: taskCompletions[row.id] }
+            : row;
+        })
+      );
     return [];
   }, [
     activeTab,
@@ -136,7 +150,8 @@ const ActivitiesContent: FC = () => {
     calls.data,
     emails.data,
     meetings.data,
-    tasks.data
+    tasks.data,
+    taskCompletions
   ]);
 
   const rows = useMemo(() => pages.flatMap((page) => page.items), [pages]);
@@ -173,7 +188,36 @@ const ActivitiesContent: FC = () => {
     openCrmSidePanel(CrmSidePanelTypes.CALL_SIDE_PANEL);
   };
 
-  const handleToggleComplete = (): void => {};
+  const { mutate: updateTaskCompletion } = useUpdateTaskCompletion(
+    (_error, { id, isCompleted }) => {
+      setTaskCompletions((current) => ({ ...current, [id]: !isCompleted }));
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateText([
+          "tasks",
+          "common",
+          "toastMessages",
+          "toggleErrorTitle"
+        ]),
+        description: translateText([
+          "tasks",
+          "common",
+          "toastMessages",
+          "toggleErrorDescription"
+        ]),
+        isIcon: true
+      });
+    }
+  );
+
+  const handleToggleComplete = (
+    row: ActivityRow,
+    isCompleted: boolean
+  ): void => {
+    setTaskCompletions((current) => ({ ...current, [row.id]: isCompleted }));
+    updateTaskCompletion({ id: row.id, isCompleted });
+  };
 
   return (
     <div className="flex flex-col w-full gap-4 pt-5.5 lg:pt-1">
