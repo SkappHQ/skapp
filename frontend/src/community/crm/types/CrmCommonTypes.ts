@@ -180,3 +180,14 @@ export interface CrmLogMeetingFormValues {
   dealId: number | null;
   companyId: number | null;
 }
+
+export interface CrmAddTaskFormValues {
+  name: string;
+  priority: CrmPriorityEnum | null;
+  dueAt: string | null;
+  ownerId: number | null;
+  contactId: number | null;
+  dealId: number | null;
+  companyId: number | null;
+  notes: string;
+}

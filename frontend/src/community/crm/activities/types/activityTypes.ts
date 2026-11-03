@@ -143,3 +143,14 @@ export interface ActivityMeetingCreatePayload {
   ownerId: number | null;
   comments: string;
 }
+
+export interface ActivityTaskCreatePayload {
+  name: string;
+  priority: CrmPriorityEnum | null;
+  dueAt: string | null;
+  ownerId: number | null;
+  contactId: number | null;
+  dealId: number | null;
+  companyId: number | null;
+  notes: string;
+}
