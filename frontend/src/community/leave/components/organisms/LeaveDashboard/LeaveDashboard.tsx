@@ -165,6 +165,37 @@ const LeaveDashboard = (): JSX.Element => {
     }
   };
 
+  const renderTodaysAvailabilityCard = () => {
+    if (isPolicyConfigLoading) {
+      return (
+        <AnalyticCard
+          title={translateText(["todayAvailability"]) ?? ""}
+          isExpandable={false}
+        />
+      );
+    }
+
+    if (isLeavePoliciesEnabled) {
+      return (
+        <PolicyOnLeaveTodayCard teamId={teamId} enabled={isFetchingEnabled} />
+      );
+    }
+
+    return (
+      <AnalyticCard
+        title={translateText(["todayAvailability"]) ?? ""}
+        isExpandable={!!todaysAvailability}
+        onExpand={handleTodaysAvailabilityModalOpen}
+        accessibility={{
+          tabIndex: 0,
+          role: "button"
+        }}
+      >
+        {todaysAvailability && resourceDetails()}
+      </AnalyticCard>
+    );
+  };
+
   return (
     <Box sx={classes.container}>
       <Box sx={classes.header}>
@@ -181,29 +212,7 @@ const LeaveDashboard = (): JSX.Element => {
       </Box>
       <Grid container spacing={1}>
         <Grid sx={{ width: { xs: "100%", md: "32.5%" } }}>
-          {isPolicyConfigLoading ? (
-            <AnalyticCard
-              title={translateText(["todayAvailability"]) ?? ""}
-              isExpandable={false}
-            />
-          ) : isLeavePoliciesEnabled ? (
-            <PolicyOnLeaveTodayCard
-              teamId={teamId}
-              enabled={isFetchingEnabled}
-            />
-          ) : (
-            <AnalyticCard
-              title={translateText(["todayAvailability"]) ?? ""}
-              isExpandable={!!todaysAvailability}
-              onExpand={handleTodaysAvailabilityModalOpen}
-              accessibility={{
-                tabIndex: 0,
-                role: "button"
-              }}
-            >
-              {todaysAvailability && resourceDetails()}
-            </AnalyticCard>
-          )}
+          {renderTodaysAvailabilityCard()}
         </Grid>
         <Grid sx={{ width: { xs: "100%", md: "32.5%" } }}>
           <AnalyticCard
