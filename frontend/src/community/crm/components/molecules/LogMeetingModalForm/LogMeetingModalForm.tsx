@@ -21,7 +21,10 @@ import ActivityRelatedToField from "~community/crm/components/molecules/Activity
 import MeetingAttendeesField from "~community/crm/components/molecules/MeetingAttendeesField/MeetingAttendeesField";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmLogMeetingFormValues } from "~community/crm/types/CrmCommonTypes";
-import { getContactCompanyIds } from "~community/crm/utils/contactUtil";
+import {
+  getContactCompanyIds,
+  getContactDisplayName
+} from "~community/crm/utils/contactUtil";
 import { isDealMatchingCompany } from "~community/crm/utils/dealUtil";
 
 interface Props {
@@ -64,6 +67,15 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
     !values.contactIds.some((contactId) =>
       isDealMatchingCompany(selectedDeal, contacts[contactId]?.companyId)
     )
+  );
+
+  const primaryAttendee =
+    values.contactIds.length > 0 ? contacts[values.contactIds[0]] : null;
+
+  const isRelatedToMismatch = Boolean(
+    values.companyId &&
+    primaryAttendee &&
+    values.companyId !== primaryAttendee.companyId
   );
 
   const pickedDate = values.date ? toPickerDate(values.date) : null;
@@ -177,8 +189,10 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
       />
 
       <ActivityAssociations
-        isOpen={isAssociationsOpen}
-        onToggle={() => setIsAssociationsOpen(!isAssociationsOpen)}
+        isOpen={isAssociationsOpen || isDealMismatch}
+        onToggle={() =>
+          setIsAssociationsOpen(!(isAssociationsOpen || isDealMismatch))
+        }
       >
         <ActivityDealField
           id="log-meeting-deal"
@@ -207,6 +221,13 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
           id="log-meeting-related-to"
           formik={formik}
           fieldAriaLabel={translateAria(["relatedTo"])}
+          {...(isRelatedToMismatch &&
+            primaryAttendee && {
+              mismatchTooltip: translateText(
+                ["logActivity", "tooltips", "relatedToMismatch"],
+                { name: getContactDisplayName(primaryAttendee) }
+              )
+            })}
         />
       </ActivityAssociations>
     </div>
