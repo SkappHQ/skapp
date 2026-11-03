@@ -11,6 +11,12 @@ export const getTimeSlotStart = (dateTime: DateTime): DateTime =>
     minute: dateTime.minute - (dateTime.minute % ACTIVITY_TIME_SLOT_MINUTES)
   });
 
+export const getActivityEndTimeSlot = (slotStart: DateTime): DateTime =>
+  DateTime.min(
+    slotStart.plus({ hours: 1 }),
+    getTimeSlotStart(slotStart.endOf("day"))
+  );
+
 export const getActivityTimeOptions = () => {
   const dayStart = DateTime.utc().startOf("day");
 

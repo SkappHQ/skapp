@@ -6,7 +6,7 @@ import {
   TextArea
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -33,27 +33,15 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
     touched,
     handleChange,
     handleBlur,
-    isSubmitting,
-    submitCount,
     setFieldValue
   } = formik;
 
-  const translateText = useTranslator(
-    "crmModule",
-    "activities",
-    "logCall",
-    "modal"
-  );
+  const translateText = useTranslator("crmModule", "activities");
   const translateAria = useTranslator(
     "crmAria",
     "activities",
     "logCall",
     "modal"
-  );
-  const translateActivityText = useTranslator(
-    "crmModule",
-    "activities",
-    "logActivity"
   );
 
   const [isAssociationsOpen, setIsAssociationsOpen] = useState(false);
@@ -72,16 +60,6 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
     setIsAssociationsOpen(true);
   };
 
-  useEffect(() => {
-    if (submitCount === 0 || isSubmitting) return;
-
-    const [firstInvalidField] = Object.keys(errors);
-
-    if (firstInvalidField) {
-      document.getElementById(`log-call-${firstInvalidField}-input`)?.focus();
-    }
-  }, [submitCount, isSubmitting]);
-
   const pickedDate = values.date ? toPickerDate(values.date) : null;
 
   const handleDateSelect = (date?: Date): void => {
@@ -94,8 +72,8 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
         id="log-call-subject-input"
         name="subject"
         value={values.subject}
-        label={translateActivityText(["labels", "subject"])}
-        placeholder={translateActivityText(["placeholders", "subject"])}
+        label={translateText(["logActivity", "labels", "subject"])}
+        placeholder={translateText(["logActivity", "placeholders", "subject"])}
         errorMessage={touched.subject ? errors.subject : ""}
         state={touched.subject && errors.subject ? "error" : "default"}
         onChange={handleChange}
@@ -117,8 +95,12 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
               <InputField
                 name="date"
                 value={pickedDate ? pickedDate.toLocaleDateString() : ""}
-                label={translateActivityText(["labels", "date"])}
-                placeholder={translateActivityText(["placeholders", "date"])}
+                label={translateText(["logActivity", "labels", "date"])}
+                placeholder={translateText([
+                  "logActivity",
+                  "placeholders",
+                  "date"
+                ])}
                 aria-label={translateAria(["date"])}
                 rightIcon={<CalendarIcon />}
                 fullWidth
@@ -132,8 +114,8 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
             options={getActivityTimeOptions()}
             value={values.time}
             onChange={(value) => setFieldValue("time", value)}
-            label={translateText(["labels", "time"])}
-            placeholder={translateActivityText(["placeholders", "time"])}
+            label={translateText(["logCall", "modal", "labels", "time"])}
+            placeholder={translateText(["logActivity", "placeholders", "time"])}
             variant="primary"
             className="rounded-lg"
             ariaLabel={translateAria(["time"])}
@@ -147,8 +129,13 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
         id="log-call-duration-input"
         name="duration"
         value={values.duration}
-        label={translateText(["labels", "duration"])}
-        placeholder={translateText(["placeholders", "duration"])}
+        label={translateText(["logCall", "modal", "labels", "duration"])}
+        placeholder={translateText([
+          "logCall",
+          "modal",
+          "placeholders",
+          "duration"
+        ])}
         errorMessage={touched.duration ? errors.duration : ""}
         state={touched.duration && errors.duration ? "error" : "default"}
         onChange={handleChange}
@@ -173,8 +160,8 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
       <TextArea
         name="comments"
         value={values.comments}
-        label={translateActivityText(["labels", "comments"])}
-        placeholder={translateActivityText(["placeholders", "comments"])}
+        label={translateText(["logActivity", "labels", "comments"])}
+        placeholder={translateText(["logActivity", "placeholders", "comments"])}
         onChange={handleChange}
         rows={2}
         aria-label={translateAria(["comments"])}
@@ -187,7 +174,12 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
             formik={formik}
             errorMessage={
               isDealMismatch
-                ? translateText(["validations", "dealMismatch"])
+                ? translateText([
+                    "logCall",
+                    "modal",
+                    "validations",
+                    "dealMismatch"
+                  ])
                 : ""
             }
             isClearedNoticeVisible={isDealClearedNoticeVisible}
@@ -204,8 +196,8 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
         onClick={() => setIsAssociationsOpen(!isAssociationsVisible)}
       >
         {isAssociationsVisible
-          ? translateText(["buttons", "hideAssociations"])
-          : translateText(["buttons", "addAssociations"])}
+          ? translateText(["logCall", "modal", "buttons", "hideAssociations"])
+          : translateText(["logCall", "modal", "buttons", "addAssociations"])}
       </button>
     </div>
   );

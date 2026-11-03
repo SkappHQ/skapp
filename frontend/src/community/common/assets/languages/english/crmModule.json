@@ -751,6 +751,16 @@
           "date": "Date is required",
           "attendees": "Please select at least one attendee",
           "endTime": "End time must be after start time"
+        },
+        "title": "Log a meeting",
+        "labels": {
+          "startTime": "Start time",
+          "endTime": "End time"
+        },
+        "toastMessages": {
+          "addSuccessTitle": "Meeting added successfully",
+          "addSuccessDescription": "Meeting has been added successfully",
+          "errorDescription": "Failed to save meeting"
         }
       }
     },

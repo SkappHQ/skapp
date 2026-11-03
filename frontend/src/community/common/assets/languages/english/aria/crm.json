@@ -172,6 +172,17 @@
       "clearTeamMember": "Clear team member filter",
       "teamMember": "Team member, selected"
     },
+    "logMeeting": {
+      "modal": {
+        "subject": "Meeting subject",
+        "date": "Meeting date",
+        "startTime": "Meeting start time",
+        "endTime": "Meeting end time",
+        "comments": "Meeting comments",
+        "cancel": "Cancel log a meeting",
+        "save": "Save meeting"
+      }
+    },
     "logActivity": {
       "removeOwner": "Remove activity owner"
     }
