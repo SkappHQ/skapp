@@ -189,6 +189,10 @@
       "clearContact": "Clear selected contact",
       "clearDeal": "Clear selected deal",
       "clearRelatedTo": "Clear selected company"
+    },
+    "meetingSidePanel": {
+      "kebabMenu": "Meeting actions",
+      "attendees": "Meeting attendees"
     }
   }
 }
