@@ -130,6 +130,19 @@
     }
   },
   "activities": {
+    "addTask": {
+      "modal": {
+        "taskName": "Task name",
+        "priority": "Task priority",
+        "dueDate": "Task due date",
+        "contact": "Task contact",
+        "notes": "Task notes",
+        "deal": "Task deal",
+        "relatedTo": "Task related company",
+        "cancel": "Cancel add task",
+        "save": "Save task"
+      }
+    },
     "callSidePanel": {
       "kebabMenu": "Call actions"
     },
