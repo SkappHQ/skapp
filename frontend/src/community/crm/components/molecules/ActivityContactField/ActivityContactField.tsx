@@ -7,7 +7,10 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import SelectableSearchField from "~community/crm/components/molecules/SelectableSearchField/SelectableSearchField";
 import { useContactLookup } from "~community/crm/hooks/useContactLookup";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
+import {
+  CrmAddTaskFormValues,
+  CrmLogCallFormValues
+} from "~community/crm/types/CrmCommonTypes";
 import {
   getContactDisplayName,
   updateContactRecord
@@ -16,35 +19,27 @@ import { isDealMatchingCompany } from "~community/crm/utils/dealUtil";
 
 interface Props {
   id: string;
-  formik: FormikProps<CrmLogCallFormValues>;
+  formik: FormikProps<CrmLogCallFormValues> | FormikProps<CrmAddTaskFormValues>;
+  label: string;
+  fieldAriaLabel: string;
   onDealCleared: () => void;
+  required?: boolean;
+  errorMessage?: string;
 }
 
-const LogCallContactField: FC<Props> = ({ id, formik, onDealCleared }) => {
-  const { values, errors, touched, setFieldValue } = formik;
+const ActivityContactField: FC<Props> = ({
+  id,
+  formik,
+  label,
+  fieldAriaLabel,
+  onDealCleared,
+  required,
+  errorMessage
+}) => {
+  const { values, setFieldValue } = formik;
 
-  const translateText = useTranslator(
-    "crmModule",
-    "activities",
-    "logCall",
-    "modal"
-  );
-  const translateActivityText = useTranslator(
-    "crmModule",
-    "activities",
-    "logActivity"
-  );
-  const translateAria = useTranslator(
-    "crmAria",
-    "activities",
-    "logCall",
-    "modal"
-  );
-  const translateActivityAria = useTranslator(
-    "crmAria",
-    "activities",
-    "logActivity"
-  );
+  const translateText = useTranslator("crmModule", "activities", "logActivity");
+  const translateAria = useTranslator("crmAria", "activities", "logActivity");
 
   const { contacts, deals, setContacts } = useCrmStore(
     useShallow((store) => ({
@@ -97,24 +92,24 @@ const LogCallContactField: FC<Props> = ({ id, formik, onDealCleared }) => {
     <SelectableSearchField
       positionStrategy="fixed"
       id={id}
-      label={translateText(["labels", "contact"])}
-      placeholder={translateActivityText(["placeholders", "contact"])}
+      label={label}
+      placeholder={translateText(["placeholders", "contact"])}
       selectedValue={
         selectedContact ? getContactDisplayName(selectedContact) : ""
       }
       onClear={handleClear}
-      clearAriaLabel={translateActivityAria(["clearContact"])}
-      fieldAriaLabel={translateAria(["contact"])}
+      clearAriaLabel={translateAria(["clearContact"])}
+      fieldAriaLabel={fieldAriaLabel}
       searchValue={searchTerm}
       onSearchChange={(event) => setSearchTerm(event.target.value)}
       items={dropdownItems}
       onSelect={handleSelect}
       isOpenOnFocus={isSearchActive}
-      emptyMessage={translateActivityText(["emptyStates", "noContacts"])}
-      required
-      errorMessage={touched.contactId ? errors.contactId : ""}
+      emptyMessage={translateText(["emptyStates", "noContacts"])}
+      required={required}
+      errorMessage={errorMessage}
     />
   );
 };
 
-export default LogCallContactField;
+export default ActivityContactField;

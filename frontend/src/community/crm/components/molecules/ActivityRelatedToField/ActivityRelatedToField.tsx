@@ -16,6 +16,7 @@ import {
 } from "~community/crm/constants/commonConstants";
 import { useCrmStore } from "~community/crm/store/store";
 import {
+  CrmAddTaskFormValues,
   CrmLogCallFormValues,
   CrmLogMeetingFormValues
 } from "~community/crm/types/CrmCommonTypes";
@@ -28,7 +29,9 @@ import {
 interface Props {
   id: string;
   formik:
-    FormikProps<CrmLogCallFormValues> | FormikProps<CrmLogMeetingFormValues>;
+    | FormikProps<CrmLogCallFormValues>
+    | FormikProps<CrmLogMeetingFormValues>
+    | FormikProps<CrmAddTaskFormValues>;
   fieldAriaLabel: string;
 }
 
