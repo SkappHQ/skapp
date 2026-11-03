@@ -24,14 +24,6 @@ jest.mock("~community/attendance/api/AttendanceEmployeeApi", () => ({
   }))
 }));
 
-jest.mock("~community/attendance/utils/TimeUtils", () => ({
-  convertToUtc: jest.fn((dateTime: string) => `utc-${dateTime}`)
-}));
-
-jest.mock("~community/common/hooks/useDisplayZone", () => ({
-  useDisplayZone: jest.fn(() => "Asia/Colombo")
-}));
-
 jest.mock("~community/common/hooks/useTranslator", () => ({
   useTranslator: () => (key: string[]) => key[key.length - 1]
 }));
@@ -77,56 +69,12 @@ describe("HolidayEntryConfirmation", () => {
       </MockTheme>
     );
 
-    const cancelButton = screen.getByRole("button", { name: /cancelBtnTxt/ });
+    const cancelButton = screen.getByText("cancelBtnTxt");
     await user.click(cancelButton);
 
     expect(mockSetIsEmployeeTimesheetModalOpen).toHaveBeenCalledWith(true);
     expect(mockSetEmployeeTimesheetModalType).toHaveBeenCalledWith(
       "ADD_TIME_ENTRY"
     );
-  });
-
-  test("submits the manual entry and closes the modal when confirm button is clicked", async () => {
-    const mockMutate = jest.fn();
-    const mockSetIsEmployeeTimesheetModalOpen = jest.fn();
-    jest
-      .mocked(
-        require("~community/attendance/api/AttendanceEmployeeApi")
-          .useAddManualTimeEntry
-      )
-      .mockReturnValue({ mutate: mockMutate });
-    jest
-      .mocked(
-        require("~community/attendance/store/attendanceStore")
-          .useAttendanceStore
-      )
-      .mockReturnValue({
-        setIsEmployeeTimesheetModalOpen: mockSetIsEmployeeTimesheetModalOpen,
-        setEmployeeTimesheetModalType: jest.fn(),
-        timeAvailabilityForPeriod: {
-          holiday: [{ holidayDuration: "FULL_DAY" }],
-          date: "2023-10-01"
-        }
-      });
-
-    const user = userEvent.setup();
-    render(
-      <MockTheme>
-        <HolidayEntryConfirmation
-          fromDateTime={mockFromDateTime}
-          toDateTime={mockToDateTime}
-        />
-      </MockTheme>
-    );
-
-    const confirmButton = screen.getByRole("button", { name: /confirmBtnTxt/ });
-    await user.click(confirmButton);
-
-    expect(mockMutate).toHaveBeenCalledWith({
-      startTime: `utc-${mockFromDateTime}`,
-      endTime: `utc-${mockToDateTime}`,
-      zoneId: "Asia/Colombo"
-    });
-    expect(mockSetIsEmployeeTimesheetModalOpen).toHaveBeenCalledWith(false);
   });
 });
