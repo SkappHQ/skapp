@@ -28,6 +28,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -199,6 +201,11 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 
 		if (requestDto.getContactId() != null || requestDto.getDealId() != null) {
 			CrmValidations.validateActivityTaskDealMatchesContactCompany(task.getDeal(), task.getContact());
+		}
+
+		if (requestDto.getIsCompleted() != null) {
+			task.setIsCompleted(requestDto.getIsCompleted());
+			task.setCompletedAt(Boolean.TRUE.equals(requestDto.getIsCompleted()) ? Instant.now() : null);
 		}
 
 		CrmActivityTask updatedTask = crmActivityTaskDao.save(task);

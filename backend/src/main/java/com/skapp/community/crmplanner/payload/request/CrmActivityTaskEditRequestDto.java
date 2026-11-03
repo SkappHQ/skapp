@@ -26,4 +26,6 @@ public class CrmActivityTaskEditRequestDto {
 
 	private String notes;
 
+	private Boolean isCompleted;
+
 }
