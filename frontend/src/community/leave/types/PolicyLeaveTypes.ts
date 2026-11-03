@@ -179,6 +179,7 @@ export interface PolicyResourceAvailabilityEmployeeType {
 export interface PolicyResourceAvailabilityLeaveRequestType {
   leaveRequestId: number;
   employee: PolicyResourceAvailabilityEmployeeType;
+  reviewer: PolicyResourceAvailabilityEmployeeType | null;
   policyName: string;
   leaveType: PolicyLeaveTypeDetailType;
   startDate: string;

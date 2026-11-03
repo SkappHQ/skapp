@@ -1,7 +1,6 @@
 import { DateTime } from "luxon";
 import { SetStateAction } from "react";
 
-import { leaveDurationTypes } from "~community/attendance/types/attendanceTypes";
 import { daysTypes } from "~community/common/constants/stringConstants";
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
 import { DayOfWeek } from "~community/common/enums/CommonEnums";
@@ -36,9 +35,14 @@ import {
   PolicyLeaveRequestStatus,
   PolicyLeaveValidationFailure,
   PolicyResourceAvailabilityDayType,
+  PolicyResourceAvailabilityEmployeeType,
   PolicyResourceAvailabilityLeaveRequestType
 } from "~community/leave/types/PolicyLeaveTypes";
-import { ResourceAvailabilityRecord } from "~community/leave/types/ResourceAvailabilityTypes";
+import {
+  Employee,
+  LeaveType,
+  ResourceAvailabilityRecord
+} from "~community/leave/types/ResourceAvailabilityTypes";
 import { HolidayDurationType } from "~community/people/types/HolidayTypes";
 
 export type TranslateFn = (
@@ -356,16 +360,36 @@ const toResourceAvailabilityDateLabel = (date: string): string => {
   return `${dateTime.day}${getOrdinalIndicator(dateTime.day)} ${dateTime.toFormat("LLL")}`.toUpperCase();
 };
 
+const RESOURCE_AVAILABILITY_DAY_OF_WEEK: Record<daysTypes, DayOfWeek> = {
+  [daysTypes.MONDAY]: DayOfWeek.MON,
+  [daysTypes.TUESDAY]: DayOfWeek.TUE,
+  [daysTypes.WEDNESDAY]: DayOfWeek.WED,
+  [daysTypes.THURSDAY]: DayOfWeek.THU,
+  [daysTypes.FRIDAY]: DayOfWeek.FRI,
+  [daysTypes.SATURDAY]: DayOfWeek.SAT,
+  [daysTypes.SUNDAY]: DayOfWeek.SUN
+};
+
 const toResourceAvailabilityDayOfWeek = (dayOfWeek: daysTypes): DayOfWeek =>
-  dayOfWeek.slice(0, 3) as DayOfWeek;
+  RESOURCE_AVAILABILITY_DAY_OF_WEEK[dayOfWeek];
 
 const toResourceAvailabilityLeaveType = (
   leaveRequest: PolicyResourceAvailabilityLeaveRequestType
-) => ({
+): LeaveType => ({
   typeId: leaveRequest.leaveType.id,
   name: leaveRequest.policyName,
   emojiCode: leaveRequest.leaveType.emojiCode,
   colorCode: leaveRequest.leaveType.colorCode
+});
+
+const toResourceAvailabilityEmployee = (
+  employee: PolicyResourceAvailabilityEmployeeType
+): Employee => ({
+  employeeId: employee.employeeId,
+  firstName: employee.firstName,
+  middleName: employee.middleName,
+  lastName: employee.lastName,
+  authPic: employee.authPic ?? ""
 });
 
 export const toResourceAvailabilityRecords = (
@@ -381,7 +405,7 @@ export const toResourceAvailabilityRecords = (
     holidays: day.holidays.map((holiday) => ({
       id: String(holiday.id ?? ""),
       name: holiday.name,
-      holidayDuration: holiday.holidayDuration as unknown as leaveDurationTypes
+      holidayDuration: holiday.holidayDuration
     })),
     leaveRequests: day.leaveRequests.map((leaveRequest) => ({
       leaveRequestId: leaveRequest.leaveRequestId,
@@ -390,13 +414,10 @@ export const toResourceAvailabilityRecords = (
       startDate: leaveRequest.startDate,
       endDate: leaveRequest.endDate,
       leaveType: toResourceAvailabilityLeaveType(leaveRequest),
-      employee: {
-        employeeId: leaveRequest.employee.employeeId,
-        firstName: leaveRequest.employee.firstName,
-        middleName: leaveRequest.employee.middleName,
-        lastName: leaveRequest.employee.lastName,
-        authPic: leaveRequest.employee.authPic ?? ""
-      }
+      employee: toResourceAvailabilityEmployee(leaveRequest.employee),
+      reviewer: leaveRequest.reviewer
+        ? toResourceAvailabilityEmployee(leaveRequest.reviewer)
+        : null
     }))
   }));
 
@@ -421,7 +442,15 @@ export const toResourceAvailabilityPayloads = (
       startDate: leaveRequest.startDate,
       endDate: leaveRequest.endDate,
       leaveType: toResourceAvailabilityLeaveType(leaveRequest),
-      reviewer: null,
+      reviewer: leaveRequest.reviewer
+        ? {
+            employeeId: leaveRequest.reviewer.employeeId,
+            firstName: leaveRequest.reviewer.firstName,
+            middleName: leaveRequest.reviewer.middleName ?? "",
+            lastName: leaveRequest.reviewer.lastName,
+            authPic: leaveRequest.reviewer.authPic ?? ""
+          }
+        : null,
       employee: {
         employeeId: leaveRequest.employee.employeeId,
         firstName: leaveRequest.employee.firstName,

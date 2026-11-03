@@ -103,8 +103,7 @@ export const useGetPolicyResourceAvailability = ({
     ),
     queryFn: () => getPolicyResourceAvailability(teamIds, startDate, endDate),
     enabled:
-      enabled && teamIds !== null && teamIds !== "" && !!startDate && !!endDate,
-    refetchOnWindowFocus: false
+      enabled && teamIds !== null && teamIds !== "" && !!startDate && !!endDate
   });
 };
 
