@@ -1,17 +1,10 @@
 import { FC } from "react";
 
-import {
-  SHORT_MONTH_YEAR_FORMAT,
-  TIME_FORMAT_12_HOUR
-} from "~community/common/constants/timeConstants";
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import {
-  formatDayWithOrdinalIndicator,
-  instantInZone
-} from "~community/common/utils/dateTimeUtils";
-import OwnerAvatarChip from "~community/crm/components/atoms/OwnerAvatarChip/OwnerAvatarChip";
+import { instantInZone } from "~community/common/utils/dateTimeUtils";
 import PropertyRow from "~community/crm/components/molecules/PropertyRow/PropertyRow";
+import SidePanelActivityInfo from "~community/crm/components/molecules/SidePanelActivityInfo/SidePanelActivityInfo";
 import SidePanelLinkButton from "~community/crm/components/molecules/SidePanelLinkButton/SidePanelLinkButton";
 import {
   CrmCallEntity,
@@ -33,115 +26,53 @@ const SidePanelCallInfo: FC<Props> = ({
   onContactClick,
   onCompanyClick
 }) => {
-  const translateText = useTranslator("crmModule");
-  const displayZone = useDisplayZone();
-
-  const noValue = translateText([
+  const translateText = useTranslator(
+    "crmModule",
     "activities",
     "callSidePanel",
-    "info",
-    "noValue"
-  ]);
+    "info"
+  );
+  const translateActivityText = useTranslator(
+    "crmModule",
+    "activities",
+    "activitySidePanel",
+    "info"
+  );
+  const displayZone = useDisplayZone();
+
   const loggedAt = instantInZone(call.loggedAt, displayZone);
-  const callDate = `${formatDayWithOrdinalIndicator(loggedAt)} ${loggedAt.toFormat(SHORT_MONTH_YEAR_FORMAT)}`;
-  const callStartTime = loggedAt.toFormat(TIME_FORMAT_12_HOUR);
 
   return (
-    <div className="flex flex-col border border-secondary-accent rounded-xl p-3">
-      <PropertyRow
-        label={translateText([
-          "activities",
-          "callSidePanel",
-          "info",
-          "contact"
-        ])}
-      >
-        {call.contact ? (
-          <SidePanelLinkButton
-            label={getContactDisplayName(call.contact)}
-            onClick={onContactClick}
-          />
-        ) : (
+    <SidePanelActivityInfo
+      primaryRow={
+        <PropertyRow label={translateText(["contact"])}>
+          {call.contact ? (
+            <SidePanelLinkButton
+              label={getContactDisplayName(call.contact)}
+              onClick={onContactClick}
+            />
+          ) : (
+            <span className="body2">
+              {translateActivityText(["noLongerAvailable"])}
+            </span>
+          )}
+        </PropertyRow>
+      }
+      date={loggedAt}
+      startTime={loggedAt}
+      secondaryRow={
+        <PropertyRow label={translateText(["duration"])}>
           <span className="body2">
-            {translateText([
-              "activities",
-              "callSidePanel",
-              "info",
-              "noLongerAvailable"
-            ])}
+            {call.durationMinutes != null
+              ? formatCallDuration(call.durationMinutes)
+              : translateActivityText(["noValue"])}
           </span>
-        )}
-      </PropertyRow>
-
-      <PropertyRow
-        label={translateText(["activities", "callSidePanel", "info", "date"])}
-      >
-        <span className="body2">{callDate}</span>
-      </PropertyRow>
-
-      <PropertyRow
-        label={translateText([
-          "activities",
-          "callSidePanel",
-          "info",
-          "startTime"
-        ])}
-      >
-        <span className="body2">{callStartTime}</span>
-      </PropertyRow>
-
-      <PropertyRow
-        label={translateText([
-          "activities",
-          "callSidePanel",
-          "info",
-          "duration"
-        ])}
-      >
-        <span className="body2">
-          {call.durationMinutes != null
-            ? formatCallDuration(call.durationMinutes)
-            : noValue}
-        </span>
-      </PropertyRow>
-
-      <PropertyRow
-        label={translateText([
-          "activities",
-          "callSidePanel",
-          "info",
-          "activityOwner"
-        ])}
-      >
-        {owner ? (
-          <OwnerAvatarChip
-            id={String(owner.employeeId)}
-            owner={owner}
-            size="xs"
-          />
-        ) : (
-          <span className="body2">{noValue}</span>
-        )}
-      </PropertyRow>
-
-      <PropertyRow
-        label={translateText([
-          "activities",
-          "callSidePanel",
-          "info",
-          "relatedTo"
-        ])}
-      >
-        {call.company?.name ? (
-          <SidePanelLinkButton
-            label={call.company.name}
-            onClick={onCompanyClick}
-          />
-        ) : (
-          <span className="body2">{noValue}</span>
-        )}
-      </PropertyRow>
-    </div>
+        </PropertyRow>
+      }
+      owner={owner}
+      companyName={call.company?.name}
+      onCompanyClick={onCompanyClick}
+    />
   );
 };
 

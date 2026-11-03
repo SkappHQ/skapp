@@ -10,8 +10,8 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { useGetCallById } from "~community/crm/api/ActivityApi";
 import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
 import SidePanelHeaderSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
+import ActivitySidePanelSkeleton from "~community/crm/components/organisms/ActivitySidePanel/ActivitySidePanelSkeleton";
 import CallSidePanel from "~community/crm/components/organisms/CallSidePanel/CallSidePanel";
-import CallSidePanelSkeleton from "~community/crm/components/organisms/CallSidePanel/CallSidePanelSkeleton";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 
@@ -91,7 +91,7 @@ const ActivityCallSidePanel: FC<Props> = ({ callId }) => {
         headerActions={<SidePanelHeaderActionsSkeleton />}
       >
         <div aria-busy="true">
-          <CallSidePanelSkeleton />
+          <ActivitySidePanelSkeleton />
         </div>
       </SidePanel>
     );
