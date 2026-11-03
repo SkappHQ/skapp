@@ -6,7 +6,7 @@ import {
   TextArea
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -22,34 +22,17 @@ import MeetingAttendeesField from "~community/crm/components/molecules/MeetingAt
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmLogMeetingFormValues } from "~community/crm/types/CrmCommonTypes";
 import { getContactCompanyIds } from "~community/crm/utils/contactUtil";
+import { isDealMatchingCompany } from "~community/crm/utils/dealUtil";
 
 interface Props {
   formik: FormikProps<CrmLogMeetingFormValues>;
 }
 
 const LogMeetingModalForm: FC<Props> = ({ formik }) => {
-  const {
-    values,
-    errors,
-    touched,
-    handleChange,
-    handleBlur,
-    isSubmitting,
-    submitCount,
-    setFieldValue
-  } = formik;
+  const { values, errors, touched, handleChange, handleBlur, setFieldValue } =
+    formik;
 
-  const translateText = useTranslator(
-    "crmModule",
-    "activities",
-    "logMeeting",
-    "modal"
-  );
-  const translateActivityText = useTranslator(
-    "crmModule",
-    "activities",
-    "logActivity"
-  );
+  const translateText = useTranslator("crmModule", "activities");
   const translateAria = useTranslator(
     "crmAria",
     "activities",
@@ -58,6 +41,7 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
   );
 
   const contacts = useCrmStore((state) => state.contacts);
+  const deals = useCrmStore((state) => state.deals);
 
   const [isAssociationsOpen, setIsAssociationsOpen] = useState(false);
   const [isDealClearedNoticeVisible, setIsDealClearedNoticeVisible] =
@@ -72,17 +56,15 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
     new Set(getContactCompanyIds(contacts, values.contactIds))
   );
 
-  useEffect(() => {
-    if (submitCount === 0 || isSubmitting) return;
+  const selectedDeal = values.dealId ? deals[values.dealId] : null;
 
-    const [firstInvalidField] = Object.keys(errors);
-
-    if (firstInvalidField) {
-      document
-        .getElementById(`log-meeting-${firstInvalidField}-input`)
-        ?.focus();
-    }
-  }, [submitCount, isSubmitting]);
+  const isDealMismatch = Boolean(
+    selectedDeal &&
+    values.contactIds.length > 0 &&
+    !values.contactIds.some((contactId) =>
+      isDealMatchingCompany(selectedDeal, contacts[contactId]?.companyId)
+    )
+  );
 
   const pickedDate = values.date ? toPickerDate(values.date) : null;
 
@@ -96,8 +78,8 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
         id="log-meeting-subject-input"
         name="subject"
         value={values.subject}
-        label={translateActivityText(["labels", "subject"])}
-        placeholder={translateActivityText(["placeholders", "subject"])}
+        label={translateText(["logActivity", "labels", "subject"])}
+        placeholder={translateText(["logActivity", "placeholders", "subject"])}
         {...(touched.subject && { errorMessage: errors.subject })}
         state={touched.subject && errors.subject ? "error" : "default"}
         onChange={handleChange}
@@ -118,8 +100,8 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
             id="log-meeting-date-input"
             name="date"
             value={pickedDate ? pickedDate.toLocaleDateString() : ""}
-            label={translateActivityText(["labels", "date"])}
-            placeholder={translateActivityText(["placeholders", "date"])}
+            label={translateText(["logActivity", "labels", "date"])}
+            placeholder={translateText(["logActivity", "placeholders", "date"])}
             errorMessage={errors.date}
             state={errors.date ? "error" : "default"}
             aria-label={translateAria(["date"])}
@@ -137,9 +119,14 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
             id="log-meeting-startTime-input"
             options={getActivityTimeOptions()}
             value={values.startTime}
-            onChange={(value) => setFieldValue("startTime", value)}
-            label={translateText(["labels", "startTime"])}
-            placeholder={translateActivityText(["placeholders", "time"])}
+            onChange={(value) => setFieldValue("startTime", value, true)}
+            label={translateText([
+              "logMeeting",
+              "modal",
+              "labels",
+              "startTime"
+            ])}
+            placeholder={translateText(["logActivity", "placeholders", "time"])}
             variant="primary"
             className="rounded-lg"
             ariaLabel={translateAria(["startTime"])}
@@ -152,9 +139,9 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
             id="log-meeting-endTime-input"
             options={getActivityTimeOptions()}
             value={values.endTime}
-            onChange={(value) => setFieldValue("endTime", value)}
-            label={translateText(["labels", "endTime"])}
-            placeholder={translateActivityText(["placeholders", "time"])}
+            onChange={(value) => setFieldValue("endTime", value, true)}
+            label={translateText(["logMeeting", "modal", "labels", "endTime"])}
+            placeholder={translateText(["logActivity", "placeholders", "time"])}
             variant={errors.endTime ? "primary-error" : "primary"}
             errorMessage={errors.endTime}
             className="rounded-lg"
@@ -170,6 +157,7 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
           <MeetingAttendeesField
             id="log-meeting-contactIds"
             formik={formik}
+            isFromDifferentCompanies={attendeeCompanyIds.length > 1}
             onDealCleared={handleDealCleared}
           />
         </div>
@@ -181,8 +169,8 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
       <TextArea
         name="comments"
         value={values.comments}
-        label={translateActivityText(["labels", "comments"])}
-        placeholder={translateActivityText(["placeholders", "comments"])}
+        label={translateText(["logActivity", "labels", "comments"])}
+        placeholder={translateText(["logActivity", "placeholders", "comments"])}
         onChange={handleChange}
         rows={2}
         aria-label={translateAria(["comments"])}
@@ -196,11 +184,23 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
           id="log-meeting-deal"
           formik={formik}
           fieldAriaLabel={translateAria(["deal"])}
-          clearedNoticeText={translateText(["notices", "dealCleared"])}
+          clearedNoticeText={translateText([
+            "logMeeting",
+            "modal",
+            "notices",
+            "dealCleared"
+          ])}
           isClearedNoticeVisible={isDealClearedNoticeVisible}
           onDealChange={() => setIsDealClearedNoticeVisible(false)}
           {...(attendeeCompanyIds.length === 1 && {
             filterCompanyId: attendeeCompanyIds[0]
+          })}
+          {...(isDealMismatch && {
+            errorMessage: translateText([
+              "logActivity",
+              "validations",
+              "dealMismatch"
+            ])
           })}
         />
         <ActivityRelatedToField

@@ -12,6 +12,7 @@ import {
   getContactDisplayName,
   updateContactRecord
 } from "~community/crm/utils/contactUtil";
+import { isDealMatchingCompany } from "~community/crm/utils/dealUtil";
 
 interface Props {
   id: string;
@@ -74,10 +75,7 @@ const LogCallContactField: FC<Props> = ({ id, formik, onDealCleared }) => {
 
     const selectedDeal = values.dealId ? deals[values.dealId] : null;
     const isDealMismatch =
-      selectedDeal &&
-      (selectedDeal.companyId
-        ? selectedDeal.companyId !== contact.companyId
-        : Boolean(contact.companyId));
+      selectedDeal && !isDealMatchingCompany(selectedDeal, contact.companyId);
 
     if (isDealMismatch) {
       setFieldValue("dealId", null);
