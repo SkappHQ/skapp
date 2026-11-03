@@ -20,10 +20,16 @@ export const getEmailValidationSchema = (translator: TranslatorFunctionType) =>
     date: Yup.string()
       .nullable()
       .required(
-        translator(["activities", "logEmail", "modal", "validations", "date"])
+        translator([
+          "activities",
+          "logEmail",
+          "modal",
+          "validations",
+          "dateTime"
+        ])
       ),
     time: Yup.string().required(
-      translator(["activities", "logEmail", "modal", "validations", "time"])
+      translator(["activities", "logEmail", "modal", "validations", "dateTime"])
     ),
     toContactIds: Yup.array()
       .of(Yup.number())

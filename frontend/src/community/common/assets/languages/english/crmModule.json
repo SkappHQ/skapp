@@ -614,12 +614,8 @@
           "description": "Add description"
         },
         "validations": {
-          "date": "Date is required",
-          "time": "Time is required",
-          "to": "Please select at least one recipient"
-        },
-        "notices": {
-          "differentCompanies": "Recipients are from different companies"
+          "dateTime": "Date and time are required",
+          "to": "Please select at least one contact"
         },
         "toastMessages": {
           "addSuccessTitle": "Email logged successfully",
