@@ -54,6 +54,7 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 
 		CrmValidations.validateTaskName(requestDto.getName());
 		CrmValidations.validateActivityTaskPriority(requestDto.getPriority());
+		CrmValidations.validateTaskDueAt(requestDto.getDueAt());
 		CrmValidations.validateTaskNotes(requestDto.getNotes());
 
 		User currentUser = userService.getCurrentUser();
