@@ -1,4 +1,4 @@
-import { FormikHelpers, useFormik } from "formik";
+import { useFormik } from "formik";
 import { DateTime } from "luxon";
 import { FC, useMemo } from "react";
 
@@ -44,7 +44,7 @@ const LogCallModalContent: FC<Props> = ({ onClose }) => {
 
     return {
       subject: "",
-      date: now.toUTC().toISO(),
+      date: now.startOf("day").toUTC().toISO(),
       time: getTimeSlotStart(now).toFormat(TIME_FORMAT_24_HOUR),
       duration: "",
       contactId: null,
@@ -56,9 +56,7 @@ const LogCallModalContent: FC<Props> = ({ onClose }) => {
   }, [defaultOwner]);
 
   const toPayload = (
-    values: CrmLogCallFormValues,
-    contactId: number,
-    ownerId: number
+    values: CrmLogCallFormValues
   ): ActivityCallCreatePayload => {
     return {
       subject: values.subject.trim(),
@@ -67,25 +65,16 @@ const LogCallModalContent: FC<Props> = ({ onClose }) => {
           ? toActivityInstant(values.date, values.time)
           : null,
       durationMinutes: parseCallDurationToMinutes(values.duration),
-      contactId,
-      ownerId,
+      contactId: values.contactId,
+      ownerId: values.ownerId,
       dealId: values.dealId,
       companyId: values.companyId,
       comments: values.comments.trim()
     };
   };
 
-  const handleSubmit = (
-    values: CrmLogCallFormValues,
-    helpers: FormikHelpers<CrmLogCallFormValues>
-  ): void => {
-    // TODO: remove this guard once contactId and ownerId are non-nullable in CrmLogCallFormValues
-    if (!values.contactId || !values.ownerId) {
-      helpers.setSubmitting(false);
-      return;
-    }
-
-    createCall(toPayload(values, values.contactId, values.ownerId));
+  const handleSubmit = (values: CrmLogCallFormValues): void => {
+    createCall(toPayload(values));
   };
 
   const validationSchema = useMemo(

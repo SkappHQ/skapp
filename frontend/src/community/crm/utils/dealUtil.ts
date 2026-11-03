@@ -54,6 +54,11 @@ export const getSelectedDeal = (
   }
 };
 
+export const isDealMatchingCompany = (
+  deal: CrmDealEntity,
+  companyId?: number | null
+): boolean => (deal.companyId ? deal.companyId === companyId : !companyId);
+
 export const removeDealId = (dealIds: number[], id: number): number[] =>
   dealIds.filter((dealId) => dealId !== id);
 
