@@ -12,6 +12,7 @@ import {
   getContactDisplayName,
   updateContactRecord
 } from "~community/crm/utils/contactUtil";
+import { isDealMatchingCompany } from "~community/crm/utils/dealUtil";
 
 interface Props {
   id: string;
@@ -54,9 +55,8 @@ const LogCallContactField: FC<Props> = ({ id, formik, onDealCleared }) => {
   );
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [hasFilledRelatedTo, setHasFilledRelatedTo] = useState(false);
 
-  const { isSearchActive, lookupItems, dropdownItems } =
+  const { isSearchActive, isLoading, lookupItems, dropdownItems } =
     useContactLookup(searchTerm);
 
   const selectedContact = values.contactId ? contacts[values.contactId] : null;
@@ -74,19 +74,11 @@ const LogCallContactField: FC<Props> = ({ id, formik, onDealCleared }) => {
 
     const selectedDeal = values.dealId ? deals[values.dealId] : null;
     const isDealMismatch =
-      selectedDeal &&
-      (selectedDeal.companyId
-        ? selectedDeal.companyId !== contact.companyId
-        : Boolean(contact.companyId));
+      selectedDeal && !isDealMatchingCompany(selectedDeal, contact.companyId);
 
     if (isDealMismatch) {
       setFieldValue("dealId", null);
       onDealCleared();
-    }
-
-    if (!hasFilledRelatedTo && !values.companyId && contact.companyId) {
-      setFieldValue("companyId", contact.companyId);
-      setHasFilledRelatedTo(true);
     }
   };
 
@@ -113,6 +105,9 @@ const LogCallContactField: FC<Props> = ({ id, formik, onDealCleared }) => {
       onSelect={handleSelect}
       isOpenOnFocus={isSearchActive}
       emptyMessage={translateActivityText(["emptyStates", "noContacts"])}
+      {...(isLoading && {
+        loadingMessage: translateActivityText(["emptyStates", "searching"])
+      })}
       required
       errorMessage={touched.contactId ? errors.contactId : ""}
     />

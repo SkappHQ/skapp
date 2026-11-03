@@ -69,7 +69,10 @@ const ActivityDealField: FC<Props> = ({
     [debouncedSearch, filterCompanyId]
   );
 
-  const { data: lookupData } = useGetDealLookup(lookupFilter, isSearchEnabled);
+  const { data: lookupData, isFetching } = useGetDealLookup(
+    lookupFilter,
+    isSearchEnabled
+  );
 
   const lookupItems = useMemo(
     () => (lookupData ? lookupData.items : []),
@@ -127,10 +130,13 @@ const ActivityDealField: FC<Props> = ({
         onSelect={handleSelect}
         isOpenOnFocus={isSearchEnabled}
         emptyMessage={translateText(["emptyStates", "noDeals"])}
+        {...(isFetching && {
+          loadingMessage: translateText(["emptyStates", "searching"])
+        })}
         {...(errorMessage && { errorMessage })}
       />
       {isClearedNoticeVisible && (
-        <span className="text-sm text-semantic-amber-text">
+        <span role="status" className="text-sm text-semantic-amber-text">
           {clearedNoticeText}
         </span>
       )}
