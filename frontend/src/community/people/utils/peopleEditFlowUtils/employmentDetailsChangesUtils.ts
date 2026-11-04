@@ -372,8 +372,8 @@ export const getVisaDetailsChanges = (
 };
 
 export const getBillingDetailsChanges = (
-  newBillingDetails: L3BillingDetailsType | undefined,
-  previousBillingDetails: L3BillingDetailsType | undefined
+  newBillingDetails: L3BillingDetailsType,
+  previousBillingDetails: L3BillingDetailsType
 ): L3BillingDetailsType => {
   const changes: L3BillingDetailsType = {};
 
@@ -448,8 +448,8 @@ export const getEmploymentDetailsChanges = (
   else Object.assign(changes, visaDetailsChanges);
 
   const billingDetailsChanges = getBillingDetailsChanges(
-    newEmployementDetails.billingDetails,
-    previousEmployementDetails.billingDetails
+    newEmployementDetails.billingDetails as L3BillingDetailsType,
+    previousEmployementDetails.billingDetails as L3BillingDetailsType
   );
   if (Object.keys(billingDetailsChanges).length > 0)
     Object.assign(changes, { billingDetails: billingDetailsChanges });

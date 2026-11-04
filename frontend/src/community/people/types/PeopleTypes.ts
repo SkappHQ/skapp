@@ -189,7 +189,7 @@ export interface L3IdentificationAndDiversityDetailsType {
 }
 
 export interface L3BillingDetailsType {
-  billableRate?: number | string | null;
+  billableRate?: number | null;
   billableRateCurrency?: string | null;
 }
 
