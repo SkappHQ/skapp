@@ -1,0 +1,75 @@
+name: PR Checklist
+
+on:
+  pull_request_target:
+    types: [opened, edited, reopened, synchronize, ready_for_review]
+    branches: [develop]
+
+permissions:
+  pull-requests: write
+
+concurrency:
+  group: pr-checklist-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+env:
+  PR_PATH: repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}
+  CHECKLIST_DIR: ${{ github.workspace }}/pr-checklist
+
+jobs:
+  checklist:
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Fetch shared checklist
+        env:
+          GH_TOKEN: ${{ secrets.PR_CHECKLIST_TOKEN }}
+          SOURCE: repos/rootcodelabs/skapp-ep/contents/.github
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::PR_CHECKLIST_TOKEN is not set"
+            exit 1
+          fi
+          mkdir -p "$CHECKLIST_DIR"
+          for file in pr-checklist.md pr-checklist-check.mjs; do
+            gh api "$SOURCE/$file?ref=main" -H "Accept: application/vnd.github.raw" | tr -d '\r' > "$CHECKLIST_DIR/$file"
+          done
+          if ! head -n 1 "$CHECKLIST_DIR/pr-checklist.md" | grep -q '^## '; then
+            echo "::error::The shared checklist must start with its heading line"
+            exit 1
+          fi
+          if [ ! -s "$CHECKLIST_DIR/pr-checklist-check.mjs" ]; then
+            echo "::error::The shared checklist check is empty"
+            exit 1
+          fi
+
+      - name: Attach shared checklist
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          CHECKLIST=$(cat "$CHECKLIST_DIR/pr-checklist.md")
+          export MARKER
+          MARKER=$(head -n 1 <<< "$CHECKLIST")
+          BODY=$(gh api "$PR_PATH" --jq '.body // ""')
+          if awk 'BEGIN { marker = ENVIRON["MARKER"]; gsub(/^[[:space:]]+|[[:space:]]+$/, "", marker) } { gsub(/^[[:space:]]+|[[:space:]]+$/, "") } $0 == marker { found = 1 } END { exit !found }' <<< "$BODY"; then
+            exit 0
+          fi
+          if [ -n "$BODY" ]; then
+            BODY=$(printf '%s\n\n%s' "$BODY" "$CHECKLIST")
+          else
+            BODY=$CHECKLIST
+          fi
+          jq -n --arg body "$BODY" '{body: $body}' | gh api -X PATCH "$PR_PATH" --input - > /dev/null
+
+      - name: Read description
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api "$PR_PATH" --jq '.body // ""' > "$CHECKLIST_DIR/body.md"
+
+      - name: Check checklist
+        if: ${{ !github.event.pull_request.draft }}
+        run: node "$CHECKLIST_DIR/pr-checklist-check.mjs" "$CHECKLIST_DIR/pr-checklist.md" "$CHECKLIST_DIR/body.md"
