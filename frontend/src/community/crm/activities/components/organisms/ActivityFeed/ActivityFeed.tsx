@@ -28,6 +28,7 @@ export interface ActivityFeedProps {
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   timeZone?: string;
+  taskCompletions: Record<number, boolean>;
   onLoadMore: () => void;
   onRowClick: (row: ActivityRow) => void;
   onToggleComplete: (row: ActivityRow, isCompleted: boolean) => void;
@@ -43,6 +44,7 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
   hasNextPage,
   isFetchingNextPage,
   timeZone,
+  taskCompletions,
   onLoadMore,
   onRowClick,
   onToggleComplete
@@ -133,6 +135,7 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
             rows={group.rows}
             timeZone={timeZone}
             isShowCheckbox={isShowCheckbox}
+            taskCompletions={taskCompletions}
             onRowClick={onRowClick}
             onToggleComplete={onToggleComplete}
           />

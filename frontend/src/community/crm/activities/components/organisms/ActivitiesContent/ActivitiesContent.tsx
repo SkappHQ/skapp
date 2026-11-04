@@ -134,14 +134,7 @@ const ActivitiesContent: FC = () => {
     if (activeTab === ActivityTab.MEETINGS && meetings.data)
       return toSingleFeedPage(meetings.data.map(toMeetingRow));
     if (activeTab === ActivityTab.TASKS && tasks.data)
-      return toSingleFeedPage(
-        tasks.data.map((task) => {
-          const row = toTaskRow(task);
-          return row.id in taskCompletions
-            ? { ...row, isCompleted: taskCompletions[row.id] }
-            : row;
-        })
-      );
+      return toSingleFeedPage(tasks.data.map(toTaskRow));
     return [];
   }, [
     activeTab,
@@ -150,8 +143,7 @@ const ActivitiesContent: FC = () => {
     calls.data,
     emails.data,
     meetings.data,
-    tasks.data,
-    taskCompletions
+    tasks.data
   ]);
 
   const rows = useMemo(() => pages.flatMap((page) => page.items), [pages]);
@@ -188,35 +180,47 @@ const ActivitiesContent: FC = () => {
     openCrmSidePanel(CrmSidePanelTypes.CALL_SIDE_PANEL);
   };
 
-  const { mutate: updateTaskCompletion } = useUpdateTaskCompletion(
-    (_error, { id, isCompleted }) => {
-      setTaskCompletions((current) => ({ ...current, [id]: !isCompleted }));
-      setToastMessage({
-        open: true,
-        toastType: ToastType.ERROR,
-        title: translateText([
-          "tasks",
-          "common",
-          "toastMessages",
-          "toggleErrorTitle"
-        ]),
-        description: translateText([
-          "tasks",
-          "common",
-          "toastMessages",
-          "toggleErrorDescription"
-        ]),
-        isIcon: true
-      });
-    }
-  );
+  const { mutate: updateTaskCompletion, isPending } = useUpdateTaskCompletion();
+
+  const applyCompletion = (taskId: number, isCompleted: boolean): void => {
+    setTaskCompletions((current) => ({ ...current, [taskId]: isCompleted }));
+  };
+
+  const handleToggleError = (taskId: number, wasCompleted: boolean): void => {
+    applyCompletion(taskId, wasCompleted);
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText([
+        "tasks",
+        "common",
+        "toastMessages",
+        "toggleErrorTitle"
+      ]),
+      description: translateText([
+        "tasks",
+        "common",
+        "toastMessages",
+        "toggleErrorDescription"
+      ])
+    });
+  };
 
   const handleToggleComplete = (
     row: ActivityRow,
     isCompleted: boolean
   ): void => {
-    setTaskCompletions((current) => ({ ...current, [row.id]: isCompleted }));
-    updateTaskCompletion({ id: row.id, isCompleted });
+    if (isPending) return;
+
+    const wasCompleted =
+      row.id in taskCompletions ? taskCompletions[row.id] : row.isCompleted;
+
+    applyCompletion(row.id, isCompleted);
+
+    updateTaskCompletion(
+      { id: row.id, isCompleted },
+      { onError: () => handleToggleError(row.id, wasCompleted) }
+    );
   };
 
   return (
@@ -261,6 +265,7 @@ const ActivitiesContent: FC = () => {
         hasNextPage={isAllTab && feed.hasNextPage}
         isFetchingNextPage={isAllTab && feed.isFetchingNextPage}
         timeZone={displayZone}
+        taskCompletions={taskCompletions}
         onLoadMore={feed.fetchNextPage}
         onRowClick={handleRowClick}
         onToggleComplete={handleToggleComplete}

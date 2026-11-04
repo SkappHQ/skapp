@@ -144,12 +144,13 @@ const updateTaskCompletion = async ({
   await authFetch.patch(crmActivityEndpoints.EDIT_TASK(id), { isCompleted });
 };
 
-export const useUpdateTaskCompletion = (
-  onError: (error: ErrorResponse, payload: CrmTaskCompletionPayload) => void
-): UseMutationResult<void, ErrorResponse, CrmTaskCompletionPayload> =>
+export const useUpdateTaskCompletion = (): UseMutationResult<
+  void,
+  ErrorResponse,
+  CrmTaskCompletionPayload
+> =>
   useMutation({
-    mutationFn: updateTaskCompletion,
-    onError
+    mutationFn: updateTaskCompletion
   });
 
 const createCall = async (
