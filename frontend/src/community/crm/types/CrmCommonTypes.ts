@@ -183,7 +183,7 @@ export interface CrmLogMeetingFormValues {
 
 export interface CrmAddTaskFormValues {
   name: string;
-  priority: CrmPriorityEnum | null;
+  priority: CrmPriorityEnum;
   dueAt: string | null;
   ownerId: number | null;
   contactId: number | null;
