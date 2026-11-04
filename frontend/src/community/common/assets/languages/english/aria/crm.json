@@ -209,7 +209,6 @@
         "cancel": "Cancel log a meeting",
         "save": "Save meeting",
         "attendees": "Meeting attendees",
-        "removeAttendee": "Remove attendee {{name}}",
         "deal": "Meeting deal",
         "relatedTo": "Meeting related company"
       }
@@ -218,7 +217,8 @@
       "removeOwner": "Remove activity owner",
       "clearContact": "Clear selected contact",
       "clearDeal": "Clear selected deal",
-      "clearRelatedTo": "Clear selected company"
+      "clearRelatedTo": "Clear selected company",
+      "clearSearch": "Clear search"
     },
     "meetingSidePanel": {
       "kebabMenu": "Meeting actions",
