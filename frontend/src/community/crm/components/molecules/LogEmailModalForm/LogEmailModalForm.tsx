@@ -128,6 +128,7 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
         groupAriaLabel={translateAria(["to"])}
         hiddenContactIds={[...values.ccContactIds, ...values.bccContactIds]}
         required
+        fillsRelatedTo
       />
 
       <ActivityContactsField
