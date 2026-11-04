@@ -1,11 +1,11 @@
-import { Chip } from "@rootcodelabs/skapp-ui";
+import {
+  AvatarChipsInput,
+  AvatarChipsInputResult
+} from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import { FC, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
-import SearchableDropdown, {
-  SearchableDropdownItem
-} from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import ActivityWarningTooltip from "~community/crm/components/atoms/ActivityWarningTooltip/ActivityWarningTooltip";
 import { useContactLookup } from "~community/crm/hooks/useContactLookup";
@@ -28,7 +28,6 @@ interface Props {
   label: string;
   placeholder: string;
   groupAriaLabel: string;
-  getRemoveAriaLabel: (name: string) => string;
   hiddenContactIds?: number[];
   warningTooltip?: string;
   required?: boolean;
@@ -42,7 +41,6 @@ const ActivityContactsField: FC<Props> = ({
   label,
   placeholder,
   groupAriaLabel,
-  getRemoveAriaLabel,
   hiddenContactIds,
   warningTooltip,
   required,
@@ -52,8 +50,10 @@ const ActivityContactsField: FC<Props> = ({
 
   const contactIds: number[] = getFieldProps(name).value;
   const { touched, error } = getFieldMeta(name);
+  const isError = Boolean(touched && error);
 
   const translateText = useTranslator("crmModule", "activities", "logActivity");
+  const translateAria = useTranslator("crmAria", "activities", "logActivity");
 
   const { contacts, setContacts } = useCrmStore(
     useShallow((store) => ({
@@ -64,20 +64,42 @@ const ActivityContactsField: FC<Props> = ({
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { isSearchActive, isLoading, lookupItems, dropdownItems } =
-    useContactLookup(searchTerm);
+  const { lookupItems } = useContactLookup(searchTerm);
 
-  const visibleItems = dropdownItems.filter(
-    (item) => !hiddenContactIds?.includes(Number(item.id))
+  const toChip = (contact: CrmContactEntity): AvatarChipsInputResult => {
+    const contactName = getContactDisplayName(contact);
+    const [firstName, lastName] = contactName.split(" ");
+
+    return {
+      type: "contact",
+      optionId: Number(contact.id),
+      chipContent: {
+        label: contactName,
+        avatarProps: { id: `${id}-${contact.id}`, firstName, lastName }
+      }
+    };
+  };
+
+  const selectedChips = contactIds.map((contactId) =>
+    toChip(contacts[contactId])
   );
 
-  const handleSelect = (item: SearchableDropdownItem): void => {
+  const filteredResults = lookupItems
+    .filter(
+      (contact) =>
+        contact.id &&
+        !contactIds.includes(contact.id) &&
+        !hiddenContactIds?.includes(contact.id)
+    )
+    .map(toChip);
+
+  const handleChipSelect = (chip: AvatarChipsInputResult): void => {
     const contact = lookupItems.find(
-      (lookupContact) => String(lookupContact.id) === item.id
+      (lookupContact) => lookupContact.id === chip.optionId
     );
     setSearchTerm("");
 
-    if (!contact?.id || contactIds.includes(contact.id)) return;
+    if (!contact?.id) return;
 
     setContacts(updateContactRecord(contacts, [contact]));
     setFieldValue(name, [...contactIds, contact.id], true);
@@ -87,9 +109,9 @@ const ActivityContactsField: FC<Props> = ({
     ]);
   };
 
-  const handleRemove = (contactId: number): void => {
+  const handleChipRemove = (chip: AvatarChipsInputResult): void => {
     const nextContactIds = contactIds.filter(
-      (selectedId) => selectedId !== contactId
+      (selectedId) => selectedId !== chip.optionId
     );
 
     setFieldValue(name, nextContactIds, true);
@@ -100,44 +122,44 @@ const ActivityContactsField: FC<Props> = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <SearchableDropdown
-        positionStrategy="fixed"
+      <label
+        htmlFor={`${id}-input`}
+        className={`subtitle1 leading-normal ${isError ? "text-semantic-red-accent" : "text-black"}`}
+      >
+        {label}
+        {required && (
+          <span className="ml-1 text-red-700" aria-hidden="true">
+            *
+          </span>
+        )}
+      </label>
+
+      <AvatarChipsInput
         id={id}
-        items={visibleItems}
-        onSelect={handleSelect}
-        label={label}
-        placeholder={placeholder}
-        value={searchTerm}
-        onChange={(event) => setSearchTerm(event.target.value)}
-        isOpenOnFocus={isSearchActive}
-        emptyMessage={translateText(["emptyStates", "noContacts"])}
-        {...(isLoading && {
-          loadingMessage: translateText(["emptyStates", "searching"])
-        })}
-        state={touched && error ? "error" : "default"}
-        {...(touched && error && { errorMessage: String(error) })}
-        required={required}
+        filteredResults={filteredResults}
+        selectedChips={selectedChips}
+        searchText={searchTerm}
+        onChipSelect={handleChipSelect}
+        onChipRemove={handleChipRemove}
+        onSearchTextChange={setSearchTerm}
+        searchPlaceholder={placeholder}
+        selectedSearchPlaceholder={placeholder}
+        ariaLabelClearButton={translateAria(["clearSearch"])}
+        ariaLabelSearch={label}
+        ariaLabelSearchResults={label}
+        regionAriaLabel={groupAriaLabel}
+        noResultsText={translateText(["emptyStates", "noContacts"])}
+        tabIndex={-1}
       />
 
-      {contactIds.length > 0 && (
-        <fieldset
-          aria-label={groupAriaLabel}
-          className="flex min-w-0 flex-wrap gap-2"
+      {isError && (
+        <p
+          className="body3 leading-none text-semantic-red-accent"
+          role="alert"
+          aria-live="assertive"
         >
-          {contactIds.map((contactId) => {
-            const contactName = getContactDisplayName(contacts[contactId]);
-
-            return (
-              <Chip
-                key={contactId}
-                size="sm"
-                label={contactName}
-                onDelete={() => handleRemove(contactId)}
-                ariaLabel={{ removeButton: getRemoveAriaLabel(contactName) }}
-              />
-            );
-          })}
-        </fieldset>
+          {String(error)}
+        </p>
       )}
 
       {warningTooltip && (
