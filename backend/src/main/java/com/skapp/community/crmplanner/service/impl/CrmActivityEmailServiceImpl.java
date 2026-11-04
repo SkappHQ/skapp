@@ -32,7 +32,6 @@ import com.skapp.community.crmplanner.type.CrmActivityEmailFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityEmailSort;
 import com.skapp.community.crmplanner.util.CrmUtil;
 import com.skapp.community.crmplanner.util.CrmValidations;
-import com.skapp.community.peopleplanner.util.Validations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
@@ -118,7 +117,7 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 		CrmValidations.validateEmailSubject(requestDto.getSubject());
 		CrmValidations.validateEmailLoggedAt(requestDto.getLoggedAt());
 		CrmValidations.validateEmailRecipientIds(toIds, ccIds, bccIds);
-		Validations.validateEmail(requestDto.getFromAddress());
+		CrmValidations.validateEmailFromAddress(requestDto.getFromAddress());
 
 		User currentUser = userService.getCurrentUser();
 
@@ -138,6 +137,7 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 			if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, deal.getOwner().getEmployeeId())) {
 				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_VIEW_DENIED);
 			}
+			CrmValidations.validateEmailDealMatchesRecipientCompanies(deal, contactsById.values().stream().toList());
 			email.setDeal(deal);
 		}
 
@@ -225,7 +225,7 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 		}
 
 		if (requestDto.getFromAddress() != null) {
-			Validations.validateEmail(requestDto.getFromAddress());
+			CrmValidations.validateEmailFromAddress(requestDto.getFromAddress());
 			email.setFromAddress(requestDto.getFromAddress());
 		}
 
@@ -252,24 +252,31 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 			email.setCompany(company);
 		}
 
+		List<Long> sentIds = Stream
+			.of(requestDto.getToContactIds(), requestDto.getCcContactIds(), requestDto.getBccContactIds())
+			.filter(ids -> ids != null)
+			.flatMap(List::stream)
+			.toList();
 		List<Long> toIds = requestDto.getToContactIds() != null ? requestDto.getToContactIds()
-				: getRecipientIds(email, CrmActivityEmailContactRole.TO);
+				: getRecipientIds(email, CrmActivityEmailContactRole.TO, sentIds);
 		List<Long> ccIds = requestDto.getCcContactIds() != null ? requestDto.getCcContactIds()
-				: getRecipientIds(email, CrmActivityEmailContactRole.CC);
+				: getRecipientIds(email, CrmActivityEmailContactRole.CC, sentIds);
 		List<Long> bccIds = requestDto.getBccContactIds() != null ? requestDto.getBccContactIds()
-				: getRecipientIds(email, CrmActivityEmailContactRole.BCC);
-		List<Long> contactIds = Stream.of(toIds, ccIds, bccIds).flatMap(List::stream).sorted().toList();
+				: getRecipientIds(email, CrmActivityEmailContactRole.BCC, sentIds);
+		List<Long> contactIds = Stream.of(toIds, ccIds, bccIds).flatMap(List::stream).toList();
+		List<CrmContact> recipientContacts = new ArrayList<>(email.getContacts()
+			.stream()
+			.map(CrmActivityEmailContact::getContact)
+			.filter(contact -> contactIds.contains(contact.getId()) && !sentIds.contains(contact.getId())
+					&& !Boolean.TRUE.equals(contact.getIsDeleted()))
+			.toList());
 
 		if (requestDto.getToContactIds() != null || requestDto.getCcContactIds() != null
 				|| requestDto.getBccContactIds() != null) {
 			CrmValidations.validateEmailRecipientIds(toIds, ccIds, bccIds);
 
-			List<Long> sentIds = Stream
-				.of(requestDto.getToContactIds(), requestDto.getCcContactIds(), requestDto.getBccContactIds())
-				.filter(ids -> ids != null)
-				.flatMap(List::stream)
-				.toList();
 			Map<Long, CrmContact> contactsById = findRecipientContactsById(sentIds);
+			recipientContacts.addAll(contactsById.values());
 			Map<Long, CrmActivityEmailContact> existingById = email.getContacts()
 				.stream()
 				.collect(Collectors.toMap(link -> link.getContact().getId(), Function.identity()));
@@ -296,10 +303,14 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 			crmActivityEmailContactDao.saveAll(recipients);
 		}
 
+		if (email.getDeal() != null && (requestDto.getDealId() != null || !sentIds.isEmpty())) {
+			CrmValidations.validateEmailDealMatchesRecipientCompanies(email.getDeal(), recipientContacts);
+		}
+
 		CrmActivityEmail updatedEmail = crmActivityEmailDao.save(email);
 
 		CrmActivityEmailResponseDto response = crmMapper.crmActivityEmailToCrmActivityEmailResponseDto(updatedEmail);
-		response.setContactIds(contactIds);
+		response.setContactIds(contactIds.stream().sorted().toList());
 
 		log.info("editEmail: execution ended");
 		return new ResponseEntityDto(false, response);
@@ -329,11 +340,12 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 		}).toList();
 	}
 
-	private List<Long> getRecipientIds(CrmActivityEmail email, CrmActivityEmailContactRole role) {
+	private List<Long> getRecipientIds(CrmActivityEmail email, CrmActivityEmailContactRole role, List<Long> sentIds) {
 		return email.getContacts()
 			.stream()
 			.filter(link -> link.getRole() == role)
 			.map(link -> link.getContact().getId())
+			.filter(contactId -> !sentIds.contains(contactId))
 			.toList();
 	}
 
