@@ -49,6 +49,7 @@ export interface L2EmploymentFormDetailsType {
   identificationAndDiversityDetails?: L3IdentificationAndDiversityDetailsType;
   previousEmployment?: L3PreviousEmploymentDetailsType[];
   visaDetails?: L3VisaDetailsType[];
+  billingDetails?: L3BillingDetailsType;
 }
 
 export interface L2SystemPermissionsType {
@@ -185,6 +186,11 @@ export interface L3IdentificationAndDiversityDetailsType {
   eeoJobCategory?: EEOJobCategoryTypes;
   payrollId?: string;
   tin?: string;
+}
+
+export interface L3BillingDetailsType {
+  billableRate?: number | string | null;
+  billableRateCurrency?: string | null;
 }
 
 export interface L3PreviousEmploymentDetailsType {
