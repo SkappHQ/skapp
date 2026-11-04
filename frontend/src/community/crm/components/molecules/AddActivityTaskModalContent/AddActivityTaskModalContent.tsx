@@ -80,8 +80,7 @@ const AddActivityTaskModalContent: FC<Props> = ({ onClose }) => {
     enableReinitialize: true
   });
 
-  const { values, dirty, isSubmitting, setSubmitting, setStatus, submitForm } =
-    formik;
+  const { dirty, isSubmitting, setSubmitting, setStatus, submitForm } = formik;
 
   const handleSuccess = (): void => {
     setSubmitting(false);
@@ -114,8 +113,8 @@ const AddActivityTaskModalContent: FC<Props> = ({ onClose }) => {
       CrmErrorMessageKeyEnum.TASK_DEAL_COMPANY_MISMATCH
     ) {
       setStatus({
-        mismatchedDealId: values.dealId,
-        mismatchedContactId: values.contactId
+        mismatchedDealId: formik.values.dealId,
+        mismatchedContactId: formik.values.contactId
       });
       requestAnimationFrame(() => {
         document.getElementById("add-task-deal-input")?.focus();
