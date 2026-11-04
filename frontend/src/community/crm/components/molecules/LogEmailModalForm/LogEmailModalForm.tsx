@@ -44,9 +44,6 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
     setFieldValue("date", date ? toDateFieldValue(date) : null, true);
   };
 
-  const getRemoveRecipientAriaLabel = (name: string): string =>
-    translateAria(["removeRecipient"], { name });
-
   return (
     <div className="flex flex-col gap-2 overflow-y-auto pr-1">
       <InputField
@@ -129,7 +126,6 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
           "recipients"
         ])}
         groupAriaLabel={translateAria(["to"])}
-        getRemoveAriaLabel={getRemoveRecipientAriaLabel}
         hiddenContactIds={[...values.ccContactIds, ...values.bccContactIds]}
         required
       />
@@ -146,7 +142,6 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
           "recipients"
         ])}
         groupAriaLabel={translateAria(["cc"])}
-        getRemoveAriaLabel={getRemoveRecipientAriaLabel}
         hiddenContactIds={[...values.toContactIds, ...values.bccContactIds]}
       />
 
@@ -162,7 +157,6 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
           "recipients"
         ])}
         groupAriaLabel={translateAria(["bcc"])}
-        getRemoveAriaLabel={getRemoveRecipientAriaLabel}
         hiddenContactIds={[...values.toContactIds, ...values.ccContactIds]}
       />
 

@@ -154,7 +154,6 @@
         "to": "Email to recipients",
         "cc": "Email cc recipients",
         "bcc": "Email bcc recipients",
-        "removeRecipient": "Remove recipient {{name}}",
         "subject": "Email subject",
         "description": "Email description",
         "deal": "Email deal",
