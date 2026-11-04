@@ -73,11 +73,19 @@ const EmploymentDetailsForm = ({
   const env = useGetEnvironment();
   const isEnterpriseMode = env === appModes.ENTERPRISE;
 
-  const { tenantID, isSuperAdmin, isPeopleAdmin, isFreeTier } =
-    useSessionData();
+  const {
+    tenantID,
+    isSuperAdmin,
+    isPeopleAdmin,
+    isFreeTier,
+    isInvoiceModuleEnabled
+  } = useSessionData();
 
   const isBillingDetailsVisible =
-    !isAddFlow && !isFreeTier && (isSuperAdmin || isPeopleAdmin);
+    !isAddFlow &&
+    !isFreeTier &&
+    isInvoiceModuleEnabled &&
+    (isSuperAdmin || isPeopleAdmin);
 
   const { data: globalLogin } = useGetGlobalLoginMethod(
     isEnterpriseMode,
