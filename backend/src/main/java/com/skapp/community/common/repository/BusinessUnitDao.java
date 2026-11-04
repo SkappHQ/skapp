@@ -14,8 +14,6 @@ public interface BusinessUnitDao extends JpaRepository<BusinessUnit, Long> {
 
 	Optional<BusinessUnit> findByName(String name);
 
-	boolean existsByName(String name);
-
-	boolean existsByNameAndBusinessUnitIdNot(String name, Long businessUnitId);
+	List<BusinessUnit> findByNameIgnoreCase(String name);
 
 }
