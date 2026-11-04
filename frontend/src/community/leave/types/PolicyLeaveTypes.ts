@@ -141,6 +141,14 @@ export interface PolicyLeaveRequestPageResponse {
   results: PolicyLeaveRequestPageType[];
 }
 
+export interface PolicyPendingLeaveCountType {
+  pendingCount: number;
+}
+
+export interface PolicyPendingLeaveCountResponse {
+  results: PolicyPendingLeaveCountType[];
+}
+
 export interface PolicyOnLeaveHolidayType {
   id: number | null;
   date: string;
