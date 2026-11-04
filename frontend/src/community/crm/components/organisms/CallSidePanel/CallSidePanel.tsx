@@ -27,11 +27,7 @@ const CallSidePanel: FC<Props> = ({
   onContactClick,
   onCompanyClick
 }) => {
-  const translateText = useTranslator(
-    "crmModule",
-    "activities",
-    "callSidePanel"
-  );
+  const translateText = useTranslator("crmModule", "activities");
   const translateAria = useTranslator("crmAria", "activities", "callSidePanel");
 
   const owners = useCrmStore((state) => state.owners);
@@ -51,15 +47,20 @@ const CallSidePanel: FC<Props> = ({
       menuItems={[
         {
           id: "edit",
-          label: translateText(["editCall"]),
+          label: translateText(["callSidePanel", "editCall"]),
           icon: { start: <EditIcon width="16px" height="16px" /> },
           onClick: onEdit
         }
       ]}
-      deleteLabel={translateText(["deleteCall"])}
+      deleteLabel={translateText(["callSidePanel", "deleteCall"])}
       onDelete={onDelete}
       menuAriaLabel={translateAria(["kebabMenu"])}
-      emptyDealsDescription={translateText(["noDealsDescription"])}
+      emptyDealsDescription={translateText([
+        "callSidePanel",
+        "noDealsDescription"
+      ])}
+      commentsTitle={translateText(["activitySidePanel", "comments"])}
+      emptyCommentsText={translateText(["activitySidePanel", "noComments"])}
       {...(call && {
         title: call.subject,
         comments: call.comments,

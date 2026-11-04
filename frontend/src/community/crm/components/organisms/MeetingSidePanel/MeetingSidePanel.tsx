@@ -23,11 +23,7 @@ const MeetingSidePanel: FC<Props> = ({
   onDelete,
   onCompanyClick
 }) => {
-  const translateText = useTranslator(
-    "crmModule",
-    "activities",
-    "meetingSidePanel"
-  );
+  const translateText = useTranslator("crmModule", "activities");
   const translateAria = useTranslator(
     "crmAria",
     "activities",
@@ -49,10 +45,15 @@ const MeetingSidePanel: FC<Props> = ({
         />
       }
       menuItems={[]}
-      deleteLabel={translateText(["deleteMeeting"])}
+      deleteLabel={translateText(["meetingSidePanel", "deleteMeeting"])}
       onDelete={onDelete}
       menuAriaLabel={translateAria(["kebabMenu"])}
-      emptyDealsDescription={translateText(["noDealsDescription"])}
+      emptyDealsDescription={translateText([
+        "meetingSidePanel",
+        "noDealsDescription"
+      ])}
+      commentsTitle={translateText(["activitySidePanel", "comments"])}
+      emptyCommentsText={translateText(["activitySidePanel", "noComments"])}
       {...(meeting && {
         title: meeting.name,
         comments: meeting.comments,

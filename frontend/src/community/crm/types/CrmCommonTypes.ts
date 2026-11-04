@@ -218,3 +218,17 @@ export interface CrmActivityTaskEntity {
   deal?: CrmDealEntity;
   company?: CrmCompanyEntity;
 }
+
+export interface CrmActivityEmailEntity {
+  id: number;
+  subject: string;
+  fromAddress?: string;
+  loggedAt: string;
+  description?: string;
+  ownerId: number;
+  to: CrmContactEntity[];
+  cc: CrmContactEntity[];
+  bcc: CrmContactEntity[];
+  deal?: CrmDealEntity;
+  company?: CrmCompanyEntity;
+}

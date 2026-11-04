@@ -28,6 +28,8 @@ interface Props {
   onDelete: () => void;
   menuAriaLabel: string;
   emptyDealsDescription: string;
+  commentsTitle: string;
+  emptyCommentsText: string;
   title?: string;
   comments?: string;
   deal?: CrmDealEntity;
@@ -45,6 +47,8 @@ const ActivitySidePanel: FC<Props> = ({
   onDelete,
   menuAriaLabel,
   emptyDealsDescription,
+  commentsTitle,
+  emptyCommentsText,
   title,
   comments,
   deal,
@@ -127,9 +131,9 @@ const ActivitySidePanel: FC<Props> = ({
         <div className="flex gap-6 pb-4">
           <div className="flex flex-col flex-1 gap-6 min-w-0">
             <div className="flex flex-col gap-1">
-              <p className="subtitle1">{translateText(["comments"])}</p>
+              <p className="subtitle1">{commentsTitle}</p>
               <p className="subtitle3 max-h-24 overflow-y-auto break-words">
-                {comments ?? translateText(["noComments"])}
+                {comments ?? emptyCommentsText}
               </p>
             </div>
 

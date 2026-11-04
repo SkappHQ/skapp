@@ -25,11 +25,7 @@ const TaskActivitySidePanel: FC<Props> = ({
   onContactClick,
   onCompanyClick
 }) => {
-  const translateText = useTranslator(
-    "crmModule",
-    "activities",
-    "taskSidePanel"
-  );
+  const translateText = useTranslator("crmModule", "activities");
   const translateAria = useTranslator("crmAria", "activities", "taskSidePanel");
 
   const owners = useCrmStore((state) => state.owners);
@@ -47,10 +43,15 @@ const TaskActivitySidePanel: FC<Props> = ({
         />
       }
       menuItems={[]}
-      deleteLabel={translateText(["deleteTask"])}
+      deleteLabel={translateText(["taskSidePanel", "deleteTask"])}
       onDelete={onDelete}
       menuAriaLabel={translateAria(["kebabMenu"])}
-      emptyDealsDescription={translateText(["noDealsDescription"])}
+      emptyDealsDescription={translateText([
+        "taskSidePanel",
+        "noDealsDescription"
+      ])}
+      commentsTitle={translateText(["activitySidePanel", "comments"])}
+      emptyCommentsText={translateText(["activitySidePanel", "noComments"])}
       {...(task && {
         title: task.name,
         comments: task.notes,
