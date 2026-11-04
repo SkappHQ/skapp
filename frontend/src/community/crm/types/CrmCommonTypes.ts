@@ -144,6 +144,19 @@ export type CrmTaskRecord = Record<number, CrmTaskEntity>;
 export type CrmTaskTypeRecord = Record<number, CrmTaskTypeEntity>;
 export type CrmIndustryRecord = Record<number, CrmIndustryEntity>;
 
+export interface CrmLogEmailFormValues {
+  fromAddress: string;
+  date: string | null;
+  time: string;
+  toContactIds: number[];
+  ccContactIds: number[];
+  bccContactIds: number[];
+  subject: string;
+  dealId: number | null;
+  companyId: number | null;
+  description: string;
+}
+
 export interface CrmLogCallFormValues {
   subject: string;
   date: string | null;

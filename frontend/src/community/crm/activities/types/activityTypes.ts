@@ -100,6 +100,18 @@ export interface ActivityCallResponse extends ActivityListItemBase {
   contactId: number | null;
 }
 
+export interface ActivityEmailCreatePayload {
+  fromAddress: string | null;
+  loggedAt: string | null;
+  toContactIds: number[];
+  ccContactIds: number[];
+  bccContactIds: number[];
+  subject: string;
+  dealId: number | null;
+  companyId: number | null;
+  description: string;
+}
+
 export interface ActivityEmailResponse extends ActivityListItemBase {
   subject: string;
   loggedAt: string | null;
