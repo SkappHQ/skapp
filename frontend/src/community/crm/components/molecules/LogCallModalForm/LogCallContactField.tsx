@@ -23,28 +23,8 @@ interface Props {
 const LogCallContactField: FC<Props> = ({ id, formik, onDealCleared }) => {
   const { values, errors, touched, setFieldValue } = formik;
 
-  const translateText = useTranslator(
-    "crmModule",
-    "activities",
-    "logCall",
-    "modal"
-  );
-  const translateActivityText = useTranslator(
-    "crmModule",
-    "activities",
-    "logActivity"
-  );
-  const translateAria = useTranslator(
-    "crmAria",
-    "activities",
-    "logCall",
-    "modal"
-  );
-  const translateActivityAria = useTranslator(
-    "crmAria",
-    "activities",
-    "logActivity"
-  );
+  const translateText = useTranslator("crmModule", "activities");
+  const translateAria = useTranslator("crmAria", "activities");
 
   const { contacts, deals, setContacts } = useCrmStore(
     useShallow((store) => ({
@@ -91,22 +71,26 @@ const LogCallContactField: FC<Props> = ({ id, formik, onDealCleared }) => {
     <SelectableSearchField
       positionStrategy="fixed"
       id={id}
-      label={translateText(["labels", "contact"])}
-      placeholder={translateActivityText(["placeholders", "contact"])}
+      label={translateText(["logCall", "modal", "labels", "contact"])}
+      placeholder={translateText(["logActivity", "placeholders", "contact"])}
       selectedValue={
         selectedContact ? getContactDisplayName(selectedContact) : ""
       }
       onClear={handleClear}
-      clearAriaLabel={translateActivityAria(["clearContact"])}
-      fieldAriaLabel={translateAria(["contact"])}
+      clearAriaLabel={translateAria(["logActivity", "clearContact"])}
+      fieldAriaLabel={translateAria(["logCall", "modal", "contact"])}
       searchValue={searchTerm}
       onSearchChange={(event) => setSearchTerm(event.target.value)}
       items={dropdownItems}
       onSelect={handleSelect}
       isOpenOnFocus={isSearchActive}
-      emptyMessage={translateActivityText(["emptyStates", "noContacts"])}
+      emptyMessage={translateText(["logActivity", "emptyStates", "noContacts"])}
       {...(isLoading && {
-        loadingMessage: translateActivityText(["emptyStates", "searching"])
+        loadingMessage: translateText([
+          "logActivity",
+          "emptyStates",
+          "searching"
+        ])
       })}
       required
       errorMessage={touched.contactId ? errors.contactId : ""}

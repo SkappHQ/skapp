@@ -52,7 +52,6 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
     ? contacts[values.contactId]?.companyId
     : null;
 
-  const [isAssociationsOpen, setIsAssociationsOpen] = useState(false);
   const [isDealClearedNoticeVisible, setIsDealClearedNoticeVisible] =
     useState(false);
 
@@ -60,13 +59,6 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
     Boolean(status) &&
     status.mismatchedDealId === values.dealId &&
     status.mismatchedContactId === values.contactId;
-
-  const isAssociationsVisible = isAssociationsOpen || isDealMismatch;
-
-  const handleDealCleared = (): void => {
-    setIsDealClearedNoticeVisible(true);
-    setIsAssociationsOpen(true);
-  };
 
   const pickedDate = values.date ? toPickerDate(values.date) : null;
 
@@ -157,7 +149,7 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
           <LogCallContactField
             id="log-call-contactId"
             formik={formik}
-            onDealCleared={handleDealCleared}
+            onDealCleared={() => setIsDealClearedNoticeVisible(true)}
           />
         </div>
         <div className="flex-1">
@@ -176,8 +168,7 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
       />
 
       <ActivityAssociations
-        isOpen={isAssociationsVisible}
-        onToggle={() => setIsAssociationsOpen(!isAssociationsVisible)}
+        isForcedOpen={isDealClearedNoticeVisible || isDealMismatch}
       >
         <ActivityDealField
           id="log-call-deal"

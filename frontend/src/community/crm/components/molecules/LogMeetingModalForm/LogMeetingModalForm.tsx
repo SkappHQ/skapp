@@ -7,6 +7,7 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import { FC, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -25,7 +26,7 @@ import {
   getContactCompanyIds,
   getContactDisplayName
 } from "~community/crm/utils/contactUtil";
-import { isDealMatchingCompany } from "~community/crm/utils/dealUtil";
+import { isDealMatchingContacts } from "~community/crm/utils/dealUtil";
 
 interface Props {
   formik: FormikProps<CrmLogMeetingFormValues>;
@@ -43,36 +44,31 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
     "modal"
   );
 
-  const contacts = useCrmStore((state) => state.contacts);
-  const deals = useCrmStore((state) => state.deals);
+  const { contacts, deals } = useCrmStore(
+    useShallow((store) => ({
+      contacts: store.contacts,
+      deals: store.deals
+    }))
+  );
 
-  const [isAssociationsOpen, setIsAssociationsOpen] = useState(false);
   const [isDealClearedNoticeVisible, setIsDealClearedNoticeVisible] =
     useState(false);
 
-  const handleDealCleared = (): void => {
-    setIsDealClearedNoticeVisible(true);
-    setIsAssociationsOpen(true);
-  };
+  const attendees = values.contactIds.map((contactId) => contacts[contactId]);
 
   const attendeeCompanyIds = Array.from(
     new Set(getContactCompanyIds(contacts, values.contactIds))
   );
 
-  const selectedDeal = values.dealId ? deals[values.dealId] : null;
-
   const isDealMismatch = Boolean(
-    selectedDeal &&
-    values.contactIds.length > 0 &&
-    !values.contactIds.some((contactId) =>
-      isDealMatchingCompany(selectedDeal, contacts[contactId]?.companyId)
-    )
+    values.dealId &&
+    attendees.length > 0 &&
+    !isDealMatchingContacts(deals[values.dealId], attendees)
   );
 
-  const primaryAttendee =
-    values.contactIds.length > 0 ? contacts[values.contactIds[0]] : null;
+  const primaryAttendee = attendees.length > 0 ? attendees[0] : null;
 
-  const isRelatedToMismatch = Boolean(
+  const isRelatedToNotPrimaryAttendeeCompany = Boolean(
     values.companyId &&
     primaryAttendee &&
     values.companyId !== primaryAttendee.companyId
@@ -170,7 +166,7 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
             id="log-meeting-contactIds"
             formik={formik}
             isFromDifferentCompanies={attendeeCompanyIds.length > 1}
-            onDealCleared={handleDealCleared}
+            onDealCleared={() => setIsDealClearedNoticeVisible(true)}
           />
         </div>
         <div className="flex-1">
@@ -189,10 +185,7 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
       />
 
       <ActivityAssociations
-        isOpen={isAssociationsOpen || isDealMismatch}
-        onToggle={() =>
-          setIsAssociationsOpen(!(isAssociationsOpen || isDealMismatch))
-        }
+        isForcedOpen={isDealClearedNoticeVisible || isDealMismatch}
       >
         <ActivityDealField
           id="log-meeting-deal"
@@ -221,7 +214,7 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
           id="log-meeting-related-to"
           formik={formik}
           fieldAriaLabel={translateAria(["relatedTo"])}
-          {...(isRelatedToMismatch &&
+          {...(isRelatedToNotPrimaryAttendeeCompany &&
             primaryAttendee && {
               mismatchTooltip: translateText(
                 ["logActivity", "tooltips", "relatedToMismatch"],
