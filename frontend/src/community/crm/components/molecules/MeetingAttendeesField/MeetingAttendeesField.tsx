@@ -1,4 +1,3 @@
-import { Chip } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import { FC, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -8,17 +7,12 @@ import SearchableDropdown, {
 } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import ActivityWarningTooltip from "~community/crm/components/atoms/ActivityWarningTooltip/ActivityWarningTooltip";
+import MeetingAttendeeChips from "~community/crm/components/molecules/MeetingAttendeeChips/MeetingAttendeeChips";
 import { useContactLookup } from "~community/crm/hooks/useContactLookup";
 import { useCrmStore } from "~community/crm/store/store";
-import {
-  CrmContactEntity,
-  CrmLogMeetingFormValues
-} from "~community/crm/types/CrmCommonTypes";
-import {
-  getContactDisplayName,
-  updateContactRecord
-} from "~community/crm/utils/contactUtil";
-import { isDealMatchingCompany } from "~community/crm/utils/dealUtil";
+import { CrmLogMeetingFormValues } from "~community/crm/types/CrmCommonTypes";
+import { updateContactRecord } from "~community/crm/utils/contactUtil";
+import { isDealMatchingContacts } from "~community/crm/utils/dealUtil";
 
 interface Props {
   id: string;
@@ -35,23 +29,7 @@ const MeetingAttendeesField: FC<Props> = ({
 }) => {
   const { values, errors, touched, setFieldValue } = formik;
 
-  const translateText = useTranslator(
-    "crmModule",
-    "activities",
-    "logMeeting",
-    "modal"
-  );
-  const translateActivityText = useTranslator(
-    "crmModule",
-    "activities",
-    "logActivity"
-  );
-  const translateAria = useTranslator(
-    "crmAria",
-    "activities",
-    "logMeeting",
-    "modal"
-  );
+  const translateText = useTranslator("crmModule", "activities");
 
   const { contacts, deals, setContacts } = useCrmStore(
     useShallow((store) => ({
@@ -66,26 +44,6 @@ const MeetingAttendeesField: FC<Props> = ({
   const { isSearchActive, isLoading, lookupItems, dropdownItems } =
     useContactLookup(searchTerm);
 
-  const attendees = values.contactIds.map((contactId) => contacts[contactId]);
-
-  const clearMismatchedDeal = (nextAttendees: CrmContactEntity[]): void => {
-    const selectedDeal = values.dealId ? deals[values.dealId] : null;
-
-    if (!selectedDeal || nextAttendees.length === 0) return;
-
-    const wasDealMatched = attendees.some((attendee) =>
-      isDealMatchingCompany(selectedDeal, attendee.companyId)
-    );
-    const isDealMatched = nextAttendees.some((attendee) =>
-      isDealMatchingCompany(selectedDeal, attendee.companyId)
-    );
-
-    if (!wasDealMatched || isDealMatched) return;
-
-    setFieldValue("dealId", null);
-    onDealCleared();
-  };
-
   const handleSelect = (item: SearchableDropdownItem): void => {
     const contact = lookupItems.find(
       (lookupContact) => String(lookupContact.id) === item.id
@@ -96,18 +54,32 @@ const MeetingAttendeesField: FC<Props> = ({
 
     setContacts(updateContactRecord(contacts, [contact]));
     setFieldValue("contactIds", [...values.contactIds, contact.id], true);
-    clearMismatchedDeal([...attendees, contact]);
   };
 
   const handleRemove = (contactId: number): void => {
     const nextContactIds = values.contactIds.filter(
       (attendeeId) => attendeeId !== contactId
     );
-
     setFieldValue("contactIds", nextContactIds, true);
-    clearMismatchedDeal(
-      nextContactIds.map((attendeeId) => contacts[attendeeId])
+
+    const selectedDeal = values.dealId ? deals[values.dealId] : null;
+    const nextAttendees = nextContactIds.map(
+      (attendeeId) => contacts[attendeeId]
     );
+
+    const isDealUnmatched =
+      selectedDeal &&
+      nextAttendees.length > 0 &&
+      isDealMatchingContacts(
+        selectedDeal,
+        values.contactIds.map((attendeeId) => contacts[attendeeId])
+      ) &&
+      !isDealMatchingContacts(selectedDeal, nextAttendees);
+
+    if (isDealUnmatched) {
+      setFieldValue("dealId", null);
+      onDealCleared();
+    }
   };
 
   return (
@@ -117,14 +89,27 @@ const MeetingAttendeesField: FC<Props> = ({
         id={id}
         items={dropdownItems}
         onSelect={handleSelect}
-        label={translateText(["labels", "attendees"])}
-        placeholder={translateText(["placeholders", "attendees"])}
+        label={translateText(["logMeeting", "modal", "labels", "attendees"])}
+        placeholder={translateText([
+          "logMeeting",
+          "modal",
+          "placeholders",
+          "attendees"
+        ])}
         value={searchTerm}
         onChange={(event) => setSearchTerm(event.target.value)}
         isOpenOnFocus={isSearchActive}
-        emptyMessage={translateActivityText(["emptyStates", "noContacts"])}
+        emptyMessage={translateText([
+          "logActivity",
+          "emptyStates",
+          "noContacts"
+        ])}
         {...(isLoading && {
-          loadingMessage: translateActivityText(["emptyStates", "searching"])
+          loadingMessage: translateText([
+            "logActivity",
+            "emptyStates",
+            "searching"
+          ])
         })}
         state={touched.contactIds && errors.contactIds ? "error" : "default"}
         {...(touched.contactIds &&
@@ -133,35 +118,21 @@ const MeetingAttendeesField: FC<Props> = ({
       />
 
       {values.contactIds.length > 0 && (
-        <div
-          role="group"
-          aria-label={translateAria(["attendees"])}
-          className="flex flex-wrap gap-2"
-        >
-          {values.contactIds.map((contactId) => {
-            const contactName = getContactDisplayName(contacts[contactId]);
-
-            return (
-              <Chip
-                key={contactId}
-                size="sm"
-                label={contactName}
-                onDelete={() => handleRemove(contactId)}
-                ariaLabel={{
-                  removeButton: translateAria(["removeAttendee"], {
-                    name: contactName
-                  })
-                }}
-              />
-            );
-          })}
-        </div>
+        <MeetingAttendeeChips
+          contactIds={values.contactIds}
+          onRemove={handleRemove}
+        />
       )}
 
       {isFromDifferentCompanies && (
         <ActivityWarningTooltip
           id={`${id}-companies`}
-          text={translateText(["tooltips", "differentCompanies"])}
+          text={translateText([
+            "logMeeting",
+            "modal",
+            "tooltips",
+            "differentCompanies"
+          ])}
         />
       )}
     </div>

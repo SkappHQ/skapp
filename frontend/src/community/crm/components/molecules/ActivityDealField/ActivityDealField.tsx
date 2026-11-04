@@ -24,22 +24,20 @@ interface Props {
   formik:
     FormikProps<CrmLogCallFormValues> | FormikProps<CrmLogMeetingFormValues>;
   fieldAriaLabel: string;
-  clearedNoticeText: string;
   isClearedNoticeVisible: boolean;
+  isMismatch: boolean;
   onDealChange: () => void;
   filterCompanyId?: number;
-  errorMessage?: string;
 }
 
 const ActivityDealField: FC<Props> = ({
   id,
   formik,
   fieldAriaLabel,
-  clearedNoticeText,
   isClearedNoticeVisible,
+  isMismatch,
   onDealChange,
-  filterCompanyId,
-  errorMessage
+  filterCompanyId
 }) => {
   const { values, setFieldValue } = formik;
 
@@ -133,11 +131,13 @@ const ActivityDealField: FC<Props> = ({
         {...(isFetching && {
           loadingMessage: translateText(["emptyStates", "searching"])
         })}
-        {...(errorMessage && { errorMessage })}
+        {...(isMismatch && {
+          errorMessage: translateText(["validations", "dealMismatch"])
+        })}
       />
       {isClearedNoticeVisible && (
         <output className="text-sm text-semantic-amber-text">
-          {clearedNoticeText}
+          {translateText(["notices", "dealCleared"])}
         </output>
       )}
     </div>

@@ -1,20 +1,27 @@
-import { FC, ReactNode } from "react";
+import { FC, ReactNode, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 
 interface Props {
-  isOpen: boolean;
-  onToggle: () => void;
+  isForcedOpen: boolean;
   children: ReactNode;
 }
 
-const ActivityAssociations: FC<Props> = ({ isOpen, onToggle, children }) => {
+const ActivityAssociations: FC<Props> = ({ isForcedOpen, children }) => {
   const translateText = useTranslator(
     "crmModule",
     "activities",
     "logActivity",
     "buttons"
   );
+
+  const [isOpen, setIsOpen] = useState(isForcedOpen);
+  const [wasForcedOpen, setWasForcedOpen] = useState(isForcedOpen);
+
+  if (isForcedOpen !== wasForcedOpen) {
+    setWasForcedOpen(isForcedOpen);
+    if (isForcedOpen) setIsOpen(true);
+  }
 
   return (
     <>
@@ -24,7 +31,7 @@ const ActivityAssociations: FC<Props> = ({ isOpen, onToggle, children }) => {
         type="button"
         className="self-start text-sm text-primary-text underline"
         aria-expanded={isOpen}
-        onClick={onToggle}
+        onClick={() => setIsOpen(!isOpen)}
       >
         {isOpen
           ? translateText(["hideAssociations"])

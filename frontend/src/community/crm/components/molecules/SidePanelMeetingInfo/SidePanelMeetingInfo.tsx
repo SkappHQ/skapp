@@ -3,9 +3,7 @@ import { DateTime } from "luxon";
 import { FC } from "react";
 
 import { TIME_FORMAT_12_HOUR } from "~community/common/constants/timeConstants";
-import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { instantInZone } from "~community/common/utils/dateTimeUtils";
 import PropertyRow from "~community/crm/components/molecules/PropertyRow/PropertyRow";
 import SidePanelActivityInfo from "~community/crm/components/molecules/SidePanelActivityInfo/SidePanelActivityInfo";
 import {
@@ -25,29 +23,19 @@ const SidePanelMeetingInfo: FC<Props> = ({
   owner,
   onCompanyClick
 }) => {
-  const translateText = useTranslator(
-    "crmModule",
-    "activities",
-    "meetingSidePanel",
-    "info"
-  );
-  const translateActivityText = useTranslator(
-    "crmModule",
-    "activities",
-    "activitySidePanel",
-    "info"
-  );
+  const translateText = useTranslator("crmModule", "activities");
   const translateAria = useTranslator(
     "crmAria",
     "activities",
     "meetingSidePanel"
   );
-  const displayZone = useDisplayZone();
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-2 border border-secondary-accent rounded-xl p-3">
-        <p className="subtitle1">{translateText(["attendees"])}</p>
+        <p className="subtitle1">
+          {translateText(["meetingSidePanel", "info", "attendees"])}
+        </p>
         {meeting.contacts.length > 0 ? (
           <AvatarGroup
             ariaLabel={translateAria(["attendees"])}
@@ -66,7 +54,7 @@ const SidePanelMeetingInfo: FC<Props> = ({
           />
         ) : (
           <span className="body2">
-            {translateActivityText(["noLongerAvailable"])}
+            {translateText(["activitySidePanel", "info", "noLongerAvailable"])}
           </span>
         )}
       </div>
@@ -74,16 +62,16 @@ const SidePanelMeetingInfo: FC<Props> = ({
       <SidePanelActivityInfo
         date={DateTime.fromISO(meeting.meetingDate)}
         {...(meeting.startAt && {
-          startTime: instantInZone(meeting.startAt, displayZone)
+          startTime: DateTime.fromISO(meeting.startAt)
         })}
         secondaryRow={
-          <PropertyRow label={translateText(["endTime"])}>
+          <PropertyRow
+            label={translateText(["meetingSidePanel", "info", "endTime"])}
+          >
             <span className="body2">
               {meeting.endAt
-                ? instantInZone(meeting.endAt, displayZone).toFormat(
-                    TIME_FORMAT_12_HOUR
-                  )
-                : translateActivityText(["noValue"])}
+                ? DateTime.fromISO(meeting.endAt).toFormat(TIME_FORMAT_12_HOUR)
+                : translateText(["activitySidePanel", "info", "noValue"])}
             </span>
           </PropertyRow>
         }

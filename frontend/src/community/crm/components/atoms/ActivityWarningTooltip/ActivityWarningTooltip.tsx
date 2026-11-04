@@ -1,4 +1,4 @@
-import { Tooltip } from "@rootcodelabs/skapp-ui";
+import { IconButton, Tooltip } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -11,19 +11,20 @@ interface Props {
 
 const ActivityWarningTooltip: FC<Props> = ({ id, text }) => (
   <Tooltip id={`${id}-tooltip`} content={text} position="bottom">
-    <button
+    <IconButton
       id={id}
       type="button"
+      variant="no-background"
       aria-label={text}
-      className="inline-flex w-fit bg-transparent border-0 p-0 cursor-default"
-    >
-      <Icon
-        name={IconName.WARNING_ICON}
-        fill="var(--color-semantic-amber-text)"
-        width="16"
-        height="16"
-      />
-    </button>
+      icon={
+        <Icon
+          name={IconName.WARNING_ICON}
+          fill="var(--color-semantic-amber-text)"
+          width="16"
+          height="16"
+        />
+      }
+    />
   </Tooltip>
 );
 
