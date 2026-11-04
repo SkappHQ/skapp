@@ -69,8 +69,6 @@ const ActivitySidePanel: FC<Props> = ({
     setDeals(mergeDeals(deals, [deal]));
   }, [deal]);
 
-  const dealId = deal?.id;
-
   const actionItems: MenuItemProps[] = [
     ...menuItems,
     {
@@ -131,7 +129,7 @@ const ActivitySidePanel: FC<Props> = ({
             <div className="flex flex-col gap-1">
               <p className="subtitle1">{translateText(["comments"])}</p>
               <p className="subtitle3 max-h-24 overflow-y-auto break-words">
-                {comments ? comments : translateText(["noComments"])}
+                {comments ?? translateText(["noComments"])}
               </p>
             </div>
 
@@ -139,7 +137,7 @@ const ActivitySidePanel: FC<Props> = ({
               <h2 className="h2">{translateText(["dealsTitle"])}</h2>
               <hr className="border-secondary-accent" />
               <SidePanelDealSection
-                dealIds={dealId && deals[dealId] ? [dealId] : []}
+                dealIds={deal?.id && deals[deal.id] ? [deal.id] : []}
                 showAddDealAction={false}
                 emptyHeightClassName="h-[163px]"
                 emptyDescription={emptyDealsDescription}

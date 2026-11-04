@@ -41,7 +41,11 @@ export const styles = ({ theme }: stylesProps) => ({
     transition: `opacity ${DRAWER_ANIMATION_DURATION} ease`,
     opacity: isVisible ? 1 : 0,
     zIndex: isVisible ? 2 : 1,
-    color: theme.palette.common.black
+    color: theme.palette.common.black,
+    "& svg": {
+      width: DRAWER_TOGGLE_ICON_SIZE,
+      height: DRAWER_TOGGLE_ICON_SIZE
+    }
   }),
   drawerContainer: (isDrawerExpanded: boolean) => ({
     width: "100%",

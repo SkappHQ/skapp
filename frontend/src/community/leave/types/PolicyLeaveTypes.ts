@@ -5,6 +5,7 @@ import {
 } from "~community/common/types/CommonTypes";
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
 import { PolicyType } from "~community/leave/types/LeavePolicyTypes";
+import { HolidayDurationType } from "~community/people/types/HolidayTypes";
 
 export enum PolicyBalanceDisabledReason {
   FULLY_UTILIZED = "FULLY_UTILIZED",
@@ -138,6 +139,25 @@ export interface PolicyLeaveRequestPageType {
 
 export interface PolicyLeaveRequestPageResponse {
   results: PolicyLeaveRequestPageType[];
+}
+
+export interface PolicyOnLeaveHolidayType {
+  id: number | null;
+  date: string;
+  name: string;
+  holidayDuration: HolidayDurationType | null;
+}
+
+export interface PolicyEmployeesOnLeaveType {
+  date: string;
+  isNonWorkingDay: boolean;
+  holidays: PolicyOnLeaveHolidayType[] | null;
+  onLeaveCount: number | null;
+  onlineCount: number | null;
+}
+
+export interface PolicyEmployeesOnLeaveResponse {
+  results: PolicyEmployeesOnLeaveType[];
 }
 
 export interface PolicyLeaveRequestQueryParams {

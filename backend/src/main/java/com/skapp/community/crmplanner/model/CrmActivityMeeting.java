@@ -5,7 +5,6 @@ import com.skapp.community.crmplanner.type.CrmActivityCalendarProvider;
 import com.skapp.community.crmplanner.type.CrmActivityMeetingVenue;
 import com.skapp.community.crmplanner.type.CrmActivitySyncStatus;
 import com.skapp.community.peopleplanner.model.Employee;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -86,7 +85,7 @@ public class CrmActivityMeeting extends Auditable<String> {
 	@Column(name = "is_deleted")
 	private Boolean isDeleted = false;
 
-	@OneToMany(mappedBy = "meeting", cascade = CascadeType.PERSIST)
+	@OneToMany(mappedBy = "meeting")
 	private List<CrmActivityMeetingContact> contacts;
 
 }

@@ -603,9 +603,6 @@
           "contact": "Please select a contact",
           "duration": "Please enter a valid duration (e.g. 1h 30m)"
         },
-        "notices": {
-          "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
-        },
         "toastMessages": {
           "addSuccessTitle": "Call added successfully",
           "addSuccessDescription": "Call has been added successfully",
@@ -740,9 +737,6 @@
           "addSuccessDescription": "Meeting has been added successfully",
           "errorDescription": "Failed to save meeting"
         },
-        "notices": {
-          "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
-        },
         "placeholders": {
           "attendees": "Select attendees"
         },
@@ -787,6 +781,9 @@
         "subject": "Subject is required",
         "owner": "Activity owner is required",
         "dealMismatch": "This deal's company doesn't match any linked contact — add a contact from that company or choose a different deal"
+      },
+      "notices": {
+        "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
       },
       "toastMessages": {
         "errorTitle": "Oops! Something went wrong"
