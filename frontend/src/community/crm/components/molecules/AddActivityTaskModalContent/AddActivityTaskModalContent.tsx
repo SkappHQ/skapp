@@ -82,29 +82,6 @@ const AddActivityTaskModalContent: FC<Props> = ({ onClose }) => {
 
   const { dirty, isSubmitting, setSubmitting, setStatus, submitForm } = formik;
 
-  const handleSuccess = (): void => {
-    setSubmitting(false);
-    onClose();
-    setToastMessage({
-      open: true,
-      toastType: ToastType.SUCCESS,
-      title: translateText([
-        "activities",
-        "addTask",
-        "modal",
-        "toastMessages",
-        "addSuccessTitle"
-      ]),
-      description: translateText([
-        "activities",
-        "addTask",
-        "modal",
-        "toastMessages",
-        "addSuccessDescription"
-      ])
-    });
-  };
-
   const handleError = (error: ErrorResponse): void => {
     setSubmitting(false);
 
@@ -139,6 +116,29 @@ const AddActivityTaskModalContent: FC<Props> = ({ onClose }) => {
         "errorDescription"
       ]),
       isIcon: true
+    });
+  };
+
+  const handleSuccess = (): void => {
+    setSubmitting(false);
+    onClose();
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateText([
+        "activities",
+        "addTask",
+        "modal",
+        "toastMessages",
+        "addSuccessTitle"
+      ]),
+      description: translateText([
+        "activities",
+        "addTask",
+        "modal",
+        "toastMessages",
+        "addSuccessDescription"
+      ])
     });
   };
 
