@@ -755,7 +755,7 @@
       "modal": {
         "validations": {
           "date": "Date is required",
-          "attendees": "Please select at least one attendee",
+          "attendees": "An activity must be linked to at least one contact",
           "endTime": "End time must be after start time"
         },
         "title": "Log a meeting",
@@ -770,11 +770,13 @@
           "errorDescription": "Failed to save meeting"
         },
         "notices": {
-          "differentCompanies": "Attendees are from different companies",
-          "dealCleared": "Deal cleared — it doesn't match any attendee's company."
+          "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
         },
         "placeholders": {
           "attendees": "Select attendees"
+        },
+        "tooltips": {
+          "differentCompanies": "These contacts are linked to different companies. This activity will still be saved against all of them."
         }
       }
     },
@@ -807,7 +809,8 @@
         "noOwners": "No owners found",
         "noContacts": "No contacts found",
         "noDeals": "No deals found",
-        "noCompanies": "No companies found"
+        "noCompanies": "No companies found",
+        "searching": "Searching..."
       },
       "validations": {
         "subject": "Subject is required",
@@ -816,6 +819,9 @@
       },
       "toastMessages": {
         "errorTitle": "Oops! Something went wrong"
+      },
+      "tooltips": {
+        "relatedToMismatch": "This doesn't match {{name}}'s company on file."
       }
     },
     "activitySidePanel": {

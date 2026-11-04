@@ -7,6 +7,7 @@ import SearchableDropdown, {
   SearchableDropdownItem
 } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import ActivityWarningTooltip from "~community/crm/components/atoms/ActivityWarningTooltip/ActivityWarningTooltip";
 import { useContactLookup } from "~community/crm/hooks/useContactLookup";
 import { useCrmStore } from "~community/crm/store/store";
 import {
@@ -62,7 +63,7 @@ const MeetingAttendeesField: FC<Props> = ({
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { isSearchActive, lookupItems, dropdownItems } =
+  const { isSearchActive, isLoading, lookupItems, dropdownItems } =
     useContactLookup(searchTerm);
 
   const attendees = values.contactIds.map((contactId) => contacts[contactId]);
@@ -72,11 +73,14 @@ const MeetingAttendeesField: FC<Props> = ({
 
     if (!selectedDeal || nextAttendees.length === 0) return;
 
+    const wasDealMatched = attendees.some((attendee) =>
+      isDealMatchingCompany(selectedDeal, attendee.companyId)
+    );
     const isDealMatched = nextAttendees.some((attendee) =>
       isDealMatchingCompany(selectedDeal, attendee.companyId)
     );
 
-    if (isDealMatched) return;
+    if (!wasDealMatched || isDealMatched) return;
 
     setFieldValue("dealId", null);
     onDealCleared();
@@ -119,6 +123,9 @@ const MeetingAttendeesField: FC<Props> = ({
         onChange={(event) => setSearchTerm(event.target.value)}
         isOpenOnFocus={isSearchActive}
         emptyMessage={translateActivityText(["emptyStates", "noContacts"])}
+        {...(isLoading && {
+          loadingMessage: translateActivityText(["emptyStates", "searching"])
+        })}
         state={touched.contactIds && errors.contactIds ? "error" : "default"}
         {...(touched.contactIds &&
           errors.contactIds && { errorMessage: String(errors.contactIds) })}
@@ -126,10 +133,9 @@ const MeetingAttendeesField: FC<Props> = ({
       />
 
       {values.contactIds.length > 0 && (
-        <div
-          role="group"
+        <fieldset
           aria-label={translateAria(["attendees"])}
-          className="flex flex-wrap gap-2"
+          className="flex min-w-0 flex-wrap gap-2"
         >
           {values.contactIds.map((contactId) => {
             const contactName = getContactDisplayName(contacts[contactId]);
@@ -148,13 +154,14 @@ const MeetingAttendeesField: FC<Props> = ({
               />
             );
           })}
-        </div>
+        </fieldset>
       )}
 
       {isFromDifferentCompanies && (
-        <span role="status" className="text-sm text-semantic-amber-text">
-          {translateText(["notices", "differentCompanies"])}
-        </span>
+        <ActivityWarningTooltip
+          id={`${id}-companies`}
+          text={translateText(["tooltips", "differentCompanies"])}
+        />
       )}
     </div>
   );
