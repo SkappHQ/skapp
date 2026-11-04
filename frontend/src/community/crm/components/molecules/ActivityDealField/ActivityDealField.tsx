@@ -1,4 +1,3 @@
-import { FormikProps } from "formik";
 import { FC, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -12,37 +11,30 @@ import {
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
 import { useCrmStore } from "~community/crm/store/store";
-import {
-  CrmLogCallFormValues,
-  CrmLogMeetingFormValues
-} from "~community/crm/types/CrmCommonTypes";
 import { CrmDealFilterRequest } from "~community/crm/types/CrmTypes";
 import { mergeDeals } from "~community/crm/utils/dealUtil";
 
 interface Props {
   id: string;
-  formik:
-    FormikProps<CrmLogCallFormValues> | FormikProps<CrmLogMeetingFormValues>;
+  dealId: number | null;
   fieldAriaLabel: string;
   clearedNoticeText: string;
   isClearedNoticeVisible: boolean;
-  onDealChange: () => void;
+  onChange: (dealId: number | null) => void;
   filterCompanyId?: number;
   errorMessage?: string;
 }
 
 const ActivityDealField: FC<Props> = ({
   id,
-  formik,
+  dealId,
   fieldAriaLabel,
   clearedNoticeText,
   isClearedNoticeVisible,
-  onDealChange,
+  onChange,
   filterCompanyId,
   errorMessage
 }) => {
-  const { values, setFieldValue } = formik;
-
   const translateText = useTranslator("crmModule", "activities", "logActivity");
   const translateAria = useTranslator("crmAria", "activities", "logActivity");
 
@@ -92,7 +84,7 @@ const ActivityDealField: FC<Props> = ({
     [lookupItems]
   );
 
-  const selectedDeal = values.dealId ? deals[values.dealId] : null;
+  const selectedDeal = dealId ? deals[dealId] : null;
 
   const handleSelect = (item: SearchableDropdownItem): void => {
     const deal = lookupItems.find(
@@ -103,14 +95,12 @@ const ActivityDealField: FC<Props> = ({
     if (!deal?.id) return;
 
     setDeals(mergeDeals(deals, [deal]));
-    setFieldValue("dealId", deal.id);
-    onDealChange();
+    onChange(deal.id);
   };
 
   const handleClear = (): void => {
-    setFieldValue("dealId", null);
+    onChange(null);
     setSearchTerm("");
-    onDealChange();
   };
 
   return (

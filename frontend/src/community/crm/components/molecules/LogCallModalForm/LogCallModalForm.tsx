@@ -60,6 +60,16 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
     status.mismatchedDealId === values.dealId &&
     status.mismatchedContactId === values.contactId;
 
+  const handleDealCleared = (): void => {
+    setFieldValue("dealId", null);
+    setIsDealClearedNoticeVisible(true);
+  };
+
+  const handleDealChange = (dealId: number | null): void => {
+    setFieldValue("dealId", dealId);
+    setIsDealClearedNoticeVisible(false);
+  };
+
   const pickedDate = values.date ? toPickerDate(values.date) : null;
 
   const handleDateSelect = (date?: Date): void => {
@@ -148,12 +158,20 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
         <div className="flex-1">
           <LogCallContactField
             id="log-call-contactId"
-            formik={formik}
-            onDealCleared={() => setIsDealClearedNoticeVisible(true)}
+            contactId={values.contactId}
+            dealId={values.dealId}
+            errorMessage={touched.contactId ? errors.contactId : ""}
+            onChange={(contactId) => setFieldValue("contactId", contactId)}
+            onDealCleared={handleDealCleared}
           />
         </div>
         <div className="flex-1">
-          <ActivityOwnerField id="log-call-ownerId" formik={formik} />
+          <ActivityOwnerField
+            id="log-call-ownerId"
+            ownerId={values.ownerId}
+            errorMessage={errors.ownerId}
+            onChange={(ownerId) => setFieldValue("ownerId", ownerId)}
+          />
         </div>
       </div>
 
@@ -172,7 +190,7 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
       >
         <ActivityDealField
           id="log-call-deal"
-          formik={formik}
+          dealId={values.dealId}
           fieldAriaLabel={translateAria(["deal"])}
           clearedNoticeText={translateText([
             "logCall",
@@ -181,7 +199,7 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
             "dealCleared"
           ])}
           isClearedNoticeVisible={isDealClearedNoticeVisible}
-          onDealChange={() => setIsDealClearedNoticeVisible(false)}
+          onChange={handleDealChange}
           {...(contactCompanyId && { filterCompanyId: contactCompanyId })}
           {...(isDealMismatch && {
             errorMessage: translateText([
@@ -193,8 +211,9 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
         />
         <ActivityRelatedToField
           id="log-call-related-to"
-          formik={formik}
+          companyId={values.companyId}
           fieldAriaLabel={translateAria(["relatedTo"])}
+          onChange={(companyId) => setFieldValue("companyId", companyId)}
         />
       </ActivityAssociations>
     </div>

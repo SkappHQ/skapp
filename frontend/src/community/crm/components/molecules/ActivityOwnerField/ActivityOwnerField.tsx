@@ -1,4 +1,3 @@
-import { FormikProps } from "formik";
 import { FC, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -16,21 +15,21 @@ import {
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
 import { useCrmStore } from "~community/crm/store/store";
-import {
-  CrmLogCallFormValues,
-  CrmLogMeetingFormValues
-} from "~community/crm/types/CrmCommonTypes";
 import { updateOwnerRecord } from "~community/crm/utils/commonUtil";
 
 interface Props {
   id: string;
-  formik:
-    FormikProps<CrmLogCallFormValues> | FormikProps<CrmLogMeetingFormValues>;
+  ownerId: number | null;
+  errorMessage?: string;
+  onChange: (ownerId: number | null) => void;
 }
 
-const ActivityOwnerField: FC<Props> = ({ id, formik }) => {
-  const { values, errors, setFieldValue } = formik;
-
+const ActivityOwnerField: FC<Props> = ({
+  id,
+  ownerId,
+  errorMessage,
+  onChange
+}) => {
   const translateText = useTranslator("crmModule", "activities", "logActivity");
   const translateAria = useTranslator("crmAria", "activities", "logActivity");
 
@@ -65,16 +64,16 @@ const ActivityOwnerField: FC<Props> = ({ id, formik }) => {
   const dropdownItems: SearchableDropdownItem[] = useMemo(
     () =>
       lookupItems.map((owner) => {
-        const ownerId = String(owner.employeeId);
+        const employeeId = String(owner.employeeId);
         return {
-          id: ownerId,
-          content: <OwnerAvatarChip id={ownerId} owner={owner} />
+          id: employeeId,
+          content: <OwnerAvatarChip id={employeeId} owner={owner} />
         };
       }),
     [lookupItems]
   );
 
-  const selectedOwner = values.ownerId != null ? owners[values.ownerId] : null;
+  const selectedOwner = ownerId != null ? owners[ownerId] : null;
 
   const handleSelect = (item: SearchableDropdownItem) => {
     const owner = lookupItems.find(
@@ -82,12 +81,12 @@ const ActivityOwnerField: FC<Props> = ({ id, formik }) => {
     );
     if (owner) setOwners(updateOwnerRecord(owners, [owner]));
 
-    setFieldValue("ownerId", owner ? owner.employeeId : null);
+    onChange(owner ? owner.employeeId : null);
     setSearchTerm("");
   };
 
   const handleClear = () => {
-    setFieldValue("ownerId", null);
+    onChange(null);
     setSearchTerm("");
   };
 
@@ -108,8 +107,8 @@ const ActivityOwnerField: FC<Props> = ({ id, formik }) => {
       label={translateText(["labels", "activityOwner"])}
       placeholder={translateText(["placeholders", "activityOwner"])}
       value={searchTerm}
-      state={errors.ownerId ? "error" : "default"}
-      errorMessage={errors.ownerId}
+      state={errorMessage ? "error" : "default"}
+      errorMessage={errorMessage}
       onChange={(event) => setSearchTerm(event.target.value)}
       emptyMessage={translateText(["emptyStates", "noOwners"])}
     />

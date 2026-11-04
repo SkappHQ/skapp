@@ -68,11 +68,21 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
 
   const primaryAttendee = attendees.length > 0 ? attendees[0] : null;
 
-  const isRelatedToNotPrimaryAttendeeCompany = Boolean(
+  const isCompanyMismatch = Boolean(
     values.companyId &&
     primaryAttendee &&
     values.companyId !== primaryAttendee.companyId
   );
+
+  const handleDealCleared = (): void => {
+    setFieldValue("dealId", null);
+    setIsDealClearedNoticeVisible(true);
+  };
+
+  const handleDealChange = (dealId: number | null): void => {
+    setFieldValue("dealId", dealId);
+    setIsDealClearedNoticeVisible(false);
+  };
 
   const pickedDate = values.date ? toPickerDate(values.date) : null;
 
@@ -164,13 +174,24 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
         <div className="flex-1 min-w-0">
           <MeetingAttendeesField
             id="log-meeting-contactIds"
-            formik={formik}
+            contactIds={values.contactIds}
+            dealId={values.dealId}
+            {...(touched.contactIds &&
+              errors.contactIds && { errorMessage: String(errors.contactIds) })}
+            onChange={(contactIds) =>
+              setFieldValue("contactIds", contactIds, true)
+            }
             isFromDifferentCompanies={attendeeCompanyIds.length > 1}
-            onDealCleared={() => setIsDealClearedNoticeVisible(true)}
+            onDealCleared={handleDealCleared}
           />
         </div>
         <div className="flex-1">
-          <ActivityOwnerField id="log-meeting-ownerId" formik={formik} />
+          <ActivityOwnerField
+            id="log-meeting-ownerId"
+            ownerId={values.ownerId}
+            errorMessage={errors.ownerId}
+            onChange={(ownerId) => setFieldValue("ownerId", ownerId)}
+          />
         </div>
       </div>
 
@@ -189,7 +210,7 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
       >
         <ActivityDealField
           id="log-meeting-deal"
-          formik={formik}
+          dealId={values.dealId}
           fieldAriaLabel={translateAria(["deal"])}
           clearedNoticeText={translateText([
             "logMeeting",
@@ -198,7 +219,7 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
             "dealCleared"
           ])}
           isClearedNoticeVisible={isDealClearedNoticeVisible}
-          onDealChange={() => setIsDealClearedNoticeVisible(false)}
+          onChange={handleDealChange}
           {...(attendeeCompanyIds.length === 1 && {
             filterCompanyId: attendeeCompanyIds[0]
           })}
@@ -212,9 +233,10 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
         />
         <ActivityRelatedToField
           id="log-meeting-related-to"
-          formik={formik}
+          companyId={values.companyId}
           fieldAriaLabel={translateAria(["relatedTo"])}
-          {...(isRelatedToNotPrimaryAttendeeCompany &&
+          onChange={(companyId) => setFieldValue("companyId", companyId)}
+          {...(isCompanyMismatch &&
             primaryAttendee && {
               mismatchTooltip: translateText(
                 ["logActivity", "tooltips", "relatedToMismatch"],
