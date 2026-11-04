@@ -22,8 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/crm/activity/task")
-@Tag(name = "CRM Activity Tasks List Controller", description = "Operations related to listing CRM activity tasks")
-public class CrmActivityTaskListController {
+@Tag(name = "CRM Activity Tasks Controller", description = "Operations related to CRM activity tasks")
+public class CrmActivityTaskController {
 
 	private final CrmActivityTaskListService crmActivityTaskListService;
 

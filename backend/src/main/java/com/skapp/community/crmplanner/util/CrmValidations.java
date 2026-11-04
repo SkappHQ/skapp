@@ -413,7 +413,7 @@ public class CrmValidations {
 		Long dealCompanyId = deal.getCompany() != null ? deal.getCompany().getId() : null;
 		Long contactCompanyId = contact.getCompany() != null ? contact.getCompany().getId() : null;
 		if (!Objects.equals(dealCompanyId, contactCompanyId)) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_DEAL_COMPANY_MISMATCH);
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_TASK_DEAL_COMPANY_MISMATCH);
 		}
 	}
 
