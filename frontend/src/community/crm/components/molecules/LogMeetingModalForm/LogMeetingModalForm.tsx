@@ -6,7 +6,7 @@ import {
   TextArea
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { FC, useState } from "react";
+import { FC } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -20,6 +20,7 @@ import ActivityDealField from "~community/crm/components/molecules/ActivityDealF
 import ActivityOwnerField from "~community/crm/components/molecules/ActivityOwnerField/ActivityOwnerField";
 import ActivityRelatedToField from "~community/crm/components/molecules/ActivityRelatedToField/ActivityRelatedToField";
 import MeetingAttendeesField from "~community/crm/components/molecules/MeetingAttendeesField/MeetingAttendeesField";
+import { useDealClearedNotice } from "~community/crm/hooks/useDealClearedNotice";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmLogMeetingFormValues } from "~community/crm/types/CrmCommonTypes";
 import {
@@ -51,8 +52,8 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
     }))
   );
 
-  const [isDealClearedNoticeVisible, setIsDealClearedNoticeVisible] =
-    useState(false);
+  const { isDealClearedNoticeVisible, handleDealCleared, handleDealChange } =
+    useDealClearedNotice((dealId) => setFieldValue("dealId", dealId));
 
   const attendees = values.contactIds.map((contactId) => contacts[contactId]);
 
@@ -73,16 +74,6 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
     primaryAttendee &&
     values.companyId !== primaryAttendee.companyId
   );
-
-  const handleDealCleared = (): void => {
-    setFieldValue("dealId", null);
-    setIsDealClearedNoticeVisible(true);
-  };
-
-  const handleDealChange = (dealId: number | null): void => {
-    setFieldValue("dealId", dealId);
-    setIsDealClearedNoticeVisible(false);
-  };
 
   const pickedDate = values.date ? toPickerDate(values.date) : null;
 
@@ -212,23 +203,11 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
           id="log-meeting-deal"
           dealId={values.dealId}
           fieldAriaLabel={translateAria(["deal"])}
-          clearedNoticeText={translateText([
-            "logMeeting",
-            "modal",
-            "notices",
-            "dealCleared"
-          ])}
           isClearedNoticeVisible={isDealClearedNoticeVisible}
+          isMismatch={isDealMismatch}
           onChange={handleDealChange}
           {...(attendeeCompanyIds.length === 1 && {
             filterCompanyId: attendeeCompanyIds[0]
-          })}
-          {...(isDealMismatch && {
-            errorMessage: translateText([
-              "logActivity",
-              "validations",
-              "dealMismatch"
-            ])
           })}
         />
         <ActivityRelatedToField

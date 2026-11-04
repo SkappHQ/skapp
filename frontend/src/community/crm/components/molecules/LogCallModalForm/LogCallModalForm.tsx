@@ -6,7 +6,7 @@ import {
   TextArea
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { FC, useState } from "react";
+import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -18,6 +18,7 @@ import ActivityAssociations from "~community/crm/components/molecules/ActivityAs
 import ActivityDealField from "~community/crm/components/molecules/ActivityDealField/ActivityDealField";
 import ActivityOwnerField from "~community/crm/components/molecules/ActivityOwnerField/ActivityOwnerField";
 import ActivityRelatedToField from "~community/crm/components/molecules/ActivityRelatedToField/ActivityRelatedToField";
+import { useDealClearedNotice } from "~community/crm/hooks/useDealClearedNotice";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
 
@@ -52,23 +53,13 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
     ? contacts[values.contactId]?.companyId
     : null;
 
-  const [isDealClearedNoticeVisible, setIsDealClearedNoticeVisible] =
-    useState(false);
+  const { isDealClearedNoticeVisible, handleDealCleared, handleDealChange } =
+    useDealClearedNotice((dealId) => setFieldValue("dealId", dealId));
 
   const isDealMismatch =
     Boolean(status) &&
     status.mismatchedDealId === values.dealId &&
     status.mismatchedContactId === values.contactId;
-
-  const handleDealCleared = (): void => {
-    setFieldValue("dealId", null);
-    setIsDealClearedNoticeVisible(true);
-  };
-
-  const handleDealChange = (dealId: number | null): void => {
-    setFieldValue("dealId", dealId);
-    setIsDealClearedNoticeVisible(false);
-  };
 
   const pickedDate = values.date ? toPickerDate(values.date) : null;
 
@@ -192,22 +183,10 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
           id="log-call-deal"
           dealId={values.dealId}
           fieldAriaLabel={translateAria(["deal"])}
-          clearedNoticeText={translateText([
-            "logCall",
-            "modal",
-            "notices",
-            "dealCleared"
-          ])}
           isClearedNoticeVisible={isDealClearedNoticeVisible}
+          isMismatch={isDealMismatch}
           onChange={handleDealChange}
           {...(contactCompanyId && { filterCompanyId: contactCompanyId })}
-          {...(isDealMismatch && {
-            errorMessage: translateText([
-              "logActivity",
-              "validations",
-              "dealMismatch"
-            ])
-          })}
         />
         <ActivityRelatedToField
           id="log-call-related-to"

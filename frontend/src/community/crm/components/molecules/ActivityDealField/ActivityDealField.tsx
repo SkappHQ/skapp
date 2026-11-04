@@ -18,22 +18,20 @@ interface Props {
   id: string;
   dealId: number | null;
   fieldAriaLabel: string;
-  clearedNoticeText: string;
   isClearedNoticeVisible: boolean;
+  isMismatch: boolean;
   onChange: (dealId: number | null) => void;
   filterCompanyId?: number;
-  errorMessage?: string;
 }
 
 const ActivityDealField: FC<Props> = ({
   id,
   dealId,
   fieldAriaLabel,
-  clearedNoticeText,
   isClearedNoticeVisible,
+  isMismatch,
   onChange,
-  filterCompanyId,
-  errorMessage
+  filterCompanyId
 }) => {
   const translateText = useTranslator("crmModule", "activities", "logActivity");
   const translateAria = useTranslator("crmAria", "activities", "logActivity");
@@ -123,11 +121,13 @@ const ActivityDealField: FC<Props> = ({
         {...(isFetching && {
           loadingMessage: translateText(["emptyStates", "searching"])
         })}
-        {...(errorMessage && { errorMessage })}
+        {...(isMismatch && {
+          errorMessage: translateText(["validations", "dealMismatch"])
+        })}
       />
       {isClearedNoticeVisible && (
         <output className="text-sm text-semantic-amber-text">
-          {clearedNoticeText}
+          {translateText(["notices", "dealCleared"])}
         </output>
       )}
     </div>
