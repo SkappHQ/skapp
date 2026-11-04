@@ -6,7 +6,8 @@ import {
   TextArea
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { FC } from "react";
+import { FC, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -14,8 +15,18 @@ import {
   toDateFieldValue,
   toPickerDate
 } from "~community/crm/activities/utils/activityUtil";
+import ActivityAssociations from "~community/crm/components/molecules/ActivityAssociations/ActivityAssociations";
+import ActivityDealField from "~community/crm/components/molecules/ActivityDealField/ActivityDealField";
 import ActivityOwnerField from "~community/crm/components/molecules/ActivityOwnerField/ActivityOwnerField";
+import ActivityRelatedToField from "~community/crm/components/molecules/ActivityRelatedToField/ActivityRelatedToField";
+import MeetingAttendeesField from "~community/crm/components/molecules/MeetingAttendeesField/MeetingAttendeesField";
+import { useCrmStore } from "~community/crm/store/store";
 import { CrmLogMeetingFormValues } from "~community/crm/types/CrmCommonTypes";
+import {
+  getContactCompanyIds,
+  getContactDisplayName
+} from "~community/crm/utils/contactUtil";
+import { isDealMatchingContacts } from "~community/crm/utils/dealUtil";
 
 interface Props {
   formik: FormikProps<CrmLogMeetingFormValues>;
@@ -31,6 +42,36 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
     "activities",
     "logMeeting",
     "modal"
+  );
+
+  const { contacts, deals } = useCrmStore(
+    useShallow((store) => ({
+      contacts: store.contacts,
+      deals: store.deals
+    }))
+  );
+
+  const [isDealClearedNoticeVisible, setIsDealClearedNoticeVisible] =
+    useState(false);
+
+  const attendees = values.contactIds.map((contactId) => contacts[contactId]);
+
+  const attendeeCompanyIds = Array.from(
+    new Set(getContactCompanyIds(contacts, values.contactIds))
+  );
+
+  const isDealMismatch = Boolean(
+    values.dealId &&
+    attendees.length > 0 &&
+    !isDealMatchingContacts(deals[values.dealId], attendees)
+  );
+
+  const primaryAttendee = attendees.length > 0 ? attendees[0] : null;
+
+  const isCompanyMismatch = Boolean(
+    values.companyId &&
+    primaryAttendee &&
+    values.companyId !== primaryAttendee.companyId
   );
 
   const pickedDate = values.date ? toPickerDate(values.date) : null;
@@ -119,7 +160,19 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
         </div>
       </div>
 
-      <ActivityOwnerField id="log-meeting-ownerId" formik={formik} />
+      <div className="flex flex-row items-start gap-[0.625rem]">
+        <div className="flex-1 min-w-0">
+          <MeetingAttendeesField
+            id="log-meeting-contactIds"
+            formik={formik}
+            isFromDifferentCompanies={attendeeCompanyIds.length > 1}
+            onDealCleared={() => setIsDealClearedNoticeVisible(true)}
+          />
+        </div>
+        <div className="flex-1">
+          <ActivityOwnerField id="log-meeting-ownerId" formik={formik} />
+        </div>
+      </div>
 
       <TextArea
         name="comments"
@@ -130,6 +183,34 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
         rows={2}
         aria-label={translateAria(["comments"])}
       />
+
+      <ActivityAssociations
+        isForcedOpen={isDealClearedNoticeVisible || isDealMismatch}
+      >
+        <ActivityDealField
+          id="log-meeting-deal"
+          formik={formik}
+          fieldAriaLabel={translateAria(["deal"])}
+          isClearedNoticeVisible={isDealClearedNoticeVisible}
+          isMismatch={isDealMismatch}
+          onDealChange={() => setIsDealClearedNoticeVisible(false)}
+          {...(attendeeCompanyIds.length === 1 && {
+            filterCompanyId: attendeeCompanyIds[0]
+          })}
+        />
+        <ActivityRelatedToField
+          id="log-meeting-related-to"
+          formik={formik}
+          fieldAriaLabel={translateAria(["relatedTo"])}
+          {...(isCompanyMismatch &&
+            primaryAttendee && {
+              mismatchTooltip: translateText(
+                ["logActivity", "tooltips", "relatedToMismatch"],
+                { name: getContactDisplayName(primaryAttendee) }
+              )
+            })}
+        />
+      </ActivityAssociations>
     </div>
   );
 };

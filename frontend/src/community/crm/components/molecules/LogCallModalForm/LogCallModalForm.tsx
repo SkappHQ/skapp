@@ -14,12 +14,14 @@ import {
   toDateFieldValue,
   toPickerDate
 } from "~community/crm/activities/utils/activityUtil";
+import ActivityAssociations from "~community/crm/components/molecules/ActivityAssociations/ActivityAssociations";
+import ActivityDealField from "~community/crm/components/molecules/ActivityDealField/ActivityDealField";
 import ActivityOwnerField from "~community/crm/components/molecules/ActivityOwnerField/ActivityOwnerField";
+import ActivityRelatedToField from "~community/crm/components/molecules/ActivityRelatedToField/ActivityRelatedToField";
+import { useCrmStore } from "~community/crm/store/store";
 import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
 
-import LogCallCompanyField from "./LogCallCompanyField";
 import LogCallContactField from "./LogCallContactField";
-import LogCallDealField from "./LogCallDealField";
 
 interface Props {
   formik: FormikProps<CrmLogCallFormValues>;
@@ -44,7 +46,12 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
     "modal"
   );
 
-  const [isAssociationsOpen, setIsAssociationsOpen] = useState(false);
+  const contacts = useCrmStore((state) => state.contacts);
+
+  const contactCompanyId = values.contactId
+    ? contacts[values.contactId]?.companyId
+    : null;
+
   const [isDealClearedNoticeVisible, setIsDealClearedNoticeVisible] =
     useState(false);
 
@@ -52,13 +59,6 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
     Boolean(status) &&
     status.mismatchedDealId === values.dealId &&
     status.mismatchedContactId === values.contactId;
-
-  const isAssociationsVisible = isAssociationsOpen || isDealMismatch;
-
-  const handleDealCleared = (): void => {
-    setIsDealClearedNoticeVisible(true);
-    setIsAssociationsOpen(true);
-  };
 
   const pickedDate = values.date ? toPickerDate(values.date) : null;
 
@@ -149,7 +149,7 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
           <LogCallContactField
             id="log-call-contactId"
             formik={formik}
-            onDealCleared={handleDealCleared}
+            onDealCleared={() => setIsDealClearedNoticeVisible(true)}
           />
         </div>
         <div className="flex-1">
@@ -167,38 +167,24 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
         aria-label={translateAria(["comments"])}
       />
 
-      {isAssociationsVisible && (
-        <>
-          <LogCallDealField
-            id="log-call-deal"
-            formik={formik}
-            errorMessage={
-              isDealMismatch
-                ? translateText([
-                    "logCall",
-                    "modal",
-                    "validations",
-                    "dealMismatch"
-                  ])
-                : ""
-            }
-            isClearedNoticeVisible={isDealClearedNoticeVisible}
-            onDealChange={() => setIsDealClearedNoticeVisible(false)}
-          />
-          <LogCallCompanyField id="log-call-related-to" formik={formik} />
-        </>
-      )}
-
-      <button
-        type="button"
-        className="self-start text-sm text-primary-text underline"
-        aria-expanded={isAssociationsVisible}
-        onClick={() => setIsAssociationsOpen(!isAssociationsVisible)}
+      <ActivityAssociations
+        isForcedOpen={isDealClearedNoticeVisible || isDealMismatch}
       >
-        {isAssociationsVisible
-          ? translateText(["logCall", "modal", "buttons", "hideAssociations"])
-          : translateText(["logCall", "modal", "buttons", "addAssociations"])}
-      </button>
+        <ActivityDealField
+          id="log-call-deal"
+          formik={formik}
+          fieldAriaLabel={translateAria(["deal"])}
+          isClearedNoticeVisible={isDealClearedNoticeVisible}
+          isMismatch={isDealMismatch}
+          onDealChange={() => setIsDealClearedNoticeVisible(false)}
+          {...(contactCompanyId && { filterCompanyId: contactCompanyId })}
+        />
+        <ActivityRelatedToField
+          id="log-call-related-to"
+          formik={formik}
+          fieldAriaLabel={translateAria(["relatedTo"])}
+        />
+      </ActivityAssociations>
     </div>
   );
 };

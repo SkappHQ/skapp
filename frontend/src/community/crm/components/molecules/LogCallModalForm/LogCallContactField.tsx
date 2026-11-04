@@ -1,23 +1,18 @@
 import { FormikProps } from "formik";
-import { FC, useMemo, useState } from "react";
+import { FC, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { SearchableDropdownItem } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
-import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useGetContactLookup } from "~community/crm/api/ContactApi";
 import SelectableSearchField from "~community/crm/components/molecules/SelectableSearchField/SelectableSearchField";
-import {
-  DEFAULT_LOOKUP_PAGE_SIZE,
-  SEARCH_DEBOUNCE_DELAY
-} from "~community/crm/constants/commonConstants";
+import { useContactLookup } from "~community/crm/hooks/useContactLookup";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
-import { CrmContactFilterRequest } from "~community/crm/types/CrmTypes";
 import {
   getContactDisplayName,
   updateContactRecord
 } from "~community/crm/utils/contactUtil";
+import { isDealMatchingCompany } from "~community/crm/utils/dealUtil";
 
 interface Props {
   id: string;
@@ -28,18 +23,8 @@ interface Props {
 const LogCallContactField: FC<Props> = ({ id, formik, onDealCleared }) => {
   const { values, errors, touched, setFieldValue } = formik;
 
-  const translateText = useTranslator(
-    "crmModule",
-    "activities",
-    "logCall",
-    "modal"
-  );
-  const translateAria = useTranslator(
-    "crmAria",
-    "activities",
-    "logCall",
-    "modal"
-  );
+  const translateText = useTranslator("crmModule", "activities");
+  const translateAria = useTranslator("crmAria", "activities");
 
   const { contacts, deals, setContacts } = useCrmStore(
     useShallow((store) => ({
@@ -50,43 +35,9 @@ const LogCallContactField: FC<Props> = ({ id, formik, onDealCleared }) => {
   );
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [hasFilledRelatedTo, setHasFilledRelatedTo] = useState(false);
 
-  const debouncedSearch = useDebounce(searchTerm.trim(), SEARCH_DEBOUNCE_DELAY);
-
-  const lookupFilter: CrmContactFilterRequest = useMemo(
-    () => ({
-      searchKeyword: debouncedSearch,
-      size: DEFAULT_LOOKUP_PAGE_SIZE
-    }),
-    [debouncedSearch]
-  );
-
-  const { data: lookupData } = useGetContactLookup(
-    lookupFilter,
-    debouncedSearch.length > 0
-  );
-
-  const lookupItems = useMemo(
-    () => (lookupData ? lookupData.items : []),
-    [lookupData]
-  );
-
-  const dropdownItems: SearchableDropdownItem[] = useMemo(
-    () =>
-      lookupItems.map((contact) => {
-        const contactName = getContactDisplayName(contact);
-        return {
-          id: String(contact.id),
-          content: (
-            <div className="w-full truncate" title={contactName}>
-              {contactName}
-            </div>
-          )
-        };
-      }),
-    [lookupItems]
-  );
+  const { isSearchActive, isLoading, lookupItems, dropdownItems } =
+    useContactLookup(searchTerm);
 
   const selectedContact = values.contactId ? contacts[values.contactId] : null;
 
@@ -103,19 +54,11 @@ const LogCallContactField: FC<Props> = ({ id, formik, onDealCleared }) => {
 
     const selectedDeal = values.dealId ? deals[values.dealId] : null;
     const isDealMismatch =
-      selectedDeal &&
-      (selectedDeal.companyId
-        ? selectedDeal.companyId !== contact.companyId
-        : Boolean(contact.companyId));
+      selectedDeal && !isDealMatchingCompany(selectedDeal, contact.companyId);
 
     if (isDealMismatch) {
       setFieldValue("dealId", null);
       onDealCleared();
-    }
-
-    if (!hasFilledRelatedTo && !values.companyId && contact.companyId) {
-      setFieldValue("companyId", contact.companyId);
-      setHasFilledRelatedTo(true);
     }
   };
 
@@ -128,20 +71,27 @@ const LogCallContactField: FC<Props> = ({ id, formik, onDealCleared }) => {
     <SelectableSearchField
       positionStrategy="fixed"
       id={id}
-      label={translateText(["labels", "contact"])}
-      placeholder={translateText(["placeholders", "contact"])}
+      label={translateText(["logCall", "modal", "labels", "contact"])}
+      placeholder={translateText(["logActivity", "placeholders", "contact"])}
       selectedValue={
         selectedContact ? getContactDisplayName(selectedContact) : ""
       }
       onClear={handleClear}
-      clearAriaLabel={translateAria(["clearContact"])}
-      fieldAriaLabel={translateAria(["contact"])}
+      clearAriaLabel={translateAria(["logActivity", "clearContact"])}
+      fieldAriaLabel={translateAria(["logCall", "modal", "contact"])}
       searchValue={searchTerm}
       onSearchChange={(event) => setSearchTerm(event.target.value)}
       items={dropdownItems}
       onSelect={handleSelect}
-      isOpenOnFocus={debouncedSearch.length > 0}
-      emptyMessage={translateText(["emptyStates", "noContacts"])}
+      isOpenOnFocus={isSearchActive}
+      emptyMessage={translateText(["logActivity", "emptyStates", "noContacts"])}
+      {...(isLoading && {
+        loadingMessage: translateText([
+          "logActivity",
+          "emptyStates",
+          "searching"
+        ])
+      })}
       required
       errorMessage={touched.contactId ? errors.contactId : ""}
     />

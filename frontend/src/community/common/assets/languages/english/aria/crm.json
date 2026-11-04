@@ -144,10 +144,7 @@
         "deal": "Call deal",
         "relatedTo": "Call related company",
         "cancel": "Cancel log a call",
-        "save": "Save call",
-        "clearContact": "Clear selected contact",
-        "clearDeal": "Clear selected deal",
-        "clearRelatedTo": "Clear selected company"
+        "save": "Save call"
       }
     },
     "tabs": "Activity types",
@@ -180,11 +177,18 @@
         "endTime": "Meeting end time",
         "comments": "Meeting comments",
         "cancel": "Cancel log a meeting",
-        "save": "Save meeting"
+        "save": "Save meeting",
+        "attendees": "Meeting attendees",
+        "removeAttendee": "Remove attendee {{name}}",
+        "deal": "Meeting deal",
+        "relatedTo": "Meeting related company"
       }
     },
     "logActivity": {
-      "removeOwner": "Remove activity owner"
+      "removeOwner": "Remove activity owner",
+      "clearContact": "Clear selected contact",
+      "clearDeal": "Clear selected deal",
+      "clearRelatedTo": "Clear selected company"
     },
     "meetingSidePanel": {
       "kebabMenu": "Meeting actions",
