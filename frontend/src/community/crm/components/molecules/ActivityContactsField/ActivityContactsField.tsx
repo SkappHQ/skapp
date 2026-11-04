@@ -3,7 +3,7 @@ import {
   AvatarChipsInputResult
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { FC, useState } from "react";
+import { FC, ReactNode, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -32,6 +32,7 @@ interface Props {
   warningTooltip?: string;
   required?: boolean;
   fillsRelatedTo?: boolean;
+  actions?: ReactNode;
   onContactsChange?: (nextContacts: CrmContactEntity[]) => void;
 }
 
@@ -46,6 +47,7 @@ const ActivityContactsField: FC<Props> = ({
   warningTooltip,
   required,
   fillsRelatedTo,
+  actions,
   onContactsChange
 }) => {
   const { values, getFieldProps, getFieldMeta, setFieldValue } = formik;
@@ -147,23 +149,28 @@ const ActivityContactsField: FC<Props> = ({
         )}
       </label>
 
-      <AvatarChipsInput
-        id={id}
-        filteredResults={filteredResults}
-        selectedChips={selectedChips}
-        searchText={searchTerm}
-        onChipSelect={handleChipSelect}
-        onChipRemove={handleChipRemove}
-        onSearchTextChange={setSearchTerm}
-        searchPlaceholder={placeholder}
-        selectedSearchPlaceholder={placeholder}
-        ariaLabelClearButton={translateAria(["clearSearch"])}
-        ariaLabelSearch={label}
-        ariaLabelSearchResults={label}
-        regionAriaLabel={groupAriaLabel}
-        noResultsText={translateText(["emptyStates", "noContacts"])}
-        tabIndex={-1}
-      />
+      <div className="flex flex-row items-center gap-6">
+        <div className="min-w-0 flex-1">
+          <AvatarChipsInput
+            id={id}
+            filteredResults={filteredResults}
+            selectedChips={selectedChips}
+            searchText={searchTerm}
+            onChipSelect={handleChipSelect}
+            onChipRemove={handleChipRemove}
+            onSearchTextChange={setSearchTerm}
+            searchPlaceholder={placeholder}
+            selectedSearchPlaceholder={placeholder}
+            ariaLabelClearButton={translateAria(["clearSearch"])}
+            ariaLabelSearch={label}
+            ariaLabelSearchResults={label}
+            regionAriaLabel={groupAriaLabel}
+            noResultsText={translateText(["emptyStates", "noContacts"])}
+            tabIndex={-1}
+          />
+        </div>
+        {actions}
+      </div>
 
       {isError && (
         <p

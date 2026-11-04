@@ -37,6 +37,8 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
   );
 
   const [isAssociationsOpen, setIsAssociationsOpen] = useState(false);
+  const [isBccOpen, setIsBccOpen] = useState(values.bccContactIds.length > 0);
+  const [isCcOpen, setIsCcOpen] = useState(values.ccContactIds.length > 0);
 
   const pickedDate = values.date ? toPickerDate(values.date) : null;
 
@@ -129,37 +131,80 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
         hiddenContactIds={[...values.ccContactIds, ...values.bccContactIds]}
         required
         fillsRelatedTo
+        actions={
+          (!isBccOpen || !isCcOpen) && (
+            <div className="flex flex-row gap-6">
+              {!isBccOpen && (
+                <button
+                  type="button"
+                  className="text-primary-text"
+                  aria-label={translateAria(["bcc"])}
+                  onClick={() => setIsBccOpen(true)}
+                >
+                  {translateText(["logEmail", "modal", "labels", "bcc"])}
+                </button>
+              )}
+              {!isCcOpen && (
+                <button
+                  type="button"
+                  className="text-primary-text"
+                  aria-label={translateAria(["cc"])}
+                  onClick={() => setIsCcOpen(true)}
+                >
+                  {translateText(["logEmail", "modal", "labels", "cc"])}
+                </button>
+              )}
+            </div>
+          )
+        }
       />
 
-      <ActivityContactsField
-        id="log-email-cc"
-        formik={formik}
-        name="ccContactIds"
-        label={translateText(["logEmail", "modal", "labels", "cc"])}
-        placeholder={translateText([
-          "logEmail",
-          "modal",
-          "placeholders",
-          "recipients"
-        ])}
-        groupAriaLabel={translateAria(["cc"])}
-        hiddenContactIds={[...values.toContactIds, ...values.bccContactIds]}
-      />
-
-      <ActivityContactsField
-        id="log-email-bcc"
-        formik={formik}
-        name="bccContactIds"
-        label={translateText(["logEmail", "modal", "labels", "bcc"])}
-        placeholder={translateText([
-          "logEmail",
-          "modal",
-          "placeholders",
-          "recipients"
-        ])}
-        groupAriaLabel={translateAria(["bcc"])}
-        hiddenContactIds={[...values.toContactIds, ...values.ccContactIds]}
-      />
+      {(isBccOpen || isCcOpen) && (
+        <div className="flex flex-row items-start gap-[0.625rem]">
+          {isBccOpen && (
+            <div className="min-w-0 flex-1">
+              <ActivityContactsField
+                id="log-email-bcc"
+                formik={formik}
+                name="bccContactIds"
+                label={translateText(["logEmail", "modal", "labels", "bcc"])}
+                placeholder={translateText([
+                  "logEmail",
+                  "modal",
+                  "placeholders",
+                  "recipients"
+                ])}
+                groupAriaLabel={translateAria(["bcc"])}
+                hiddenContactIds={[
+                  ...values.toContactIds,
+                  ...values.ccContactIds
+                ]}
+              />
+            </div>
+          )}
+          {isCcOpen && (
+            <div className="min-w-0 flex-1">
+              <ActivityContactsField
+                id="log-email-cc"
+                formik={formik}
+                name="ccContactIds"
+                label={translateText(["logEmail", "modal", "labels", "cc"])}
+                placeholder={translateText([
+                  "logEmail",
+                  "modal",
+                  "placeholders",
+                  "recipients"
+                ])}
+                groupAriaLabel={translateAria(["cc"])}
+                hiddenContactIds={[
+                  ...values.toContactIds,
+                  ...values.bccContactIds
+                ]}
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       <InputField
         id="log-email-subject-input"
