@@ -6,7 +6,7 @@ import {
   TextArea
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { FC } from "react";
+import { FC, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -18,7 +18,6 @@ import ActivityAssociations from "~community/crm/components/molecules/ActivityAs
 import ActivityDealField from "~community/crm/components/molecules/ActivityDealField/ActivityDealField";
 import ActivityOwnerField from "~community/crm/components/molecules/ActivityOwnerField/ActivityOwnerField";
 import ActivityRelatedToField from "~community/crm/components/molecules/ActivityRelatedToField/ActivityRelatedToField";
-import { useDealClearedNotice } from "~community/crm/hooks/useDealClearedNotice";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
 
@@ -53,8 +52,8 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
     ? contacts[values.contactId]?.companyId
     : null;
 
-  const { isDealClearedNoticeVisible, handleDealCleared, handleDealChange } =
-    useDealClearedNotice((dealId) => setFieldValue("dealId", dealId));
+  const [isDealClearedNoticeVisible, setIsDealClearedNoticeVisible] =
+    useState(false);
 
   const isDealMismatch =
     Boolean(status) &&
@@ -149,20 +148,12 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
         <div className="flex-1">
           <LogCallContactField
             id="log-call-contactId"
-            contactId={values.contactId}
-            dealId={values.dealId}
-            errorMessage={touched.contactId ? errors.contactId : ""}
-            onChange={(contactId) => setFieldValue("contactId", contactId)}
-            onDealCleared={handleDealCleared}
+            formik={formik}
+            onDealCleared={() => setIsDealClearedNoticeVisible(true)}
           />
         </div>
         <div className="flex-1">
-          <ActivityOwnerField
-            id="log-call-ownerId"
-            ownerId={values.ownerId}
-            errorMessage={errors.ownerId}
-            onChange={(ownerId) => setFieldValue("ownerId", ownerId)}
-          />
+          <ActivityOwnerField id="log-call-ownerId" formik={formik} />
         </div>
       </div>
 
@@ -181,18 +172,17 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
       >
         <ActivityDealField
           id="log-call-deal"
-          dealId={values.dealId}
+          formik={formik}
           fieldAriaLabel={translateAria(["deal"])}
           isClearedNoticeVisible={isDealClearedNoticeVisible}
           isMismatch={isDealMismatch}
-          onChange={handleDealChange}
+          onDealChange={() => setIsDealClearedNoticeVisible(false)}
           {...(contactCompanyId && { filterCompanyId: contactCompanyId })}
         />
         <ActivityRelatedToField
           id="log-call-related-to"
-          companyId={values.companyId}
+          formik={formik}
           fieldAriaLabel={translateAria(["relatedTo"])}
-          onChange={(companyId) => setFieldValue("companyId", companyId)}
         />
       </ActivityAssociations>
     </div>

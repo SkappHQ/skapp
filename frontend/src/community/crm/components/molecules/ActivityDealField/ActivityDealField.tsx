@@ -1,3 +1,4 @@
+import { FormikProps } from "formik";
 import { FC, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -11,28 +12,35 @@ import {
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
 import { useCrmStore } from "~community/crm/store/store";
+import {
+  CrmLogCallFormValues,
+  CrmLogMeetingFormValues
+} from "~community/crm/types/CrmCommonTypes";
 import { CrmDealFilterRequest } from "~community/crm/types/CrmTypes";
 import { mergeDeals } from "~community/crm/utils/dealUtil";
 
 interface Props {
   id: string;
-  dealId: number | null;
+  formik:
+    FormikProps<CrmLogCallFormValues> | FormikProps<CrmLogMeetingFormValues>;
   fieldAriaLabel: string;
   isClearedNoticeVisible: boolean;
   isMismatch: boolean;
-  onChange: (dealId: number | null) => void;
+  onDealChange: () => void;
   filterCompanyId?: number;
 }
 
 const ActivityDealField: FC<Props> = ({
   id,
-  dealId,
+  formik,
   fieldAriaLabel,
   isClearedNoticeVisible,
   isMismatch,
-  onChange,
+  onDealChange,
   filterCompanyId
 }) => {
+  const { values, setFieldValue } = formik;
+
   const translateText = useTranslator("crmModule", "activities", "logActivity");
   const translateAria = useTranslator("crmAria", "activities", "logActivity");
 
@@ -82,7 +90,7 @@ const ActivityDealField: FC<Props> = ({
     [lookupItems]
   );
 
-  const selectedDeal = dealId ? deals[dealId] : null;
+  const selectedDeal = values.dealId ? deals[values.dealId] : null;
 
   const handleSelect = (item: SearchableDropdownItem): void => {
     const deal = lookupItems.find(
@@ -93,12 +101,14 @@ const ActivityDealField: FC<Props> = ({
     if (!deal?.id) return;
 
     setDeals(mergeDeals(deals, [deal]));
-    onChange(deal.id);
+    setFieldValue("dealId", deal.id);
+    onDealChange();
   };
 
   const handleClear = (): void => {
-    onChange(null);
+    setFieldValue("dealId", null);
     setSearchTerm("");
+    onDealChange();
   };
 
   return (

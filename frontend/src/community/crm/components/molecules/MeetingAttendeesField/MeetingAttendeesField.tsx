@@ -1,3 +1,4 @@
+import { FormikProps } from "formik";
 import { FC, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -9,28 +10,25 @@ import ActivityWarningTooltip from "~community/crm/components/atoms/ActivityWarn
 import MeetingAttendeeChips from "~community/crm/components/molecules/MeetingAttendeeChips/MeetingAttendeeChips";
 import { useContactLookup } from "~community/crm/hooks/useContactLookup";
 import { useCrmStore } from "~community/crm/store/store";
+import { CrmLogMeetingFormValues } from "~community/crm/types/CrmCommonTypes";
 import { updateContactRecord } from "~community/crm/utils/contactUtil";
 import { isDealMatchingContacts } from "~community/crm/utils/dealUtil";
 
 interface Props {
   id: string;
-  contactIds: number[];
-  dealId: number | null;
-  errorMessage?: string;
-  onChange: (contactIds: number[]) => void;
+  formik: FormikProps<CrmLogMeetingFormValues>;
   isFromDifferentCompanies: boolean;
   onDealCleared: () => void;
 }
 
 const MeetingAttendeesField: FC<Props> = ({
   id,
-  contactIds,
-  dealId,
-  errorMessage,
-  onChange,
+  formik,
   isFromDifferentCompanies,
   onDealCleared
 }) => {
+  const { values, errors, touched, setFieldValue } = formik;
+
   const translateText = useTranslator("crmModule", "activities");
 
   const { contacts, deals, setContacts } = useCrmStore(
@@ -52,19 +50,19 @@ const MeetingAttendeesField: FC<Props> = ({
     );
     setSearchTerm("");
 
-    if (!contact?.id || contactIds.includes(contact.id)) return;
+    if (!contact?.id || values.contactIds.includes(contact.id)) return;
 
     setContacts(updateContactRecord(contacts, [contact]));
-    onChange([...contactIds, contact.id]);
+    setFieldValue("contactIds", [...values.contactIds, contact.id], true);
   };
 
   const handleRemove = (contactId: number): void => {
-    const nextContactIds = contactIds.filter(
+    const nextContactIds = values.contactIds.filter(
       (attendeeId) => attendeeId !== contactId
     );
-    onChange(nextContactIds);
+    setFieldValue("contactIds", nextContactIds, true);
 
-    const selectedDeal = dealId ? deals[dealId] : null;
+    const selectedDeal = values.dealId ? deals[values.dealId] : null;
     const nextAttendees = nextContactIds.map(
       (attendeeId) => contacts[attendeeId]
     );
@@ -74,11 +72,12 @@ const MeetingAttendeesField: FC<Props> = ({
       nextAttendees.length > 0 &&
       isDealMatchingContacts(
         selectedDeal,
-        contactIds.map((attendeeId) => contacts[attendeeId])
+        values.contactIds.map((attendeeId) => contacts[attendeeId])
       ) &&
       !isDealMatchingContacts(selectedDeal, nextAttendees);
 
     if (isDealUnmatched) {
+      setFieldValue("dealId", null);
       onDealCleared();
     }
   };
@@ -112,13 +111,17 @@ const MeetingAttendeesField: FC<Props> = ({
             "searching"
           ])
         })}
-        state={errorMessage ? "error" : "default"}
-        {...(errorMessage && { errorMessage })}
+        state={touched.contactIds && errors.contactIds ? "error" : "default"}
+        {...(touched.contactIds &&
+          errors.contactIds && { errorMessage: String(errors.contactIds) })}
         required
       />
 
-      {contactIds.length > 0 && (
-        <MeetingAttendeeChips contactIds={contactIds} onRemove={handleRemove} />
+      {values.contactIds.length > 0 && (
+        <MeetingAttendeeChips
+          contactIds={values.contactIds}
+          onRemove={handleRemove}
+        />
       )}
 
       {isFromDifferentCompanies && (

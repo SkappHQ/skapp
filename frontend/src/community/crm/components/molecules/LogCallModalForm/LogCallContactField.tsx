@@ -1,3 +1,4 @@
+import { FormikProps } from "formik";
 import { FC, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -6,6 +7,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import SelectableSearchField from "~community/crm/components/molecules/SelectableSearchField/SelectableSearchField";
 import { useContactLookup } from "~community/crm/hooks/useContactLookup";
 import { useCrmStore } from "~community/crm/store/store";
+import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
 import {
   getContactDisplayName,
   updateContactRecord
@@ -14,21 +16,13 @@ import { isDealMatchingCompany } from "~community/crm/utils/dealUtil";
 
 interface Props {
   id: string;
-  contactId: number | null;
-  dealId: number | null;
-  errorMessage?: string;
-  onChange: (contactId: number | null) => void;
+  formik: FormikProps<CrmLogCallFormValues>;
   onDealCleared: () => void;
 }
 
-const LogCallContactField: FC<Props> = ({
-  id,
-  contactId,
-  dealId,
-  errorMessage,
-  onChange,
-  onDealCleared
-}) => {
+const LogCallContactField: FC<Props> = ({ id, formik, onDealCleared }) => {
+  const { values, errors, touched, setFieldValue } = formik;
+
   const translateText = useTranslator("crmModule", "activities");
   const translateAria = useTranslator("crmAria", "activities");
 
@@ -45,7 +39,7 @@ const LogCallContactField: FC<Props> = ({
   const { isSearchActive, isLoading, lookupItems, dropdownItems } =
     useContactLookup(searchTerm);
 
-  const selectedContact = contactId ? contacts[contactId] : null;
+  const selectedContact = values.contactId ? contacts[values.contactId] : null;
 
   const handleSelect = (item: SearchableDropdownItem): void => {
     const contact = lookupItems.find(
@@ -56,19 +50,20 @@ const LogCallContactField: FC<Props> = ({
     if (!contact?.id) return;
 
     setContacts(updateContactRecord(contacts, [contact]));
-    onChange(contact.id);
+    setFieldValue("contactId", contact.id);
 
-    const selectedDeal = dealId ? deals[dealId] : null;
+    const selectedDeal = values.dealId ? deals[values.dealId] : null;
     const isDealMismatch =
       selectedDeal && !isDealMatchingCompany(selectedDeal, contact.companyId);
 
     if (isDealMismatch) {
+      setFieldValue("dealId", null);
       onDealCleared();
     }
   };
 
   const handleClear = (): void => {
-    onChange(null);
+    setFieldValue("contactId", null);
     setSearchTerm("");
   };
 
@@ -98,7 +93,7 @@ const LogCallContactField: FC<Props> = ({
         ])
       })}
       required
-      errorMessage={errorMessage}
+      errorMessage={touched.contactId ? errors.contactId : ""}
     />
   );
 };

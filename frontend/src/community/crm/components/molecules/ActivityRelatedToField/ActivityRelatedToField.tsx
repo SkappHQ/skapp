@@ -1,3 +1,4 @@
+import { FormikProps } from "formik";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -15,6 +16,10 @@ import {
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
 import { useCrmStore } from "~community/crm/store/store";
+import {
+  CrmLogCallFormValues,
+  CrmLogMeetingFormValues
+} from "~community/crm/types/CrmCommonTypes";
 import { CrmCompanyFilterRequest } from "~community/crm/types/CrmTypes";
 import {
   getMissingCompanyIds,
@@ -23,19 +28,20 @@ import {
 
 interface Props {
   id: string;
-  companyId: number | null;
+  formik:
+    FormikProps<CrmLogCallFormValues> | FormikProps<CrmLogMeetingFormValues>;
   fieldAriaLabel: string;
-  onChange: (companyId: number | null) => void;
   mismatchTooltip?: string;
 }
 
 const ActivityRelatedToField: FC<Props> = ({
   id,
-  companyId,
+  formik,
   fieldAriaLabel,
-  onChange,
   mismatchTooltip
 }) => {
+  const { values, setFieldValue } = formik;
+
   const translateText = useTranslator("crmModule", "activities", "logActivity");
   const translateAria = useTranslator("crmAria", "activities", "logActivity");
 
@@ -82,8 +88,11 @@ const ActivityRelatedToField: FC<Props> = ({
   );
 
   const missingCompanyIds = useMemo(
-    () => (companyId ? getMissingCompanyIds([companyId], companies) : []),
-    [companyId, companies]
+    () =>
+      values.companyId
+        ? getMissingCompanyIds([values.companyId], companies)
+        : [],
+    [values.companyId, companies]
   );
   const { data: fetchedCompanies } = useGetCompaniesByIds(
     missingCompanyIds,
@@ -95,7 +104,7 @@ const ActivityRelatedToField: FC<Props> = ({
     }
   }, [fetchedCompanies]);
 
-  const selectedCompany = companyId ? companies[companyId] : null;
+  const selectedCompany = values.companyId ? companies[values.companyId] : null;
 
   const handleSelect = (item: SearchableDropdownItem): void => {
     const company = lookupItems.find(
@@ -106,11 +115,11 @@ const ActivityRelatedToField: FC<Props> = ({
     if (!company?.id) return;
 
     setCompanies(updateCompanyRecord(companies, [company]));
-    onChange(company.id);
+    setFieldValue("companyId", company.id);
   };
 
   const handleClear = (): void => {
-    onChange(null);
+    setFieldValue("companyId", null);
     setSearchTerm("");
   };
 
