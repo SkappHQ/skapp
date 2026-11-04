@@ -36,6 +36,7 @@ import {
 import { useGetDealsByIds } from "~community/crm/api/DealApi";
 import AddActivityTaskModalContent from "~community/crm/components/molecules/AddActivityTaskModalContent/AddActivityTaskModalContent";
 import LogCallModalContent from "~community/crm/components/molecules/LogCallModalContent/LogCallModalContent";
+import LogEmailModalContent from "~community/crm/components/molecules/LogEmailModalContent/LogEmailModalContent";
 import LogMeetingModalContent from "~community/crm/components/molecules/LogMeetingModalContent/LogMeetingModalContent";
 import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
@@ -57,6 +58,7 @@ const ActivitiesContent: FC = () => {
   const [isLogCallModalOpen, setIsLogCallModalOpen] = useState(false);
   const [isLogMeetingModalOpen, setIsLogMeetingModalOpen] = useState(false);
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
+  const [isLogEmailModalOpen, setIsLogEmailModalOpen] = useState(false);
 
   const isAllTab = activeTab === ActivityTab.ALL;
 
@@ -209,7 +211,10 @@ const ActivitiesContent: FC = () => {
       labelKey: "logMeetingBtn",
       onClick: () => setIsLogMeetingModalOpen(true)
     },
-    [ActivityTab.EMAILS]: null
+    [ActivityTab.EMAILS]: {
+      labelKey: "logEmailBtn",
+      onClick: () => setIsLogEmailModalOpen(true)
+    }
   };
 
   return (
@@ -258,6 +263,9 @@ const ActivitiesContent: FC = () => {
         <AddActivityTaskModalContent
           onClose={() => setIsAddTaskModalOpen(false)}
         />
+      )}
+      {isLogEmailModalOpen && (
+        <LogEmailModalContent onClose={() => setIsLogEmailModalOpen(false)} />
       )}
       <ActivityFeed
         activeTab={activeTab}
