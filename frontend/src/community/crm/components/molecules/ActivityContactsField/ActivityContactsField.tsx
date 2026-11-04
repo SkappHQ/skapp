@@ -31,6 +31,7 @@ interface Props {
   hiddenContactIds?: number[];
   warningTooltip?: string;
   required?: boolean;
+  fillsRelatedTo?: boolean;
   onContactsChange?: (nextContacts: CrmContactEntity[]) => void;
 }
 
@@ -44,9 +45,10 @@ const ActivityContactsField: FC<Props> = ({
   hiddenContactIds,
   warningTooltip,
   required,
+  fillsRelatedTo,
   onContactsChange
 }) => {
-  const { getFieldProps, getFieldMeta, setFieldValue } = formik;
+  const { values, getFieldProps, getFieldMeta, setFieldValue } = formik;
 
   const contactIds: number[] = getFieldProps(name).value;
   const { touched, error } = getFieldMeta(name);
@@ -63,6 +65,7 @@ const ActivityContactsField: FC<Props> = ({
   );
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [hasFilledRelatedTo, setHasFilledRelatedTo] = useState(false);
 
   const { lookupItems } = useContactLookup(searchTerm);
 
@@ -107,6 +110,16 @@ const ActivityContactsField: FC<Props> = ({
       ...contactIds.map((contactId) => contacts[contactId]),
       contact
     ]);
+
+    if (
+      fillsRelatedTo &&
+      !hasFilledRelatedTo &&
+      !values.companyId &&
+      contact.companyId
+    ) {
+      setFieldValue("companyId", contact.companyId);
+      setHasFilledRelatedTo(true);
+    }
   };
 
   const handleChipRemove = (chip: AvatarChipsInputResult): void => {

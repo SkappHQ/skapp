@@ -202,6 +202,7 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
               "attendees"
             ])}
             groupAriaLabel={translateAria(["attendees"])}
+            fillsRelatedTo
             {...(attendeeCompanyIds.length > 1 && {
               warningTooltip: translateText([
                 "logMeeting",
