@@ -82,7 +82,6 @@ const ActivityRow: FC<ActivityRowProps> = ({
             className={`body2 truncate ${
               isCompletedStyleApplied ? "text-secondary-icon" : "text-black"
             } ${isStrikethroughApplied ? "line-through" : ""}`}
-            title={row.title}
           >
             {row.title}
           </span>

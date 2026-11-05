@@ -579,6 +579,34 @@
     }
   },
   "activities": {
+    "addTask": {
+      "modal": {
+        "title": "Add task",
+        "labels": {
+          "taskName": "Task",
+          "priority": "Priority",
+          "dueDate": "Due date",
+          "contact": "Contact",
+          "notes": "Notes"
+        },
+        "placeholders": {
+          "taskName": "Enter the task name",
+          "dueDate": "Select date"
+        },
+        "validations": {
+          "name": "Task name is required",
+          "priority": "Priority is required"
+        },
+        "notices": {
+          "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
+        },
+        "toastMessages": {
+          "addSuccessTitle": "Task added successfully",
+          "addSuccessDescription": "Task has been added successfully",
+          "errorDescription": "Failed to add task"
+        }
+      }
+    },
     "callSidePanel": {
       "noDealsDescription": "No deals are linked to this call",
       "editCall": "Edit call",
@@ -678,6 +706,7 @@
       "loadError": "Couldn't load your activities. Please refresh to try again."
     },
     "toolbar": {
+      "addTaskBtn": "Add task",
       "logCallBtn": "Log a call",
       "logMeetingBtn": "Log a meeting",
       "search": {

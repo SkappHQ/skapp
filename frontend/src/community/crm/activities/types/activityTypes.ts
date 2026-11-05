@@ -116,7 +116,7 @@ export interface ActivityMeetingResponse extends ActivityListItemBase {
 export interface ActivityTaskResponse extends ActivityListItemBase {
   name: string;
   dueAt: string | null;
-  priority: CrmPriorityEnum | null;
+  priority: CrmPriorityEnum;
   isCompleted: boolean;
   completedAt: string | null;
   contactId: number | null;
@@ -143,4 +143,15 @@ export interface ActivityMeetingCreatePayload {
   companyId: number | null;
   ownerId: number | null;
   comments: string;
+}
+
+export interface ActivityTaskCreatePayload {
+  name: string;
+  priority: CrmPriorityEnum;
+  dueAt: string | null;
+  ownerId: number | null;
+  contactId: number | null;
+  dealId: number | null;
+  companyId: number | null;
+  notes: string;
 }
