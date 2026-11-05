@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.model;
 
+import com.skapp.community.crmplanner.type.CrmActivityCalendarProvider;
 import com.skapp.community.crmplanner.type.CrmActivityMeetingVenue;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -43,6 +44,10 @@ public class CrmActivityScheduledMeeting {
 
 	@Column(name = "location_url")
 	private String locationUrl;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "calendar_provider")
+	private CrmActivityCalendarProvider calendarProvider;
 
 	@Column(name = "external_event_id")
 	private String externalEventId;

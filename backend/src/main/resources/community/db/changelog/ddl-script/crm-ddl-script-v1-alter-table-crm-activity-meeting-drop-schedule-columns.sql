@@ -1,8 +1,8 @@
 -- liquibase formatted sql
 
 -- changeset UmeshaLiyanage:crm-ddl-script-v1-alter-table-crm-activity-meeting-drop-schedule-columns
-INSERT INTO `crm_activity_scheduled_meeting` (`meeting_id`, `meeting_venue`, `location`)
-SELECT `id`, `meeting_venue`, `location`
+INSERT INTO `crm_activity_scheduled_meeting` (`meeting_id`, `meeting_venue`, `location`, `calendar_provider`)
+SELECT `id`, `meeting_venue`, `location`, `calendar_provider`
 FROM `crm_activity_meeting`
 WHERE `is_scheduled` = TRUE;
 

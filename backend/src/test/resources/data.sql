@@ -344,7 +344,7 @@ VALUES (default, 'Discovery call', true, '2026-01-12', TIMESTAMP WITH TIME ZONE 
         TIMESTAMP WITH TIME ZONE '2026-01-18 06:00:00+00', 'Bring signed NDA', 1, false);
 
 INSERT INTO crm_activity_scheduled_meeting (meeting_id, meeting_venue, location, location_address, location_url,
-                                            external_event_id)
-SELECT id, 'ONLINE', null, null, null, null
+                                            calendar_provider, external_event_id)
+SELECT id, 'ONLINE', null, null, null, 'GOOGLE', null
 FROM crm_activity_meeting
 WHERE name = 'Discovery call';
