@@ -53,14 +53,8 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
   const contacts = useCrmStore((state) => state.contacts);
   const deals = useCrmStore((state) => state.deals);
 
-  const [isAssociationsOpen, setIsAssociationsOpen] = useState(false);
   const [isDealClearedNoticeVisible, setIsDealClearedNoticeVisible] =
     useState(false);
-
-  const handleDealCleared = (): void => {
-    setIsDealClearedNoticeVisible(true);
-    setIsAssociationsOpen(true);
-  };
 
   const contactCompanyId = values.contactId
     ? contacts[values.contactId]?.companyId
@@ -77,8 +71,6 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
     (Boolean(status) &&
       status.mismatchedDealId === values.dealId &&
       status.mismatchedContactId === values.contactId);
-
-  const isAssociationsVisible = isAssociationsOpen || isDealMismatch;
 
   const dueDate = values.dueAt
     ? instantToPickedDay(values.dueAt, displayZone)
@@ -171,7 +163,7 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
         formik={formik}
         label={translateText(["addTask", "modal", "labels", "contact"])}
         fieldAriaLabel={translateAria(["contact"])}
-        onDealCleared={handleDealCleared}
+        onDealCleared={() => setIsDealClearedNoticeVisible(true)}
       />
 
       <TextArea
@@ -194,29 +186,16 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
       />
 
       <ActivityAssociations
-        isOpen={isAssociationsVisible}
-        onToggle={() => setIsAssociationsOpen(!isAssociationsVisible)}
+        isForcedOpen={isDealClearedNoticeVisible || isDealMismatch}
       >
         <ActivityDealField
           id="add-task-deal"
           formik={formik}
           fieldAriaLabel={translateAria(["deal"])}
-          clearedNoticeText={translateText([
-            "addTask",
-            "modal",
-            "notices",
-            "dealCleared"
-          ])}
           isClearedNoticeVisible={isDealClearedNoticeVisible}
+          isMismatch={isDealMismatch}
           onDealChange={() => setIsDealClearedNoticeVisible(false)}
           {...(contactCompanyId && { filterCompanyId: contactCompanyId })}
-          {...(isDealMismatch && {
-            errorMessage: translateText([
-              "logActivity",
-              "validations",
-              "dealMismatch"
-            ])
-          })}
         />
         <ActivityRelatedToField
           id="add-task-related-to"
