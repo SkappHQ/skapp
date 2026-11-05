@@ -4,7 +4,7 @@ import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { rejects } from "assert";
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 
 import { useGetPeriodAvailability } from "~community/attendance/api/AttendanceEmployeeApi";
 import {
@@ -52,8 +52,11 @@ import {
 } from "~community/common/utils/dateTimeUtils";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
 import { useGetEmployeeLeaveRequests } from "~community/leave/api/MyRequestApi";
+import { useGetMyPolicyLeaveRequests } from "~community/leave/api/PolicyLeaveApi";
 import { MY_LEAVE_REQUESTS_PER_PAGE } from "~community/leave/constants/stringConstants";
 import { LeaveStatusEnums } from "~community/leave/enums/MyRequestEnums";
+import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
+import { toMyLeaveRequestPayloads } from "~community/leave/utils/policyLeave/policyLeaveUtils";
 import { useGetAllHolidaysInfinite } from "~community/people/api/HolidayApi";
 
 import styles from "./styles";
@@ -81,10 +84,29 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
     currentYear.toString()
   );
 
-  const { data: leaveRequests } = useGetEmployeeLeaveRequests({
-    status: `${LeaveStatusEnums.APPROVED},${LeaveStatusEnums.PENDING}`,
-    size: MY_LEAVE_REQUESTS_PER_PAGE
-  });
+  const { isLeavePoliciesEnabled, isLoading: isLeavePolicyConfigLoading } =
+    useLeavePoliciesEnabled();
+
+  const { data: leaveRequests } = useGetEmployeeLeaveRequests(
+    {
+      status: `${LeaveStatusEnums.APPROVED},${LeaveStatusEnums.PENDING}`,
+      size: MY_LEAVE_REQUESTS_PER_PAGE
+    },
+    !isLeavePolicyConfigLoading && !isLeavePoliciesEnabled
+  );
+
+  const { data: policyLeaveRequests } = useGetMyPolicyLeaveRequests(
+    currentYear.toString(),
+    isLeavePoliciesEnabled
+  );
+
+  const myLeaveRequests = useMemo(
+    () =>
+      isLeavePoliciesEnabled
+        ? toMyLeaveRequestPayloads(policyLeaveRequests ?? [])
+        : (leaveRequests?.items ?? []),
+    [isLeavePoliciesEnabled, policyLeaveRequests, leaveRequests]
+  );
 
   const {
     selectedDailyRecord,
@@ -405,7 +427,7 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
           holidays={allHolidays}
-          myLeaveRequests={leaveRequests?.items ?? []}
+          myLeaveRequests={myLeaveRequests}
           minDate={getMinDateOfYear()}
         />
       )}

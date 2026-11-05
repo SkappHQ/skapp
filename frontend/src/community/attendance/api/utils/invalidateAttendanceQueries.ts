@@ -16,3 +16,14 @@ export const invalidateAttendanceTimeRecordQueries = (
     queryClient.invalidateQueries({ queryKey }).catch((error) => error);
   });
 };
+
+export const invalidateAttendanceLeaveQueries = (
+  queryClient: QueryClient
+): void => {
+  queryClient
+    .invalidateQueries({
+      queryKey: getAttendanceQueryKeys.employeeLeaveStatus()
+    })
+    .catch((error) => error);
+  invalidateAttendanceTimeRecordQueries(queryClient);
+};

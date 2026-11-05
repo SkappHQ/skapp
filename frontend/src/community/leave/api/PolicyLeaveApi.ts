@@ -6,6 +6,7 @@ import {
   useQueryClient
 } from "@tanstack/react-query";
 
+import { invalidateAttendanceLeaveQueries } from "~community/attendance/api/utils/invalidateAttendanceQueries";
 import { ErrorResponse } from "~community/common/types/CommonTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { policyLeaveEndPoints } from "~community/leave/api/utils/ApiEndpoints";
@@ -197,6 +198,7 @@ export const useApplyPolicyLeave = (
       queryClient.invalidateQueries({
         queryKey: policyLeaveQueryKeys.ALL_EMPLOYEES_ON_LEAVE_TODAY()
       });
+      invalidateAttendanceLeaveQueries(queryClient);
       onSuccess(data);
     },
     onError: (error: ErrorResponse) => {
