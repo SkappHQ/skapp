@@ -1,5 +1,6 @@
 import {
   L2EmploymentFormDetailsType,
+  L3BillingDetailsType,
   L3CareerProgressionDetailsType,
   L3EmploymentDetailsType,
   L3IdentificationAndDiversityDetailsType,
@@ -370,6 +371,29 @@ export const getVisaDetailsChanges = (
   return [];
 };
 
+export const getBillingDetailsChanges = (
+  newBillingDetails: L3BillingDetailsType,
+  previousBillingDetails: L3BillingDetailsType
+): L3BillingDetailsType => {
+  const changes: L3BillingDetailsType = {};
+
+  if (
+    isFieldDifferentAndValid(
+      newBillingDetails?.billableRate,
+      previousBillingDetails?.billableRate
+    ) ||
+    isFieldDifferentAndValid(
+      newBillingDetails?.billableRateCurrency,
+      previousBillingDetails?.billableRateCurrency
+    )
+  ) {
+    changes.billableRate = newBillingDetails?.billableRate;
+    changes.billableRateCurrency = newBillingDetails?.billableRateCurrency;
+  }
+
+  return changes;
+};
+
 export const getEmploymentDetailsChanges = (
   newEmployementDetails: L2EmploymentFormDetailsType,
   previousEmployementDetails: L2EmploymentFormDetailsType
@@ -422,6 +446,13 @@ export const getEmploymentDetailsChanges = (
   )
     Object.assign(changes, { visaDetails: visaDetailsChanges });
   else Object.assign(changes, visaDetailsChanges);
+
+  const billingDetailsChanges = getBillingDetailsChanges(
+    newEmployementDetails.billingDetails as L3BillingDetailsType,
+    previousEmployementDetails.billingDetails as L3BillingDetailsType
+  );
+  if (Object.keys(billingDetailsChanges).length > 0)
+    Object.assign(changes, { billingDetails: billingDetailsChanges });
 
   return changes;
 };

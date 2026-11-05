@@ -6,6 +6,7 @@ import com.skapp.community.leaveplanner.payload.request.PolicyLeaveAvailabilityR
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestUpdateDto;
+import com.skapp.community.leaveplanner.payload.request.PolicyPendingLeaveCountFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyResourceAvailabilityFilterDto;
 import com.skapp.community.leaveplanner.service.PolicyLeaveService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -70,6 +71,15 @@ public class PolicyLeaveController {
 	public ResponseEntity<ResponseEntityDto> getSupervisedPolicyLeaveRequests(
 			@Valid PolicyLeaveRequestFilterDto policyLeaveRequestFilterDto) {
 		ResponseEntityDto response = policyLeaveService.getSupervisedPolicyLeaveRequests(policyLeaveRequestFilterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@GetMapping("/requests/pending-count")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_MANAGER')")
+	public ResponseEntity<ResponseEntityDto> getSupervisedPendingPolicyLeaveCount(
+			@Valid PolicyPendingLeaveCountFilterDto policyPendingLeaveCountFilterDto) {
+		ResponseEntityDto response = policyLeaveService
+			.getSupervisedPendingPolicyLeaveCount(policyPendingLeaveCountFilterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

@@ -15,6 +15,7 @@ import { useHandlePeopleEdit } from "~community/people/utils/peopleEditFlowUtils
 import { LoginMethodsEnums } from "~enterprise/common/enums/Common";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { useGetGlobalLoginMethod } from "~enterprise/people/api/GlobalLoginMethodApi";
+import BillingDetailsSection from "~enterprise/people/components/organisms/BillingDetailsSection/BillingDetailsSection";
 
 import AddSectionButtonWrapper from "../../molecules/AddSectionButtonWrapper/AddSectionButtonWrapper";
 import EditSectionButtonWrapper from "../../molecules/EditSectionButtonWrapper/EditSectionButtonWrapper";
@@ -40,6 +41,7 @@ const EmploymentDetailsForm = ({
 }: Props) => {
   const employmentDetailsRef = useRef<FormMethods | null>(null);
   const identificationDetailsRef = useRef<FormMethods | null>(null);
+  const billingDetailsRef = useRef<FormMethods | null>(null);
 
   const {
     nextStep,
@@ -71,7 +73,19 @@ const EmploymentDetailsForm = ({
   const env = useGetEnvironment();
   const isEnterpriseMode = env === appModes.ENTERPRISE;
 
-  const { tenantID } = useSessionData();
+  const {
+    tenantID,
+    isSuperAdmin,
+    isPeopleAdmin,
+    isFreeTier,
+    isInvoiceModuleEnabled
+  } = useSessionData();
+
+  const isBillingDetailsVisible =
+    !isAddFlow &&
+    !isFreeTier &&
+    isInvoiceModuleEnabled &&
+    (isSuperAdmin || isPeopleAdmin);
 
   const { data: globalLogin } = useGetGlobalLoginMethod(
     isEnterpriseMode,
@@ -116,6 +130,7 @@ const EmploymentDetailsForm = ({
       (await employmentDetailsRef?.current?.validateForm()) || {};
     const identificationFormErrors =
       (await identificationDetailsRef?.current?.validateForm()) || {};
+    const billingFormErrors = await billingDetailsRef?.current?.validateForm();
 
     if (
       employee?.employment?.employmentDetails?.email !==
@@ -133,10 +148,17 @@ const EmploymentDetailsForm = ({
     const identificationFormIsValid =
       identificationFormErrors &&
       Object.keys(identificationFormErrors).length === 0;
+    const billingFormIsValid =
+      !billingFormErrors || Object.keys(billingFormErrors).length === 0;
 
-    if (employmentFormIsValid && identificationFormIsValid) {
+    if (
+      employmentFormIsValid &&
+      identificationFormIsValid &&
+      billingFormIsValid
+    ) {
       employmentDetailsRef?.current?.submitForm();
       identificationDetailsRef?.current?.submitForm();
+      billingDetailsRef?.current?.submitForm();
       if (isAddFlow) {
         handleNext();
       } else {
@@ -159,6 +181,7 @@ const EmploymentDetailsForm = ({
   const onCancel = () => {
     employmentDetailsRef?.current?.resetForm();
     identificationDetailsRef?.current?.resetForm();
+    billingDetailsRef?.current?.resetForm();
 
     setEmployee(initialEmployee);
     setIsUnsavedChangesModalOpen(false);
@@ -199,6 +222,13 @@ const EmploymentDetailsForm = ({
         isInputsDisabled={isTerminatedEmployee}
         isReadOnly={isReadOnly}
       />
+      {isBillingDetailsVisible && (
+        <BillingDetailsSection
+          ref={billingDetailsRef}
+          isInputsDisabled={isTerminatedEmployee}
+          isReadOnly={isReadOnly}
+        />
+      )}
       <IdentificationDetailsSection
         ref={identificationDetailsRef}
         isInputsDisabled={isTerminatedEmployee}

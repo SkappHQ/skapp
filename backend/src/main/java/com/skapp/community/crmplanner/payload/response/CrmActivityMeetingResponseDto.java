@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
@@ -23,9 +24,13 @@ public class CrmActivityMeetingResponseDto {
 
 	private String location;
 
+	private LocalDate meetingDate;
+
 	private Instant startAt;
 
 	private Instant endAt;
+
+	private String comments;
 
 	private Long ownerId;
 
