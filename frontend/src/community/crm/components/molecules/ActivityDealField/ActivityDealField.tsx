@@ -12,43 +12,40 @@ import {
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
+import {
+  CrmLogCallFormValues,
+  CrmLogMeetingFormValues
+} from "~community/crm/types/CrmCommonTypes";
 import { CrmDealFilterRequest } from "~community/crm/types/CrmTypes";
 import { mergeDeals } from "~community/crm/utils/dealUtil";
 
 interface Props {
   id: string;
-  formik: FormikProps<CrmLogCallFormValues>;
-  errorMessage: string;
+  formik:
+    FormikProps<CrmLogCallFormValues> | FormikProps<CrmLogMeetingFormValues>;
+  fieldAriaLabel: string;
   isClearedNoticeVisible: boolean;
+  isMismatch: boolean;
   onDealChange: () => void;
+  filterCompanyId?: number;
 }
 
-const LogCallDealField: FC<Props> = ({
+const ActivityDealField: FC<Props> = ({
   id,
   formik,
-  errorMessage,
+  fieldAriaLabel,
   isClearedNoticeVisible,
-  onDealChange
+  isMismatch,
+  onDealChange,
+  filterCompanyId
 }) => {
   const { values, setFieldValue } = formik;
 
-  const translateText = useTranslator(
-    "crmModule",
-    "activities",
-    "logCall",
-    "modal"
-  );
-  const translateAria = useTranslator(
-    "crmAria",
-    "activities",
-    "logCall",
-    "modal"
-  );
+  const translateText = useTranslator("crmModule", "activities", "logActivity");
+  const translateAria = useTranslator("crmAria", "activities", "logActivity");
 
-  const { contacts, deals, setDeals } = useCrmStore(
+  const { deals, setDeals } = useCrmStore(
     useShallow((store) => ({
-      contacts: store.contacts,
       deals: store.deals,
       setDeals: store.setDeals
     }))
@@ -58,22 +55,22 @@ const LogCallDealField: FC<Props> = ({
 
   const debouncedSearch = useDebounce(searchTerm.trim(), SEARCH_DEBOUNCE_DELAY);
 
-  const selectedContact = values.contactId ? contacts[values.contactId] : null;
-  const contactCompanyId = selectedContact?.companyId;
-
   const isSearchEnabled =
-    debouncedSearch.length > 0 || Boolean(contactCompanyId);
+    debouncedSearch.length > 0 || Boolean(filterCompanyId);
 
   const lookupFilter: CrmDealFilterRequest = useMemo(
     () => ({
       searchKeyword: debouncedSearch,
       size: DEFAULT_LOOKUP_PAGE_SIZE,
-      ...(contactCompanyId ? { companyId: contactCompanyId } : {})
+      ...(filterCompanyId && { companyId: filterCompanyId })
     }),
-    [debouncedSearch, contactCompanyId]
+    [debouncedSearch, filterCompanyId]
   );
 
-  const { data: lookupData } = useGetDealLookup(lookupFilter, isSearchEnabled);
+  const { data: lookupData, isFetching } = useGetDealLookup(
+    lookupFilter,
+    isSearchEnabled
+  );
 
   const lookupItems = useMemo(
     () => (lookupData ? lookupData.items : []),
@@ -124,22 +121,27 @@ const LogCallDealField: FC<Props> = ({
         selectedValue={selectedDeal?.name ? selectedDeal.name : ""}
         onClear={handleClear}
         clearAriaLabel={translateAria(["clearDeal"])}
-        fieldAriaLabel={translateAria(["deal"])}
+        fieldAriaLabel={fieldAriaLabel}
         searchValue={searchTerm}
         onSearchChange={(event) => setSearchTerm(event.target.value)}
         items={dropdownItems}
         onSelect={handleSelect}
         isOpenOnFocus={isSearchEnabled}
         emptyMessage={translateText(["emptyStates", "noDeals"])}
-        errorMessage={errorMessage}
+        {...(isFetching && {
+          loadingMessage: translateText(["emptyStates", "searching"])
+        })}
+        {...(isMismatch && {
+          errorMessage: translateText(["validations", "dealMismatch"])
+        })}
       />
       {isClearedNoticeVisible && (
-        <span className="text-sm text-semantic-amber-text">
+        <output className="text-sm text-semantic-amber-text">
           {translateText(["notices", "dealCleared"])}
-        </span>
+        </output>
       )}
     </div>
   );
 };
 
-export default LogCallDealField;
+export default ActivityDealField;

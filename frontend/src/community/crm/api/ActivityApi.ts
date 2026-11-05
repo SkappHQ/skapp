@@ -21,6 +21,7 @@ import {
   ActivityListFilters,
   ActivityMeetingCreatePayload,
   ActivityMeetingResponse,
+  ActivityTaskCreatePayload,
   ActivityTaskResponse
 } from "~community/crm/activities/types/activityTypes";
 import { crmActivityEndpoints } from "~community/crm/api/utils/ApiEndpoints";
@@ -221,6 +222,28 @@ export const useCreateMeeting = (
 
   return useMutation({
     mutationFn: createMeeting,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
+      onSuccess();
+    },
+    onError
+  });
+};
+
+const createTask = async (
+  payload: ActivityTaskCreatePayload
+): Promise<void> => {
+  await authFetch.post(crmActivityEndpoints.CREATE_TASK, payload);
+};
+
+export const useCreateTask = (
+  onSuccess: () => void,
+  onError: (error: ErrorResponse) => void
+): UseMutationResult<void, ErrorResponse, ActivityTaskCreatePayload> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createTask,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
       onSuccess();
