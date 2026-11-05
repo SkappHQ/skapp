@@ -1,6 +1,8 @@
 package com.skapp.community.leaveplanner.repository;
 
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
+import com.skapp.community.leaveplanner.payload.PolicyLeaveMonthlyDurationDto;
+import com.skapp.community.leaveplanner.payload.PolicyLeaveSpanDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveUsageDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
@@ -42,5 +44,11 @@ public interface PolicyLeaveRequestRepository {
 
 	List<PolicyLeaveRequest> findApprovedRequestsInRange(LocalDate startDate, LocalDate endDate, List<Long> teamIds,
 			Long supervisorEmployeeId);
+
+	List<PolicyLeaveMonthlyDurationDto> findApprovedSingleMonthDurations(LocalDate startDate, LocalDate endDate,
+			List<Long> leaveTypeIds, List<Long> teamIds, Long supervisorEmployeeId);
+
+	List<PolicyLeaveSpanDto> findApprovedMultiMonthSpans(LocalDate startDate, LocalDate endDate,
+			List<Long> leaveTypeIds, List<Long> teamIds, Long supervisorEmployeeId);
 
 }
