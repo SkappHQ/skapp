@@ -616,6 +616,33 @@
         "duration": "Duration"
       }
     },
+    "logEmail": {
+      "modal": {
+        "title": "Log email",
+        "labels": {
+          "from": "From",
+          "time": "Time",
+          "to": "To",
+          "cc": "Cc",
+          "bcc": "Bcc",
+          "description": "Description"
+        },
+        "placeholders": {
+          "from": "Enter email address",
+          "recipients": "Search contacts",
+          "description": "Add description"
+        },
+        "validations": {
+          "dateTime": "Date and time are required",
+          "to": "Please select at least one contact"
+        },
+        "toastMessages": {
+          "addSuccessTitle": "Email logged successfully",
+          "addSuccessDescription": "Email has been logged successfully",
+          "errorDescription": "Failed to log email"
+        }
+      }
+    },
     "logCall": {
       "modal": {
         "title": "Log a call",
@@ -746,7 +773,8 @@
         },
         "reset": "Reset filters",
         "apply": "Apply filters"
-      }
+      },
+      "logEmailBtn": "Log email"
     },
     "logMeeting": {
       "modal": {
