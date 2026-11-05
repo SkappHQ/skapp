@@ -35,11 +35,13 @@ import com.skapp.community.leaveplanner.payload.request.PolicyLeaveAvailabilityR
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestUpdateDto;
+import com.skapp.community.leaveplanner.payload.request.PolicyPendingLeaveCountFilterDto;
 import com.skapp.community.leaveplanner.payload.response.EmployeePolicyBalanceResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveNotificationNudgeResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyEmployeesOnLeaveResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveAvailabilityResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveRequestResponseDto;
+import com.skapp.community.leaveplanner.payload.response.PolicyPendingLeaveCountResponseDto;
 import com.skapp.community.leaveplanner.repository.EmployeeLeavePolicyDao;
 import com.skapp.community.leaveplanner.repository.PolicyLeaveRequestDao;
 import com.skapp.community.leaveplanner.service.LeaveCycleService;
@@ -282,6 +284,23 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 		log.info("getSupervisedPolicyLeaveRequests: execution ended");
 		return new ResponseEntityDto(false, toPageDto(leaveRequests));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getSupervisedPendingPolicyLeaveCount(@NonNull PolicyPendingLeaveCountFilterDto filterDto) {
+		log.info("getSupervisedPendingPolicyLeaveCount: execution started");
+		requireLeavePoliciesEnabled();
+
+		User currentUser = userService.getCurrentUser();
+		long pendingCount = policyLeaveRequestDao.countSupervisedPendingRequests(
+				currentUser.getEmployee().getEmployeeId(), resolveTeamIds(filterDto.getTeamIds()));
+
+		PolicyPendingLeaveCountResponseDto responseDto = new PolicyPendingLeaveCountResponseDto();
+		responseDto.setPendingCount(pendingCount);
+
+		log.info("getSupervisedPendingPolicyLeaveCount: execution ended");
+		return new ResponseEntityDto(false, responseDto);
 	}
 
 	@Override
