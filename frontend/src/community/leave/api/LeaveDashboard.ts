@@ -116,7 +116,10 @@ export const useGetAvailability = (
   });
 };
 
-export const useGetPendingLeavesData = (teams: number | string) => {
+export const useGetPendingLeavesData = (
+  teams: number | string,
+  enabled = true
+) => {
   return useQuery({
     queryKey: dashboardQueryKeys.PENDING_REQUESTS(teams),
     queryFn: async () => {
@@ -133,7 +136,7 @@ export const useGetPendingLeavesData = (teams: number | string) => {
     select: (data) => {
       return data?.results;
     },
-    enabled: true
+    enabled
   });
 };
 

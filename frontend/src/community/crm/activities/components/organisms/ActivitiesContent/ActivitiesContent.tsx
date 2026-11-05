@@ -7,6 +7,7 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import ActivityCallSidePanel from "~community/crm/activities/components/organisms/ActivityCallSidePanel/ActivityCallSidePanel";
 import ActivityFeed from "~community/crm/activities/components/organisms/ActivityFeed/ActivityFeed";
+import ActivityMeetingSidePanel from "~community/crm/activities/components/organisms/ActivityMeetingSidePanel/ActivityMeetingSidePanel";
 import ActivityToolbar from "~community/crm/activities/components/organisms/ActivityToolbar/ActivityToolbar";
 import { DEFAULT_ACTIVITY_TAB } from "~community/crm/activities/constants/activityConstants";
 import {
@@ -34,6 +35,7 @@ import {
 } from "~community/crm/api/ActivityApi";
 import { useGetDealsByIds } from "~community/crm/api/DealApi";
 import LogCallModalContent from "~community/crm/components/molecules/LogCallModalContent/LogCallModalContent";
+import LogMeetingModalContent from "~community/crm/components/molecules/LogMeetingModalContent/LogMeetingModalContent";
 import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
 import { useCrmStore } from "~community/crm/store/store";
@@ -52,6 +54,7 @@ const ActivitiesContent: FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<ActivityFilterValues>({});
   const [isLogCallModalOpen, setIsLogCallModalOpen] = useState(false);
+  const [isLogMeetingModalOpen, setIsLogMeetingModalOpen] = useState(false);
 
   const isAllTab = activeTab === ActivityTab.ALL;
 
@@ -59,18 +62,22 @@ const ActivitiesContent: FC = () => {
     owners,
     deals,
     selectedCallId,
+    selectedMeetingId,
     isCrmSidePanelOpen,
     setDeals,
     setSelectedCallId,
+    setSelectedMeetingId,
     openCrmSidePanel
   } = useCrmStore(
     useShallow((store) => ({
       owners: store.owners,
       deals: store.deals,
       selectedCallId: store.selectedCallId,
+      selectedMeetingId: store.selectedMeetingId,
       isCrmSidePanelOpen: store.isCrmSidePanelOpen,
       setDeals: store.setDeals,
       setSelectedCallId: store.setSelectedCallId,
+      setSelectedMeetingId: store.setSelectedMeetingId,
       openCrmSidePanel: store.openCrmSidePanel
     }))
   );
@@ -167,13 +174,38 @@ const ActivitiesContent: FC = () => {
     searchTerm.length > 0 || Object.keys(filters).length > 0;
 
   const handleRowClick = (row: ActivityRow): void => {
-    if (row.type !== ActivityType.CALL) return;
-
-    setSelectedCallId(row.id);
-    openCrmSidePanel(CrmSidePanelTypes.CALL_SIDE_PANEL);
+    switch (row.type) {
+      case ActivityType.CALL:
+        setSelectedCallId(row.id);
+        openCrmSidePanel(CrmSidePanelTypes.CALL_SIDE_PANEL);
+        break;
+      case ActivityType.MEETING:
+        setSelectedMeetingId(row.id);
+        openCrmSidePanel(CrmSidePanelTypes.MEETING_SIDE_PANEL);
+        break;
+      default:
+        break;
+    }
   };
 
   const handleToggleComplete = (): void => {};
+
+  const toolbarActions: Record<
+    ActivityTab,
+    { labelKey: string; onClick: () => void } | null
+  > = {
+    [ActivityTab.ALL]: null,
+    [ActivityTab.TASKS]: null,
+    [ActivityTab.CALLS]: {
+      labelKey: "logCallBtn",
+      onClick: () => setIsLogCallModalOpen(true)
+    },
+    [ActivityTab.MEETINGS]: {
+      labelKey: "logMeetingBtn",
+      onClick: () => setIsLogMeetingModalOpen(true)
+    },
+    [ActivityTab.EMAILS]: null
+  };
 
   return (
     <div className="flex flex-col w-full gap-4 pt-5.5 lg:pt-1">
@@ -194,19 +226,28 @@ const ActivitiesContent: FC = () => {
           isLoading || isError || hasActiveFilters || rows.length > 0
         }
         action={
-          activeTab === ActivityTab.CALLS && (
+          toolbarActions[activeTab] && (
             <ButtonV2
               variant="primary"
               type="button"
-              onClick={() => setIsLogCallModalOpen(true)}
+              onClick={toolbarActions[activeTab].onClick}
             >
-              {translateText(["activities", "toolbar", "logCallBtn"])}
+              {translateText([
+                "activities",
+                "toolbar",
+                toolbarActions[activeTab].labelKey
+              ])}
             </ButtonV2>
           )
         }
       />
       {isLogCallModalOpen && (
         <LogCallModalContent onClose={() => setIsLogCallModalOpen(false)} />
+      )}
+      {isLogMeetingModalOpen && (
+        <LogMeetingModalContent
+          onClose={() => setIsLogMeetingModalOpen(false)}
+        />
       )}
       <ActivityFeed
         activeTab={activeTab}
@@ -224,6 +265,11 @@ const ActivitiesContent: FC = () => {
       {selectedCallId !== null && (
         <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
           <ActivityCallSidePanel callId={selectedCallId} />
+        </SidePanelWrapper>
+      )}
+      {selectedMeetingId !== null && (
+        <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
+          <ActivityMeetingSidePanel meetingId={selectedMeetingId} />
         </SidePanelWrapper>
       )}
     </div>

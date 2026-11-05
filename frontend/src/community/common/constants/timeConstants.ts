@@ -35,6 +35,10 @@ export const SHORT_MONTH_YEAR_FORMAT = "MMM yyyy";
 
 export const TIME_FORMAT_12_HOUR = "h:mm a";
 
+export const TIME_FORMAT_12_HOUR_PADDED = "hh:mm a";
+
+export const TIME_FORMAT_24_HOUR = "HH:mm";
+
 export const monthAbbreviations = [
   "Jan",
   "Feb",

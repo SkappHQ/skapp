@@ -130,6 +130,19 @@
     }
   },
   "activities": {
+    "addTask": {
+      "modal": {
+        "taskName": "Task name",
+        "priority": "Task priority",
+        "dueDate": "Task due date",
+        "contact": "Task contact",
+        "notes": "Task notes",
+        "deal": "Task deal",
+        "relatedTo": "Task related company",
+        "cancel": "Cancel add task",
+        "save": "Save task"
+      }
+    },
     "callSidePanel": {
       "kebabMenu": "Call actions"
     },
@@ -144,11 +157,7 @@
         "deal": "Call deal",
         "relatedTo": "Call related company",
         "cancel": "Cancel log a call",
-        "save": "Save call",
-        "removeOwner": "Remove activity owner",
-        "clearContact": "Clear selected contact",
-        "clearDeal": "Clear selected deal",
-        "clearRelatedTo": "Clear selected company"
+        "save": "Save call"
       }
     },
     "tabs": "Activity types",
@@ -172,6 +181,31 @@
       "closeFilters": "Close filters",
       "clearTeamMember": "Clear team member filter",
       "teamMember": "Team member, selected"
+    },
+    "logMeeting": {
+      "modal": {
+        "subject": "Meeting subject",
+        "date": "Meeting date",
+        "startTime": "Meeting start time",
+        "endTime": "Meeting end time",
+        "comments": "Meeting comments",
+        "cancel": "Cancel log a meeting",
+        "save": "Save meeting",
+        "attendees": "Meeting attendees",
+        "removeAttendee": "Remove attendee {{name}}",
+        "deal": "Meeting deal",
+        "relatedTo": "Meeting related company"
+      }
+    },
+    "logActivity": {
+      "removeOwner": "Remove activity owner",
+      "clearContact": "Clear selected contact",
+      "clearDeal": "Clear selected deal",
+      "clearRelatedTo": "Clear selected company"
+    },
+    "meetingSidePanel": {
+      "kebabMenu": "Meeting actions",
+      "attendees": "Meeting attendees"
     }
   }
 }

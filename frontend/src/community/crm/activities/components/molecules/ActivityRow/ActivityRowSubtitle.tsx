@@ -64,7 +64,6 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
     <span
       id={linkId}
       className={`min-w-0 truncate ${nameColor} ${strikeClass}`}
-      title={name}
     >
       {name}
     </span>

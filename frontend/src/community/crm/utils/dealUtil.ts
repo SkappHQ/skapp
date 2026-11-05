@@ -2,6 +2,7 @@ import { CrmDealStageEnum } from "../enums/common";
 import { dealIdSearchPrefix } from "../regex/crmRegexPatterns";
 import {
   CrmCompanyRecord,
+  CrmContactEntity,
   CrmContactRecord,
   CrmDealEntity,
   CrmDealRecord,
@@ -53,6 +54,17 @@ export const getSelectedDeal = (
     return deals[dealId];
   }
 };
+
+export const isDealMatchingCompany = (
+  deal: CrmDealEntity,
+  companyId?: number | null
+): boolean => (deal.companyId ? deal.companyId === companyId : !companyId);
+
+export const isDealMatchingContacts = (
+  deal: CrmDealEntity,
+  contacts: CrmContactEntity[]
+): boolean =>
+  contacts.some((contact) => isDealMatchingCompany(deal, contact.companyId));
 
 export const removeDealId = (dealIds: number[], id: number): number[] =>
   dealIds.filter((dealId) => dealId !== id);

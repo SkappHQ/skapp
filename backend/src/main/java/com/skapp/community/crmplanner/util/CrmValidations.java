@@ -399,4 +399,41 @@ public class CrmValidations {
 		}
 	}
 
+	public static void validateMeetingSubject(String name) {
+		if (name == null || name.isBlank()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_MEETING_SUBJECT_REQUIRED);
+		}
+	}
+
+	public static void validateMeetingDate(LocalDate meetingDate) {
+		if (meetingDate == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_MEETING_DATE_REQUIRED);
+		}
+	}
+
+	public static void validateMeetingTimes(Instant startAt, Instant endAt) {
+		if (startAt != null && endAt != null && !endAt.isAfter(startAt)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_MEETING_TIME_RANGE_INVALID);
+		}
+	}
+
+	public static void validateMeetingAttendeeIds(List<Long> contactIds) {
+		if (contactIds == null || contactIds.isEmpty()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_MEETING_ATTENDEES_REQUIRED);
+		}
+		if (new HashSet<>(contactIds).size() != contactIds.size()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_MEETING_ATTENDEES_DUPLICATE);
+		}
+	}
+
+	public static void validateMeetingDealMatchesAttendeeCompanies(CrmDeal deal, List<CrmContact> contacts) {
+		Long dealCompanyId = deal.getCompany() != null ? deal.getCompany().getId() : null;
+		boolean isCompanyMatched = contacts.stream()
+			.anyMatch(contact -> Objects.equals(dealCompanyId,
+					contact.getCompany() != null ? contact.getCompany().getId() : null));
+		if (!isCompanyMatched) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_MEETING_DEAL_COMPANY_MISMATCH);
+		}
+	}
+
 }

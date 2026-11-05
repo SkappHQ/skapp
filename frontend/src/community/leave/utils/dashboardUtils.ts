@@ -18,3 +18,13 @@ export const getNavigateDays = (
   else if (timeConfigData?.length === 5) navigateDates = 5;
   return navigateDates;
 };
+
+export const getNewPendingLeaveRequestCount = (
+  pendingLeaveCount: number | undefined,
+  viewedPendingLeaveCount: number
+): number => {
+  if (!pendingLeaveCount) {
+    return 0;
+  }
+  return Math.max(pendingLeaveCount - viewedPendingLeaveCount, 0);
+};

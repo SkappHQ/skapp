@@ -579,75 +579,61 @@
     }
   },
   "activities": {
+    "addTask": {
+      "modal": {
+        "title": "Add task",
+        "labels": {
+          "taskName": "Task",
+          "priority": "Priority",
+          "dueDate": "Due date",
+          "contact": "Contact",
+          "notes": "Notes"
+        },
+        "placeholders": {
+          "taskName": "Enter the task name",
+          "dueDate": "Select date"
+        },
+        "validations": {
+          "name": "Task name is required",
+          "priority": "Priority is required"
+        },
+        "notices": {
+          "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
+        },
+        "toastMessages": {
+          "addSuccessTitle": "Task added successfully",
+          "addSuccessDescription": "Task has been added successfully",
+          "errorDescription": "Failed to add task"
+        }
+      }
+    },
     "callSidePanel": {
-      "comments": "Comments",
-      "noComments": "No comments added",
-      "dealsTitle": "Deals",
       "noDealsDescription": "No deals are linked to this call",
       "editCall": "Edit call",
       "deleteCall": "Delete call",
       "info": {
         "contact": "Contact",
-        "date": "Date",
-        "startTime": "Start time",
-        "duration": "Duration",
-        "activityOwner": "Activity owner",
-        "relatedTo": "Related to",
-        "noValue": "-",
-        "noLongerAvailable": "No longer available"
+        "duration": "Duration"
       }
     },
     "logCall": {
       "modal": {
         "title": "Log a call",
         "labels": {
-          "subject": "Subject",
-          "date": "Date",
           "time": "Time",
           "duration": "Duration",
-          "contact": "Contact",
-          "activityOwner": "Activity owner",
-          "comments": "Comments",
-          "deal": "Deal",
-          "relatedTo": "Related to"
+          "contact": "Contact"
         },
         "placeholders": {
-          "subject": "Enter subject",
-          "date": "Select date",
-          "time": "Select time",
-          "duration": "Enter duration",
-          "contact": "Enter name",
-          "comments": "Add message",
-          "deal": "Search deals",
-          "relatedTo": "Search companies",
-          "activityOwner": "Search owner"
-        },
-        "buttons": {
-          "addAssociations": "Add associations",
-          "hideAssociations": "Hide associations",
-          "cancel": "Cancel",
-          "save": "Save"
-        },
-        "emptyStates": {
-          "noOwners": "No owners found",
-          "noContacts": "No contacts found",
-          "noDeals": "No deals found",
-          "noCompanies": "No companies found"
+          "duration": "Enter duration"
         },
         "validations": {
-          "subject": "Subject is required",
           "contact": "Please select a contact",
-          "owner": "Activity owner is required",
-          "duration": "Please enter a valid duration (e.g. 1h 30m)",
-          "dealMismatch": "This deal's company doesn't match any linked contact — add a contact from that company or choose a different deal"
-        },
-        "notices": {
-          "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
+          "duration": "Please enter a valid duration (e.g. 1h 30m)"
         },
         "toastMessages": {
           "addSuccessTitle": "Call added successfully",
           "addSuccessDescription": "Call has been added successfully",
-          "errorTitle": "Oops! Something went wrong",
           "errorDescription": "Failed to log call"
         }
       }
@@ -720,7 +706,9 @@
       "loadError": "Couldn't load your activities. Please refresh to try again."
     },
     "toolbar": {
+      "addTaskBtn": "Add task",
       "logCallBtn": "Log a call",
+      "logMeetingBtn": "Log a meeting",
       "search": {
         "label": "Search activities",
         "resultCount_one": "{{count}} activity found",
@@ -758,6 +746,100 @@
         },
         "reset": "Reset filters",
         "apply": "Apply filters"
+      }
+    },
+    "logMeeting": {
+      "modal": {
+        "validations": {
+          "date": "Date is required",
+          "attendees": "An activity must be linked to at least one contact",
+          "endTime": "End time must be after start time"
+        },
+        "title": "Log a meeting",
+        "labels": {
+          "startTime": "Start time",
+          "endTime": "End time",
+          "attendees": "Attendees"
+        },
+        "toastMessages": {
+          "addSuccessTitle": "Meeting added successfully",
+          "addSuccessDescription": "Meeting has been added successfully",
+          "errorDescription": "Failed to save meeting"
+        },
+        "placeholders": {
+          "attendees": "Select attendees"
+        },
+        "tooltips": {
+          "differentCompanies": "These contacts are linked to different companies. This activity will still be saved against all of them."
+        }
+      }
+    },
+    "logActivity": {
+      "labels": {
+        "subject": "Subject",
+        "date": "Date",
+        "comments": "Comments",
+        "activityOwner": "Activity owner",
+        "deal": "Deal",
+        "relatedTo": "Related to"
+      },
+      "placeholders": {
+        "subject": "Enter subject",
+        "date": "Select date",
+        "time": "Select time",
+        "comments": "Add message",
+        "activityOwner": "Search owner",
+        "contact": "Enter name",
+        "deal": "Search deals",
+        "relatedTo": "Search companies"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "save": "Save",
+        "addAssociations": "Add associations",
+        "hideAssociations": "Hide associations"
+      },
+      "emptyStates": {
+        "noOwners": "No owners found",
+        "noContacts": "No contacts found",
+        "noDeals": "No deals found",
+        "noCompanies": "No companies found",
+        "searching": "Searching..."
+      },
+      "validations": {
+        "subject": "Subject is required",
+        "owner": "Activity owner is required",
+        "dealMismatch": "This deal's company doesn't match any linked contact — add a contact from that company or choose a different deal"
+      },
+      "notices": {
+        "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
+      },
+      "toastMessages": {
+        "errorTitle": "Oops! Something went wrong"
+      },
+      "tooltips": {
+        "relatedToMismatch": "This doesn't match {{name}}'s company on file."
+      }
+    },
+    "activitySidePanel": {
+      "comments": "Comments",
+      "noComments": "No comments added",
+      "dealsTitle": "Deals",
+      "info": {
+        "date": "Date",
+        "startTime": "Start time",
+        "activityOwner": "Activity owner",
+        "relatedTo": "Related to",
+        "noValue": "-",
+        "noLongerAvailable": "No longer available"
+      }
+    },
+    "meetingSidePanel": {
+      "noDealsDescription": "No deals are linked to this meeting",
+      "deleteMeeting": "Delete meeting",
+      "info": {
+        "attendees": "Attendees",
+        "endTime": "End time"
       }
     }
   }

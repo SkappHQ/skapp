@@ -42,3 +42,5 @@ export const ACTIVITY_TYPE_ICON_MAP: Record<
   [ActivityType.MEETING]: TASK_TYPE_ICON_MAP.meeting,
   [ActivityType.EMAIL]: TASK_TYPE_ICON_MAP.email
 };
+
+export const ACTIVITY_TIME_SLOT_MINUTES = 30;

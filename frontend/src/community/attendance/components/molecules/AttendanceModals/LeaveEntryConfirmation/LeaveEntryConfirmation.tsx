@@ -109,14 +109,6 @@ const LeaveEntryConfirmation = ({ fromDateTime, toDateTime }: Props) => {
       </Stack>
       <div className="flex flex-row gap-3 mt-4 justify-end">
         <ButtonV2
-          variant={"primary"}
-          onClick={handleSubmit}
-          icon={<Icon name={IconName.CHECK_ICON} />}
-          iconPosition="end"
-        >
-          {translateText(["confirmBtnTxt"])}
-        </ButtonV2>
-        <ButtonV2
           variant={"tertiary"}
           onClick={() => {
             setIsEmployeeTimesheetModalOpen(true);
@@ -128,6 +120,14 @@ const LeaveEntryConfirmation = ({ fromDateTime, toDateTime }: Props) => {
           iconPosition="end"
         >
           {translateText(["cancelBtnTxt"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={"primary"}
+          onClick={handleSubmit}
+          icon={<Icon name={IconName.CHECK_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["confirmBtnTxt"])}
         </ButtonV2>
       </div>
     </>

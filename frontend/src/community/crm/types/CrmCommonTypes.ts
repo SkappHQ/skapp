@@ -155,3 +155,39 @@ export interface CrmLogCallFormValues {
   dealId: number | null;
   companyId: number | null;
 }
+
+export interface CrmMeetingEntity {
+  id: number;
+  name: string;
+  meetingDate: string;
+  startAt?: string;
+  endAt?: string;
+  comments?: string;
+  ownerId: number;
+  contacts: CrmContactEntity[];
+  deal?: CrmDealEntity;
+  company?: CrmCompanyEntity;
+}
+
+export interface CrmLogMeetingFormValues {
+  subject: string;
+  date: string | null;
+  startTime: string;
+  endTime: string;
+  contactIds: number[];
+  ownerId: number | null;
+  comments: string;
+  dealId: number | null;
+  companyId: number | null;
+}
+
+export interface CrmAddTaskFormValues {
+  name: string;
+  priority: CrmPriorityEnum;
+  dueAt: string | null;
+  ownerId: number | null;
+  contactId: number | null;
+  dealId: number | null;
+  companyId: number | null;
+  notes: string;
+}

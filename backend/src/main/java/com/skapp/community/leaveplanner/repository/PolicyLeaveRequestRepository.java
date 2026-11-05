@@ -32,4 +32,10 @@ public interface PolicyLeaveRequestRepository {
 	List<PolicyLeaveRequest> findOverlappingRequests(Long employeeId, Collection<LeaveRequestStatus> statuses,
 			LocalDate startDate, LocalDate endDate);
 
+	long countSupervisedPendingRequests(Long supervisorEmployeeId, List<Long> teamIds);
+
+	long countEmployeesOnApprovedLeaveOnDate(LocalDate date, List<Long> teamIds, Long supervisorEmployeeId);
+
+	long countEmployeesInScope(List<Long> teamIds, Long supervisorEmployeeId);
+
 }

@@ -26,6 +26,8 @@ import {
   PolicyLeaveRequestQueryParams,
   PolicyLeaveRequestResponse,
   PolicyLeaveRequestType,
+  PolicyPendingLeaveCountResponse,
+  PolicyPendingLeaveCountType,
   PolicyResourceAvailabilityDayType,
   PolicyResourceAvailabilityParams,
   PolicyResourceAvailabilityResponse
@@ -53,6 +55,16 @@ export const useGetMyPolicyBalances = (
   });
 };
 
+const getPolicyPendingLeaveCount = async (
+  teamId: number | string
+): Promise<PolicyPendingLeaveCountType | undefined> => {
+  const response = await authFetch.get<PolicyPendingLeaveCountResponse>(
+    policyLeaveEndPoints.GET_PENDING_LEAVE_COUNT,
+    { params: { teamIds: teamId } }
+  );
+  return response.data.results[0];
+};
+
 const getPolicyEmployeesOnLeaveToday = async (
   teamId: number | string
 ): Promise<PolicyEmployeesOnLeaveType> => {
@@ -61,6 +73,17 @@ const getPolicyEmployeesOnLeaveToday = async (
     { params: { teamIds: teamId } }
   );
   return response.data.results[0];
+};
+
+export const useGetPolicyPendingLeaveCount = (
+  teamId: number | string,
+  enabled = true
+): UseQueryResult<PolicyPendingLeaveCountType | undefined> => {
+  return useQuery({
+    queryKey: policyLeaveQueryKeys.PENDING_LEAVE_COUNT(teamId),
+    queryFn: () => getPolicyPendingLeaveCount(teamId),
+    enabled: enabled && teamId !== ""
+  });
 };
 
 export const useGetPolicyEmployeesOnLeaveToday = (
@@ -202,6 +225,9 @@ export const useApplyPolicyLeave = (
       });
       queryClient.invalidateQueries({
         queryKey: policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS(year)
+      });
+      queryClient.invalidateQueries({
+        queryKey: policyLeaveQueryKeys.ALL_PENDING_LEAVE_COUNT()
       });
       queryClient.invalidateQueries({
         queryKey: policyLeaveQueryKeys.ALL_EMPLOYEES_ON_LEAVE_TODAY()
