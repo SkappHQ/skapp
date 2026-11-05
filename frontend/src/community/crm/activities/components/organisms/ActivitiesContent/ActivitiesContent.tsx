@@ -1,4 +1,4 @@
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, ButtonV2Props } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -40,6 +40,7 @@ import LogCallModalContent from "~community/crm/components/molecules/LogCallModa
 import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
 import { useCrmStore } from "~community/crm/store/store";
+import { CrmTaskCompletionPayload } from "~community/crm/types/CrmCommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 import { getMissingDealIds, mergeDeals } from "~community/crm/utils/dealUtil";
 
@@ -172,6 +173,18 @@ const ActivitiesContent: FC = () => {
     isAllTab && feed.data ? feed.data.pages[0].totalItems : rows.length;
   const hasActiveFilters =
     searchTerm.length > 0 || Object.keys(filters).length > 0;
+  const showControls =
+    isLoading || isError || hasActiveFilters || rows.length > 0;
+
+  const logCallButton: ButtonV2Props | null =
+    activeTab === ActivityTab.CALLS
+      ? {
+          variant: "primary",
+          type: "button",
+          onClick: () => setIsLogCallModalOpen(true),
+          children: translateText(["activities", "toolbar", "logCallBtn"])
+        }
+      : null;
 
   const handleRowClick = (row: ActivityRow): void => {
     if (row.type !== ActivityType.CALL) return;
@@ -180,14 +193,15 @@ const ActivitiesContent: FC = () => {
     openCrmSidePanel(CrmSidePanelTypes.CALL_SIDE_PANEL);
   };
 
-  const { mutate: updateTaskCompletion, isPending } = useUpdateTaskCompletion();
-
   const applyCompletion = (taskId: number, isCompleted: boolean): void => {
     setTaskCompletions((current) => ({ ...current, [taskId]: isCompleted }));
   };
 
-  const handleToggleError = (taskId: number, wasCompleted: boolean): void => {
-    applyCompletion(taskId, wasCompleted);
+  const handleToggleError = ({
+    id,
+    isCompleted
+  }: CrmTaskCompletionPayload): void => {
+    applyCompletion(id, !isCompleted);
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
@@ -206,21 +220,18 @@ const ActivitiesContent: FC = () => {
     });
   };
 
+  const { mutate: updateTaskCompletion, isPending } =
+    useUpdateTaskCompletion(handleToggleError);
+
   const handleToggleComplete = (
     row: ActivityRow,
     isCompleted: boolean
   ): void => {
     if (isPending) return;
 
-    const wasCompleted =
-      row.id in taskCompletions ? taskCompletions[row.id] : row.isCompleted;
-
     applyCompletion(row.id, isCompleted);
 
-    updateTaskCompletion(
-      { id: row.id, isCompleted },
-      { onError: () => handleToggleError(row.id, wasCompleted) }
-    );
+    updateTaskCompletion({ id: row.id, isCompleted });
   };
 
   return (
@@ -238,19 +249,9 @@ const ActivitiesContent: FC = () => {
         teamMembers={teamMembers}
         isTeamMembersError={isCrmInitialDataError}
         timeZone={displayZone}
-        showControls={
-          isLoading || isError || hasActiveFilters || rows.length > 0
-        }
+        showControls={showControls}
         action={
-          activeTab === ActivityTab.CALLS && (
-            <ButtonV2
-              variant="primary"
-              type="button"
-              onClick={() => setIsLogCallModalOpen(true)}
-            >
-              {translateText(["activities", "toolbar", "logCallBtn"])}
-            </ButtonV2>
-          )
+          showControls && logCallButton && <ButtonV2 {...logCallButton} />
         }
       />
       {isLogCallModalOpen && (
@@ -266,6 +267,7 @@ const ActivitiesContent: FC = () => {
         isFetchingNextPage={isAllTab && feed.isFetchingNextPage}
         timeZone={displayZone}
         taskCompletions={taskCompletions}
+        emptyStateButton={showControls ? null : logCallButton}
         onLoadMore={feed.fetchNextPage}
         onRowClick={handleRowClick}
         onToggleComplete={handleToggleComplete}

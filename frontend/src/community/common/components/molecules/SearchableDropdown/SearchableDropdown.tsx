@@ -55,6 +55,7 @@ export interface SearchableDropdownProps {
   errorMessage?: string;
   variant?: "sm" | "md" | "lg";
   positionStrategy?: "absolute" | "fixed";
+  isFlip?: boolean;
   onClose?: () => void;
   isOpenOnFocus?: boolean;
 }
@@ -75,6 +76,7 @@ const SearchableDropdown: FC<SearchableDropdownProps> = ({
   errorMessage,
   variant = "md",
   positionStrategy = "absolute",
+  isFlip = true,
   onClose,
   isOpenOnFocus = false
 }) => {
@@ -217,7 +219,7 @@ const SearchableDropdown: FC<SearchableDropdownProps> = ({
           handleClose={handleClose}
           ariaRole="presentation"
           ariaLabel={label || placeholder}
-          isFlip
+          isFlip={isFlip}
           disableAutoFocus
           positionStrategy={positionStrategy}
           containerClassName="rounded-md border border-secondary-accent bg-white shadow-lg"
