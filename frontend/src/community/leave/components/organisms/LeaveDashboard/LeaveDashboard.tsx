@@ -19,7 +19,10 @@ import {
   useGetPendingLeavesData,
   useGetResourceAvailability
 } from "~community/leave/api/LeaveDashboard";
-import { useGetPolicyPendingLeaveCount } from "~community/leave/api/PolicyLeaveApi";
+import {
+  useGetPolicyLeaveTypeBreakdown,
+  useGetPolicyPendingLeaveCount
+} from "~community/leave/api/PolicyLeaveApi";
 import AvailabilityCalendarWidget from "~community/leave/components/molecules/AvailabilityCalendar/AvailabilityCalendarWidget";
 import AvailableChip from "~community/leave/components/molecules/LeaveDashboardChips/AvailableChip";
 import AwayChip from "~community/leave/components/molecules/LeaveDashboardChips/AwayChip";
@@ -97,11 +100,25 @@ const LeaveDashboard = (): JSX.Element => {
   );
 
   const { data: absenceRate } = useGetAbsenceRate(teamId, isFetchingEnabled);
-  const {
-    isLoading,
-    error,
-    data: datasets
-  } = useGetLeaveTypeBreakdownChartData(teamId);
+  const legacyBreakdown = useGetLeaveTypeBreakdownChartData(
+    teamId,
+    !isPolicyConfigLoading && !isLeavePoliciesEnabled
+  );
+
+  const policyBreakdown = useGetPolicyLeaveTypeBreakdown(
+    teamId,
+    !isPolicyConfigLoading && isLeavePoliciesEnabled
+  );
+
+  const { error, data: datasets } = isLeavePoliciesEnabled
+    ? policyBreakdown
+    : legacyBreakdown;
+
+  const isLoading =
+    isPolicyConfigLoading ||
+    (isLeavePoliciesEnabled
+      ? policyBreakdown.isPending
+      : legacyBreakdown.isLoading);
 
   useGoogleAnalyticsEvent({
     onMountEventType: GoogleAnalyticsTypes.GA4_LEAVE_DASHBOARD_VIEWED,

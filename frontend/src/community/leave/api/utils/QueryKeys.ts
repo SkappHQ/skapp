@@ -345,6 +345,19 @@ export const policyLeaveQueryKeys = {
     teamIds,
     startDate,
     endDate
+  ],
+  ALL_TEAM_LEAVE_TREND: () => [...policyLeaveQueryKeys.ALL, "team-leave-trend"],
+  TEAM_LEAVE_TREND: (teamId: number) => [
+    ...policyLeaveQueryKeys.ALL_TEAM_LEAVE_TREND(),
+    teamId
+  ],
+  ALL_LEAVE_TYPE_BREAKDOWN: () => [
+    ...policyLeaveQueryKeys.ALL,
+    "leave-type-breakdown"
+  ],
+  LEAVE_TYPE_BREAKDOWN: (teamId: number | string) => [
+    ...policyLeaveQueryKeys.ALL_LEAVE_TYPE_BREAKDOWN(),
+    teamId
   ]
 };
 
