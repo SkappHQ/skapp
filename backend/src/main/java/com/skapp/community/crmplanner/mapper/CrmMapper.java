@@ -13,7 +13,6 @@ import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityCallDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityCallResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmActivityMeetingDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityMeetingResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
@@ -120,9 +119,5 @@ public interface CrmMapper {
 	@Mapping(target = "companyId", source = "contact.company.id")
 	CrmContactLookupResponseDto crmActivityMeetingContactToCrmContactLookupResponseDto(
 			CrmActivityMeetingContact attendee);
-
-	@Mapping(target = "ownerId", source = "owner.employeeId")
-	CrmActivityMeetingDetailResponseDto crmActivityMeetingToCrmActivityMeetingDetailResponseDto(
-			CrmActivityMeeting meeting);
 
 }

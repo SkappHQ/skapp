@@ -35,4 +35,10 @@ public class CrmActivityMeetingResponseDto {
 
 	private List<Long> contactIds;
 
+	private List<CrmContactLookupResponseDto> contacts;
+
+	private CrmDealResponseDto deal;
+
+	private CrmCompanyLookupResponseDto company;
+
 }
