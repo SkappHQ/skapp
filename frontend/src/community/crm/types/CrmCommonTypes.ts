@@ -209,3 +209,5 @@ export interface CrmAddTaskFormValues {
   companyId: number | null;
   notes: string;
 }
+
+export type CrmAddTaskFormErrorField = "name" | "priority" | "dueAt" | "notes";
