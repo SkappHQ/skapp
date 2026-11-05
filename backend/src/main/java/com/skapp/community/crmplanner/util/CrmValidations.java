@@ -388,7 +388,7 @@ public class CrmValidations {
 		}
 	}
 
-	public static void validateCallDealMatchesContactCompany(CrmDeal deal, CrmContact contact) {
+	public static void validateDealMatchesContactCompany(CrmDeal deal, CrmContact contact) {
 		if (deal == null || contact == null) {
 			return;
 		}

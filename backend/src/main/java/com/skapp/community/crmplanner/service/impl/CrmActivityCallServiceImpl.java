@@ -178,7 +178,7 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 			if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, deal.getOwner().getEmployeeId())) {
 				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_VIEW_DENIED);
 			}
-			CrmValidations.validateCallDealMatchesContactCompany(deal, contact);
+			CrmValidations.validateDealMatchesContactCompany(deal, contact);
 			call.setDeal(deal);
 		}
 
@@ -254,7 +254,7 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 		}
 
 		if (requestDto.getContactId() != null || requestDto.getDealId() != null) {
-			CrmValidations.validateCallDealMatchesContactCompany(call.getDeal(), call.getContact());
+			CrmValidations.validateDealMatchesContactCompany(call.getDeal(), call.getContact());
 		}
 
 		CrmActivityCall updatedCall = crmActivityCallDao.save(call);
