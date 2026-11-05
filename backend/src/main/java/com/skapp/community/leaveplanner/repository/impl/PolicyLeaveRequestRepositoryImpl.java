@@ -284,6 +284,34 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
+	@Override
+	public List<PolicyLeaveRequest> findApprovedRequestsForEmployeesInRange(List<Long> employeeIds, LocalDate startDate,
+			LocalDate endDate) {
+		if (CollectionUtils.isEmpty(employeeIds)) {
+			return List.of();
+		}
+
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<PolicyLeaveRequest> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveRequest.class);
+		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
+		root.fetch(PolicyLeaveRequest_.employee, JoinType.INNER);
+		Join<PolicyLeaveRequest, Employee> employee = root.join(PolicyLeaveRequest_.employee);
+
+		List<Predicate> predicates = buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee, null, null);
+		predicates.add(employee.get(Employee_.employeeId).in(employeeIds));
+		predicates.add(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.status), LeaveRequestStatus.APPROVED));
+		predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get(PolicyLeaveRequest_.startDate), endDate));
+		predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), startDate));
+
+		criteriaQuery.select(root)
+			.where(predicates.toArray(new Predicate[0]))
+			.orderBy(criteriaBuilder.asc(root.get(PolicyLeaveRequest_.startDate)),
+					criteriaBuilder.asc(root.get(PolicyLeaveRequest_.id)));
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
 	private void fetchPolicy(Root<PolicyLeaveRequest> root) {
 		Fetch<PolicyLeaveRequest, LeavePolicy> policy = root.fetch(PolicyLeaveRequest_.policy, JoinType.LEFT);
 		policy.fetch(LeavePolicy_.leaveType, JoinType.LEFT);

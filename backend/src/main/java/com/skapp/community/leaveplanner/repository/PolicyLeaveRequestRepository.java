@@ -43,4 +43,7 @@ public interface PolicyLeaveRequestRepository {
 	List<PolicyLeaveRequest> findApprovedRequestsInRange(LocalDate startDate, LocalDate endDate, List<Long> teamIds,
 			Long supervisorEmployeeId);
 
+	List<PolicyLeaveRequest> findApprovedRequestsForEmployeesInRange(List<Long> employeeIds, LocalDate startDate,
+			LocalDate endDate);
+
 }
