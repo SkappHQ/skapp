@@ -83,7 +83,7 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 			if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, deal.getOwner().getEmployeeId())) {
 				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_VIEW_DENIED);
 			}
-			CrmValidations.validateActivityTaskDealMatchesContactCompany(deal, task.getContact());
+			CrmValidations.validateDealMatchesContactCompany(deal, task.getContact());
 			task.setDeal(deal);
 		}
 
@@ -203,7 +203,7 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 		}
 
 		if (requestDto.getContactId() != null || requestDto.getDealId() != null) {
-			CrmValidations.validateActivityTaskDealMatchesContactCompany(task.getDeal(), task.getContact());
+			CrmValidations.validateDealMatchesContactCompany(task.getDeal(), task.getContact());
 		}
 
 		if (requestDto.getIsCompleted() != null) {

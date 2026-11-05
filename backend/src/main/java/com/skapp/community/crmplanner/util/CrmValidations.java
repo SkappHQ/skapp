@@ -389,7 +389,7 @@ public class CrmValidations {
 		}
 	}
 
-	public static void validateCallDealMatchesContactCompany(CrmDeal deal, CrmContact contact) {
+	public static void validateDealMatchesContactCompany(CrmDeal deal, CrmContact contact) {
 		if (deal == null || contact == null) {
 			return;
 		}
@@ -397,23 +397,6 @@ public class CrmValidations {
 		Long contactCompanyId = contact.getCompany() != null ? contact.getCompany().getId() : null;
 		if (!Objects.equals(dealCompanyId, contactCompanyId)) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_DEAL_COMPANY_MISMATCH);
-		}
-	}
-
-	public static void validateActivityTaskPriority(CrmActivityTaskPriority priority) {
-		if (priority == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_TASK_PRIORITY_REQUIRED);
-		}
-	}
-
-	public static void validateActivityTaskDealMatchesContactCompany(CrmDeal deal, CrmContact contact) {
-		if (deal == null || contact == null) {
-			return;
-		}
-		Long dealCompanyId = deal.getCompany() != null ? deal.getCompany().getId() : null;
-		Long contactCompanyId = contact.getCompany() != null ? contact.getCompany().getId() : null;
-		if (!Objects.equals(dealCompanyId, contactCompanyId)) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_TASK_DEAL_COMPANY_MISMATCH);
 		}
 	}
 
@@ -451,6 +434,12 @@ public class CrmValidations {
 					contact.getCompany() != null ? contact.getCompany().getId() : null));
 		if (!isCompanyMatched) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_MEETING_DEAL_COMPANY_MISMATCH);
+		}
+	}
+
+	public static void validateActivityTaskPriority(CrmActivityTaskPriority priority) {
+		if (priority == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_TASK_PRIORITY_REQUIRED);
 		}
 	}
 
