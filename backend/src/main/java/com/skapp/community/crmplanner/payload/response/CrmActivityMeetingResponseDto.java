@@ -1,6 +1,5 @@
 package com.skapp.community.crmplanner.payload.response;
 
-import com.skapp.community.crmplanner.type.CrmActivityMeetingVenue;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,10 +18,6 @@ public class CrmActivityMeetingResponseDto {
 	private String name;
 
 	private Boolean isScheduled;
-
-	private CrmActivityMeetingVenue meetingVenue;
-
-	private String location;
 
 	private LocalDate meetingDate;
 

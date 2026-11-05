@@ -15,7 +15,6 @@ import com.skapp.community.crmplanner.payload.response.CrmActivityMeetingRespons
 import com.skapp.community.crmplanner.repository.CrmActivityMeetingRepository;
 import com.skapp.community.crmplanner.type.CrmActivityMeetingFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityMeetingSort;
-import com.skapp.community.crmplanner.type.CrmActivityMeetingVenue;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
@@ -108,8 +107,7 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 
 		query
 			.multiselect(meeting.get(CrmActivityMeeting_.id), meeting.get(CrmActivityMeeting_.name),
-					meeting.get(CrmActivityMeeting_.isScheduled), meeting.get(CrmActivityMeeting_.meetingVenue),
-					meeting.get(CrmActivityMeeting_.location), meeting.get(CrmActivityMeeting_.startAt),
+					meeting.get(CrmActivityMeeting_.isScheduled), meeting.get(CrmActivityMeeting_.startAt),
 					meeting.get(CrmActivityMeeting_.endAt), ownerId, deal.get(CrmDeal_.id), company.get(CrmCompany_.id),
 					meeting.get(CrmActivityMeeting_.meetingDate), meeting.get(CrmActivityMeeting_.comments))
 			.where(predicates.toArray(new Predicate[0]))
@@ -123,15 +121,13 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 				dto.setId(row.get(0, Long.class));
 				dto.setName(row.get(1, String.class));
 				dto.setIsScheduled(row.get(2, Boolean.class));
-				dto.setMeetingVenue(row.get(3, CrmActivityMeetingVenue.class));
-				dto.setLocation(row.get(4, String.class));
-				dto.setStartAt(row.get(5, Instant.class));
-				dto.setEndAt(row.get(6, Instant.class));
-				dto.setOwnerId(row.get(7, Long.class));
-				dto.setDealId(row.get(8, Long.class));
-				dto.setCompanyId(row.get(9, Long.class));
-				dto.setMeetingDate(row.get(10, LocalDate.class));
-				dto.setComments(row.get(11, String.class));
+				dto.setStartAt(row.get(3, Instant.class));
+				dto.setEndAt(row.get(4, Instant.class));
+				dto.setOwnerId(row.get(5, Long.class));
+				dto.setDealId(row.get(6, Long.class));
+				dto.setCompanyId(row.get(7, Long.class));
+				dto.setMeetingDate(row.get(8, LocalDate.class));
+				dto.setComments(row.get(9, String.class));
 				return dto;
 			})
 			.toList();
