@@ -14,7 +14,6 @@ import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityCallDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityCallResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmActivityEmailDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityEmailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityMeetingDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityMeetingResponseDto;
@@ -132,8 +131,5 @@ public interface CrmMapper {
 	@Mapping(target = "dealId", source = "deal.id")
 	@Mapping(target = "companyId", source = "company.id")
 	CrmActivityEmailResponseDto crmActivityEmailToCrmActivityEmailResponseDto(CrmActivityEmail email);
-
-	@Mapping(target = "ownerId", source = "owner.employeeId")
-	CrmActivityEmailDetailResponseDto crmActivityEmailToCrmActivityEmailDetailResponseDto(CrmActivityEmail email);
 
 }

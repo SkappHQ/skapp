@@ -17,7 +17,6 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.payload.request.CrmActivityEmailCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmActivityEmailEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmActivityEmailFilterDto;
-import com.skapp.community.crmplanner.payload.response.CrmActivityEmailDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityEmailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
@@ -177,18 +176,19 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_EMAIL_VIEW_DENIED);
 		}
 
-		CrmActivityEmailDetailResponseDto response = crmMapper
-			.crmActivityEmailToCrmActivityEmailDetailResponseDto(email);
+		CrmActivityEmailResponseDto response = crmMapper.crmActivityEmailToCrmActivityEmailResponseDto(email);
 		response.setTo(getRecipientLookups(email, CrmActivityEmailContactRole.TO));
 		response.setCc(getRecipientLookups(email, CrmActivityEmailContactRole.CC));
 		response.setBcc(getRecipientLookups(email, CrmActivityEmailContactRole.BCC));
 		if (email.getDeal() != null && Boolean.TRUE.equals(email.getDeal().getIsDeleted())) {
+			response.setDealId(null);
 			response.setDeal(null);
 		}
 		else if (email.getDeal() != null) {
 			response.setDeal(CrmUtil.toDealResponseDto(crmMapper, email.getDeal()));
 		}
 		if (email.getCompany() != null && Boolean.TRUE.equals(email.getCompany().getIsDeleted())) {
+			response.setCompanyId(null);
 			response.setCompany(null);
 		}
 

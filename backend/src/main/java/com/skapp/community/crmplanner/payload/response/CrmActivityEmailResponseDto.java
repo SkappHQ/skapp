@@ -16,7 +16,11 @@ public class CrmActivityEmailResponseDto {
 
 	private String subject;
 
+	private String fromAddress;
+
 	private Instant loggedAt;
+
+	private String description;
 
 	private Long ownerId;
 
@@ -25,5 +29,15 @@ public class CrmActivityEmailResponseDto {
 	private Long companyId;
 
 	private List<Long> contactIds;
+
+	private List<CrmContactLookupResponseDto> to;
+
+	private List<CrmContactLookupResponseDto> cc;
+
+	private List<CrmContactLookupResponseDto> bcc;
+
+	private CrmDealResponseDto deal;
+
+	private CrmCompanyLookupResponseDto company;
 
 }
