@@ -7,6 +7,7 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import { FC, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
@@ -22,7 +23,10 @@ import ActivityOwnerField from "~community/crm/components/molecules/ActivityOwne
 import ActivityRelatedToField from "~community/crm/components/molecules/ActivityRelatedToField/ActivityRelatedToField";
 import { useGetPriorityOptions } from "~community/crm/hooks/useGetPriorityOptions";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmAddTaskFormValues } from "~community/crm/types/CrmCommonTypes";
+import {
+  CrmAddTaskFormErrorField,
+  CrmAddTaskFormValues
+} from "~community/crm/types/CrmCommonTypes";
 import { isDealMatchingCompany } from "~community/crm/utils/dealUtil";
 
 interface Props {
@@ -42,8 +46,12 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
   const displayZone = useDisplayZone();
   const priorityOptions = useGetPriorityOptions();
 
-  const contacts = useCrmStore((state) => state.contacts);
-  const deals = useCrmStore((state) => state.deals);
+  const { contacts, deals } = useCrmStore(
+    useShallow((state) => ({
+      contacts: state.contacts,
+      deals: state.deals
+    }))
+  );
 
   const [isDealClearedNoticeVisible, setIsDealClearedNoticeVisible] =
     useState(false);
@@ -68,13 +76,8 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
     ? instantToPickedDay(values.dueAt, displayZone)
     : null;
 
-  const getFieldError = (field: "name" | "priority" | "dueAt" | "notes") =>
+  const getFieldError = (field: CrmAddTaskFormErrorField) =>
     formik.touched[field] ? formik.errors[field] : "";
-
-  const nameError = getFieldError("name");
-  const priorityError = getFieldError("priority");
-  const dueAtError = getFieldError("dueAt");
-  const notesError = getFieldError("notes");
 
   const handleDueDateSelect = (date?: Date): void => {
     setFieldValue(
@@ -97,8 +100,8 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
           "placeholders",
           "taskName"
         ])}
-        errorMessage={nameError}
-        state={nameError ? "error" : "default"}
+        errorMessage={getFieldError("name")}
+        state={getFieldError("name") ? "error" : "default"}
         onChange={handleChange}
         onBlur={handleBlur}
         aria-label={translateAria(["taskName"])}
@@ -113,8 +116,8 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
         value={values.priority ?? ""}
         onChange={(value) => setFieldValue("priority", value, true)}
         label={translateText(["addTask", "modal", "labels", "priority"])}
-        variant={priorityError ? "primary-error" : "primary"}
-        errorMessage={priorityError}
+        variant={getFieldError("priority") ? "primary-error" : "primary"}
+        errorMessage={getFieldError("priority")}
         className="rounded-lg"
         ariaLabel={translateAria(["priority"])}
         width="100%"
@@ -140,8 +143,8 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
                   "placeholders",
                   "dueDate"
                 ])}
-                errorMessage={dueAtError}
-                state={dueAtError ? "error" : "default"}
+                errorMessage={getFieldError("dueAt")}
+                state={getFieldError("dueAt") ? "error" : "default"}
                 aria-label={translateAria(["dueDate"])}
                 rightIcon={<CalendarIcon />}
                 fullWidth
@@ -174,8 +177,8 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
           "placeholders",
           "notes"
         ])}
-        errorMessage={notesError}
-        state={notesError ? "error" : "default"}
+        errorMessage={getFieldError("notes")}
+        state={getFieldError("notes") ? "error" : "default"}
         onChange={handleChange}
         onBlur={handleBlur}
         rows={2}
