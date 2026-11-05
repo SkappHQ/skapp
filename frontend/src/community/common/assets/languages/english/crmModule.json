@@ -679,6 +679,7 @@
     },
     "toolbar": {
       "logCallBtn": "Log a call",
+      "logMeetingBtn": "Log a meeting",
       "search": {
         "label": "Search activities",
         "resultCount_one": "{{count}} activity found",

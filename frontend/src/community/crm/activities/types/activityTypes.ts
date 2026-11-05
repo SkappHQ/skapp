@@ -108,6 +108,7 @@ export interface ActivityEmailResponse extends ActivityListItemBase {
 
 export interface ActivityMeetingResponse extends ActivityListItemBase {
   name: string;
+  meetingDate: string | null;
   startAt: string | null;
   contactIds: number[];
 }
