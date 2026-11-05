@@ -107,6 +107,10 @@ public class PolicyAttendanceLeaveServiceImpl implements PolicyAttendanceLeaveSe
 	@Override
 	public LeaveRequestResponseDto findLeaveRequestOnDate(
 			Map<Long, List<LeaveRequestResponseDto>> leaveRequestsByEmployee, Long employeeId, LocalDate date) {
+		if (date == null) {
+			return null;
+		}
+
 		return leaveRequestsByEmployee.getOrDefault(employeeId, List.of())
 			.stream()
 			.filter(leaveRequest -> isWithinLeave(leaveRequest, date))
@@ -117,6 +121,10 @@ public class PolicyAttendanceLeaveServiceImpl implements PolicyAttendanceLeaveSe
 	@Override
 	public boolean isOnApprovedLeave(Map<Long, List<LeaveRequestResponseDto>> leaveRequestsByEmployee, Long employeeId,
 			LocalDate date) {
+		if (date == null) {
+			return false;
+		}
+
 		return leaveRequestsByEmployee.getOrDefault(employeeId, List.of())
 			.stream()
 			.anyMatch(leaveRequest -> leaveRequest.getStatus() == LeaveRequestStatus.APPROVED

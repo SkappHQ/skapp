@@ -53,6 +53,7 @@ import com.skapp.community.leaveplanner.service.LeaveCycleService;
 import com.skapp.community.leaveplanner.service.LeaveEmailService;
 import com.skapp.community.leaveplanner.service.LeaveNotificationService;
 import com.skapp.community.leaveplanner.service.LeavePolicyService;
+import com.skapp.community.leaveplanner.service.PolicyAttendanceLeaveService;
 import com.skapp.community.leaveplanner.service.PolicyLeaveService;
 import com.skapp.community.leaveplanner.type.EmployeeLeavePolicyStatus;
 import com.skapp.community.leaveplanner.type.LeaveDuration;
@@ -141,6 +142,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 	private final NotificationDao notificationDao;
 
 	private final MessageUtil messageUtil;
+
+	private final PolicyAttendanceLeaveService policyAttendanceLeaveService;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -487,12 +490,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 				? leaveRequestAvailabilityFilterDto.getDate() : timeZoneService.currentOrganizationDate();
 		Long employeeId = userService.getCurrentUser().getEmployee().getEmployeeId();
 
-		List<LeaveRequestResponseDto> leaveRequests = policyLeaveRequestDao
-			.findEmployeesRequestsInRange(List.of(employeeId), PolicyLeaveConstant.ATTENDANCE_LEAVE_STATUSES, date,
-					date, false)
-			.stream()
-			.map(leaveMapper::policyLeaveRequestToLeaveRequestResponseDto)
-			.toList();
+		List<LeaveRequestResponseDto> leaveRequests = policyAttendanceLeaveService.getEmployeeLeaveRequests(employeeId,
+				date, date, false);
 
 		log.info("getPolicyLeaveDayAvailability: execution ended");
 		return new ResponseEntityDto(false, leaveRequests);

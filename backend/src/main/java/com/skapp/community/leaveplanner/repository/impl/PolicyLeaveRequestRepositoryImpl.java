@@ -362,12 +362,12 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		CriteriaQuery<PolicyLeaveRequest> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveRequest.class);
 		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
 		fetchPolicy(root);
-		root.fetch(PolicyLeaveRequest_.employee, JoinType.INNER).fetch(Employee_.user, JoinType.INNER);
-		Join<PolicyLeaveRequest, Employee> employee = root.join(PolicyLeaveRequest_.employee);
+		Join<PolicyLeaveRequest, Employee> employee = (Join<PolicyLeaveRequest, Employee>) root
+			.fetch(PolicyLeaveRequest_.employee, JoinType.INNER);
+		Join<Employee, User> user = (Join<Employee, User>) employee.fetch(Employee_.user, JoinType.INNER);
 
 		criteriaQuery.select(root)
-			.where(criteriaBuilder.isTrue(employee.join(Employee_.user).get(User_.isActive)),
-					root.get(PolicyLeaveRequest_.status).in(statuses),
+			.where(criteriaBuilder.isTrue(user.get(User_.isActive)), root.get(PolicyLeaveRequest_.status).in(statuses),
 					criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), fromDate));
 
 		return entityManager.createQuery(criteriaQuery).getResultList();

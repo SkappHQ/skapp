@@ -92,6 +92,9 @@ public class PolicyLeaveController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Get the current user's policy leave on a date",
+			description = "Returns the current user's pending and approved policy leave covering the given date "
+					+ "(default: today), in the same shape as /v1/leave/availability, for the attendance screens")
 	@GetMapping("/day-availability")
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> getPolicyLeaveDayAvailability(
