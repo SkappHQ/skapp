@@ -1,7 +1,4 @@
-import {
-  AvatarChipsInput,
-  AvatarChipsInputResult
-} from "@rootcodelabs/skapp-ui";
+import { MultiSelectSearch } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import { FC, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -55,7 +52,6 @@ const ActivityContactsField: FC<Props> = ({
   const isError = Boolean(touched && error);
 
   const translateText = useTranslator("crmModule", "activities", "logActivity");
-  const translateAria = useTranslator("crmAria", "activities", "logActivity");
 
   const { contacts, setContacts } = useCrmStore(
     useShallow((store) => ({
@@ -67,70 +63,51 @@ const ActivityContactsField: FC<Props> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [hasFilledRelatedTo, setHasFilledRelatedTo] = useState(false);
 
-  const { lookupItems } = useContactLookup(searchTerm);
+  const { isLoading, lookupItems } = useContactLookup(searchTerm);
 
-  const toChip = (contact: CrmContactEntity): AvatarChipsInputResult => {
-    const contactName = getContactDisplayName(contact);
-    const [firstName, lastName] = contactName.split(" ");
+  const options = lookupItems
+    .filter((contact) => contact.id && !hiddenContactIds?.includes(contact.id))
+    .map((contact) => ({
+      id: Number(contact.id),
+      label: getContactDisplayName(contact)
+    }));
 
-    return {
-      type: "contact",
-      optionId: Number(contact.id),
-      chipContent: {
-        label: contactName,
-        avatarProps: { id: `${id}-${contact.id}`, firstName, lastName }
-      }
-    };
-  };
+  const selectedOptions = contactIds.map((contactId) => ({
+    id: contactId,
+    label: getContactDisplayName(contacts[contactId])
+  }));
 
-  const selectedChips = contactIds.map((contactId) =>
-    toChip(contacts[contactId])
-  );
-
-  const filteredResults = lookupItems
-    .filter(
+  const handleContactsChange = (nextContactIds: number[]): void => {
+    const addedContact = lookupItems.find(
       (contact) =>
         contact.id &&
-        !contactIds.includes(contact.id) &&
-        !hiddenContactIds?.includes(contact.id)
-    )
-    .map(toChip);
-
-  const handleChipSelect = (chip: AvatarChipsInputResult): void => {
-    const contact = lookupItems.find(
-      (lookupContact) => lookupContact.id === chip.optionId
+        nextContactIds.includes(contact.id) &&
+        !contactIds.includes(contact.id)
     );
-    setSearchTerm("");
 
-    if (!contact?.id) return;
-
-    setContacts(updateContactRecord(contacts, [contact]));
-    setFieldValue(name, [...contactIds, contact.id], true);
-    onContactsChange?.([
-      ...contactIds.map((contactId) => contacts[contactId]),
-      contact
-    ]);
-
-    if (
-      fillsRelatedTo &&
-      !hasFilledRelatedTo &&
-      !values.companyId &&
-      contact.companyId
-    ) {
-      setFieldValue("companyId", contact.companyId);
-      setHasFilledRelatedTo(true);
+    if (addedContact) {
+      setContacts(updateContactRecord(contacts, [addedContact]));
     }
-  };
-
-  const handleChipRemove = (chip: AvatarChipsInputResult): void => {
-    const nextContactIds = contactIds.filter(
-      (selectedId) => selectedId !== chip.optionId
-    );
 
     setFieldValue(name, nextContactIds, true);
     onContactsChange?.(
-      nextContactIds.map((selectedId) => contacts[selectedId])
+      nextContactIds.map((contactId) =>
+        addedContact && addedContact.id === contactId
+          ? addedContact
+          : contacts[contactId]
+      )
     );
+
+    if (
+      fillsRelatedTo &&
+      addedContact &&
+      !hasFilledRelatedTo &&
+      !values.companyId &&
+      addedContact.companyId
+    ) {
+      setFieldValue("companyId", addedContact.companyId);
+      setHasFilledRelatedTo(true);
+    }
   };
 
   return (
@@ -147,22 +124,22 @@ const ActivityContactsField: FC<Props> = ({
         )}
       </label>
 
-      <AvatarChipsInput
-        id={id}
-        filteredResults={filteredResults}
-        selectedChips={selectedChips}
+      <MultiSelectSearch
+        searchInputId={`${id}-input`}
+        options={options}
+        selectedOptions={selectedOptions}
+        onOptionSelect={(nextOptions) =>
+          handleContactsChange(nextOptions.map((option) => Number(option.id)))
+        }
         searchText={searchTerm}
-        onChipSelect={handleChipSelect}
-        onChipRemove={handleChipRemove}
-        onSearchTextChange={setSearchTerm}
-        searchPlaceholder={placeholder}
-        selectedSearchPlaceholder={placeholder}
-        ariaLabelClearButton={translateAria(["clearSearch"])}
-        ariaLabelSearch={label}
-        ariaLabelSearchResults={label}
-        regionAriaLabel={groupAriaLabel}
-        noResultsText={translateText(["emptyStates", "noContacts"])}
-        tabIndex={-1}
+        onSearchChange={setSearchTerm}
+        placeholder={placeholder}
+        ariaLabel={groupAriaLabel}
+        emptyResultsMessage={translateText([
+          "emptyStates",
+          isLoading ? "searching" : "noContacts"
+        ])}
+        showClearAllButton={false}
       />
 
       {isError && (

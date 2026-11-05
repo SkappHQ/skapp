@@ -217,8 +217,7 @@
       "removeOwner": "Remove activity owner",
       "clearContact": "Clear selected contact",
       "clearDeal": "Clear selected deal",
-      "clearRelatedTo": "Clear selected company",
-      "clearSearch": "Clear search"
+      "clearRelatedTo": "Clear selected company"
     },
     "meetingSidePanel": {
       "kebabMenu": "Meeting actions",
