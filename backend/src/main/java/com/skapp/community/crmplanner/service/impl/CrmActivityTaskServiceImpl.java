@@ -4,6 +4,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmActivityTask;
@@ -55,7 +56,6 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 		log.info("createTask: execution started");
 
 		CrmValidations.validateTaskName(requestDto.getName());
-		CrmValidations.validateActivityTaskPriority(requestDto.getPriority());
 		CrmValidations.validateTaskDueAt(requestDto.getDueAt());
 		CrmValidations.validateTaskNotes(requestDto.getNotes());
 
@@ -65,7 +65,8 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 
 		CrmActivityTask task = new CrmActivityTask();
 		task.setName(requestDto.getName());
-		task.setPriority(requestDto.getPriority());
+		task.setPriority(requestDto.getPriority() != null ? requestDto.getPriority()
+				: CrmConstants.DEFAULT_ACTIVITY_TASK_PRIORITY);
 		task.setDueAt(requestDto.getDueAt());
 		task.setNotes(requestDto.getNotes());
 		task.setIsCompleted(false);
