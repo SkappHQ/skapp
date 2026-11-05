@@ -87,7 +87,7 @@ const AddActivityTaskModalContent: FC<Props> = ({ onClose }) => {
 
     if (
       error.response?.data?.results?.[0]?.messageKey ===
-      CrmErrorMessageKeyEnum.TASK_DEAL_COMPANY_MISMATCH
+      CrmErrorMessageKeyEnum.ACTIVITY_TASK_DEAL_COMPANY_MISMATCH
     ) {
       setStatus({
         mismatchedDealId: formik.values.dealId,

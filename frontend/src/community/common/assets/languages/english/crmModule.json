@@ -591,7 +591,8 @@
         },
         "placeholders": {
           "taskName": "Enter the task name",
-          "dueDate": "Select date"
+          "dueDate": "Select date",
+          "notes": "Add message"
         },
         "validations": {
           "name": "Task name is required",

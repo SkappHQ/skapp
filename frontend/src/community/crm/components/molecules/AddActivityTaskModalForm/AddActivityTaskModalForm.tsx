@@ -178,7 +178,12 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
         name="notes"
         value={values.notes}
         label={translateText(["addTask", "modal", "labels", "notes"])}
-        placeholder={translateText(["logActivity", "placeholders", "comments"])}
+        placeholder={translateText([
+          "addTask",
+          "modal",
+          "placeholders",
+          "notes"
+        ])}
         errorMessage={touched.notes ? errors.notes : ""}
         state={touched.notes && errors.notes ? "error" : "default"}
         onChange={handleChange}
