@@ -1,6 +1,7 @@
 package com.skapp.community.leaveplanner.repository;
 
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
+import com.skapp.community.leaveplanner.payload.PolicyLeaveDateWindowDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveUsageDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
@@ -37,5 +38,14 @@ public interface PolicyLeaveRequestRepository {
 	long countEmployeesOnApprovedLeaveOnDate(LocalDate date, List<Long> teamIds, Long supervisorEmployeeId);
 
 	long countEmployeesInScope(List<Long> teamIds, Long supervisorEmployeeId);
+
+	List<PolicyLeaveRequest> findEmployeesRequestsInRange(Collection<Long> employeeIds,
+			Collection<LeaveRequestStatus> statuses, LocalDate startDate, LocalDate endDate);
+
+	List<PolicyLeaveRequest> findTeamRequestsInRange(Long teamId, Collection<LeaveRequestStatus> statuses,
+			LocalDate startDate, LocalDate endDate);
+
+	List<PolicyLeaveDateWindowDto> findUpcomingRequestDateWindows(Collection<LeaveRequestStatus> statuses,
+			LocalDate fromDate);
 
 }

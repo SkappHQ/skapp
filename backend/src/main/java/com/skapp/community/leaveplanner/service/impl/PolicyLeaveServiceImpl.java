@@ -29,6 +29,7 @@ import com.skapp.community.leaveplanner.payload.PolicyLeaveBalanceDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveDateWindowDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveUsageDto;
 import com.skapp.community.leaveplanner.payload.email.LeaveEmailDynamicFields;
+import com.skapp.community.leaveplanner.payload.request.LeaveRequestAvailabilityFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyEmployeesOnLeaveFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveAttachmentDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveAvailabilityRequestDto;
@@ -38,6 +39,7 @@ import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestUpdate
 import com.skapp.community.leaveplanner.payload.request.PolicyPendingLeaveCountFilterDto;
 import com.skapp.community.leaveplanner.payload.response.EmployeePolicyBalanceResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveNotificationNudgeResponseDto;
+import com.skapp.community.leaveplanner.payload.response.LeaveRequestResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyEmployeesOnLeaveResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveAvailabilityResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveRequestResponseDto;
@@ -467,6 +469,28 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 		log.info("getEmployeesOnLeaveToday: execution ended");
 		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getPolicyLeaveDayAvailability(
+			@NonNull LeaveRequestAvailabilityFilterDto leaveRequestAvailabilityFilterDto) {
+		log.info("getPolicyLeaveDayAvailability: execution started");
+		requireLeavePoliciesEnabled();
+
+		LocalDate date = leaveRequestAvailabilityFilterDto.getDate() != null
+				? leaveRequestAvailabilityFilterDto.getDate() : timeZoneService.currentOrganizationDate();
+		Long employeeId = userService.getCurrentUser().getEmployee().getEmployeeId();
+
+		List<LeaveRequestResponseDto> leaveRequests = policyLeaveRequestDao
+			.findEmployeesRequestsInRange(List.of(employeeId), PolicyLeaveConstant.ATTENDANCE_LEAVE_STATUSES, date,
+					date)
+			.stream()
+			.map(leaveMapper::policyLeaveRequestToLeaveRequestResponseDto)
+			.toList();
+
+		log.info("getPolicyLeaveDayAvailability: execution ended");
+		return new ResponseEntityDto(false, leaveRequests);
 	}
 
 	@Override
