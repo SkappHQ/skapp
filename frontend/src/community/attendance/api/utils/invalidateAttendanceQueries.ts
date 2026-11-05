@@ -22,7 +22,7 @@ export const invalidateAttendanceLeaveQueries = (
 ): void => {
   queryClient
     .invalidateQueries({
-      queryKey: getAttendanceQueryKeys.employeeLeaveStatus()
+      queryKey: [getAttendanceQueryKeys.employeeLeaveStatus()]
     })
     .catch((error) => error);
   invalidateAttendanceTimeRecordQueries(queryClient);

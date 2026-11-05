@@ -308,34 +308,32 @@ export const useGetEmployeeLeaveStatus = (
 
   useEffect(() => {
     if (isSuccess && data) {
-      const response = data;
-      if (response?.data.results.length !== 0) {
-        const params = response?.data.results[0];
-        if (
-          isLeaveApplicable(
-            getLeaveDuration(params?.leaveState),
-            currentHour,
-            timeConfigData
-          )
-        ) {
-          setAttendanceLeaveStatus("onLeave", true);
-          setAttendanceLeaveStatus(
-            "duration",
-            getLeaveDuration(params?.leaveState)
-          );
-          setAttendanceLeaveStatus(
-            "date",
-            formatDateWithOrdinalIndicator(new Date(params?.startDate))
-          );
-          setAttendanceLeaveStatus("leaveName", params?.leaveType?.name);
-          setAttendanceLeaveStatus("leaveIcon", params?.leaveType?.emojiCode);
-        } else {
-          setAttendanceLeaveStatus("onLeave", false);
-          setAttendanceLeaveStatus("duration", "");
-          setAttendanceLeaveStatus("date", "");
-          setAttendanceLeaveStatus("leaveName", "");
-          setAttendanceLeaveStatus("leaveIcon", "");
-        }
+      const params = data?.data.results[0];
+      if (
+        params &&
+        isLeaveApplicable(
+          getLeaveDuration(params?.leaveState),
+          currentHour,
+          timeConfigData
+        )
+      ) {
+        setAttendanceLeaveStatus("onLeave", true);
+        setAttendanceLeaveStatus(
+          "duration",
+          getLeaveDuration(params?.leaveState)
+        );
+        setAttendanceLeaveStatus(
+          "date",
+          formatDateWithOrdinalIndicator(new Date(params?.startDate))
+        );
+        setAttendanceLeaveStatus("leaveName", params?.leaveType?.name);
+        setAttendanceLeaveStatus("leaveIcon", params?.leaveType?.emojiCode);
+      } else {
+        setAttendanceLeaveStatus("onLeave", false);
+        setAttendanceLeaveStatus("duration", "");
+        setAttendanceLeaveStatus("date", "");
+        setAttendanceLeaveStatus("leaveName", "");
+        setAttendanceLeaveStatus("leaveIcon", "");
       }
     }
   }, [isSuccess, data, setAttendanceLeaveStatus]);

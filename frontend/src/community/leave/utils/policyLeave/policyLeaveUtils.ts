@@ -164,6 +164,15 @@ export const toLeaveStatus = (
   }
 };
 
+export const uniqueByLeaveRequestId = (
+  requests: PolicyLeaveRequestType[]
+): PolicyLeaveRequestType[] =>
+  Array.from(
+    new Map(
+      requests.map((request) => [request.leaveRequestId, request])
+    ).values()
+  );
+
 export const toMyLeaveRequestPayloads = (
   requests: PolicyLeaveRequestType[]
 ): MyLeaveRequestPayloadType[] =>

@@ -56,7 +56,10 @@ import { useGetMyPolicyLeaveRequests } from "~community/leave/api/PolicyLeaveApi
 import { MY_LEAVE_REQUESTS_PER_PAGE } from "~community/leave/constants/stringConstants";
 import { LeaveStatusEnums } from "~community/leave/enums/MyRequestEnums";
 import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
-import { toMyLeaveRequestPayloads } from "~community/leave/utils/policyLeave/policyLeaveUtils";
+import {
+  toMyLeaveRequestPayloads,
+  uniqueByLeaveRequestId
+} from "~community/leave/utils/policyLeave/policyLeaveUtils";
 import { useGetAllHolidaysInfinite } from "~community/people/api/HolidayApi";
 
 import styles from "./styles";
@@ -95,7 +98,13 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
     !isLeavePolicyConfigLoading && !isLeavePoliciesEnabled
   );
 
-  const { data: policyLeaveRequests } = useGetMyPolicyLeaveRequests(
+  const { data: previousCyclePolicyLeaveRequests } =
+    useGetMyPolicyLeaveRequests(
+      (currentYear - 1).toString(),
+      isLeavePoliciesEnabled
+    );
+
+  const { data: currentCyclePolicyLeaveRequests } = useGetMyPolicyLeaveRequests(
     currentYear.toString(),
     isLeavePoliciesEnabled
   );
@@ -103,9 +112,19 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
   const myLeaveRequests = useMemo(
     () =>
       isLeavePoliciesEnabled
-        ? toMyLeaveRequestPayloads(policyLeaveRequests ?? [])
+        ? toMyLeaveRequestPayloads(
+            uniqueByLeaveRequestId([
+              ...(previousCyclePolicyLeaveRequests ?? []),
+              ...(currentCyclePolicyLeaveRequests ?? [])
+            ])
+          )
         : (leaveRequests?.items ?? []),
-    [isLeavePoliciesEnabled, policyLeaveRequests, leaveRequests]
+    [
+      isLeavePoliciesEnabled,
+      previousCyclePolicyLeaveRequests,
+      currentCyclePolicyLeaveRequests,
+      leaveRequests
+    ]
   );
 
   const {
