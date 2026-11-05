@@ -8,6 +8,7 @@ import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestUpdateDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyPendingLeaveCountFilterDto;
+import com.skapp.community.leaveplanner.payload.request.PolicyResourceAvailabilityFilterDto;
 import com.skapp.community.leaveplanner.service.PolicyLeaveService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -97,6 +98,14 @@ public class PolicyLeaveController {
 			@Valid LeaveRequestAvailabilityFilterDto leaveRequestAvailabilityFilterDto) {
 		ResponseEntityDto response = policyLeaveService
 			.getPolicyLeaveDayAvailability(leaveRequestAvailabilityFilterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@GetMapping("/resource-availability")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE', 'ROLE_PM_GUEST_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> getResourceAvailability(
+			@Valid PolicyResourceAvailabilityFilterDto policyResourceAvailabilityFilterDto) {
+		ResponseEntityDto response = policyLeaveService.getResourceAvailability(policyResourceAvailabilityFilterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

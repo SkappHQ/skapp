@@ -34,6 +34,7 @@ import com.skapp.community.leaveplanner.payload.response.LeaveRequestWithEmploye
 import com.skapp.community.leaveplanner.payload.response.LeaveTypeBasicDetailsResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveTypeResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveRequestResponseDto;
+import com.skapp.community.leaveplanner.payload.response.PolicyResourceAvailabilityLeaveRequestResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeDetailResponseDto;
 import com.skapp.community.leaveplanner.payload.response.SummarizedLeaveEntitlementBalanceDto;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -205,5 +206,11 @@ public interface LeaveMapper {
 
 	ClockInSummaryLeaveRequestResponseDto leaveRequestResponseDtoToClockInSummaryLeaveRequestResponseDto(
 			LeaveRequestResponseDto leaveRequestResponseDto);
+
+	@Mapping(target = "leaveRequestId", source = "id")
+	@Mapping(target = "policyName", source = "policy.name")
+	@Mapping(target = "leaveType", source = "policy.leaveType")
+	PolicyResourceAvailabilityLeaveRequestResponseDto policyLeaveRequestToPolicyResourceAvailabilityLeaveRequestResponseDto(
+			PolicyLeaveRequest policyLeaveRequest);
 
 }

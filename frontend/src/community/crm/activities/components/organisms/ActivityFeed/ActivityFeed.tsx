@@ -1,4 +1,8 @@
-import { EmptyDataView, SearchIcon } from "@rootcodelabs/skapp-ui";
+import {
+  ButtonV2Props,
+  EmptyDataView,
+  SearchIcon
+} from "@rootcodelabs/skapp-ui";
 import { FC, useMemo } from "react";
 
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
@@ -28,6 +32,8 @@ export interface ActivityFeedProps {
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   timeZone?: string;
+  taskCompletions: Record<number, boolean>;
+  emptyStateButton?: ButtonV2Props | null;
   onLoadMore: () => void;
   onRowClick: (row: ActivityRow) => void;
   onToggleComplete: (row: ActivityRow, isCompleted: boolean) => void;
@@ -43,6 +49,8 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
   hasNextPage,
   isFetchingNextPage,
   timeZone,
+  taskCompletions,
+  emptyStateButton,
   onLoadMore,
   onRowClick,
   onToggleComplete
@@ -118,6 +126,7 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
             ...emptyStateKeys,
             "description"
           ])}
+          {...(emptyStateButton ? { button: emptyStateButton } : {})}
           className={{ wrapper: "bg-secondary-background rounded-lg" }}
         />
       );
@@ -133,6 +142,7 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
             rows={group.rows}
             timeZone={timeZone}
             isShowCheckbox={isShowCheckbox}
+            taskCompletions={taskCompletions}
             onRowClick={onRowClick}
             onToggleComplete={onToggleComplete}
           />
