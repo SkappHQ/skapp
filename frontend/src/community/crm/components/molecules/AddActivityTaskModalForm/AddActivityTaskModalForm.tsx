@@ -30,15 +30,7 @@ interface Props {
 }
 
 const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
-  const {
-    values,
-    errors,
-    status,
-    touched,
-    handleChange,
-    handleBlur,
-    setFieldValue
-  } = formik;
+  const { values, status, handleChange, handleBlur, setFieldValue } = formik;
 
   const translateText = useTranslator("crmModule", "activities");
   const translateAria = useTranslator(
@@ -76,6 +68,14 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
     ? instantToPickedDay(values.dueAt, displayZone)
     : null;
 
+  const getFieldError = (field: "name" | "priority" | "dueAt" | "notes") =>
+    formik.touched[field] ? formik.errors[field] : "";
+
+  const nameError = getFieldError("name");
+  const priorityError = getFieldError("priority");
+  const dueAtError = getFieldError("dueAt");
+  const notesError = getFieldError("notes");
+
   const handleDueDateSelect = (date?: Date): void => {
     setFieldValue(
       "dueAt",
@@ -97,8 +97,8 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
           "placeholders",
           "taskName"
         ])}
-        errorMessage={touched.name ? errors.name : ""}
-        state={touched.name && errors.name ? "error" : "default"}
+        errorMessage={nameError}
+        state={nameError ? "error" : "default"}
         onChange={handleChange}
         onBlur={handleBlur}
         aria-label={translateAria(["taskName"])}
@@ -113,10 +113,8 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
         value={values.priority ?? ""}
         onChange={(value) => setFieldValue("priority", value, true)}
         label={translateText(["addTask", "modal", "labels", "priority"])}
-        variant={
-          touched.priority && errors.priority ? "primary-error" : "primary"
-        }
-        errorMessage={touched.priority ? errors.priority : ""}
+        variant={priorityError ? "primary-error" : "primary"}
+        errorMessage={priorityError}
         className="rounded-lg"
         ariaLabel={translateAria(["priority"])}
         width="100%"
@@ -142,8 +140,8 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
                   "placeholders",
                   "dueDate"
                 ])}
-                errorMessage={touched.dueAt ? errors.dueAt : ""}
-                state={touched.dueAt && errors.dueAt ? "error" : "default"}
+                errorMessage={dueAtError}
+                state={dueAtError ? "error" : "default"}
                 aria-label={translateAria(["dueDate"])}
                 rightIcon={<CalendarIcon />}
                 fullWidth
@@ -176,8 +174,8 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
           "placeholders",
           "notes"
         ])}
-        errorMessage={touched.notes ? errors.notes : ""}
-        state={touched.notes && errors.notes ? "error" : "default"}
+        errorMessage={notesError}
+        state={notesError ? "error" : "default"}
         onChange={handleChange}
         onBlur={handleBlur}
         rows={2}
