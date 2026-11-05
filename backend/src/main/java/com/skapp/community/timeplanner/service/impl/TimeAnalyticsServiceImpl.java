@@ -457,7 +457,7 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		}
 
 		return employeeIds.isEmpty() ? Map.of()
-				: policyAttendanceLeaveService.getEmployeesLeaveRequests(employeeIds, startDate, endDate);
+				: policyAttendanceLeaveService.getEmployeesLeaveRequests(employeeIds, startDate, endDate, false);
 	}
 
 	private boolean isLateArrival(TimeRecord timeRecord, ZoneId organizationZone,
@@ -546,7 +546,8 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 
 	private long getTotalEmployeeCount(List<Long> teamIds, LocalDate date) {
 		User currentUser = userService.getCurrentUser();
-		return employeeTeamDao.countAvailableEmployeesByTeamIdsAndDate(teamIds, date, currentUser.getUserId());
+		return employeeTeamDao.countAvailableEmployeesByTeamIdsAndDate(teamIds, date, currentUser.getUserId(),
+				policyAttendanceLeaveService.isLeavePoliciesEnabled());
 	}
 
 	private Map<String, Double> calculateDailyAverageHoursForTeam(Map<LocalDate, Double> dailyWorkedHours,

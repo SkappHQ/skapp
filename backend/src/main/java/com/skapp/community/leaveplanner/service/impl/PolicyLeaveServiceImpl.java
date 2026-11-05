@@ -484,7 +484,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 		List<LeaveRequestResponseDto> leaveRequests = policyLeaveRequestDao
 			.findEmployeesRequestsInRange(List.of(employeeId), PolicyLeaveConstant.ATTENDANCE_LEAVE_STATUSES, date,
-					date)
+					date, false)
 			.stream()
 			.map(leaveMapper::policyLeaveRequestToLeaveRequestResponseDto)
 			.toList();

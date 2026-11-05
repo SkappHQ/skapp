@@ -1,6 +1,7 @@
 package com.skapp.community.leaveplanner.service;
 
 import com.skapp.community.leaveplanner.payload.response.LeaveRequestResponseDto;
+import com.skapp.community.timeplanner.model.TimeConfig;
 import com.skapp.community.timeplanner.payload.response.ClockInSummaryLeaveRequestResponseDto;
 
 import java.time.DayOfWeek;
@@ -14,10 +15,11 @@ public interface PolicyAttendanceLeaveService {
 
 	boolean isLeavePoliciesEnabled();
 
-	List<LeaveRequestResponseDto> getEmployeeLeaveRequests(Long employeeId, LocalDate startDate, LocalDate endDate);
+	List<LeaveRequestResponseDto> getEmployeeLeaveRequests(Long employeeId, LocalDate startDate, LocalDate endDate,
+			boolean activeUsersOnly);
 
 	Map<Long, List<LeaveRequestResponseDto>> getEmployeesLeaveRequests(Collection<Long> employeeIds,
-			LocalDate startDate, LocalDate endDate);
+			LocalDate startDate, LocalDate endDate, boolean activeUsersOnly);
 
 	Map<Long, List<LeaveRequestResponseDto>> getTeamLeaveRequests(Long teamId, LocalDate startDate, LocalDate endDate);
 
@@ -31,5 +33,7 @@ public interface PolicyAttendanceLeaveService {
 			Map<Long, List<LeaveRequestResponseDto>> leaveRequestsByEmployee, Long employeeId, LocalDate date);
 
 	Set<DayOfWeek> getDaysWithUpcomingLeaveRequests();
+
+	void voidLeaveRequestsOnRemovedDays(List<TimeConfig> removingConfigs);
 
 }

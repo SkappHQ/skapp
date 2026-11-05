@@ -40,12 +40,14 @@ public interface PolicyLeaveRequestRepository {
 	long countEmployeesInScope(List<Long> teamIds, Long supervisorEmployeeId);
 
 	List<PolicyLeaveRequest> findEmployeesRequestsInRange(Collection<Long> employeeIds,
-			Collection<LeaveRequestStatus> statuses, LocalDate startDate, LocalDate endDate);
+			Collection<LeaveRequestStatus> statuses, LocalDate startDate, LocalDate endDate, boolean activeUsersOnly);
 
 	List<PolicyLeaveRequest> findTeamRequestsInRange(Long teamId, Collection<LeaveRequestStatus> statuses,
 			LocalDate startDate, LocalDate endDate);
 
 	List<PolicyLeaveDateWindowDto> findUpcomingRequestDateWindows(Collection<LeaveRequestStatus> statuses,
 			LocalDate fromDate);
+
+	List<PolicyLeaveRequest> findUpcomingRequests(Collection<LeaveRequestStatus> statuses, LocalDate fromDate);
 
 }

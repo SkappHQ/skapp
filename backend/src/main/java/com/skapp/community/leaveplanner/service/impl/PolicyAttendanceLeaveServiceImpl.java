@@ -1,6 +1,11 @@
 package com.skapp.community.leaveplanner.service.impl;
 
+import com.skapp.community.common.service.EmailService;
+import com.skapp.community.common.service.NotificationService;
 import com.skapp.community.common.service.TimeZoneService;
+import com.skapp.community.common.type.EmailBodyTemplates;
+import com.skapp.community.common.type.NotificationCategory;
+import com.skapp.community.common.type.NotificationType;
 import com.skapp.community.leaveplanner.constant.PolicyLeaveConstant;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
@@ -10,6 +15,12 @@ import com.skapp.community.leaveplanner.repository.PolicyLeaveRequestDao;
 import com.skapp.community.leaveplanner.service.LeavePolicyService;
 import com.skapp.community.leaveplanner.service.PolicyAttendanceLeaveService;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
+import com.skapp.community.peopleplanner.model.Employee;
+import com.skapp.community.peopleplanner.model.EmployeeManager;
+import com.skapp.community.peopleplanner.repository.EmployeeManagerDao;
+import com.skapp.community.peopleplanner.util.PeopleUtil;
+import com.skapp.community.timeplanner.model.TimeConfig;
+import com.skapp.community.timeplanner.payload.email.AttendanceEmailDynamicFields;
 import com.skapp.community.timeplanner.payload.response.ClockInSummaryLeaveRequestResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +49,12 @@ public class PolicyAttendanceLeaveServiceImpl implements PolicyAttendanceLeaveSe
 
 	private final TimeZoneService timeZoneService;
 
+	private final EmployeeManagerDao employeeManagerDao;
+
+	private final EmailService emailService;
+
+	private final NotificationService notificationService;
+
 	@Override
 	public boolean isLeavePoliciesEnabled() {
 		return leavePolicyService.isLeavePoliciesEnabled();
@@ -46,12 +63,12 @@ public class PolicyAttendanceLeaveServiceImpl implements PolicyAttendanceLeaveSe
 	@Override
 	@Transactional(readOnly = true)
 	public List<LeaveRequestResponseDto> getEmployeeLeaveRequests(Long employeeId, LocalDate startDate,
-			LocalDate endDate) {
+			LocalDate endDate, boolean activeUsersOnly) {
 		log.info("getEmployeeLeaveRequests: execution started");
 
 		List<LeaveRequestResponseDto> leaveRequests = policyLeaveRequestDao
 			.findEmployeesRequestsInRange(List.of(employeeId), PolicyLeaveConstant.ATTENDANCE_LEAVE_STATUSES, startDate,
-					endDate)
+					endDate, activeUsersOnly)
 			.stream()
 			.map(leaveMapper::policyLeaveRequestToLeaveRequestResponseDto)
 			.toList();
@@ -63,12 +80,12 @@ public class PolicyAttendanceLeaveServiceImpl implements PolicyAttendanceLeaveSe
 	@Override
 	@Transactional(readOnly = true)
 	public Map<Long, List<LeaveRequestResponseDto>> getEmployeesLeaveRequests(Collection<Long> employeeIds,
-			LocalDate startDate, LocalDate endDate) {
+			LocalDate startDate, LocalDate endDate, boolean activeUsersOnly) {
 		log.info("getEmployeesLeaveRequests: execution started");
 
 		Map<Long, List<LeaveRequestResponseDto>> leaveRequestsByEmployee = groupByEmployee(
 				policyLeaveRequestDao.findEmployeesRequestsInRange(employeeIds,
-						PolicyLeaveConstant.ATTENDANCE_LEAVE_STATUSES, startDate, endDate));
+						PolicyLeaveConstant.ATTENDANCE_LEAVE_STATUSES, startDate, endDate, activeUsersOnly));
 
 		log.info("getEmployeesLeaveRequests: execution ended");
 		return leaveRequestsByEmployee;
@@ -124,11 +141,7 @@ public class PolicyAttendanceLeaveServiceImpl implements PolicyAttendanceLeaveSe
 
 		for (PolicyLeaveDateWindowDto window : policyLeaveRequestDao
 			.findUpcomingRequestDateWindows(PolicyLeaveConstant.ATTENDANCE_LEAVE_STATUSES, today)) {
-			LocalDate firstDate = window.getStartDate().isBefore(today) ? today : window.getStartDate();
-			LocalDate lastDate = window.getEndDate().isAfter(firstDate.plusDays(6)) ? firstDate.plusDays(6)
-					: window.getEndDate();
-
-			firstDate.datesUntil(lastDate.plusDays(1)).map(LocalDate::getDayOfWeek).forEach(days::add);
+			days.addAll(getUpcomingDays(window.getStartDate(), window.getEndDate(), today));
 
 			if (days.size() == DayOfWeek.values().length) {
 				break;
@@ -136,6 +149,157 @@ public class PolicyAttendanceLeaveServiceImpl implements PolicyAttendanceLeaveSe
 		}
 
 		log.info("getDaysWithUpcomingLeaveRequests: execution ended");
+		return days;
+	}
+
+	@Override
+	@Transactional
+	public void voidLeaveRequestsOnRemovedDays(List<TimeConfig> removingConfigs) {
+		log.info("voidLeaveRequestsOnRemovedDays: execution started");
+
+		Set<DayOfWeek> removingDays = removingConfigs.stream()
+			.map(TimeConfig::getDay)
+			.collect(Collectors.toCollection(() -> EnumSet.noneOf(DayOfWeek.class)));
+		if (removingDays.isEmpty()) {
+			return;
+		}
+
+		LocalDate today = timeZoneService.currentOrganizationDate();
+		List<PolicyLeaveRequest> affectedRequests = policyLeaveRequestDao
+			.findUpcomingRequests(PolicyLeaveConstant.ATTENDANCE_LEAVE_STATUSES, today)
+			.stream()
+			.filter(request -> getUpcomingDays(request.getStartDate(), request.getEndDate(), today).stream()
+				.anyMatch(removingDays::contains))
+			.toList();
+		if (affectedRequests.isEmpty()) {
+			return;
+		}
+
+		affectedRequests.forEach(request -> {
+			LeaveRequestStatus originalStatus = request.getStatus();
+			request.setStatus(originalStatus == LeaveRequestStatus.PENDING ? LeaveRequestStatus.CANCELLED
+					: LeaveRequestStatus.REVOKED);
+
+			List<EmployeeManager> managers = PeopleUtil
+				.filterManagersByAttendanceRoles(employeeManagerDao.findByEmployee(request.getEmployee()));
+			if (originalStatus == LeaveRequestStatus.PENDING) {
+				sendLeaveCancelledOnNonWorkingDay(request, managers, removingConfigs);
+			}
+			else {
+				sendLeaveRevokedOnNonWorkingDay(request, managers);
+			}
+		});
+		policyLeaveRequestDao.saveAll(affectedRequests);
+
+		log.info("voidLeaveRequestsOnRemovedDays: execution ended with {} request(s)", affectedRequests.size());
+	}
+
+	private void sendLeaveCancelledOnNonWorkingDay(PolicyLeaveRequest request, List<EmployeeManager> managers,
+			List<TimeConfig> removingConfigs) {
+		boolean isSingleDay = request.getStartDate().equals(request.getEndDate());
+		EmailBodyTemplates employeeTemplate = isSingleDay
+				? EmailBodyTemplates.ATTENDANCE_MODULE_NON_WORKING_DAY_SINGLE_DAY_PENDING_LEAVE_REQUEST_CANCELED_EMPLOYEE
+				: EmailBodyTemplates.ATTENDANCE_MODULE_NON_WORKING_DAY_MULTI_DAY_PENDING_LEAVE_REQUEST_CANCELED_EMPLOYEE;
+		EmailBodyTemplates managerTemplate = isSingleDay
+				? EmailBodyTemplates.ATTENDANCE_MODULE_NON_WORKING_DAY_SINGLE_DAY_PENDING_LEAVE_REQUEST_CANCELED_MANAGER
+				: EmailBodyTemplates.ATTENDANCE_MODULE_NON_WORKING_DAY_MULTI_DAY_PENDING_LEAVE_REQUEST_CANCELED_MANAGER;
+		String nonWorkingDays = removingConfigs.stream()
+			.map(config -> config.getDay().toString())
+			.collect(Collectors.joining(", "));
+
+		AttendanceEmailDynamicFields employeeEmailFields = buildFields(request, true, false, !isSingleDay);
+		employeeEmailFields.setEmployeeOrManagerName(getFullName(request.getEmployee()));
+		if (!isSingleDay) {
+			employeeEmailFields.setNonWorkingDates(nonWorkingDays);
+		}
+		emailService.sendEmail(employeeTemplate, employeeEmailFields, request.getEmployee().getUser().getEmail());
+
+		sendEmployeeNotification(request, employeeTemplate, buildFields(request, true, true, !isSingleDay));
+
+		AttendanceEmailDynamicFields managerEmailFields = buildFields(request, true, false, !isSingleDay);
+		managerEmailFields.setEmployeeName(getFullName(request.getEmployee()));
+		if (!isSingleDay) {
+			managerEmailFields.setNonWorkingDates(nonWorkingDays);
+		}
+		sendManagerEmails(managers, managerTemplate, managerEmailFields);
+
+		AttendanceEmailDynamicFields managerNotificationFields = buildFields(request, isSingleDay, isSingleDay,
+				!isSingleDay);
+		managerNotificationFields.setEmployeeName(getFullName(request.getEmployee()));
+		sendManagerNotifications(request, managers, managerTemplate, managerNotificationFields);
+	}
+
+	private void sendLeaveRevokedOnNonWorkingDay(PolicyLeaveRequest request, List<EmployeeManager> managers) {
+		boolean isSingleDay = request.getStartDate().equals(request.getEndDate());
+		EmailBodyTemplates employeeTemplate = isSingleDay
+				? EmailBodyTemplates.ATTENDANCE_MODULE_NON_WORKING_DAY_SINGLE_DAY_APPROVED_LEAVE_REQUEST_REVOKED_EMPLOYEE
+				: EmailBodyTemplates.ATTENDANCE_MODULE_NON_WORKING_DAY_MULTI_DAY_APPROVED_LEAVE_REQUEST_REVOKED_EMPLOYEE;
+		EmailBodyTemplates managerTemplate = isSingleDay
+				? EmailBodyTemplates.ATTENDANCE_MODULE_NON_WORKING_DAY_SINGLE_DAY_APPROVED_LEAVE_REQUEST_REVOKED_MANAGER
+				: EmailBodyTemplates.ATTENDANCE_MODULE_NON_WORKING_DAY_MULTI_DAY_APPROVED_LEAVE_REQUEST_REVOKED_MANAGER;
+
+		AttendanceEmailDynamicFields employeeEmailFields = buildFields(request, true, isSingleDay, !isSingleDay);
+		employeeEmailFields.setEmployeeOrManagerName(getFullName(request.getEmployee()));
+		emailService.sendEmail(employeeTemplate, employeeEmailFields, request.getEmployee().getUser().getEmail());
+
+		sendEmployeeNotification(request, employeeTemplate, buildFields(request, true, true, !isSingleDay));
+
+		AttendanceEmailDynamicFields managerEmailFields = buildFields(request, isSingleDay, false, !isSingleDay);
+		managerEmailFields.setEmployeeName(getFullName(request.getEmployee()));
+		sendManagerEmails(managers, managerTemplate, managerEmailFields);
+
+		AttendanceEmailDynamicFields managerNotificationFields = buildFields(request, true, true, !isSingleDay);
+		managerNotificationFields.setEmployeeName(getFullName(request.getEmployee()));
+		sendManagerNotifications(request, managers, managerTemplate, managerNotificationFields);
+	}
+
+	private AttendanceEmailDynamicFields buildFields(PolicyLeaveRequest request, boolean withLeaveType,
+			boolean withLeaveDuration, boolean withEndDate) {
+		AttendanceEmailDynamicFields fields = new AttendanceEmailDynamicFields();
+		fields.setLeaveStartDate(request.getStartDate().toString());
+		if (withLeaveType) {
+			fields.setLeaveType(request.getPolicy().getLeaveType().getName());
+		}
+		if (withLeaveDuration) {
+			fields.setLeaveDuration(String.valueOf(request.getLeaveState()));
+		}
+		if (withEndDate) {
+			fields.setLeaveEndDate(request.getEndDate().toString());
+		}
+		return fields;
+	}
+
+	private void sendEmployeeNotification(PolicyLeaveRequest request, EmailBodyTemplates template,
+			AttendanceEmailDynamicFields fields) {
+		notificationService.createNotification(request.getEmployee(), request.getId().toString(),
+				NotificationType.TIME_ENTRY, template, fields, NotificationCategory.ATTENDANCE);
+	}
+
+	private void sendManagerEmails(List<EmployeeManager> managers, EmailBodyTemplates template,
+			AttendanceEmailDynamicFields fields) {
+		managers.forEach(manager -> {
+			fields.setEmployeeOrManagerName(getFullName(manager.getManager()));
+			emailService.sendEmail(template, fields, manager.getManager().getUser().getEmail());
+		});
+	}
+
+	private void sendManagerNotifications(PolicyLeaveRequest request, List<EmployeeManager> managers,
+			EmailBodyTemplates template, AttendanceEmailDynamicFields fields) {
+		managers
+			.forEach(manager -> notificationService.createNotification(manager.getManager(), request.getId().toString(),
+					NotificationType.TIME_ENTRY, template, fields, NotificationCategory.ATTENDANCE));
+	}
+
+	private String getFullName(Employee employee) {
+		return employee.getFirstName() + " " + employee.getLastName();
+	}
+
+	private Set<DayOfWeek> getUpcomingDays(LocalDate startDate, LocalDate endDate, LocalDate today) {
+		LocalDate firstDate = startDate.isBefore(today) ? today : startDate;
+		LocalDate lastDate = endDate.isAfter(firstDate.plusDays(6)) ? firstDate.plusDays(6) : endDate;
+
+		Set<DayOfWeek> days = EnumSet.noneOf(DayOfWeek.class);
+		firstDate.datesUntil(lastDate.plusDays(1)).map(LocalDate::getDayOfWeek).forEach(days::add);
 		return days;
 	}
 

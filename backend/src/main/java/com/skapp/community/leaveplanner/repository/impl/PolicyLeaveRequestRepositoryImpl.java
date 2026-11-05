@@ -255,7 +255,7 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 
 	@Override
 	public List<PolicyLeaveRequest> findEmployeesRequestsInRange(Collection<Long> employeeIds,
-			Collection<LeaveRequestStatus> statuses, LocalDate startDate, LocalDate endDate) {
+			Collection<LeaveRequestStatus> statuses, LocalDate startDate, LocalDate endDate, boolean activeUsersOnly) {
 		if (CollectionUtils.isEmpty(employeeIds)) {
 			return List.of();
 		}
@@ -268,6 +268,11 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 
 		List<Predicate> predicates = buildDateRangePredicates(criteriaBuilder, root, statuses, startDate, endDate);
 		predicates.add(root.get(PolicyLeaveRequest_.employee).get(Employee_.employeeId).in(employeeIds));
+
+		if (activeUsersOnly) {
+			predicates.add(criteriaBuilder
+				.isTrue(root.join(PolicyLeaveRequest_.employee).join(Employee_.user).get(User_.isActive)));
+		}
 
 		criteriaQuery.select(root).where(predicates.toArray(new Predicate[0]));
 
@@ -311,6 +316,24 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		criteriaQuery
 			.select(criteriaBuilder.construct(PolicyLeaveDateWindowDto.class, root.get(PolicyLeaveRequest_.startDate),
 					root.get(PolicyLeaveRequest_.endDate)))
+			.where(criteriaBuilder.isTrue(employee.join(Employee_.user).get(User_.isActive)),
+					root.get(PolicyLeaveRequest_.status).in(statuses),
+					criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), fromDate));
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
+	@Override
+	public List<PolicyLeaveRequest> findUpcomingRequests(Collection<LeaveRequestStatus> statuses, LocalDate fromDate) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<PolicyLeaveRequest> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveRequest.class);
+		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
+		fetchPolicy(root);
+		root.fetch(PolicyLeaveRequest_.employee, JoinType.INNER).fetch(Employee_.user, JoinType.INNER);
+		Join<PolicyLeaveRequest, Employee> employee = root.join(PolicyLeaveRequest_.employee);
+
+		criteriaQuery.select(root)
 			.where(criteriaBuilder.isTrue(employee.join(Employee_.user).get(User_.isActive)),
 					root.get(PolicyLeaveRequest_.status).in(statuses),
 					criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), fromDate));
