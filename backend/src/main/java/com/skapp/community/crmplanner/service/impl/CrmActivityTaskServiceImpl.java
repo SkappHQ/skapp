@@ -12,7 +12,7 @@ import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.payload.request.CrmActivityTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmActivityTaskEditRequestDto;
-import com.skapp.community.crmplanner.payload.response.CrmActivityTaskDetailResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmActivityTaskResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityTaskDao;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
@@ -114,17 +114,20 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_VIEW_DENIED);
 		}
 
-		CrmActivityTaskDetailResponseDto response = crmMapper.crmActivityTaskToCrmActivityTaskDetailResponseDto(task);
+		CrmActivityTaskResponseDto response = crmMapper.crmActivityTaskToCrmActivityTaskResponseDto(task);
 		if (task.getContact() != null && Boolean.TRUE.equals(task.getContact().getIsDeleted())) {
+			response.setContactId(null);
 			response.setContact(null);
 		}
 		if (task.getDeal() != null && Boolean.TRUE.equals(task.getDeal().getIsDeleted())) {
+			response.setDealId(null);
 			response.setDeal(null);
 		}
 		else if (task.getDeal() != null) {
 			response.setDeal(CrmUtil.toDealResponseDto(crmMapper, task.getDeal()));
 		}
 		if (task.getCompany() != null && Boolean.TRUE.equals(task.getCompany().getIsDeleted())) {
+			response.setCompanyId(null);
 			response.setCompany(null);
 		}
 
