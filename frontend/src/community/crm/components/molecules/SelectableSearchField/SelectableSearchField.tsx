@@ -25,6 +25,7 @@ interface Props {
   required?: boolean;
   errorMessage?: string;
   positionStrategy?: NonNullable<SearchableDropdownProps["positionStrategy"]>;
+  isFlip?: boolean;
 }
 
 const SelectableSearchField: FC<Props> = ({
@@ -45,7 +46,8 @@ const SelectableSearchField: FC<Props> = ({
   isOpenOnFocus = true,
   required = false,
   errorMessage,
-  positionStrategy = "absolute"
+  positionStrategy = "absolute",
+  isFlip = true
 }) => {
   if (selectedValue) {
     return (
@@ -88,6 +90,7 @@ const SelectableSearchField: FC<Props> = ({
       state={errorMessage ? "error" : "default"}
       errorMessage={errorMessage}
       positionStrategy={positionStrategy}
+      isFlip={isFlip}
     />
   );
 };

@@ -30,11 +30,11 @@ import {
 } from "~community/common/utils/dateTimeUtils";
 import { NINETY_PERCENT } from "~community/common/utils/getConstants";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
-import { useGetResourceAvailability } from "~community/leave/api/MyRequestApi";
 import {
   useApplyPolicyLeave,
   useCheckPolicyLeaveAvailability,
-  useGetMyPolicyLeaveRequests
+  useGetMyPolicyLeaveRequests,
+  useGetPolicyResourceAvailability
 } from "~community/leave/api/PolicyLeaveApi";
 import AttachmentSummary from "~community/leave/components/molecules/AttachmentSummary/AttachmentSummary";
 import LeaveSummary from "~community/leave/components/molecules/LeaveSummary/LeaveSummary";
@@ -66,7 +66,8 @@ import {
   hasPolicyLeaveFormErrors,
   mapApplyErrorKeyToToastType,
   selectHasUnsavedChanges,
-  toMyLeaveRequestPayloads
+  toMyLeaveRequestPayloads,
+  toResourceAvailabilityPayloads
 } from "~community/leave/utils/policyLeave/policyLeaveUtils";
 import { useGetAllHolidays } from "~community/people/api/HolidayApi";
 import {
@@ -254,11 +255,24 @@ const ApplyPolicyLeaveModal = () => {
     }
   }, [myTeams, selectedTeam]);
 
-  const { data: resourceAvailability } = useGetResourceAvailability({
-    teams: selectedTeam !== null ? (selectedTeam.teamId as number) : null,
-    startDate: startAndEndDates.start,
-    endDate: startAndEndDates.end
-  });
+  const { data: policyResourceAvailability } = useGetPolicyResourceAvailability(
+    {
+      teamIds: selectedTeam !== null ? (selectedTeam.teamId as number) : null,
+      startDate: startAndEndDates.start,
+      endDate: startAndEndDates.end
+    }
+  );
+
+  const resourceAvailability = useMemo(
+    () =>
+      policyResourceAvailability
+        ? toResourceAvailabilityPayloads(
+            policyResourceAvailability,
+            workingDays
+          )
+        : undefined,
+    [policyResourceAvailability, workingDays]
+  );
 
   const disabledDurationSelectorOptions = useMemo(
     () =>

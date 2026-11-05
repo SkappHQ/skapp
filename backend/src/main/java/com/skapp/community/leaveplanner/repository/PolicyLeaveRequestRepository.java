@@ -38,4 +38,9 @@ public interface PolicyLeaveRequestRepository {
 
 	long countEmployeesInScope(List<Long> teamIds, Long supervisorEmployeeId);
 
+	long countEmployeesInScope(List<Long> teamIds, Long supervisorEmployeeId, boolean includeOwnTeams);
+
+	List<PolicyLeaveRequest> findApprovedRequestsInRange(LocalDate startDate, LocalDate endDate, List<Long> teamIds,
+			Long supervisorEmployeeId);
+
 }
