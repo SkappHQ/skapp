@@ -169,6 +169,11 @@ export interface CrmMeetingEntity {
   company?: CrmCompanyEntity;
 }
 
+export interface CrmTaskCompletionPayload {
+  id: number;
+  isCompleted: boolean;
+}
+
 export interface CrmLogMeetingFormValues {
   subject: string;
   date: string | null;
