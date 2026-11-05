@@ -331,6 +331,20 @@ export const policyLeaveQueryKeys = {
   EMPLOYEES_ON_LEAVE_TODAY: (teamId: number | string) => [
     ...policyLeaveQueryKeys.ALL_EMPLOYEES_ON_LEAVE_TODAY(),
     teamId
+  ],
+  ALL_RESOURCE_AVAILABILITY: () => [
+    ...policyLeaveQueryKeys.ALL,
+    "resource-availability"
+  ],
+  RESOURCE_AVAILABILITY: (
+    teamIds: number | string | null,
+    startDate: string,
+    endDate: string
+  ) => [
+    ...policyLeaveQueryKeys.ALL_RESOURCE_AVAILABILITY(),
+    teamIds,
+    startDate,
+    endDate
   ]
 };
 
