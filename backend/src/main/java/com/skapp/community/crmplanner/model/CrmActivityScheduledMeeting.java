@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.model;
 
+import com.skapp.community.common.model.Auditable;
 import com.skapp.community.crmplanner.type.CrmActivityCalendarProvider;
 import com.skapp.community.crmplanner.type.CrmActivityMeetingVenue;
 import jakarta.persistence.Column;
@@ -21,7 +22,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(name = "crm_activity_scheduled_meeting")
-public class CrmActivityScheduledMeeting {
+public class CrmActivityScheduledMeeting extends Auditable<String> {
 
 	@Id
 	@Column(name = "meeting_id")
