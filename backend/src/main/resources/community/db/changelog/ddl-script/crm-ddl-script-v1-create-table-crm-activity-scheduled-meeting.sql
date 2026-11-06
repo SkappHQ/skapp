@@ -1,6 +1,6 @@
 -- liquibase formatted sql
 
--- changeset UmeshaLiyanage:00016_create_table_crm_activity_scheduled_meeting
+-- changeset UmeshaLiyanage:crm-ddl-script-v1-create-table-crm-activity-scheduled-meeting
 CREATE TABLE IF NOT EXISTS `crm_activity_scheduled_meeting`
 (
     `meeting_id`         bigint,

@@ -1,6 +1,6 @@
 -- liquibase formatted sql
 
--- changeset UmeshaLiyanage:00017_alter_table_crm_activity_meeting_drop_column_meeting_venue
+-- changeset UmeshaLiyanage:crm-ddl-script-v1-alter-table-crm-activity-meeting-drop-column-meeting-venue
 ALTER TABLE `crm_activity_meeting`
     DROP COLUMN `meeting_venue`;
 

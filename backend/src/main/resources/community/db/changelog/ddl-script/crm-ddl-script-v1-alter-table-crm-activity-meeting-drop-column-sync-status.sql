@@ -1,6 +1,6 @@
 -- liquibase formatted sql
 
--- changeset UmeshaLiyanage:00019_alter_table_crm_activity_meeting_drop_column_sync_status
+-- changeset UmeshaLiyanage:crm-ddl-script-v1-alter-table-crm-activity-meeting-drop-column-sync-status
 ALTER TABLE `crm_activity_meeting`
     DROP COLUMN `sync_status`;
 

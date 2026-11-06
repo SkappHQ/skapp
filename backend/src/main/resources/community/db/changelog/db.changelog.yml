@@ -91,14 +91,14 @@ databaseChangeLog:
   - include:
       file: classpath:community/db/changelog/ddl-script/crm-ddl-script-v1-create-table-crm-activity-meeting-contact.sql
   - include:
-      file: classpath:community/db/changelog/ddl-script/00016_create_table_crm_activity_scheduled_meeting.sql
+      file: classpath:community/db/changelog/ddl-script/crm-ddl-script-v1-create-table-crm-activity-scheduled-meeting.sql
   - include:
-      file: classpath:community/db/changelog/ddl-script/00017_alter_table_crm_activity_meeting_drop_column_meeting_venue.sql
+      file: classpath:community/db/changelog/ddl-script/crm-ddl-script-v1-alter-table-crm-activity-meeting-drop-column-meeting-venue.sql
   - include:
-      file: classpath:community/db/changelog/ddl-script/00018_alter_table_crm_activity_meeting_drop_column_location.sql
+      file: classpath:community/db/changelog/ddl-script/crm-ddl-script-v1-alter-table-crm-activity-meeting-drop-column-location.sql
   - include:
-      file: classpath:community/db/changelog/ddl-script/00019_alter_table_crm_activity_meeting_drop_column_sync_status.sql
+      file: classpath:community/db/changelog/ddl-script/crm-ddl-script-v1-alter-table-crm-activity-meeting-drop-column-sync-status.sql
   - include:
-      file: classpath:community/db/changelog/ddl-script/00020_alter_table_crm_activity_meeting_drop_column_calendar_provider.sql
+      file: classpath:community/db/changelog/ddl-script/crm-ddl-script-v1-alter-table-crm-activity-meeting-drop-column-calendar-provider.sql
   - include:
-      file: classpath:community/db/changelog/ddl-script/00021_alter_table_crm_activity_email_add_column_from_address.sql
+      file: classpath:community/db/changelog/ddl-script/crm-ddl-script-v1-alter-table-crm-activity-email-add-column-from-address.sql
