@@ -15,23 +15,23 @@ import java.util.Set;
 
 public interface PolicyAttendanceLeaveService {
 
-	boolean isLeavePoliciesEnabled();
+	Boolean isLeavePoliciesEnabled();
 
 	ResponseEntityDto getPolicyLeaveDayAvailability(
 			LeaveRequestAvailabilityFilterDto leaveRequestAvailabilityFilterDto);
 
 	List<LeaveRequestResponseDto> getEmployeeLeaveRequests(Long employeeId, LocalDate startDate, LocalDate endDate,
-			boolean activeUsersOnly);
+			Boolean activeUsersOnly);
 
 	Map<Long, List<LeaveRequestResponseDto>> getEmployeesLeaveRequests(Collection<Long> employeeIds,
-			LocalDate startDate, LocalDate endDate, boolean activeUsersOnly);
+			LocalDate startDate, LocalDate endDate, Boolean activeUsersOnly);
 
 	Map<Long, List<LeaveRequestResponseDto>> getTeamLeaveRequests(Long teamId, LocalDate startDate, LocalDate endDate);
 
 	LeaveRequestResponseDto findLeaveRequestOnDate(Map<Long, List<LeaveRequestResponseDto>> leaveRequestsByEmployee,
 			Long employeeId, LocalDate date);
 
-	boolean isOnApprovedLeave(Map<Long, List<LeaveRequestResponseDto>> leaveRequestsByEmployee, Long employeeId,
+	Boolean isOnApprovedLeave(Map<Long, List<LeaveRequestResponseDto>> leaveRequestsByEmployee, Long employeeId,
 			LocalDate date);
 
 	ClockInSummaryLeaveRequestResponseDto findClockInSummaryLeaveRequest(
