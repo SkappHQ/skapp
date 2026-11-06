@@ -259,14 +259,14 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 			Optional.ofNullable(employee.getEmployeeVisas())
 				.ifPresent(visas -> dto
 					.setVisaDetails(visas.stream().map(peopleMapper::employeeVisaToVisaDetailsDto).toList()));
-		}
 
-		dto.setBillingDetails(getEmployeeBillingDetails(employee));
+			dto.setBillingDetails(mapEmploymentBillingDetails(employee));
+		}
 
 		return dto;
 	}
 
-	protected EmployeeEmploymentBillingDetailsDto getEmployeeBillingDetails(Employee employee) {
+	protected EmployeeEmploymentBillingDetailsDto mapEmploymentBillingDetails(Employee employee) {
 		return null;
 	}
 
