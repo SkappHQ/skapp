@@ -16,7 +16,8 @@ interface Props {
   primaryRow?: ReactNode;
   date: DateTime;
   startTime?: DateTime;
-  secondaryRow: ReactNode;
+  startTimeLabel?: string;
+  secondaryRow?: ReactNode;
   owner?: CrmOwnerEntity;
   companyName?: string;
   onCompanyClick: () => void;
@@ -26,6 +27,7 @@ const SidePanelActivityInfo: FC<Props> = ({
   primaryRow,
   date,
   startTime,
+  startTimeLabel,
   secondaryRow,
   owner,
   companyName,
@@ -50,7 +52,7 @@ const SidePanelActivityInfo: FC<Props> = ({
         </span>
       </PropertyRow>
 
-      <PropertyRow label={translateText(["startTime"])}>
+      <PropertyRow label={startTimeLabel ?? translateText(["startTime"])}>
         <span className="body2">
           {startTime ? startTime.toFormat(TIME_FORMAT_12_HOUR) : noValue}
         </span>
