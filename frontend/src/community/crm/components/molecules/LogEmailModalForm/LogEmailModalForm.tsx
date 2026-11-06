@@ -100,8 +100,7 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
     }
   };
 
-  const primaryRecipient =
-    values.toContactIds.length > 0 ? contacts[values.toContactIds[0]] : null;
+  const primaryRecipient = contacts[values.toContactIds[0]];
 
   const isCompanyMismatch = Boolean(
     values.companyId &&
@@ -110,6 +109,10 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
   );
 
   const pickedDate = values.date ? toPickerDate(values.date) : null;
+
+  const fromAddressError = touched.fromAddress ? errors.fromAddress : "";
+
+  const subjectError = touched.subject ? errors.subject : "";
 
   const handleDateSelect = (date?: Date): void => {
     setFieldValue("date", date ? toDateFieldValue(date) : null, true);
@@ -128,8 +131,8 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
           "placeholders",
           "from"
         ])}
-        errorMessage={touched.fromAddress ? errors.fromAddress : ""}
-        state={touched.fromAddress && errors.fromAddress ? "error" : "default"}
+        errorMessage={fromAddressError}
+        state={fromAddressError ? "error" : "default"}
         onChange={handleChange}
         onBlur={handleBlur}
         aria-label={translateAria(["from"])}
@@ -299,8 +302,8 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
         value={values.subject}
         label={translateText(["logActivity", "labels", "subject"])}
         placeholder={translateText(["logActivity", "placeholders", "subject"])}
-        errorMessage={touched.subject ? errors.subject : ""}
-        state={touched.subject && errors.subject ? "error" : "default"}
+        errorMessage={subjectError}
+        state={subjectError ? "error" : "default"}
         onChange={handleChange}
         onBlur={handleBlur}
         aria-label={translateAria(["subject"])}

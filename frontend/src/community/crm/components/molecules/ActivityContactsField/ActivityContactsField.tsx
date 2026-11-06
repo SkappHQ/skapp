@@ -94,9 +94,7 @@ const ActivityContactsField: FC<Props> = ({
     setFieldValue(name, nextContactIds, true);
     onContactsChange?.(
       nextContactIds.map((contactId) =>
-        addedContact && addedContact.id === contactId
-          ? addedContact
-          : contacts[contactId]
+        addedContact?.id === contactId ? addedContact : contacts[contactId]
       )
     );
 

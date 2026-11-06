@@ -56,7 +56,7 @@ const LogEmailModalContent: FC<Props> = ({ onClose }) => {
     const fromAddress = values.fromAddress.trim();
 
     return {
-      fromAddress: fromAddress ? fromAddress : null,
+      fromAddress: fromAddress.length > 0 ? fromAddress : null,
       loggedAt:
         values.date && values.time
           ? toActivityInstant(values.date, values.time)
@@ -92,7 +92,6 @@ const LogEmailModalContent: FC<Props> = ({ onClose }) => {
 
   const handleSuccess = (): void => {
     setSubmitting(false);
-    onClose();
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
@@ -111,14 +110,16 @@ const LogEmailModalContent: FC<Props> = ({ onClose }) => {
         "addSuccessDescription"
       ])
     });
+    onClose();
   };
 
   const handleError = (error: ErrorResponse): void => {
     setSubmitting(false);
 
+    const messageKey = error.response?.data?.results?.[0]?.messageKey;
+
     if (
-      error.response?.data?.results?.[0]?.messageKey ===
-      CrmErrorMessageKeyEnum.ACTIVITY_EMAIL_DEAL_COMPANY_MISMATCH
+      messageKey === CrmErrorMessageKeyEnum.ACTIVITY_EMAIL_DEAL_COMPANY_MISMATCH
     ) {
       requestAnimationFrame(() => {
         document.getElementById("log-email-deal-input")?.focus();
