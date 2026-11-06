@@ -26,7 +26,8 @@ export const useGetTeamLeaveHistory = (teamId: number) => {
 export const useGetTeamLeaveTrendForYear = (
   teamId: number,
   startDate: string,
-  endDate: string
+  endDate: string,
+  enabled = true
 ) => {
   const params = {
     startDate,
@@ -44,6 +45,7 @@ export const useGetTeamLeaveTrendForYear = (
     },
     select: (response) => {
       return LeaveTrendForYearPreProcessor(response?.data);
-    }
+    },
+    enabled
   });
 };

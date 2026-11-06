@@ -15,6 +15,7 @@ import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmAddTaskFormValues,
   CrmLogCallFormValues,
+  CrmLogEmailFormValues,
   CrmLogMeetingFormValues
 } from "~community/crm/types/CrmCommonTypes";
 import { CrmDealFilterRequest } from "~community/crm/types/CrmTypes";
@@ -25,24 +26,23 @@ interface Props {
   formik:
     | FormikProps<CrmLogCallFormValues>
     | FormikProps<CrmLogMeetingFormValues>
-    | FormikProps<CrmAddTaskFormValues>;
+    | FormikProps<CrmAddTaskFormValues>
+    | FormikProps<CrmLogEmailFormValues>;
   fieldAriaLabel: string;
-  clearedNoticeText: string;
-  isClearedNoticeVisible: boolean;
-  onDealChange: () => void;
+  isClearedNoticeVisible?: boolean;
+  isMismatch?: boolean;
+  onDealChange?: () => void;
   filterCompanyId?: number;
-  errorMessage?: string;
 }
 
 const ActivityDealField: FC<Props> = ({
   id,
   formik,
   fieldAriaLabel,
-  clearedNoticeText,
   isClearedNoticeVisible,
+  isMismatch,
   onDealChange,
-  filterCompanyId,
-  errorMessage
+  filterCompanyId
 }) => {
   const { values, setFieldValue } = formik;
 
@@ -72,7 +72,10 @@ const ActivityDealField: FC<Props> = ({
     [debouncedSearch, filterCompanyId]
   );
 
-  const { data: lookupData } = useGetDealLookup(lookupFilter, isSearchEnabled);
+  const { data: lookupData, isFetching } = useGetDealLookup(
+    lookupFilter,
+    isSearchEnabled
+  );
 
   const lookupItems = useMemo(
     () => (lookupData ? lookupData.items : []),
@@ -104,13 +107,13 @@ const ActivityDealField: FC<Props> = ({
 
     setDeals(mergeDeals(deals, [deal]));
     setFieldValue("dealId", deal.id);
-    onDealChange();
+    onDealChange?.();
   };
 
   const handleClear = (): void => {
     setFieldValue("dealId", null);
     setSearchTerm("");
-    onDealChange();
+    onDealChange?.();
   };
 
   return (
@@ -130,12 +133,17 @@ const ActivityDealField: FC<Props> = ({
         onSelect={handleSelect}
         isOpenOnFocus={isSearchEnabled}
         emptyMessage={translateText(["emptyStates", "noDeals"])}
-        {...(errorMessage && { errorMessage })}
+        {...(isFetching && {
+          loadingMessage: translateText(["emptyStates", "searching"])
+        })}
+        {...(isMismatch && {
+          errorMessage: translateText(["validations", "dealMismatch"])
+        })}
       />
       {isClearedNoticeVisible && (
-        <span role="status" className="text-sm text-semantic-amber-text">
-          {clearedNoticeText}
-        </span>
+        <output className="text-sm text-semantic-amber-text">
+          {translateText(["notices", "dealCleared"])}
+        </output>
       )}
     </div>
   );

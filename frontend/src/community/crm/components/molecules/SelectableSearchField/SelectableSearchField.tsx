@@ -20,9 +20,12 @@ interface Props {
   items: SearchableDropdownItem[];
   onSelect: (item: SearchableDropdownItem) => void;
   emptyMessage?: string;
+  loadingMessage?: string;
+  describedById?: string;
   required?: boolean;
   errorMessage?: string;
   positionStrategy?: NonNullable<SearchableDropdownProps["positionStrategy"]>;
+  isFlip?: boolean;
 }
 
 const SelectableSearchField: FC<Props> = ({
@@ -38,10 +41,13 @@ const SelectableSearchField: FC<Props> = ({
   items,
   onSelect,
   emptyMessage,
+  loadingMessage,
+  describedById,
   isOpenOnFocus = true,
   required = false,
   errorMessage,
-  positionStrategy = "absolute"
+  positionStrategy = "absolute",
+  isFlip = true
 }) => {
   if (selectedValue) {
     return (
@@ -54,6 +60,7 @@ const SelectableSearchField: FC<Props> = ({
         fullWidth
         variant="md"
         aria-label={fieldAriaLabel}
+        {...(describedById && { "aria-describedby": describedById })}
         rightIcon={
           <ButtonV2
             variant="tertiary"
@@ -77,11 +84,13 @@ const SelectableSearchField: FC<Props> = ({
       items={items}
       onSelect={onSelect}
       emptyMessage={emptyMessage}
+      {...(loadingMessage && { loadingMessage })}
       isOpenOnFocus={isOpenOnFocus}
       required={required}
       state={errorMessage ? "error" : "default"}
       errorMessage={errorMessage}
       positionStrategy={positionStrategy}
+      isFlip={isFlip}
     />
   );
 };

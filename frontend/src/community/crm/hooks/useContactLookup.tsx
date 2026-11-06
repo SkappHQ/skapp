@@ -13,6 +13,7 @@ import { getContactDisplayName } from "~community/crm/utils/contactUtil";
 
 interface ContactLookup {
   isSearchActive: boolean;
+  isLoading: boolean;
   lookupItems: CrmContactEntity[];
   dropdownItems: SearchableDropdownItem[];
 }
@@ -30,7 +31,7 @@ export const useContactLookup = (searchTerm: string): ContactLookup => {
 
   const isSearchActive = debouncedSearch.length > 0;
 
-  const { data: lookupData } = useGetContactLookup(
+  const { data: lookupData, isFetching } = useGetContactLookup(
     lookupFilter,
     isSearchActive
   );
@@ -56,5 +57,10 @@ export const useContactLookup = (searchTerm: string): ContactLookup => {
     [lookupItems]
   );
 
-  return { isSearchActive, lookupItems, dropdownItems };
+  return {
+    isSearchActive,
+    isLoading: isFetching,
+    lookupItems,
+    dropdownItems
+  };
 };

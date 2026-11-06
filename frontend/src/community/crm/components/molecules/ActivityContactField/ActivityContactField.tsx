@@ -50,9 +50,8 @@ const ActivityContactField: FC<Props> = ({
   );
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [hasFilledRelatedTo, setHasFilledRelatedTo] = useState(false);
 
-  const { isSearchActive, lookupItems, dropdownItems } =
+  const { isSearchActive, isLoading, lookupItems, dropdownItems } =
     useContactLookup(searchTerm);
 
   const selectedContact = values.contactId ? contacts[values.contactId] : null;
@@ -75,11 +74,6 @@ const ActivityContactField: FC<Props> = ({
     if (isDealMismatch) {
       setFieldValue("dealId", null);
       onDealCleared();
-    }
-
-    if (!hasFilledRelatedTo && !values.companyId && contact.companyId) {
-      setFieldValue("companyId", contact.companyId);
-      setHasFilledRelatedTo(true);
     }
   };
 
@@ -106,6 +100,9 @@ const ActivityContactField: FC<Props> = ({
       onSelect={handleSelect}
       isOpenOnFocus={isSearchActive}
       emptyMessage={translateText(["emptyStates", "noContacts"])}
+      {...(isLoading && {
+        loadingMessage: translateText(["emptyStates", "searching"])
+      })}
       required={required}
       errorMessage={errorMessage}
     />

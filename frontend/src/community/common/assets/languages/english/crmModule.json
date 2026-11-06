@@ -591,7 +591,8 @@
         },
         "placeholders": {
           "taskName": "Enter the task name",
-          "dueDate": "Select date"
+          "dueDate": "Select date",
+          "notes": "Add message"
         },
         "validations": {
           "name": "Task name is required",
@@ -677,9 +678,6 @@
         "validations": {
           "contact": "Please select a contact",
           "duration": "Please enter a valid duration (e.g. 1h 30m)"
-        },
-        "notices": {
-          "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
         },
         "toastMessages": {
           "addSuccessTitle": "Call added successfully",
@@ -803,7 +801,7 @@
       "modal": {
         "validations": {
           "date": "Date is required",
-          "attendees": "Please select at least one attendee",
+          "attendees": "An activity must be linked to at least one contact",
           "endTime": "End time must be after start time"
         },
         "title": "Log a meeting",
@@ -817,12 +815,11 @@
           "addSuccessDescription": "Meeting has been added successfully",
           "errorDescription": "Failed to save meeting"
         },
-        "notices": {
-          "differentCompanies": "Attendees are from different companies",
-          "dealCleared": "Deal cleared — it doesn't match any attendee's company."
-        },
         "placeholders": {
           "attendees": "Select attendees"
+        },
+        "tooltips": {
+          "differentCompanies": "These contacts are linked to different companies. This activity will still be saved against all of them."
         }
       }
     },
@@ -855,15 +852,22 @@
         "noOwners": "No owners found",
         "noContacts": "No contacts found",
         "noDeals": "No deals found",
-        "noCompanies": "No companies found"
+        "noCompanies": "No companies found",
+        "searching": "Searching..."
       },
       "validations": {
         "subject": "Subject is required",
         "owner": "Activity owner is required",
         "dealMismatch": "This deal's company doesn't match any linked contact — add a contact from that company or choose a different deal"
       },
+      "notices": {
+        "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
+      },
       "toastMessages": {
         "errorTitle": "Oops! Something went wrong"
+      },
+      "tooltips": {
+        "relatedToMismatch": "This doesn't match {{name}}'s company on file."
       }
     },
     "activitySidePanel": {

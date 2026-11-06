@@ -1,0 +1,29 @@
+package com.skapp.community.crmplanner.payload.request;
+
+import com.skapp.community.crmplanner.type.CrmActivityTaskPriority;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.Instant;
+
+@Getter
+@Setter
+public class CrmActivityTaskCreateRequestDto {
+
+	private String name;
+
+	private CrmActivityTaskPriority priority;
+
+	private Instant dueAt;
+
+	private Long ownerId;
+
+	private Long contactId;
+
+	private Long dealId;
+
+	private Long companyId;
+
+	private String notes;
+
+}

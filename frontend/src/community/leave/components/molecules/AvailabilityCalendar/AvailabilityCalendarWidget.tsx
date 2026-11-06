@@ -4,7 +4,7 @@ import { Box } from "@mui/system";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { DateTime } from "luxon";
 import { useRouter } from "next/router";
-import { JSX, useState } from "react";
+import { JSX, useMemo, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import ROUTES from "~community/common/constants/routes";
@@ -13,8 +13,11 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
 import { useGetResourceAvailability } from "~community/leave/api/LeaveDashboard";
+import { useGetPolicyResourceAvailability } from "~community/leave/api/PolicyLeaveApi";
+import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { ResourceAvailabilityRecord } from "~community/leave/types/ResourceAvailabilityTypes";
 import { getNavigateDays } from "~community/leave/utils/dashboardUtils";
+import { toResourceAvailabilityRecords } from "~community/leave/utils/policyLeave/policyLeaveUtils";
 
 import DateNavigator from "../DateNavigator/DateNavigator";
 import AvailabilityCalendarCard from "./AvailabilityCalendarCard";
@@ -39,10 +42,50 @@ const AvailabilityCalendarWidget = ({
   const [endDate, setEndDate] = useState(
     DateTime.now().plus({ weeks: numberOfWeeks }).toFormat(DATE_FORMAT)
   );
+  const { isLeavePoliciesEnabled, isLoading: isPolicyConfigLoading } =
+    useLeavePoliciesEnabled();
+
   const {
-    data: resourceAvailability,
-    isLoading: isResourceAvailabilityLoading
-  } = useGetResourceAvailability(teams, startDate, endDate);
+    data: legacyResourceAvailability,
+    isLoading: isLegacyResourceAvailabilityLoading
+  } = useGetResourceAvailability(
+    teams,
+    startDate,
+    endDate,
+    !isPolicyConfigLoading && !isLeavePoliciesEnabled
+  );
+
+  const {
+    data: policyResourceAvailability,
+    isLoading: isPolicyResourceAvailabilityLoading
+  } = useGetPolicyResourceAvailability({
+    teamIds: teams,
+    startDate,
+    endDate,
+    enabled: isLeavePoliciesEnabled
+  });
+
+  const workingDays = useMemo(
+    () => timeConfigData?.map((config) => config.day) ?? [],
+    [timeConfigData]
+  );
+
+  const resourceAvailability = useMemo(() => {
+    if (!isLeavePoliciesEnabled) return legacyResourceAvailability;
+    return policyResourceAvailability
+      ? toResourceAvailabilityRecords(policyResourceAvailability, workingDays)
+      : undefined;
+  }, [
+    isLeavePoliciesEnabled,
+    legacyResourceAvailability,
+    policyResourceAvailability,
+    workingDays
+  ]);
+
+  const isResourceAvailabilityLoading =
+    isPolicyConfigLoading ||
+    isLegacyResourceAvailabilityLoading ||
+    isPolicyResourceAvailabilityLoading;
 
   return (
     <Box sx={{ margin: "1rem 0rem" }}>

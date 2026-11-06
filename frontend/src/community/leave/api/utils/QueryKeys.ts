@@ -315,6 +315,49 @@ export const policyLeaveQueryKeys = {
     ...policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS(queryParams.year),
     "page",
     queryParams
+  ],
+  ALL_PENDING_LEAVE_COUNT: () => [
+    ...policyLeaveQueryKeys.ALL,
+    "pending-leave-count"
+  ],
+  PENDING_LEAVE_COUNT: (teamId: number | string) => [
+    ...policyLeaveQueryKeys.ALL_PENDING_LEAVE_COUNT(),
+    teamId
+  ],
+  ALL_EMPLOYEES_ON_LEAVE_TODAY: () => [
+    ...policyLeaveQueryKeys.ALL,
+    "employees-on-leave-today"
+  ],
+  EMPLOYEES_ON_LEAVE_TODAY: (teamId: number | string) => [
+    ...policyLeaveQueryKeys.ALL_EMPLOYEES_ON_LEAVE_TODAY(),
+    teamId
+  ],
+  ALL_RESOURCE_AVAILABILITY: () => [
+    ...policyLeaveQueryKeys.ALL,
+    "resource-availability"
+  ],
+  RESOURCE_AVAILABILITY: (
+    teamIds: number | string | null,
+    startDate: string,
+    endDate: string
+  ) => [
+    ...policyLeaveQueryKeys.ALL_RESOURCE_AVAILABILITY(),
+    teamIds,
+    startDate,
+    endDate
+  ],
+  ALL_TEAM_LEAVE_TREND: () => [...policyLeaveQueryKeys.ALL, "team-leave-trend"],
+  TEAM_LEAVE_TREND: (teamId: number | string) => [
+    ...policyLeaveQueryKeys.ALL_TEAM_LEAVE_TREND(),
+    teamId
+  ],
+  ALL_LEAVE_TYPE_BREAKDOWN: () => [
+    ...policyLeaveQueryKeys.ALL,
+    "leave-type-breakdown"
+  ],
+  LEAVE_TYPE_BREAKDOWN: (teamId: number | string) => [
+    ...policyLeaveQueryKeys.ALL_LEAVE_TYPE_BREAKDOWN(),
+    teamId
   ]
 };
 

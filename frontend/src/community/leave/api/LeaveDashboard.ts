@@ -70,7 +70,10 @@ export const useGetResourceAvailabilityCalendar = (
   });
 };
 
-export const useGetLeaveTypeBreakdownChartData = (teamIds: string | number) => {
+export const useGetLeaveTypeBreakdownChartData = (
+  teamIds: string | number,
+  enabled = true
+) => {
   return useQuery({
     queryKey: dashboardQueryKeys.LEAVE_UTILIZATION(teamIds),
     queryFn: async () => {
@@ -86,7 +89,7 @@ export const useGetLeaveTypeBreakdownChartData = (teamIds: string | number) => {
     select: (response) => {
       return leaveTypeBreakdownPreProcessor(response?.data?.results?.[0]);
     },
-    enabled: true
+    enabled
   });
 };
 
@@ -116,7 +119,10 @@ export const useGetAvailability = (
   });
 };
 
-export const useGetPendingLeavesData = (teams: number | string) => {
+export const useGetPendingLeavesData = (
+  teams: number | string,
+  enabled = true
+) => {
   return useQuery({
     queryKey: dashboardQueryKeys.PENDING_REQUESTS(teams),
     queryFn: async () => {
@@ -133,7 +139,7 @@ export const useGetPendingLeavesData = (teams: number | string) => {
     select: (data) => {
       return data?.results;
     },
-    enabled: true
+    enabled
   });
 };
 

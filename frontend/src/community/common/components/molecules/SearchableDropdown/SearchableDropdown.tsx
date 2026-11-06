@@ -50,11 +50,13 @@ export interface SearchableDropdownProps {
   name?: string;
   required?: boolean;
   emptyMessage?: string;
+  loadingMessage?: string;
   onEmptyActivate?: () => void;
   state?: "default" | "error";
   errorMessage?: string;
   variant?: "sm" | "md" | "lg";
   positionStrategy?: "absolute" | "fixed";
+  isFlip?: boolean;
   onClose?: () => void;
   isOpenOnFocus?: boolean;
 }
@@ -70,11 +72,13 @@ const SearchableDropdown: FC<SearchableDropdownProps> = ({
   name,
   required = false,
   emptyMessage,
+  loadingMessage,
   onEmptyActivate,
   state = "default",
   errorMessage,
   variant = "md",
   positionStrategy = "absolute",
+  isFlip = true,
   onClose,
   isOpenOnFocus = false
 }) => {
@@ -88,7 +92,8 @@ const SearchableDropdown: FC<SearchableDropdownProps> = ({
     }
   }, [items.length, activeIndex]);
 
-  const isDropdownOpen = isOpen && (items.length > 0 || !!emptyMessage);
+  const isDropdownOpen =
+    isOpen && (items.length > 0 || !!emptyMessage || !!loadingMessage);
 
   const handleClose = useCallback(() => {
     setIsOpen(false);
@@ -207,7 +212,7 @@ const SearchableDropdown: FC<SearchableDropdownProps> = ({
         }
       />
 
-      {isDropdownOpen && (items.length > 0 || !!emptyMessage) && (
+      {isDropdownOpen && (
         <Popper
           id={`${id}-popper`}
           anchorEl={inputWrapperRef.current}
@@ -217,19 +222,23 @@ const SearchableDropdown: FC<SearchableDropdownProps> = ({
           handleClose={handleClose}
           ariaRole="presentation"
           ariaLabel={label || placeholder}
-          isFlip
+          isFlip={isFlip}
           disableAutoFocus
           positionStrategy={positionStrategy}
           containerClassName="rounded-md border border-secondary-accent bg-white shadow-lg"
         >
           <div>
-            {items.length === 0 ? (
-              emptyMessage && (
-                <div>
-                  <p className="px-4 py-2 body2">{emptyMessage}</p>
-                </div>
-              )
-            ) : (
+            {loadingMessage && (
+              <output className="block px-4 py-2 body2">
+                {loadingMessage}
+              </output>
+            )}
+            {!loadingMessage && items.length === 0 && emptyMessage && (
+              <div>
+                <p className="px-4 py-2 body2">{emptyMessage}</p>
+              </div>
+            )}
+            {!loadingMessage && items.length > 0 && (
               <ul
                 className="max-h-50 overflow-y-auto"
                 role="listbox"
