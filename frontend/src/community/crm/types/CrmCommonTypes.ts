@@ -211,3 +211,17 @@ export interface CrmAddTaskFormValues {
 }
 
 export type CrmAddTaskFormErrorField = "name" | "priority" | "dueAt" | "notes";
+
+export interface CrmActivityTaskEntity {
+  id: number;
+  name: string;
+  priority: CrmPriorityEnum;
+  dueAt: string;
+  isCompleted: boolean;
+  completedAt?: string;
+  notes?: string;
+  ownerId: number;
+  contact?: CrmContactEntity;
+  deal?: CrmDealEntity;
+  company?: CrmCompanyEntity;
+}

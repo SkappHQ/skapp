@@ -143,6 +143,9 @@
         "save": "Save task"
       }
     },
+    "taskSidePanel": {
+      "kebabMenu": "Task actions"
+    },
     "callSidePanel": {
       "kebabMenu": "Call actions"
     },
