@@ -5,6 +5,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.type.Role;
+import com.skapp.community.common.util.Validation;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.model.CrmCompany;
@@ -12,6 +13,7 @@ import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.type.CrmDealStageColors;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
+import com.skapp.community.peopleplanner.constant.PeopleConstants;
 import com.skapp.community.peopleplanner.util.Validations;
 import com.skapp.community.crmplanner.payload.request.CrmDealListViewConfigDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealListViewFieldDto;
@@ -444,6 +446,13 @@ public class CrmValidations {
 					contact.getCompany() != null ? contact.getCompany().getId() : null));
 		if (!isCompanyMatched) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_EMAIL_DEAL_COMPANY_MISMATCH);
+		}
+	}
+
+	public static void validateEmailFromAddress(String fromAddress) {
+		if (fromAddress != null && (!fromAddress.trim().matches(Validation.EMAIL_REGEX)
+				|| fromAddress.length() > PeopleConstants.MAX_EMAIL_LENGTH)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_EMAIL_FROM_ADDRESS_INVALID);
 		}
 	}
 

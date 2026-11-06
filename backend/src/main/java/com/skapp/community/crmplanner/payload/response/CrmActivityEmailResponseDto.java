@@ -16,6 +16,8 @@ public class CrmActivityEmailResponseDto {
 
 	private String subject;
 
+	private String fromAddress;
+
 	private Instant loggedAt;
 
 	private String description;
