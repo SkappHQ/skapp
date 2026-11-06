@@ -122,6 +122,10 @@ public interface CrmMapper {
 	@Mapping(target = "ownerId", source = "owner.employeeId")
 	@Mapping(target = "dealId", source = "deal.id")
 	@Mapping(target = "companyId", source = "company.id")
+	@Mapping(target = "meetingVenue", source = "scheduledMeeting.meetingVenue")
+	@Mapping(target = "location", source = "scheduledMeeting.location")
+	@Mapping(target = "locationAddress", source = "scheduledMeeting.locationAddress")
+	@Mapping(target = "locationUrl", source = "scheduledMeeting.locationUrl")
 	CrmActivityMeetingResponseDto crmActivityMeetingToCrmActivityMeetingResponseDto(CrmActivityMeeting meeting);
 
 	@Mapping(target = "id", source = "contact.id")

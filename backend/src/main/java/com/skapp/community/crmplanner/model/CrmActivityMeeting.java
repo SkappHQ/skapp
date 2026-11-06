@@ -11,6 +11,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -67,5 +69,9 @@ public class CrmActivityMeeting extends Auditable<String> {
 
 	@OneToMany(mappedBy = "meeting")
 	private List<CrmActivityMeetingContact> contacts;
+
+	@OneToOne(fetch = FetchType.LAZY)
+	@PrimaryKeyJoinColumn
+	private CrmActivityScheduledMeeting scheduledMeeting;
 
 }
