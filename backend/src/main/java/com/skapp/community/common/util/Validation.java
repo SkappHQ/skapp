@@ -42,14 +42,6 @@ public class Validation {
 
 	private static final int MAX_NAME_LENGTH = 50;
 
-	private static final int MIN_PASSWORD_LENGTH = 8;
-
-	private static final int MAX_SIGN_UP_PASSWORD_LENGTH = 50;
-
-	private static final List<Pattern> PASSWORD_REQUIRED_CHARACTER_PATTERNS = List.of(Pattern.compile("[a-z]"),
-			Pattern.compile("[A-Z]"), Pattern.compile("[0-9]"),
-			Pattern.compile("[!@#$%^&*(),.?\":{}|<>~'`\\-_=+\\\\\\[\\];]"));
-
 	public static void isValidFirstName(String firstName) throws ValidationException {
 		if (!StringUtils.hasText(firstName)) {
 			throw new ValidationException(CommonMessageConstant.COMMON_ERROR_VALIDATION_ENTER_FIRST_NAME);
@@ -77,17 +69,18 @@ public class Validation {
 	}
 
 	public static void isValidPassword(String password) throws ValidationException {
-		if (password == null || password.length() < MIN_PASSWORD_LENGTH || PASSWORD_REQUIRED_CHARACTER_PATTERNS.stream()
-			.anyMatch(pattern -> !pattern.matcher(password).find())) {
+		if (password == null || password.length() < ValidationConstant.MIN_PASSWORD_LENGTH
+				|| ValidationConstant.PASSWORD_REQUIRED_CHARACTER_PATTERNS.stream()
+					.anyMatch(pattern -> !pattern.matcher(password).find())) {
 			throw new ValidationException(CommonMessageConstant.COMMON_ERROR_VALIDATION_PASSWORD_REQUIREMENTS);
 		}
 	}
 
 	public static void isValidSignUpPassword(String password) throws ValidationException {
 		isValidPassword(password);
-		if (password.length() > MAX_SIGN_UP_PASSWORD_LENGTH) {
+		if (password.length() > ValidationConstant.MAX_SIGN_UP_PASSWORD_LENGTH) {
 			throw new ValidationException(CommonMessageConstant.COMMON_ERROR_VALIDATION_PASSWORD_LENGTH,
-					List.of(String.valueOf(MAX_SIGN_UP_PASSWORD_LENGTH)));
+					new Object[] { ValidationConstant.MAX_SIGN_UP_PASSWORD_LENGTH });
 		}
 	}
 

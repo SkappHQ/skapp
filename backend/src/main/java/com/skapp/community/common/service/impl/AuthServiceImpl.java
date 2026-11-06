@@ -562,8 +562,7 @@ public class AuthServiceImpl implements AuthService {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 
-		if (changePasswordRequestDto.getOldPassword() == null
-				|| !passwordEncoder.matches(changePasswordRequestDto.getOldPassword(), user.getPassword())) {
+		if (!passwordEncoder.matches(changePasswordRequestDto.getOldPassword(), user.getPassword())) {
 			log.warn("changePassword: Old password incorrect for userEmail={}", user.getEmail());
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_OLD_PASSWORD_INCORRECT);
 		}
