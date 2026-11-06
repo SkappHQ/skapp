@@ -1,6 +1,6 @@
 -- liquibase formatted sql
 
--- changeset UmeshaLiyanage:crm-ddl-script-v1-alter-table-crm-activity-meeting-drop-column-calendar-provider
+-- changeset UmeshaLiyanage:00020_alter_table_crm_activity_meeting_drop_column_calendar_provider
 ALTER TABLE `crm_activity_meeting`
     DROP COLUMN `calendar_provider`;
 
