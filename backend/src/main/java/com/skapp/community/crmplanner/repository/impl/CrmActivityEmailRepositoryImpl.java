@@ -145,7 +145,6 @@ public class CrmActivityEmailRepositoryImpl implements CrmActivityEmailRepositor
 		CriteriaQuery<CrmActivityEmail> query = cb.createQuery(CrmActivityEmail.class);
 		Root<CrmActivityEmail> email = query.from(CrmActivityEmail.class);
 
-		email.fetch(CrmActivityEmail_.contacts, JoinType.LEFT).fetch(CrmActivityEmailContact_.contact, JoinType.LEFT);
 		email.fetch(CrmActivityEmail_.deal, JoinType.LEFT);
 		email.fetch(CrmActivityEmail_.company, JoinType.LEFT);
 

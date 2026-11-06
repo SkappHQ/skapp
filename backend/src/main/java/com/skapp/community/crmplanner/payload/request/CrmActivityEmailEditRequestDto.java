@@ -22,7 +22,11 @@ public class CrmActivityEmailEditRequestDto {
 
 	private Long dealId;
 
+	private Boolean isDealRemoved;
+
 	private Long companyId;
+
+	private Boolean isCompanyRemoved;
 
 	private String description;
 

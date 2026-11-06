@@ -174,10 +174,11 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_EMAIL_VIEW_DENIED);
 		}
 
+		List<CrmActivityEmailContact> existingRecipients = crmActivityEmailContactDao.findByEmailId(email.getId());
 		CrmActivityEmailResponseDto response = crmMapper.crmActivityEmailToCrmActivityEmailResponseDto(email);
-		response.setTo(getRecipientLookups(email, CrmActivityEmailContactRole.TO));
-		response.setCc(getRecipientLookups(email, CrmActivityEmailContactRole.CC));
-		response.setBcc(getRecipientLookups(email, CrmActivityEmailContactRole.BCC));
+		response.setTo(getRecipientLookups(existingRecipients, CrmActivityEmailContactRole.TO));
+		response.setCc(getRecipientLookups(existingRecipients, CrmActivityEmailContactRole.CC));
+		response.setBcc(getRecipientLookups(existingRecipients, CrmActivityEmailContactRole.BCC));
 		if (email.getDeal() != null && Boolean.TRUE.equals(email.getDeal().getIsDeleted())) {
 			response.setDealId(null);
 			response.setDeal(null);
@@ -230,7 +231,10 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 			email.setDescription(requestDto.getDescription());
 		}
 
-		if (requestDto.getDealId() != null) {
+		if (Boolean.TRUE.equals(requestDto.getIsDealRemoved())) {
+			email.setDeal(null);
+		}
+		else if (requestDto.getDealId() != null) {
 			CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 			if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, deal.getOwner().getEmployeeId())) {
@@ -239,26 +243,29 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 			email.setDeal(deal);
 		}
 
-		if (requestDto.getCompanyId() != null) {
+		if (Boolean.TRUE.equals(requestDto.getIsCompanyRemoved())) {
+			email.setCompany(null);
+		}
+		else if (requestDto.getCompanyId() != null) {
 			CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
 			email.setCompany(company);
 		}
 
+		List<CrmActivityEmailContact> existingRecipients = crmActivityEmailContactDao.findByEmailId(email.getId());
 		List<Long> sentIds = Stream
 			.of(requestDto.getToContactIds(), requestDto.getCcContactIds(), requestDto.getBccContactIds())
 			.filter(ids -> ids != null)
 			.flatMap(List::stream)
 			.toList();
 		List<Long> toIds = requestDto.getToContactIds() != null ? requestDto.getToContactIds()
-				: getRecipientIds(email, CrmActivityEmailContactRole.TO, sentIds);
+				: getRecipientIds(existingRecipients, CrmActivityEmailContactRole.TO, sentIds);
 		List<Long> ccIds = requestDto.getCcContactIds() != null ? requestDto.getCcContactIds()
-				: getRecipientIds(email, CrmActivityEmailContactRole.CC, sentIds);
+				: getRecipientIds(existingRecipients, CrmActivityEmailContactRole.CC, sentIds);
 		List<Long> bccIds = requestDto.getBccContactIds() != null ? requestDto.getBccContactIds()
-				: getRecipientIds(email, CrmActivityEmailContactRole.BCC, sentIds);
+				: getRecipientIds(existingRecipients, CrmActivityEmailContactRole.BCC, sentIds);
 		List<Long> contactIds = Stream.of(toIds, ccIds, bccIds).flatMap(List::stream).toList();
-		List<CrmContact> recipientContacts = new ArrayList<>(email.getContacts()
-			.stream()
+		List<CrmContact> recipientContacts = new ArrayList<>(existingRecipients.stream()
 			.map(CrmActivityEmailContact::getContact)
 			.filter(contact -> contactIds.contains(contact.getId()) && !sentIds.contains(contact.getId())
 					&& !Boolean.TRUE.equals(contact.getIsDeleted()))
@@ -270,8 +277,7 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 
 			Map<Long, CrmContact> contactsById = findRecipientContactsById(sentIds);
 			recipientContacts.addAll(contactsById.values());
-			Map<Long, CrmActivityEmailContact> existingById = email.getContacts()
-				.stream()
+			Map<Long, CrmActivityEmailContact> existingById = existingRecipients.stream()
 				.collect(Collectors.toMap(link -> link.getContact().getId(), Function.identity()));
 
 			List<CrmActivityEmailContact> recipients = new ArrayList<>();
@@ -288,8 +294,7 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 						buildRecipients(email, bccIds, CrmActivityEmailContactRole.BCC, contactsById, existingById));
 			}
 
-			List<CrmActivityEmailContact> removedRecipients = email.getContacts()
-				.stream()
+			List<CrmActivityEmailContact> removedRecipients = existingRecipients.stream()
 				.filter(link -> !contactIds.contains(link.getContact().getId()))
 				.toList();
 			crmActivityEmailContactDao.deleteAll(removedRecipients);
@@ -333,19 +338,18 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 		}).toList();
 	}
 
-	private List<Long> getRecipientIds(CrmActivityEmail email, CrmActivityEmailContactRole role, List<Long> sentIds) {
-		return email.getContacts()
-			.stream()
+	private List<Long> getRecipientIds(List<CrmActivityEmailContact> existingRecipients,
+			CrmActivityEmailContactRole role, List<Long> sentIds) {
+		return existingRecipients.stream()
 			.filter(link -> link.getRole() == role)
 			.map(link -> link.getContact().getId())
 			.filter(contactId -> !sentIds.contains(contactId))
 			.toList();
 	}
 
-	private List<CrmContactLookupResponseDto> getRecipientLookups(CrmActivityEmail email,
+	private List<CrmContactLookupResponseDto> getRecipientLookups(List<CrmActivityEmailContact> existingRecipients,
 			CrmActivityEmailContactRole role) {
-		return email.getContacts()
-			.stream()
+		return existingRecipients.stream()
 			.filter(link -> link.getRole() == role)
 			.map(CrmActivityEmailContact::getContact)
 			.filter(contact -> !Boolean.TRUE.equals(contact.getIsDeleted()))
