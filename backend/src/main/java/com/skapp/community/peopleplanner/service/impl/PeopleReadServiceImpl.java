@@ -21,6 +21,7 @@ import com.skapp.community.peopleplanner.payload.request.employee.EmployeeEmploy
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeePersonalDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeSystemPermissionsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBasicDetailsDto;
+import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBillingDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentIdentificationAndDiversityDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentPreviousEmploymentDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeeExtraInfoDto;
@@ -260,7 +261,13 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 					.setVisaDetails(visas.stream().map(peopleMapper::employeeVisaToVisaDetailsDto).toList()));
 		}
 
+		dto.setBillingDetails(getEmployeeBillingDetails(employee));
+
 		return dto;
+	}
+
+	protected EmployeeEmploymentBillingDetailsDto getEmployeeBillingDetails(Employee employee) {
+		return null;
 	}
 
 	private EmployeeEmploymentIdentificationAndDiversityDetailsDto mapIdentificationAndDiversityDetails(
