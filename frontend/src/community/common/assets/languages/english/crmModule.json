@@ -782,7 +782,8 @@
         "reset": "Reset filters",
         "apply": "Apply filters"
       },
-      "logEmailBtn": "Log email"
+      "logEmailBtn": "Log email",
+      "scheduleMeetingBtn": "Schedule a meeting"
     },
     "logMeeting": {
       "modal": {
@@ -908,6 +909,32 @@
           "addSuccessDescription": "It's being added to your Google Calendar.",
           "errorDescription": "Failed to save meeting"
         }
+      },
+      "connectCalendarModal": {
+        "title": "Connect Google calendar",
+        "calendarName": "Google calendar",
+        "notConnected": "Not connected",
+        "description": "Connect your Google Calendar to schedule meetings from Skapp. Meetings you schedule here are added to your calendar, and attendees get an invite automatically.",
+        "connectBtn": "Connect",
+        "errorDescription": "Couldn't connect your Google Calendar. Try again."
+      },
+      "addToCalendarModal": {
+        "title": "Add to Google calendar",
+        "description": "This will create the event in your Google Calendar and send an invite to each attendee.",
+        "overlapDescription": "The meeting you have scheduled overlaps with a meeting already on your schedule in the Google calendar. Are you sure you want to schedule the meeting?",
+        "attendeeCount_one": "{{count}} attendee",
+        "attendeeCount_other": "{{count}} attendees",
+        "addBtn": "Add to calendar",
+        "backBtn": "Back",
+        "confirmBtn": "Confirm",
+        "overlapCheckErrorDescription": "Couldn't check your Google calendar. Try again."
+      },
+      "scheduleUpgradeModal": {
+        "title": "Upgrade to Skapp Core",
+        "description": "Calendar sync adds the meetings you schedule in Skapp to your Google calendar automatically, so you don't have to enter them twice and your schedule stays up to date.",
+        "upgradeDescription": "Experience the full potential of Skapp by upgrading to Skapp Core.",
+        "upgradeBtn": "Upgrade to Core",
+        "imageAlt": "Meetings scheduled in Skapp shown in a Google calendar"
       }
     }
   }

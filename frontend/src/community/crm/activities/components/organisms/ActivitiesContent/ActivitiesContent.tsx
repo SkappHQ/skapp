@@ -2,6 +2,7 @@ import { ButtonV2, ButtonV2Props } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import { GlobalLoginMethod } from "~community/common/enums/CommonEnums";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import useSessionData from "~community/common/hooks/useSessionData";
@@ -39,14 +40,20 @@ import {
 } from "~community/crm/api/ActivityApi";
 import { useGetDealsByIds } from "~community/crm/api/DealApi";
 import AddActivityTaskModalContent from "~community/crm/components/molecules/AddActivityTaskModalContent/AddActivityTaskModalContent";
+import ConnectGoogleCalendarModal from "~community/crm/components/molecules/ConnectGoogleCalendarModal/ConnectGoogleCalendarModal";
 import LogCallModalContent from "~community/crm/components/molecules/LogCallModalContent/LogCallModalContent";
 import LogMeetingModalContent from "~community/crm/components/molecules/LogMeetingModalContent/LogMeetingModalContent";
+import ScheduleMeetingModalContent from "~community/crm/components/molecules/ScheduleMeetingModalContent/ScheduleMeetingModalContent";
+import ScheduleMeetingUpgradeModal from "~community/crm/components/molecules/ScheduleMeetingUpgradeModal/ScheduleMeetingUpgradeModal";
 import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmTaskCompletionPayload } from "~community/crm/types/CrmCommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 import { getMissingDealIds, mergeDeals } from "~community/crm/utils/dealUtil";
+import { useIsGoogleCalendarConnected } from "~enterprise/common/api/CalendarApi";
+import useTier from "~enterprise/common/hooks/useTier";
+import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
 const ActivitiesContent: FC = () => {
   const translateText = useTranslator("crmModule");
@@ -65,6 +72,32 @@ const ActivitiesContent: FC = () => {
   >({});
   const [isLogCallModalOpen, setIsLogCallModalOpen] = useState(false);
   const [isLogMeetingModalOpen, setIsLogMeetingModalOpen] = useState(false);
+  const [isScheduleMeetingModalOpen, setIsScheduleMeetingModalOpen] =
+    useState(false);
+  const [isConnectCalendarModalOpen, setIsConnectCalendarModalOpen] =
+    useState(false);
+  const [isScheduleUpgradeModalOpen, setIsScheduleUpgradeModalOpen] =
+    useState(false);
+
+  const { isFreeTier } = useTier();
+  const { globalLoginMethod } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      globalLoginMethod: state.globalLoginMethod
+    }))
+  );
+  const { data: isGoogleCalendarConnected } = useIsGoogleCalendarConnected();
+
+  const handleScheduleMeetingClick = (): void => {
+    if (isFreeTier) {
+      setIsScheduleUpgradeModalOpen(true);
+      return;
+    }
+    if (isGoogleCalendarConnected) {
+      setIsScheduleMeetingModalOpen(true);
+      return;
+    }
+    setIsConnectCalendarModalOpen(true);
+  };
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
 
   const isAllTab = activeTab === ActivityTab.ALL;
@@ -285,6 +318,21 @@ const ActivitiesContent: FC = () => {
       }
     : null;
 
+  const scheduleMeetingButton: ButtonV2Props | null =
+    activeTab === ActivityTab.MEETINGS &&
+    globalLoginMethod !== GlobalLoginMethod.MICROSOFT
+      ? {
+          variant: "tertiary",
+          type: "button",
+          onClick: handleScheduleMeetingClick,
+          children: translateText([
+            "activities",
+            "toolbar",
+            "scheduleMeetingBtn"
+          ])
+        }
+      : null;
+
   return (
     <div className="flex flex-col w-full gap-4 pt-5.5 lg:pt-1">
       <ActivityToolbar
@@ -301,7 +349,15 @@ const ActivitiesContent: FC = () => {
         isTeamMembersError={isCrmInitialDataError}
         timeZone={displayZone}
         showControls={showControls}
-        action={showControls && actionButton && <ButtonV2 {...actionButton} />}
+        action={
+          showControls &&
+          actionButton && (
+            <div className="flex items-center gap-2">
+              {scheduleMeetingButton && <ButtonV2 {...scheduleMeetingButton} />}
+              <ButtonV2 {...actionButton} />
+            </div>
+          )
+        }
       />
       {isLogCallModalOpen && (
         <LogCallModalContent onClose={() => setIsLogCallModalOpen(false)} />
@@ -309,6 +365,21 @@ const ActivitiesContent: FC = () => {
       {isLogMeetingModalOpen && (
         <LogMeetingModalContent
           onClose={() => setIsLogMeetingModalOpen(false)}
+        />
+      )}
+      {isScheduleMeetingModalOpen && (
+        <ScheduleMeetingModalContent
+          onClose={() => setIsScheduleMeetingModalOpen(false)}
+        />
+      )}
+      {isConnectCalendarModalOpen && (
+        <ConnectGoogleCalendarModal
+          onClose={() => setIsConnectCalendarModalOpen(false)}
+        />
+      )}
+      {isScheduleUpgradeModalOpen && (
+        <ScheduleMeetingUpgradeModal
+          onClose={() => setIsScheduleUpgradeModalOpen(false)}
         />
       )}
       {isAddTaskModalOpen && (
