@@ -420,10 +420,12 @@ const resolveIntegrationsAccess: AccessGuard = ({
 const resolveInvoiceIntegrationsAccess: AccessGuard = ({
   request,
   currentPath,
-  claims
+  claims,
+  roles
 }) =>
   currentPath.startsWith(ROUTES.INVOICE.INTEGRATIONS.BASE) &&
-  !getClaimTiers(claims).includes(TierEnum.PRO)
+  (!roles.includes(AdminTypes.INVOICE_ADMIN) ||
+    !getClaimTiers(claims).includes(TierEnum.PRO))
     ? redirectToUnauthorized(request)
     : null;
 
