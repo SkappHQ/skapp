@@ -10,6 +10,16 @@ export const useIsGoogleCalendarConnected = () => {
   };
 };
 
+export const useConnectGoogleCalendar = (
+  _onSuccess: (data: { authUrl?: string }) => void,
+  _onError: () => void
+) => {
+  return {
+    mutate: (_frontendRedirectUrl: string) => {},
+    isPending: false
+  };
+};
+
 export const useIsMicrosoftCalendarConnected = () => {
   return {
     data: false
