@@ -109,7 +109,11 @@ export const getChangedCompanyFields = (
   }
 
   if (currentValues.industryId !== initialValues.industryId) {
-    changedFields.industryId = currentValues.industryId;
+    if (currentValues.industryId != null) {
+      changedFields.industryId = currentValues.industryId;
+    } else if (!currentValues.industryName) {
+      changedFields.isIndustryRemoved = true;
+    }
   }
 
   if (currentValues.industryName !== initialValues.industryName) {

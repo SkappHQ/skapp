@@ -220,10 +220,9 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 			task.setDueAt(requestDto.getDueAt());
 		}
 
-		if (requestDto.getNotes().isPresent()) {
-			String notes = requestDto.getNotes().get();
-			CrmValidations.validateTaskNotes(notes);
-			task.setNotes(notes);
+		if (requestDto.getNotes() != null) {
+			CrmValidations.validateTaskNotes(requestDto.getNotes());
+			task.setNotes(requestDto.getNotes());
 		}
 
 		if (requestDto.getOwnerId() != null) {
@@ -231,30 +230,24 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 			task.setOwner(owner);
 		}
 
-		if (requestDto.getContactId().isPresent()) {
-			Long contactId = requestDto.getContactId().get();
-			if (contactId != null) {
-				CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(contactId)
-					.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
-				task.setContact(contact);
-				task.setCompany(contact.getCompany());
-			}
-			else {
-				task.setContact(null);
-				task.setCompany(null);
-			}
+		if (Boolean.TRUE.equals(requestDto.getIsContactRemoved())) {
+			task.setContact(null);
+			task.setCompany(null);
+		}
+		else if (requestDto.getContactId() != null) {
+			CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
+			task.setContact(contact);
+			task.setCompany(contact.getCompany());
 		}
 
-		if (requestDto.getDealId().isPresent()) {
-			Long dealId = requestDto.getDealId().get();
-			if (dealId != null) {
-				CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(dealId)
-					.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
-				task.setDeal(deal);
-			}
-			else {
-				task.setDeal(null);
-			}
+		if (Boolean.TRUE.equals(requestDto.getIsDealRemoved())) {
+			task.setDeal(null);
+		}
+		else if (requestDto.getDealId() != null) {
+			CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+			task.setDeal(deal);
 		}
 
 		if (task.getDeal() != null && task.getContact() != null) {
