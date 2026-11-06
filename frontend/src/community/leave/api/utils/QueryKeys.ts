@@ -347,7 +347,7 @@ export const policyLeaveQueryKeys = {
     endDate
   ],
   ALL_TEAM_LEAVE_TREND: () => [...policyLeaveQueryKeys.ALL, "team-leave-trend"],
-  TEAM_LEAVE_TREND: (teamId: number) => [
+  TEAM_LEAVE_TREND: (teamId: number | string) => [
     ...policyLeaveQueryKeys.ALL_TEAM_LEAVE_TREND(),
     teamId
   ],

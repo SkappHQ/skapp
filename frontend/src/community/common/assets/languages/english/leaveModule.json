@@ -939,6 +939,7 @@
     "selectAllText": "Select All"
   },
   "dashboard": {
+    "somethingWentWrong": "Something went wrong",
     "dashboard": "Dashboard",
     "leave": "Leave",
     "all": "all employees",
@@ -995,6 +996,7 @@
     "stepTimeSheet": "Timesheet",
     "teamMember": "Team Member",
     "leaveTrendForYear": "Leave trend for the year",
-    "allMembers": "ALL MEMBERS"
+    "allMembers": "ALL MEMBERS",
+    "somethingWentWrong": "Something went wrong"
   }
 }

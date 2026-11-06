@@ -17,7 +17,10 @@ import {
   UNPAGINATED_SIZE
 } from "~community/leave/constants/policyLeaveTypeConstants";
 import { initialPolicyLeaveRequestParams } from "~community/leave/store/policyLeaveStore";
-import { LeaveTypeBreakDownReturnTypes } from "~community/leave/types/LeaveUtilizationTypes";
+import {
+  LeaveTypeBreakDownReturnTypes,
+  LeaveTypeBreakdownResponseType
+} from "~community/leave/types/LeaveUtilizationTypes";
 import {
   EmployeePolicyBalanceType,
   EmployeePolicyBalancesResponse,
@@ -38,7 +41,11 @@ import {
   PolicyResourceAvailabilityParams,
   PolicyResourceAvailabilityResponse
 } from "~community/leave/types/PolicyLeaveTypes";
-import { LeaveTrendReturnTypes } from "~community/leave/types/TeamLeaveAnalyticsTypes";
+import {
+  APIResponseDataType,
+  LeaveTrendForYearResponseType,
+  LeaveTrendReturnTypes
+} from "~community/leave/types/TeamLeaveAnalyticsTypes";
 import { getPolicyLeaveRequestQueryParams } from "~community/leave/utils/policyLeave/policyLeaveUtils";
 
 const getMyPolicyBalances = async (
@@ -137,19 +144,41 @@ export const useGetPolicyResourceAvailability = ({
   });
 };
 
+const isTeamIdSelected = (teamId: number | string): boolean =>
+  teamId !== "" && !Number.isNaN(Number(teamId));
+
+const getPolicyTeamLeaveTrend = async (
+  teamId: number | string
+): Promise<APIResponseDataType<LeaveTrendForYearResponseType>> => {
+  const response = await authFetch.get<
+    APIResponseDataType<LeaveTrendForYearResponseType>
+  >(policyLeaveEndPoints.GET_TEAM_LEAVE_TREND, {
+    params: { teamId, leaveTypeIds: ALL_POLICY_LEAVE_TYPES_ID }
+  });
+  return response.data;
+};
+
 export const useGetPolicyTeamLeaveTrend = (
-  teamId: number,
+  teamId: number | string,
   enabled = true
 ): UseQueryResult<LeaveTrendReturnTypes> => {
   return useQuery({
     queryKey: policyLeaveQueryKeys.TEAM_LEAVE_TREND(teamId),
-    queryFn: () =>
-      authFetch.get(policyLeaveEndPoints.GET_TEAM_LEAVE_TREND, {
-        params: { teamId, leaveTypeIds: ALL_POLICY_LEAVE_TYPES_ID }
-      }),
-    select: (response) => LeaveTrendForYearPreProcessor(response?.data),
-    enabled: enabled && !!teamId
+    queryFn: () => getPolicyTeamLeaveTrend(teamId),
+    select: (data) => LeaveTrendForYearPreProcessor(data),
+    enabled: enabled && isTeamIdSelected(teamId)
   });
+};
+
+const getPolicyLeaveTypeBreakdown = async (
+  teamId: number | string
+): Promise<APIResponseDataType<LeaveTypeBreakdownResponseType>> => {
+  const response = await authFetch.get<
+    APIResponseDataType<LeaveTypeBreakdownResponseType>
+  >(policyLeaveEndPoints.GET_LEAVE_TYPE_BREAKDOWN, {
+    params: { teamIds: teamId }
+  });
+  return response.data;
 };
 
 export const useGetPolicyLeaveTypeBreakdown = (
@@ -158,13 +187,9 @@ export const useGetPolicyLeaveTypeBreakdown = (
 ): UseQueryResult<LeaveTypeBreakDownReturnTypes> => {
   return useQuery({
     queryKey: policyLeaveQueryKeys.LEAVE_TYPE_BREAKDOWN(teamId),
-    queryFn: () =>
-      authFetch.get(policyLeaveEndPoints.GET_LEAVE_TYPE_BREAKDOWN, {
-        params: { teamIds: teamId }
-      }),
-    select: (response) =>
-      leaveTypeBreakdownPreProcessor(response?.data?.results?.[0]),
-    enabled: enabled && teamId !== ""
+    queryFn: () => getPolicyLeaveTypeBreakdown(teamId),
+    select: (data) => leaveTypeBreakdownPreProcessor(data?.results?.[0]),
+    enabled: enabled && isTeamIdSelected(teamId)
   });
 };
 

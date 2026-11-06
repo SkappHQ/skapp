@@ -143,7 +143,7 @@ const LeaveTypeBreakdownChart = ({
                 isGraph
               />
             </Stack>
-            {isLoading || toggle === undefined ? (
+            {isLoading ? (
               <Box sx={classes.loadingPlaceholder} />
             ) : error ? (
               <Box sx={classes.errorContainer}>
@@ -151,6 +151,8 @@ const LeaveTypeBreakdownChart = ({
                   {translateTexts(["somethingWentWrong"])}
                 </Typography>
               </Box>
+            ) : toggle === undefined ? (
+              <Box sx={classes.loadingPlaceholder} />
             ) : (
               <Box
                 sx={{

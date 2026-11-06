@@ -25,23 +25,33 @@ const TeamLeaveAnalyticsContent: FC<Props> = ({ teamId }) => {
   const { isLeavePoliciesEnabled, isLoading: isPolicyConfigLoading } =
     useLeavePoliciesEnabled();
 
-  const { data: legacyLeaveTrendData, isLoading: isLegacyTrendPending } =
-    useGetTeamLeaveTrendForYear(
-      Number(teamId),
-      getDateForPeriod("year", "start"),
-      getDateForPeriod("year", "end"),
-      !isPolicyConfigLoading && !isLeavePoliciesEnabled
-    );
+  const {
+    data: legacyLeaveTrendData,
+    isLoading: isLegacyTrendPending,
+    error: legacyLeaveTrendError
+  } = useGetTeamLeaveTrendForYear(
+    Number(teamId),
+    getDateForPeriod("year", "start"),
+    getDateForPeriod("year", "end"),
+    !isPolicyConfigLoading && !isLeavePoliciesEnabled
+  );
 
-  const { data: policyLeaveTrendData, isLoading: isPolicyTrendPending } =
-    useGetPolicyTeamLeaveTrend(
-      Number(teamId),
-      !isPolicyConfigLoading && isLeavePoliciesEnabled
-    );
+  const {
+    data: policyLeaveTrendData,
+    isLoading: isPolicyTrendPending,
+    error: policyLeaveTrendError
+  } = useGetPolicyTeamLeaveTrend(
+    teamId,
+    !isPolicyConfigLoading && isLeavePoliciesEnabled
+  );
 
   const leaveTrendData = isLeavePoliciesEnabled
     ? policyLeaveTrendData
     : legacyLeaveTrendData;
+
+  const leaveTrendError = isLeavePoliciesEnabled
+    ? policyLeaveTrendError
+    : legacyLeaveTrendError;
 
   const isTrendPending =
     isPolicyConfigLoading ||
@@ -54,6 +64,7 @@ const TeamLeaveAnalyticsContent: FC<Props> = ({ teamId }) => {
       <LeaveAnalyticsTrendForYear
         data={leaveTrendData}
         isLoading={isTrendPending}
+        error={leaveTrendError}
         chartFilters={chartFilters}
         setChartFilters={setChartFilters}
       />

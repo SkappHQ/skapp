@@ -102,12 +102,15 @@ const LeaveDashboard = (): JSX.Element => {
   const { data: absenceRate } = useGetAbsenceRate(teamId, isFetchingEnabled);
   const legacyBreakdown = useGetLeaveTypeBreakdownChartData(
     teamId,
-    !isPolicyConfigLoading && !isLeavePoliciesEnabled
+    isFetchingEnabled &&
+      teamId !== "" &&
+      !isPolicyConfigLoading &&
+      !isLeavePoliciesEnabled
   );
 
   const policyBreakdown = useGetPolicyLeaveTypeBreakdown(
     teamId,
-    !isPolicyConfigLoading && isLeavePoliciesEnabled
+    isFetchingEnabled && !isPolicyConfigLoading && isLeavePoliciesEnabled
   );
 
   const { error, data: datasets } = isLeavePoliciesEnabled
@@ -117,7 +120,7 @@ const LeaveDashboard = (): JSX.Element => {
   const isLoading =
     isPolicyConfigLoading ||
     (isLeavePoliciesEnabled
-      ? policyBreakdown.isPending
+      ? policyBreakdown.isLoading
       : legacyBreakdown.isLoading);
 
   useGoogleAnalyticsEvent({
