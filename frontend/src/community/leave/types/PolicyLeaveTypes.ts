@@ -5,7 +5,10 @@ import {
   SortOrderTypes
 } from "~community/common/types/CommonTypes";
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
+import { LeaveHistoryDataTypes as EmployeeLeaveHistoryDataTypes } from "~community/leave/types/AnalyticsTypes";
 import { PolicyType } from "~community/leave/types/LeavePolicyTypes";
+import { LeaveStore } from "~community/leave/types/StoreTypes";
+import { LeaveHistoryDataTypes as TeamLeaveHistoryDataTypes } from "~community/leave/types/TeamLeaveAnalyticsTypes";
 import { HolidayDurationType } from "~community/people/types/HolidayTypes";
 
 export enum PolicyBalanceDisabledReason {
@@ -217,4 +220,25 @@ export interface PolicyLeaveRequestQueryParams {
   year: string;
   status?: string;
   policyId?: string;
+}
+
+export type PolicyTeamLeaveHistoryQueryParams =
+  LeaveStore["teamLeaveAnalyticParams"];
+
+export interface PolicyEmployeeLeaveHistoryQueryParams {
+  startDate: string;
+  endDate: string;
+  leaveType?: string;
+  status?: string;
+  isExport: boolean;
+  page: string;
+  size: string;
+}
+
+export interface PolicyTeamLeaveHistoryResponse {
+  results: TeamLeaveHistoryDataTypes[];
+}
+
+export interface PolicyEmployeeLeaveHistoryResponse {
+  results: EmployeeLeaveHistoryDataTypes[];
 }

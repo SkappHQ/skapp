@@ -18,6 +18,12 @@ import {
   getDateForPeriod
 } from "~community/common/utils/dateTimeUtils";
 import { useGetLeaveTypes } from "~community/leave/api/LeaveApi";
+import { useGetPolicyLeaveTypes } from "~community/leave/api/PolicyLeaveTypeApi";
+import {
+  UNPAGINATED_PAGE,
+  UNPAGINATED_SIZE
+} from "~community/leave/constants/policyLeaveTypeConstants";
+import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useLeaveStore } from "~community/leave/store/store";
 import {
   LeaveStatusTypeFilter,
@@ -60,7 +66,17 @@ const TeamAnalyticsLeaveHistoryTable: FC<Props> = ({
     status: [],
     type: []
   });
-  const { data: leaveTypesData } = useGetLeaveTypes();
+  const { isLeavePoliciesEnabled, isLoading: isPolicyConfigLoading } =
+    useLeavePoliciesEnabled();
+  const { data: leaveTypesData } = useGetLeaveTypes({
+    enabled: !isPolicyConfigLoading && !isLeavePoliciesEnabled
+  });
+  const { data: policyLeaveTypesData } = useGetPolicyLeaveTypes({
+    isActive: true,
+    page: UNPAGINATED_PAGE,
+    size: UNPAGINATED_SIZE,
+    enabled: !isPolicyConfigLoading && isLeavePoliciesEnabled
+  });
 
   const {
     resetTeamLeaveAnalyticsParams,
@@ -193,11 +209,16 @@ const TeamAnalyticsLeaveHistoryTable: FC<Props> = ({
 
   const leaveTypeOptions = useMemo(
     () =>
-      leaveTypesData?.map((leaveType) => ({
-        id: leaveType.typeId.toString(),
-        name: leaveType.name
-      })) || [],
-    [leaveTypesData]
+      isLeavePoliciesEnabled
+        ? policyLeaveTypesData?.items?.map((leaveType) => ({
+            id: leaveType.id.toString(),
+            name: leaveType.name
+          })) || []
+        : leaveTypesData?.map((leaveType) => ({
+            id: leaveType.typeId.toString(),
+            name: leaveType.name
+          })) || [],
+    [isLeavePoliciesEnabled, leaveTypesData, policyLeaveTypesData]
   );
 
   const getLeaveTypeNameById = (id: string) => {
