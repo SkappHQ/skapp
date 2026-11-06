@@ -7,6 +7,7 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import { FC, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
@@ -22,7 +23,10 @@ import ActivityOwnerField from "~community/crm/components/molecules/ActivityOwne
 import ActivityRelatedToField from "~community/crm/components/molecules/ActivityRelatedToField/ActivityRelatedToField";
 import { useGetPriorityOptions } from "~community/crm/hooks/useGetPriorityOptions";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmAddTaskFormValues } from "~community/crm/types/CrmCommonTypes";
+import {
+  CrmAddTaskFormErrorField,
+  CrmAddTaskFormValues
+} from "~community/crm/types/CrmCommonTypes";
 import { isDealMatchingCompany } from "~community/crm/utils/dealUtil";
 
 interface Props {
@@ -30,15 +34,7 @@ interface Props {
 }
 
 const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
-  const {
-    values,
-    errors,
-    status,
-    touched,
-    handleChange,
-    handleBlur,
-    setFieldValue
-  } = formik;
+  const { values, status, handleChange, handleBlur, setFieldValue } = formik;
 
   const translateText = useTranslator("crmModule", "activities");
   const translateAria = useTranslator(
@@ -50,17 +46,15 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
   const displayZone = useDisplayZone();
   const priorityOptions = useGetPriorityOptions();
 
-  const contacts = useCrmStore((state) => state.contacts);
-  const deals = useCrmStore((state) => state.deals);
+  const { contacts, deals } = useCrmStore(
+    useShallow((state) => ({
+      contacts: state.contacts,
+      deals: state.deals
+    }))
+  );
 
-  const [isAssociationsOpen, setIsAssociationsOpen] = useState(false);
   const [isDealClearedNoticeVisible, setIsDealClearedNoticeVisible] =
     useState(false);
-
-  const handleDealCleared = (): void => {
-    setIsDealClearedNoticeVisible(true);
-    setIsAssociationsOpen(true);
-  };
 
   const contactCompanyId = values.contactId
     ? contacts[values.contactId]?.companyId
@@ -78,11 +72,12 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
       status.mismatchedDealId === values.dealId &&
       status.mismatchedContactId === values.contactId);
 
-  const isAssociationsVisible = isAssociationsOpen || isDealMismatch;
-
   const dueDate = values.dueAt
     ? instantToPickedDay(values.dueAt, displayZone)
     : null;
+
+  const getFieldError = (field: CrmAddTaskFormErrorField) =>
+    formik.touched[field] ? formik.errors[field] : "";
 
   const handleDueDateSelect = (date?: Date): void => {
     setFieldValue(
@@ -105,8 +100,8 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
           "placeholders",
           "taskName"
         ])}
-        errorMessage={touched.name ? errors.name : ""}
-        state={touched.name && errors.name ? "error" : "default"}
+        errorMessage={getFieldError("name")}
+        state={getFieldError("name") ? "error" : "default"}
         onChange={handleChange}
         onBlur={handleBlur}
         aria-label={translateAria(["taskName"])}
@@ -121,10 +116,8 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
         value={values.priority ?? ""}
         onChange={(value) => setFieldValue("priority", value, true)}
         label={translateText(["addTask", "modal", "labels", "priority"])}
-        variant={
-          touched.priority && errors.priority ? "primary-error" : "primary"
-        }
-        errorMessage={touched.priority ? errors.priority : ""}
+        variant={getFieldError("priority") ? "primary-error" : "primary"}
+        errorMessage={getFieldError("priority")}
         className="rounded-lg"
         ariaLabel={translateAria(["priority"])}
         width="100%"
@@ -150,8 +143,8 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
                   "placeholders",
                   "dueDate"
                 ])}
-                errorMessage={touched.dueAt ? errors.dueAt : ""}
-                state={touched.dueAt && errors.dueAt ? "error" : "default"}
+                errorMessage={getFieldError("dueAt")}
+                state={getFieldError("dueAt") ? "error" : "default"}
                 aria-label={translateAria(["dueDate"])}
                 rightIcon={<CalendarIcon />}
                 fullWidth
@@ -171,16 +164,21 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
         formik={formik}
         label={translateText(["addTask", "modal", "labels", "contact"])}
         fieldAriaLabel={translateAria(["contact"])}
-        onDealCleared={handleDealCleared}
+        onDealCleared={() => setIsDealClearedNoticeVisible(true)}
       />
 
       <TextArea
         name="notes"
         value={values.notes}
         label={translateText(["addTask", "modal", "labels", "notes"])}
-        placeholder={translateText(["logActivity", "placeholders", "comments"])}
-        errorMessage={touched.notes ? errors.notes : ""}
-        state={touched.notes && errors.notes ? "error" : "default"}
+        placeholder={translateText([
+          "addTask",
+          "modal",
+          "placeholders",
+          "notes"
+        ])}
+        errorMessage={getFieldError("notes")}
+        state={getFieldError("notes") ? "error" : "default"}
         onChange={handleChange}
         onBlur={handleBlur}
         rows={2}
@@ -189,29 +187,16 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
       />
 
       <ActivityAssociations
-        isOpen={isAssociationsVisible}
-        onToggle={() => setIsAssociationsOpen(!isAssociationsVisible)}
+        isForcedOpen={isDealClearedNoticeVisible || isDealMismatch}
       >
         <ActivityDealField
           id="add-task-deal"
           formik={formik}
           fieldAriaLabel={translateAria(["deal"])}
-          clearedNoticeText={translateText([
-            "addTask",
-            "modal",
-            "notices",
-            "dealCleared"
-          ])}
           isClearedNoticeVisible={isDealClearedNoticeVisible}
+          isMismatch={isDealMismatch}
           onDealChange={() => setIsDealClearedNoticeVisible(false)}
           {...(contactCompanyId && { filterCompanyId: contactCompanyId })}
-          {...(isDealMismatch && {
-            errorMessage: translateText([
-              "logActivity",
-              "validations",
-              "dealMismatch"
-            ])
-          })}
         />
         <ActivityRelatedToField
           id="add-task-related-to"

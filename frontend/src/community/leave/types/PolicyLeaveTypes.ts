@@ -1,3 +1,4 @@
+import { daysTypes } from "~community/common/constants/stringConstants";
 import {
   LeaveStates,
   SortKeyTypes,
@@ -5,6 +6,7 @@ import {
 } from "~community/common/types/CommonTypes";
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
 import { PolicyType } from "~community/leave/types/LeavePolicyTypes";
+import { HolidayDurationType } from "~community/people/types/HolidayTypes";
 
 export enum PolicyBalanceDisabledReason {
   FULLY_UTILIZED = "FULLY_UTILIZED",
@@ -138,6 +140,73 @@ export interface PolicyLeaveRequestPageType {
 
 export interface PolicyLeaveRequestPageResponse {
   results: PolicyLeaveRequestPageType[];
+}
+
+export interface PolicyPendingLeaveCountType {
+  pendingCount: number;
+}
+
+export interface PolicyPendingLeaveCountResponse {
+  results: PolicyPendingLeaveCountType[];
+}
+
+export interface PolicyOnLeaveHolidayType {
+  id: number | null;
+  date: string;
+  name: string;
+  holidayDuration: HolidayDurationType | null;
+}
+
+export interface PolicyEmployeesOnLeaveType {
+  date: string;
+  isNonWorkingDay: boolean;
+  holidays: PolicyOnLeaveHolidayType[] | null;
+  onLeaveCount: number | null;
+  onlineCount: number | null;
+}
+
+export interface PolicyEmployeesOnLeaveResponse {
+  results: PolicyEmployeesOnLeaveType[];
+}
+
+export interface PolicyResourceAvailabilityParams {
+  teamIds: number | string | null;
+  startDate: string;
+  endDate: string;
+  enabled?: boolean;
+}
+
+export interface PolicyResourceAvailabilityEmployeeType {
+  employeeId: number;
+  firstName: string;
+  middleName: string | null;
+  lastName: string;
+  authPic: string | null;
+}
+
+export interface PolicyResourceAvailabilityLeaveRequestType {
+  leaveRequestId: number;
+  employee: PolicyResourceAvailabilityEmployeeType;
+  reviewer: PolicyResourceAvailabilityEmployeeType | null;
+  policyName: string;
+  leaveType: PolicyLeaveTypeDetailType;
+  startDate: string;
+  endDate: string;
+  leaveState: LeaveStates;
+}
+
+export interface PolicyResourceAvailabilityDayType {
+  date: string;
+  dayOfWeek: daysTypes;
+  isNonWorkingDay: boolean;
+  holidays: PolicyOnLeaveHolidayType[];
+  leaveCount: number;
+  availableCount: number;
+  leaveRequests: PolicyResourceAvailabilityLeaveRequestType[];
+}
+
+export interface PolicyResourceAvailabilityResponse {
+  results: PolicyResourceAvailabilityDayType[];
 }
 
 export interface PolicyLeaveRequestQueryParams {

@@ -208,6 +208,7 @@
         "cancel": "Cancel log a meeting",
         "save": "Save meeting",
         "attendees": "Meeting attendees",
+        "removeAttendee": "Remove attendee {{name}}",
         "deal": "Meeting deal",
         "relatedTo": "Meeting related company"
       }

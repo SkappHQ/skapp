@@ -3,6 +3,7 @@ import * as Yup from "yup";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import { getActivityOwnerValidation } from "~community/crm/activities/utils/activityValidations";
+import { CrmPriorityEnum } from "~community/crm/enums/common";
 
 export const getActivityTaskValidationSchema = (
   translator: TranslatorFunctionType
@@ -17,8 +18,7 @@ export const getActivityTaskValidationSchema = (
         characterLengths.TASK_NAME_LENGTH,
         translator(["tasks", "modal", "validations", "nameLength"])
       ),
-    priority: Yup.string()
-      .nullable()
+    priority: Yup.mixed<CrmPriorityEnum>()
       .required(
         translator([
           "activities",
@@ -27,7 +27,8 @@ export const getActivityTaskValidationSchema = (
           "validations",
           "priority"
         ])
-      ),
+      )
+      .oneOf(Object.values(CrmPriorityEnum)),
     dueAt: Yup.string()
       .nullable()
       .required(translator(["tasks", "modal", "validations", "dueDate"])),

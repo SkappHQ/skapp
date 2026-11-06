@@ -36,7 +36,6 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
     "modal"
   );
 
-  const [isAssociationsOpen, setIsAssociationsOpen] = useState(false);
   const [isBccOpen, setIsBccOpen] = useState(values.bccContactIds.length > 0);
   const [isCcOpen, setIsCcOpen] = useState(values.ccContactIds.length > 0);
 
@@ -236,10 +235,7 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
         aria-label={translateAria(["description"])}
       />
 
-      <ActivityAssociations
-        isOpen={isAssociationsOpen}
-        onToggle={() => setIsAssociationsOpen(!isAssociationsOpen)}
-      >
+      <ActivityAssociations isForcedOpen={false}>
         <ActivityDealField
           id="log-email-deal"
           formik={formik}

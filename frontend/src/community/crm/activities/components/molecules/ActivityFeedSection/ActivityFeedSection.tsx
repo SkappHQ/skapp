@@ -10,6 +10,7 @@ export interface ActivityFeedSectionProps {
   rows: ActivityRowData[];
   timeZone?: string;
   isShowCheckbox: boolean;
+  taskCompletions: Record<number, boolean>;
   onRowClick: (row: ActivityRowData) => void;
   onToggleComplete: (row: ActivityRowData, isCompleted: boolean) => void;
 }
@@ -20,6 +21,7 @@ const ActivityFeedSection: FC<ActivityFeedSectionProps> = ({
   rows,
   timeZone,
   isShowCheckbox,
+  taskCompletions,
   onRowClick,
   onToggleComplete
 }) => (
@@ -37,6 +39,7 @@ const ActivityFeedSection: FC<ActivityFeedSectionProps> = ({
             row={row}
             timeZone={timeZone}
             isShowCheckbox={isShowCheckbox}
+            taskCompletions={taskCompletions}
             onRowClick={onRowClick}
             onToggleComplete={onToggleComplete}
           />

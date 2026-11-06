@@ -282,20 +282,19 @@ const routes = [
           ManagerTypes.CRM_SALES_MANAGER,
           RepresentativeTypes.CRM_SALES_REPRESENTATIVE
         ]
+      },
+      {
+        id: "4E",
+        name: "Activities",
+        url: ROUTES.CRM.ACTIVITIES,
+        hasSubTree: false,
+        requiredAuthLevel: [
+          AdminTypes.SUPER_ADMIN,
+          AdminTypes.CRM_ADMIN,
+          ManagerTypes.CRM_SALES_MANAGER,
+          RepresentativeTypes.CRM_SALES_REPRESENTATIVE
+        ]
       }
-      // Feature flagged: Activities tab temporarily hidden
-      // {
-      //   id: "4E",
-      //   name: "Activities",
-      //   url: ROUTES.CRM.ACTIVITIES,
-      //   hasSubTree: false,
-      //   requiredAuthLevel: [
-      //     AdminTypes.SUPER_ADMIN,
-      //     AdminTypes.CRM_ADMIN,
-      //     ManagerTypes.CRM_SALES_MANAGER,
-      //     RepresentativeTypes.CRM_SALES_REPRESENTATIVE
-      //   ]
-      // }
     ]
   },
   {
@@ -445,7 +444,8 @@ const routes = [
     requiredAuthLevel: [
       AdminTypes.SUPER_ADMIN,
       AdminTypes.PEOPLE_ADMIN,
-      AdminTypes.ATTENDANCE_ADMIN
+      AdminTypes.ATTENDANCE_ADMIN,
+      AdminTypes.LEAVE_ADMIN
     ]
   },
   {

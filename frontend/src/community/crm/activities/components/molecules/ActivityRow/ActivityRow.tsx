@@ -20,6 +20,7 @@ export interface ActivityRowProps {
   row: ActivityRowData;
   timeZone?: string;
   isShowCheckbox: boolean;
+  taskCompletions: Record<number, boolean>;
   onRowClick: (row: ActivityRowData) => void;
   onToggleComplete: (row: ActivityRowData, isCompleted: boolean) => void;
 }
@@ -28,6 +29,7 @@ const ActivityRow: FC<ActivityRowProps> = ({
   row,
   timeZone,
   isShowCheckbox,
+  taskCompletions,
   onRowClick,
   onToggleComplete
 }) => {
@@ -43,7 +45,9 @@ const ActivityRow: FC<ActivityRowProps> = ({
 
   const rowId = `crm-activity-row-${getActivityRowKey(row)}`;
   const isTask = row.type === ActivityType.TASK;
-  const isCompletedStyleApplied = isTask && row.isCompleted;
+  const isCompleted =
+    row.id in taskCompletions ? taskCompletions[row.id] : row.isCompleted;
+  const isCompletedStyleApplied = isTask && isCompleted;
   const isStrikethroughApplied = isShowCheckbox && isCompletedStyleApplied;
 
   return (
@@ -55,7 +59,7 @@ const ActivityRow: FC<ActivityRowProps> = ({
         <ActivityRowCheckbox
           id={`${rowId}-checkbox`}
           subject={row.title}
-          isCompleted={row.isCompleted}
+          isCompleted={isCompleted}
           onToggle={(isCompleted) => onToggleComplete(row, isCompleted)}
         />
       )}
@@ -82,7 +86,6 @@ const ActivityRow: FC<ActivityRowProps> = ({
             className={`body2 truncate ${
               isCompletedStyleApplied ? "text-secondary-icon" : "text-black"
             } ${isStrikethroughApplied ? "line-through" : ""}`}
-            title={row.title}
           >
             {row.title}
           </span>

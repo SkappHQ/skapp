@@ -2,8 +2,7 @@ import {
   LeaveRequestStates,
   LeaveStates
 } from "~community/common/types/CommonTypes";
-
-import { leaveDurationTypes } from "./LeaveTypes";
+import { HolidayDurationType } from "~community/people/types/HolidayTypes";
 
 export interface LeaveType {
   typeId: number;
@@ -34,7 +33,7 @@ export interface LeaveRequest {
 export interface Holiday {
   id: string;
   name: string;
-  holidayDuration: leaveDurationTypes;
+  holidayDuration: HolidayDurationType | null;
 }
 
 export interface ResourceAvailabilityRecord {

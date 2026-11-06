@@ -80,42 +80,18 @@ const AddActivityTaskModalContent: FC<Props> = ({ onClose }) => {
     enableReinitialize: true
   });
 
-  const { values, dirty, isSubmitting, setSubmitting, setStatus, submitForm } =
-    formik;
-
-  const handleSuccess = (): void => {
-    setSubmitting(false);
-    onClose();
-    setToastMessage({
-      open: true,
-      toastType: ToastType.SUCCESS,
-      title: translateText([
-        "activities",
-        "addTask",
-        "modal",
-        "toastMessages",
-        "addSuccessTitle"
-      ]),
-      description: translateText([
-        "activities",
-        "addTask",
-        "modal",
-        "toastMessages",
-        "addSuccessDescription"
-      ])
-    });
-  };
+  const { dirty, isSubmitting, setSubmitting, setStatus, submitForm } = formik;
 
   const handleError = (error: ErrorResponse): void => {
     setSubmitting(false);
 
     if (
       error.response?.data?.results?.[0]?.messageKey ===
-      CrmErrorMessageKeyEnum.TASK_DEAL_COMPANY_MISMATCH
+      CrmErrorMessageKeyEnum.ACTIVITY_TASK_DEAL_COMPANY_MISMATCH
     ) {
       setStatus({
-        mismatchedDealId: values.dealId,
-        mismatchedContactId: values.contactId
+        mismatchedDealId: formik.values.dealId,
+        mismatchedContactId: formik.values.contactId
       });
       requestAnimationFrame(() => {
         document.getElementById("add-task-deal-input")?.focus();
@@ -140,6 +116,29 @@ const AddActivityTaskModalContent: FC<Props> = ({ onClose }) => {
         "errorDescription"
       ]),
       isIcon: true
+    });
+  };
+
+  const handleSuccess = (): void => {
+    setSubmitting(false);
+    onClose();
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateText([
+        "activities",
+        "addTask",
+        "modal",
+        "toastMessages",
+        "addSuccessTitle"
+      ]),
+      description: translateText([
+        "activities",
+        "addTask",
+        "modal",
+        "toastMessages",
+        "addSuccessDescription"
+      ])
     });
   };
 

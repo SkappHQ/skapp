@@ -29,15 +29,22 @@ import com.skapp.community.leaveplanner.payload.PolicyLeaveBalanceDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveDateWindowDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveUsageDto;
 import com.skapp.community.leaveplanner.payload.email.LeaveEmailDynamicFields;
+import com.skapp.community.leaveplanner.payload.request.PolicyEmployeesOnLeaveFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveAttachmentDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveAvailabilityRequestDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestUpdateDto;
+import com.skapp.community.leaveplanner.payload.request.PolicyPendingLeaveCountFilterDto;
+import com.skapp.community.leaveplanner.payload.request.PolicyResourceAvailabilityFilterDto;
 import com.skapp.community.leaveplanner.payload.response.EmployeePolicyBalanceResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveNotificationNudgeResponseDto;
+import com.skapp.community.leaveplanner.payload.response.PolicyEmployeesOnLeaveResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveAvailabilityResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveRequestResponseDto;
+import com.skapp.community.leaveplanner.payload.response.PolicyPendingLeaveCountResponseDto;
+import com.skapp.community.leaveplanner.payload.response.PolicyResourceAvailabilityLeaveRequestResponseDto;
+import com.skapp.community.leaveplanner.payload.response.PolicyResourceAvailabilityResponseDto;
 import com.skapp.community.leaveplanner.repository.EmployeeLeavePolicyDao;
 import com.skapp.community.leaveplanner.repository.PolicyLeaveRequestDao;
 import com.skapp.community.leaveplanner.service.LeaveCycleService;
@@ -61,6 +68,7 @@ import com.skapp.community.leaveplanner.util.PolicyLeaveUsageLookup;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.Holiday;
+import com.skapp.community.peopleplanner.payload.response.HolidayResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeManagerDao;
 import com.skapp.community.peopleplanner.repository.HolidayDao;
 import com.skapp.community.peopleplanner.util.PeopleUtil;
@@ -77,7 +85,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
+import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -91,6 +101,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -282,6 +293,23 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 	@Override
 	@Transactional(readOnly = true)
+	public ResponseEntityDto getSupervisedPendingPolicyLeaveCount(@NonNull PolicyPendingLeaveCountFilterDto filterDto) {
+		log.info("getSupervisedPendingPolicyLeaveCount: execution started");
+		requireLeavePoliciesEnabled();
+
+		User currentUser = userService.getCurrentUser();
+		long pendingCount = policyLeaveRequestDao.countSupervisedPendingRequests(
+				currentUser.getEmployee().getEmployeeId(), resolveTeamIds(filterDto.getTeamIds()));
+
+		PolicyPendingLeaveCountResponseDto responseDto = new PolicyPendingLeaveCountResponseDto();
+		responseDto.setPendingCount(pendingCount);
+
+		log.info("getSupervisedPendingPolicyLeaveCount: execution ended");
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getPolicyLeaveRequestById(@NonNull Long id) {
 		log.info("getPolicyLeaveRequestById: execution started");
 		requireLeavePoliciesEnabled();
@@ -413,6 +441,77 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 	@Override
 	@Transactional(readOnly = true)
+	public ResponseEntityDto getEmployeesOnLeaveToday(@NonNull PolicyEmployeesOnLeaveFilterDto filterDto) {
+		log.info("getEmployeesOnLeaveToday: execution started");
+		requireLeavePoliciesEnabled();
+
+		LocalDate today = timeZoneService.currentOrganizationDate();
+		PolicyEmployeesOnLeaveResponseDto responseDto = new PolicyEmployeesOnLeaveResponseDto();
+		responseDto.setDate(today);
+
+		List<HolidayResponseDto> holidays = leaveMapper
+			.holidaysToHolidayResponseDtoList(holidayDao.findAllByIsActiveTrueAndDate(today));
+		if (!holidays.isEmpty() || !resolveWorkingDays().contains(today.getDayOfWeek())) {
+			responseDto.setIsNonWorkingDay(true);
+			responseDto.setHolidays(holidays);
+			return new ResponseEntityDto(false, responseDto);
+		}
+
+		User currentUser = userService.getCurrentUser();
+		Long supervisorEmployeeId = LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser) ? null
+				: currentUser.getEmployee().getEmployeeId();
+		List<Long> teamIds = resolveTeamIds(filterDto.getTeamIds());
+
+		long onLeaveCount = policyLeaveRequestDao.countEmployeesOnApprovedLeaveOnDate(today, teamIds,
+				supervisorEmployeeId);
+		long employeeCount = policyLeaveRequestDao.countEmployeesInScope(teamIds, supervisorEmployeeId);
+
+		responseDto.setIsNonWorkingDay(false);
+		responseDto.setOnLeaveCount(onLeaveCount);
+		responseDto.setOnlineCount(employeeCount - onLeaveCount);
+
+		log.info("getEmployeesOnLeaveToday: execution ended");
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getResourceAvailability(@NonNull PolicyResourceAvailabilityFilterDto filterDto) {
+		log.info("getResourceAvailability: execution started");
+		requireLeavePoliciesEnabled();
+
+		LocalDate startDate = filterDto.getStartDate();
+		LocalDate endDate = filterDto.getEndDate();
+		validateResourceAvailabilityRange(startDate, endDate);
+
+		User currentUser = userService.getCurrentUser();
+		Long viewerEmployeeId = LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser) ? null
+				: currentUser.getEmployee().getEmployeeId();
+		List<Long> teamIds = resolveTeamIds(filterDto.getTeamIds());
+
+		List<PolicyResourceAvailabilityLeaveRequestResponseDto> leaveRequests = policyLeaveRequestDao
+			.findApprovedRequestsInRange(startDate, endDate, teamIds, viewerEmployeeId)
+			.stream()
+			.map(leaveMapper::policyLeaveRequestToPolicyResourceAvailabilityLeaveRequestResponseDto)
+			.toList();
+		long employeeCount = policyLeaveRequestDao.countEmployeesInScope(teamIds, viewerEmployeeId, true);
+		Map<LocalDate, List<Holiday>> holidaysByDate = holidayDao
+			.findAllByIsActiveTrueAndDateBetween(startDate, endDate)
+			.stream()
+			.collect(Collectors.groupingBy(Holiday::getDate));
+		Set<DayOfWeek> workingDays = resolveWorkingDays();
+
+		List<PolicyResourceAvailabilityResponseDto> days = startDate.datesUntil(endDate.plusDays(1))
+			.map(date -> toResourceAvailabilityDay(date, leaveRequests, employeeCount,
+					holidaysByDate.getOrDefault(date, List.of()), workingDays))
+			.toList();
+
+		log.info("getResourceAvailability: execution ended");
+		return new ResponseEntityDto(false, days);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
 	public Map<Long, PolicyLeaveBalanceDto> calculateBalancesForYear(Long employeeId,
 			List<EmployeeLeavePolicy> assignments, Integer year) {
 		log.info("calculateBalancesForYear: execution started");
@@ -462,6 +561,50 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		pageDto.setItems(
 				leaveMapper.policyLeaveRequestListToPolicyLeaveRequestResponseDtoList(leaveRequests.getContent()));
 		return pageDto;
+	}
+
+	private void validateResourceAvailabilityRange(LocalDate startDate, LocalDate endDate) {
+		if (startDate == null || endDate == null) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_REQUEST_DATE_RANGE_REQUIRED);
+		}
+		if (endDate.isBefore(startDate)) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INVALID_DATE_RANGE);
+		}
+	}
+
+	private PolicyResourceAvailabilityResponseDto toResourceAvailabilityDay(LocalDate date,
+			List<PolicyResourceAvailabilityLeaveRequestResponseDto> leaveRequests, long employeeCount,
+			List<Holiday> holidays, Set<DayOfWeek> workingDays) {
+		List<PolicyResourceAvailabilityLeaveRequestResponseDto> leaveRequestsOnDate = leaveRequests.stream()
+			.filter(leaveRequest -> !leaveRequest.getStartDate().isAfter(date)
+					&& !leaveRequest.getEndDate().isBefore(date))
+			.toList();
+		long leaveCount = leaveRequestsOnDate.stream()
+			.map(leaveRequest -> leaveRequest.getEmployee().getEmployeeId())
+			.distinct()
+			.count();
+		List<HolidayResponseDto> holidaysOnDate = leaveMapper.holidaysToHolidayResponseDtoList(holidays);
+
+		PolicyResourceAvailabilityResponseDto responseDto = new PolicyResourceAvailabilityResponseDto();
+		responseDto.setDate(date);
+		responseDto.setDayOfWeek(date.getDayOfWeek());
+		responseDto.setIsNonWorkingDay(!holidaysOnDate.isEmpty() || !workingDays.contains(date.getDayOfWeek()));
+		responseDto.setHolidays(holidaysOnDate);
+		responseDto.setLeaveCount(leaveCount);
+		responseDto.setAvailableCount(Math.max(0, employeeCount - leaveCount));
+		responseDto.setLeaveRequests(leaveRequestsOnDate);
+		return responseDto;
+	}
+
+	private Set<DayOfWeek> resolveWorkingDays() {
+		return timeConfigDao.findAll().stream().map(TimeConfig::getDay).collect(Collectors.toSet());
+	}
+
+	private List<Long> resolveTeamIds(List<Long> teamIds) {
+		if (CollectionUtils.isEmpty(teamIds) || teamIds.contains(PolicyLeaveConstant.ALL_TEAMS_ID)) {
+			return List.of();
+		}
+		return teamIds;
 	}
 
 	private boolean isOwnRequest(PolicyLeaveRequest leaveRequest, Employee currentEmployee) {

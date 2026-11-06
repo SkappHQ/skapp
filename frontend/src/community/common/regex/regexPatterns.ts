@@ -153,6 +153,14 @@ export function matchesNumberWithAtMostOneDecimalPlace(): RegExp {
   return /^(\d+(\.\d{0,1})?)?$/;
 }
 
+export function matchesNumberWithAtMostTwoDecimalPlaces(): RegExp {
+  return /^\d+(\.\d{1,2})?$/;
+}
+
+export function matchesComma(): RegExp {
+  return /,/g;
+}
+
 export function matchesCommaFollowedByNonWhitespace(): RegExp {
   return /,(\S)/g;
 }
