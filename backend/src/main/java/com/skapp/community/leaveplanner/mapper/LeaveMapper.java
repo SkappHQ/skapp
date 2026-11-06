@@ -33,7 +33,9 @@ import com.skapp.community.leaveplanner.payload.response.LeaveRequestResponseDto
 import com.skapp.community.leaveplanner.payload.response.LeaveRequestWithEmployeeResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveTypeBasicDetailsResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveTypeResponseDto;
+import com.skapp.community.leaveplanner.payload.response.PolicyLeaveHistoryResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveRequestResponseDto;
+import com.skapp.community.leaveplanner.payload.response.PolicyTeamLeaveHistoryResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyResourceAvailabilityLeaveRequestResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeBasicInfoResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeDetailResponseDto;
@@ -204,5 +206,21 @@ public interface LeaveMapper {
 	@Mapping(target = "leaveType", source = "policy.leaveType")
 	PolicyResourceAvailabilityLeaveRequestResponseDto policyLeaveRequestToPolicyResourceAvailabilityLeaveRequestResponseDto(
 			PolicyLeaveRequest policyLeaveRequest);
+
+	@Mapping(target = "leaveRequestId", source = "id")
+	@Mapping(target = "leaveType", source = "policy.leaveType")
+	PolicyLeaveHistoryResponseDto policyLeaveRequestToPolicyLeaveHistoryResponseDto(
+			PolicyLeaveRequest policyLeaveRequest);
+
+	List<PolicyLeaveHistoryResponseDto> policyLeaveRequestListToPolicyLeaveHistoryResponseDtoList(
+			List<PolicyLeaveRequest> policyLeaveRequests);
+
+	@Mapping(target = "employeeResponseDto", source = "employee")
+	@Mapping(target = "leaveRequestResponseDto", source = ".")
+	PolicyTeamLeaveHistoryResponseDto policyLeaveRequestToPolicyTeamLeaveHistoryResponseDto(
+			PolicyLeaveRequest policyLeaveRequest);
+
+	List<PolicyTeamLeaveHistoryResponseDto> policyLeaveRequestListToPolicyTeamLeaveHistoryResponseDtoList(
+			List<PolicyLeaveRequest> policyLeaveRequests);
 
 }
