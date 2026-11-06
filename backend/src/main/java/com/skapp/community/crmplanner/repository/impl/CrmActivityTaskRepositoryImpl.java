@@ -10,10 +10,12 @@ import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.payload.response.CrmActivityTaskResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityTaskRepository;
 import com.skapp.community.crmplanner.type.CrmActivityTaskFilterParams;
+import com.skapp.community.crmplanner.type.CrmActivityTaskPriority;
 import com.skapp.community.crmplanner.type.CrmActivityTaskSort;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Tuple;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
@@ -38,7 +40,7 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 	@Override
 	public List<CrmActivityTaskResponseDto> findTasks(CrmActivityTaskFilterParams params) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmActivityTaskResponseDto> query = cb.createQuery(CrmActivityTaskResponseDto.class);
+		CriteriaQuery<Tuple> query = cb.createTupleQuery();
 		Root<CrmActivityTask> task = query.from(CrmActivityTask.class);
 		Join<CrmActivityTask, Employee> owner = task.join(CrmActivityTask_.owner, JoinType.LEFT);
 		Path<Long> ownerId = owner.get(Employee_.employeeId);
@@ -86,15 +88,46 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 			orders.add(ascending ? cb.asc(task.get(CrmActivityTask_.id)) : cb.desc(task.get(CrmActivityTask_.id)));
 		}
 
-		query.select(cb.construct(CrmActivityTaskResponseDto.class, task.get(CrmActivityTask_.id),
-				task.get(CrmActivityTask_.name), task.get(CrmActivityTask_.dueAt), task.get(CrmActivityTask_.priority),
-				task.get(CrmActivityTask_.isCompleted), task.get(CrmActivityTask_.completedAt), ownerId,
-				task.get(CrmActivityTask_.contact).get(CrmContact_.id),
-				task.get(CrmActivityTask_.deal).get(CrmDeal_.id), company.get(CrmCompany_.id)))
+		query
+			.multiselect(task.get(CrmActivityTask_.id), task.get(CrmActivityTask_.name),
+					task.get(CrmActivityTask_.dueAt), task.get(CrmActivityTask_.priority),
+					task.get(CrmActivityTask_.isCompleted), task.get(CrmActivityTask_.completedAt),
+					task.get(CrmActivityTask_.notes), ownerId, task.get(CrmActivityTask_.contact).get(CrmContact_.id),
+					task.get(CrmActivityTask_.deal).get(CrmDeal_.id), company.get(CrmCompany_.id))
 			.where(predicates.toArray(new Predicate[0]))
 			.orderBy(orders);
 
-		return entityManager.createQuery(query).getResultList();
+		return entityManager.createQuery(query).getResultList().stream().map(row -> {
+			CrmActivityTaskResponseDto dto = new CrmActivityTaskResponseDto();
+			dto.setId(row.get(0, Long.class));
+			dto.setName(row.get(1, String.class));
+			dto.setDueAt(row.get(2, Instant.class));
+			dto.setPriority(row.get(3, CrmActivityTaskPriority.class));
+			dto.setIsCompleted(row.get(4, Boolean.class));
+			dto.setCompletedAt(row.get(5, Instant.class));
+			dto.setNotes(row.get(6, String.class));
+			dto.setOwnerId(row.get(7, Long.class));
+			dto.setContactId(row.get(8, Long.class));
+			dto.setDealId(row.get(9, Long.class));
+			dto.setCompanyId(row.get(10, Long.class));
+			return dto;
+		}).toList();
+	}
+
+	@Override
+	public CrmActivityTask findTaskById(Long id) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmActivityTask> query = cb.createQuery(CrmActivityTask.class);
+		Root<CrmActivityTask> task = query.from(CrmActivityTask.class);
+
+		task.fetch(CrmActivityTask_.contact, JoinType.LEFT);
+		task.fetch(CrmActivityTask_.deal, JoinType.LEFT);
+		task.fetch(CrmActivityTask_.company, JoinType.LEFT);
+
+		query.select(task)
+			.where(cb.equal(task.get(CrmActivityTask_.id), id), cb.isFalse(task.get(CrmActivityTask_.isDeleted)));
+
+		return entityManager.createQuery(query).getResultStream().findFirst().orElse(null);
 	}
 
 }

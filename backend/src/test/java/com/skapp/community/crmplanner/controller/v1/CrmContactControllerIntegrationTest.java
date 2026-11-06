@@ -35,7 +35,6 @@ import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
@@ -271,7 +270,7 @@ class CrmContactControllerIntegrationTest {
 		CrmContactEditRequestDto dto = new CrmContactEditRequestDto();
 		dto.setName("Jane Smith Updated");
 		dto.setEmail("jane.smith.updated@example.com");
-		dto.setCompanyId(JsonNullable.of(companyId));
+		dto.setCompanyId(companyId);
 		dto.setContactNumber("94779999999");
 		dto.setOwnerId(1L);
 		return dto;
@@ -617,7 +616,7 @@ class CrmContactControllerIntegrationTest {
 		CrmContactEditRequestDto dto = new CrmContactEditRequestDto();
 		dto.setName("  Updated Name  ");
 		dto.setEmail("  updated.email@example.com  ");
-		dto.setCompanyId(JsonNullable.of(companyId));
+		dto.setCompanyId(companyId);
 		dto.setContactNumber("  5551234567  ");
 		dto.setOwnerId(1L);
 
@@ -693,7 +692,7 @@ class CrmContactControllerIntegrationTest {
 		Long companyId = savedCompany().getId();
 		Long contactId = savedContact(companyId, "original@example.com").getId();
 
-		performPatchRawRequest(contactId, "{\"companyId\": null}").andDo(print())
+		performPatchRawRequest(contactId, "{\"isCompanyRemoved\": true}").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").doesNotExist());
@@ -705,8 +704,6 @@ class CrmContactControllerIntegrationTest {
 		Long companyId = savedCompany().getId();
 		Long contactId = savedContact(companyId, "original@example.com").getId();
 
-		// An absent companyId deserializes to JsonNullable.undefined(), which is
-		// distinct from an explicit null, so the existing company link is kept
 		performPatchRawRequest(contactId, "{\"name\": \"Name Without Company\"}").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
@@ -733,7 +730,7 @@ class CrmContactControllerIntegrationTest {
 		assertEquals(companyBId, crmDealDao.findById(deal.getId()).orElseThrow().getCompany().getId());
 		assertEquals(companyBId, crmTaskDao.findById(task.getId()).orElseThrow().getCompany().getId());
 
-		performPatchRawRequest(contactId, "{\"companyId\": null}").andDo(print()).andExpect(status().isOk());
+		performPatchRawRequest(contactId, "{\"isCompanyRemoved\": true}").andDo(print()).andExpect(status().isOk());
 
 		assertNull(crmDealDao.findById(deal.getId()).orElseThrow().getCompany());
 		assertNull(crmTaskDao.findById(task.getId()).orElseThrow().getCompany());

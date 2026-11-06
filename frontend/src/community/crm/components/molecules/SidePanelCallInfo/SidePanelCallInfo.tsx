@@ -51,6 +51,7 @@ const SidePanelCallInfo: FC<Props> = ({
         </PropertyRow>
       }
       date={loggedAt}
+      dateLabel={translateText(["activitySidePanel", "info", "date"])}
       startTime={loggedAt}
       secondaryRow={
         <PropertyRow

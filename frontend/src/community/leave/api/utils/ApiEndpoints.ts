@@ -80,7 +80,8 @@ export const policyLeaveEndPoints = {
   APPLY_POLICY_LEAVE: `${moduleAPIPath.LEAVE}/policy-leave`,
   GET_MY_POLICY_LEAVE_REQUESTS: `${moduleAPIPath.LEAVE}/policy-leave`,
   GET_PENDING_LEAVE_COUNT: `${moduleAPIPath.LEAVE}/policy-leave/requests/pending-count`,
-  GET_EMPLOYEES_ON_LEAVE_TODAY: `${moduleAPIPath.LEAVE}/policy-leave/on-leave`
+  GET_EMPLOYEES_ON_LEAVE_TODAY: `${moduleAPIPath.LEAVE}/policy-leave/on-leave`,
+  GET_RESOURCE_AVAILABILITY: `${moduleAPIPath.LEAVE}/policy-leave/resource-availability`
 };
 
 export const policyLeaveReviewEndPoints = {

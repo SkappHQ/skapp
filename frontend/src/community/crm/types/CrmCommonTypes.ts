@@ -8,6 +8,7 @@ export interface CrmCompanyEntity {
   id?: number;
   name?: string;
   industryId?: number | null;
+  isIndustryRemoved?: boolean;
   industryName?: string;
   website?: string;
   address?: string;
@@ -38,6 +39,7 @@ export interface CrmContactEntity {
   lastContactAt?: string;
   lastModifiedDate?: string;
   companyId?: number | null;
+  isCompanyRemoved?: boolean;
   companyName?: string;
   ownerId?: number;
   metrics?: CrmContactMetrics;
@@ -106,8 +108,10 @@ export interface CrmTaskEntity {
   typeId?: number;
   ownerId?: number;
   contactId?: number;
+  isContactRemoved?: boolean;
   companyId?: number;
   dealId?: number;
+  isDealRemoved?: boolean;
   relatedTaskIds?: number[];
 }
 
@@ -144,6 +148,19 @@ export type CrmTaskRecord = Record<number, CrmTaskEntity>;
 export type CrmTaskTypeRecord = Record<number, CrmTaskTypeEntity>;
 export type CrmIndustryRecord = Record<number, CrmIndustryEntity>;
 
+export interface CrmLogEmailFormValues {
+  fromAddress: string;
+  date: string | null;
+  time: string;
+  toContactIds: number[];
+  ccContactIds: number[];
+  bccContactIds: number[];
+  subject: string;
+  dealId: number | null;
+  companyId: number | null;
+  description: string;
+}
+
 export interface CrmLogCallFormValues {
   subject: string;
   date: string | null;
@@ -169,6 +186,11 @@ export interface CrmMeetingEntity {
   company?: CrmCompanyEntity;
 }
 
+export interface CrmTaskCompletionPayload {
+  id: number;
+  isCompleted: boolean;
+}
+
 export interface CrmLogMeetingFormValues {
   subject: string;
   date: string | null;
@@ -179,4 +201,31 @@ export interface CrmLogMeetingFormValues {
   comments: string;
   dealId: number | null;
   companyId: number | null;
+}
+
+export interface CrmAddTaskFormValues {
+  name: string;
+  priority: CrmPriorityEnum;
+  dueAt: string | null;
+  ownerId: number | null;
+  contactId: number | null;
+  dealId: number | null;
+  companyId: number | null;
+  notes: string;
+}
+
+export type CrmAddTaskFormErrorField = "name" | "priority" | "dueAt" | "notes";
+
+export interface CrmActivityTaskEntity {
+  id: number;
+  name: string;
+  priority: CrmPriorityEnum;
+  dueAt: string;
+  isCompleted: boolean;
+  completedAt?: string;
+  notes?: string;
+  ownerId: number;
+  contact?: CrmContactEntity;
+  deal?: CrmDealEntity;
+  company?: CrmCompanyEntity;
 }

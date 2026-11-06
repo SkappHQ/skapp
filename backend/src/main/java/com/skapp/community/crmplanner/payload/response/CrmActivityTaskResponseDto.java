@@ -1,7 +1,6 @@
 package com.skapp.community.crmplanner.payload.response;
 
 import com.skapp.community.crmplanner.type.CrmActivityTaskPriority;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,7 +10,6 @@ import java.time.Instant;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class CrmActivityTaskResponseDto {
 
 	private Long id;
@@ -26,6 +24,8 @@ public class CrmActivityTaskResponseDto {
 
 	private Instant completedAt;
 
+	private String notes;
+
 	private Long ownerId;
 
 	private Long contactId;
@@ -33,5 +33,11 @@ public class CrmActivityTaskResponseDto {
 	private Long dealId;
 
 	private Long companyId;
+
+	private CrmContactLookupResponseDto contact;
+
+	private CrmDealResponseDto deal;
+
+	private CrmCompanyLookupResponseDto company;
 
 }

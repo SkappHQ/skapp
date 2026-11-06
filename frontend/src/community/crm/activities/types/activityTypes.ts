@@ -100,6 +100,18 @@ export interface ActivityCallResponse extends ActivityListItemBase {
   contactId: number | null;
 }
 
+export interface ActivityEmailCreatePayload {
+  fromAddress: string | null;
+  loggedAt: string | null;
+  toContactIds: number[];
+  ccContactIds: number[];
+  bccContactIds: number[];
+  subject: string;
+  dealId: number | null;
+  companyId: number | null;
+  description: string;
+}
+
 export interface ActivityEmailResponse extends ActivityListItemBase {
   subject: string;
   loggedAt: string | null;
@@ -108,6 +120,7 @@ export interface ActivityEmailResponse extends ActivityListItemBase {
 
 export interface ActivityMeetingResponse extends ActivityListItemBase {
   name: string;
+  meetingDate: string | null;
   startAt: string | null;
   contactIds: number[];
 }
@@ -115,7 +128,7 @@ export interface ActivityMeetingResponse extends ActivityListItemBase {
 export interface ActivityTaskResponse extends ActivityListItemBase {
   name: string;
   dueAt: string | null;
-  priority: CrmPriorityEnum | null;
+  priority: CrmPriorityEnum;
   isCompleted: boolean;
   completedAt: string | null;
   contactId: number | null;
@@ -142,4 +155,15 @@ export interface ActivityMeetingCreatePayload {
   companyId: number | null;
   ownerId: number | null;
   comments: string;
+}
+
+export interface ActivityTaskCreatePayload {
+  name: string;
+  priority: CrmPriorityEnum;
+  dueAt: string | null;
+  ownerId: number | null;
+  contactId: number | null;
+  dealId: number | null;
+  companyId: number | null;
+  notes: string;
 }

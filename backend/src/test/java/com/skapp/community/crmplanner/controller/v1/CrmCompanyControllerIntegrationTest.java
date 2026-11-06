@@ -46,7 +46,6 @@ import com.skapp.community.crmplanner.constant.DefaultCrmIndustryTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.openapitools.jackson.nullable.JsonNullable;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -193,9 +192,9 @@ class CrmCompanyControllerIntegrationTest {
 	private CrmCompanyEditDto createValidEditPayload() {
 		CrmCompanyEditDto dto = new CrmCompanyEditDto();
 		dto.setName("Acme Corp");
-		dto.setWebsite(JsonNullable.of("https://acme.com"));
-		dto.setAddress(JsonNullable.of("123 Main St"));
-		dto.setContactNumber(JsonNullable.of("94771234567"));
+		dto.setWebsite("https://acme.com");
+		dto.setAddress("123 Main St");
+		dto.setContactNumber("94771234567");
 		return dto;
 	}
 
@@ -301,7 +300,7 @@ class CrmCompanyControllerIntegrationTest {
 		Long companyId = extractCompanyId(performPostRequest(createValidPayload()).andExpect(status().isCreated()));
 
 		CrmCompanyEditDto editDto = createValidEditPayload();
-		editDto.setIndustryId(JsonNullable.of(expectedIndustryId));
+		editDto.setIndustryId(expectedIndustryId);
 		performPatchRequest(companyId, editDto).andExpect(status().isOk())
 			.andExpect(jsonPath(RESULTS_0_PATH + "['industryId']").value(expectedIndustryId));
 
@@ -332,7 +331,7 @@ class CrmCompanyControllerIntegrationTest {
 		Long companyId = extractCompanyId(performPostRequest(createDto).andExpect(status().isCreated()));
 
 		CrmCompanyEditDto editDto = createValidEditPayload();
-		editDto.setIndustryId(JsonNullable.of(null));
+		editDto.setIsIndustryRemoved(true);
 		performPatchRequest(companyId, editDto).andExpect(status().isOk());
 
 		CrmCompany updatedCompany = crmCompanyDao.findById(companyId).orElseThrow();
@@ -615,9 +614,9 @@ class CrmCompanyControllerIntegrationTest {
 
 		CrmCompanyEditDto editDto = new CrmCompanyEditDto();
 		editDto.setName("Acme Corp Updated");
-		editDto.setWebsite(JsonNullable.of("https://acme-updated.com"));
-		editDto.setAddress(JsonNullable.of("456 New St"));
-		editDto.setContactNumber(JsonNullable.of("94779876543"));
+		editDto.setWebsite("https://acme-updated.com");
+		editDto.setAddress("456 New St");
+		editDto.setContactNumber("94779876543");
 
 		performPatchRequest(companyId, editDto).andDo(print())
 			.andExpect(status().isOk())
@@ -645,18 +644,18 @@ class CrmCompanyControllerIntegrationTest {
 			.asLong();
 
 		CrmCompanyEditDto editDto = new CrmCompanyEditDto();
-		editDto.setWebsite(JsonNullable.of(null));
-		editDto.setAddress(JsonNullable.of(null));
-		editDto.setContactNumber(JsonNullable.of(null));
+		editDto.setWebsite("");
+		editDto.setAddress("");
+		editDto.setContactNumber("");
 
 		performPatchRequest(companyId, editDto).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
 
 		CrmCompany persisted = crmCompanyDao.findByIdAndIsDeletedFalse(companyId).orElseThrow();
-		assertThat(persisted.getWebsite()).isNull();
-		assertThat(persisted.getAddress()).isNull();
-		assertThat(persisted.getContactNumber()).isNull();
+		assertThat(persisted.getWebsite()).isEmpty();
+		assertThat(persisted.getAddress()).isEmpty();
+		assertThat(persisted.getContactNumber()).isEmpty();
 	}
 
 	@Test

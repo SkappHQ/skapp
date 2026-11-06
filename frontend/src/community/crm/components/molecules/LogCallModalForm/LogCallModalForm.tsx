@@ -15,13 +15,12 @@ import {
   toPickerDate
 } from "~community/crm/activities/utils/activityUtil";
 import ActivityAssociations from "~community/crm/components/molecules/ActivityAssociations/ActivityAssociations";
+import ActivityContactField from "~community/crm/components/molecules/ActivityContactField/ActivityContactField";
 import ActivityDealField from "~community/crm/components/molecules/ActivityDealField/ActivityDealField";
 import ActivityOwnerField from "~community/crm/components/molecules/ActivityOwnerField/ActivityOwnerField";
 import ActivityRelatedToField from "~community/crm/components/molecules/ActivityRelatedToField/ActivityRelatedToField";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
-
-import LogCallContactField from "./LogCallContactField";
 
 interface Props {
   formik: FormikProps<CrmLogCallFormValues>;
@@ -146,10 +145,14 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
 
       <div className="flex flex-row items-start gap-[0.625rem]">
         <div className="flex-1">
-          <LogCallContactField
+          <ActivityContactField
             id="log-call-contactId"
             formik={formik}
+            label={translateText(["logCall", "modal", "labels", "contact"])}
+            fieldAriaLabel={translateAria(["contact"])}
             onDealCleared={() => setIsDealClearedNoticeVisible(true)}
+            errorMessage={touched.contactId ? errors.contactId : ""}
+            required
           />
         </div>
         <div className="flex-1">

@@ -38,7 +38,9 @@ export const attendanceEndpoints = {
   UPDATE_INCOMPLETE_CLOCKOUTS: (id: number): string =>
     `/time/incomplete-clockouts/${id}`,
   GET_EMPLOYEE_LEAVE_STATUS: (date: string): string =>
-    `/leave/availability?date=${date}`
+    `/leave/availability?date=${date}`,
+  GET_EMPLOYEE_POLICY_LEAVE_STATUS: (date: string): string =>
+    `/leave/policy-leave/day-availability?date=${date}`
 };
 
 export const attendanceDashboardEndpoints = {

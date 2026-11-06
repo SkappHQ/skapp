@@ -34,6 +34,8 @@ const CrmUiSlice: StateCreator<
   selectedTaskId: null,
   selectedDealStageId: null,
   selectedCallId: null,
+  selectedMeetingId: null,
+  selectedActivityTaskId: null,
 
   isCrmSidePanelOpen: false,
   crmSidePanelType: null,
@@ -72,6 +74,10 @@ const CrmUiSlice: StateCreator<
   setSelectedDealStageId: (selectedDealStageId: number | null) =>
     set({ selectedDealStageId }),
   setSelectedCallId: (selectedCallId: number | null) => set({ selectedCallId }),
+  setSelectedMeetingId: (selectedMeetingId: number | null) =>
+    set({ selectedMeetingId }),
+  setSelectedActivityTaskId: (selectedActivityTaskId: number | null) =>
+    set({ selectedActivityTaskId }),
 
   openCrmSidePanel: (crmSidePanelType: CrmSidePanelTypes) =>
     set({ isCrmSidePanelOpen: true, crmSidePanelType }),
@@ -80,7 +86,9 @@ const CrmUiSlice: StateCreator<
       isCrmSidePanelOpen: false,
       crmSidePanelType: null,
       selectedContactId: null,
-      selectedCompanyId: null
+      selectedCompanyId: null,
+      selectedMeetingId: null,
+      selectedActivityTaskId: null
     }),
 
   setPreselectedStageId: (preselectedStageId: number | null) =>

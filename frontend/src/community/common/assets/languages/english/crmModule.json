@@ -579,6 +579,42 @@
     }
   },
   "activities": {
+    "addTask": {
+      "modal": {
+        "title": "Add task",
+        "labels": {
+          "taskName": "Task",
+          "priority": "Priority",
+          "dueDate": "Due date",
+          "contact": "Contact",
+          "notes": "Notes"
+        },
+        "placeholders": {
+          "taskName": "Enter the task name",
+          "dueDate": "Select date",
+          "notes": "Add message"
+        },
+        "validations": {
+          "name": "Task name is required",
+          "priority": "Priority is required"
+        },
+        "notices": {
+          "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
+        },
+        "toastMessages": {
+          "addSuccessTitle": "Task added successfully",
+          "addSuccessDescription": "Task has been added successfully",
+          "errorDescription": "Failed to add task"
+        }
+      }
+    },
+    "taskSidePanel": {
+      "noDealsDescription": "No deals are linked to this task",
+      "deleteTask": "Delete task",
+      "info": {
+        "dueDate": "Due date"
+      }
+    },
     "callSidePanel": {
       "noDealsDescription": "No deals are linked to this call",
       "editCall": "Edit call",
@@ -586,6 +622,33 @@
       "info": {
         "contact": "Contact",
         "duration": "Duration"
+      }
+    },
+    "logEmail": {
+      "modal": {
+        "title": "Log email",
+        "labels": {
+          "from": "From",
+          "time": "Time",
+          "to": "To",
+          "cc": "Cc",
+          "bcc": "Bcc",
+          "description": "Description"
+        },
+        "placeholders": {
+          "from": "Enter email address",
+          "recipients": "Search contacts",
+          "description": "Add description"
+        },
+        "validations": {
+          "dateTime": "Date and time are required",
+          "to": "Please select at least one contact"
+        },
+        "toastMessages": {
+          "addSuccessTitle": "Email logged successfully",
+          "addSuccessDescription": "Email has been logged successfully",
+          "errorDescription": "Failed to log email"
+        }
       }
     },
     "logCall": {
@@ -678,7 +741,9 @@
       "loadError": "Couldn't load your activities. Please refresh to try again."
     },
     "toolbar": {
+      "addTaskBtn": "Add task",
       "logCallBtn": "Log a call",
+      "logMeetingBtn": "Log a meeting",
       "search": {
         "label": "Search activities",
         "resultCount_one": "{{count}} activity found",
@@ -716,7 +781,8 @@
         },
         "reset": "Reset filters",
         "apply": "Apply filters"
-      }
+      },
+      "logEmailBtn": "Log email"
     },
     "logMeeting": {
       "modal": {

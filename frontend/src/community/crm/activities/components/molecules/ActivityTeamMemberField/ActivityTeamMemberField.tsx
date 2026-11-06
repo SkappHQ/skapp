@@ -76,6 +76,7 @@ const ActivityTeamMemberField: FC<ActivityTeamMemberFieldProps> = ({
     <div className="flex w-full flex-col gap-1">
       <SelectableSearchField
         positionStrategy="fixed"
+        isFlip={false}
         id={id}
         label={label}
         placeholder={placeholder}

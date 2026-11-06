@@ -1,12 +1,16 @@
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, ButtonV2Props } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import ActivityCallSidePanel from "~community/crm/activities/components/organisms/ActivityCallSidePanel/ActivityCallSidePanel";
 import ActivityFeed from "~community/crm/activities/components/organisms/ActivityFeed/ActivityFeed";
+import ActivityMeetingSidePanel from "~community/crm/activities/components/organisms/ActivityMeetingSidePanel/ActivityMeetingSidePanel";
+import ActivityTaskSidePanel from "~community/crm/activities/components/organisms/ActivityTaskSidePanel/ActivityTaskSidePanel";
 import ActivityToolbar from "~community/crm/activities/components/organisms/ActivityToolbar/ActivityToolbar";
 import { DEFAULT_ACTIVITY_TAB } from "~community/crm/activities/constants/activityConstants";
 import {
@@ -30,19 +34,24 @@ import {
   useGetActivityEmails,
   useGetActivityFeed,
   useGetActivityMeetings,
-  useGetActivityTasks
+  useGetActivityTasks,
+  useUpdateTaskCompletion
 } from "~community/crm/api/ActivityApi";
 import { useGetDealsByIds } from "~community/crm/api/DealApi";
+import AddActivityTaskModalContent from "~community/crm/components/molecules/AddActivityTaskModalContent/AddActivityTaskModalContent";
 import LogCallModalContent from "~community/crm/components/molecules/LogCallModalContent/LogCallModalContent";
+import LogMeetingModalContent from "~community/crm/components/molecules/LogMeetingModalContent/LogMeetingModalContent";
 import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
 import { useCrmStore } from "~community/crm/store/store";
+import { CrmTaskCompletionPayload } from "~community/crm/types/CrmCommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 import { getMissingDealIds, mergeDeals } from "~community/crm/utils/dealUtil";
 
 const ActivitiesContent: FC = () => {
   const translateText = useTranslator("crmModule");
   const displayZone = useDisplayZone();
+  const { setToastMessage } = useToast();
   const { isCrmSalesManager } = useSessionData();
   const isManager = Boolean(isCrmSalesManager);
 
@@ -51,7 +60,12 @@ const ActivitiesContent: FC = () => {
   const [activeTab, setActiveTab] = useState<ActivityTab>(DEFAULT_ACTIVITY_TAB);
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<ActivityFilterValues>({});
+  const [taskCompletions, setTaskCompletions] = useState<
+    Record<number, boolean>
+  >({});
   const [isLogCallModalOpen, setIsLogCallModalOpen] = useState(false);
+  const [isLogMeetingModalOpen, setIsLogMeetingModalOpen] = useState(false);
+  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
 
   const isAllTab = activeTab === ActivityTab.ALL;
 
@@ -59,18 +73,26 @@ const ActivitiesContent: FC = () => {
     owners,
     deals,
     selectedCallId,
+    selectedMeetingId,
+    selectedActivityTaskId,
     isCrmSidePanelOpen,
     setDeals,
     setSelectedCallId,
+    setSelectedMeetingId,
+    setSelectedActivityTaskId,
     openCrmSidePanel
   } = useCrmStore(
     useShallow((store) => ({
       owners: store.owners,
       deals: store.deals,
       selectedCallId: store.selectedCallId,
+      selectedMeetingId: store.selectedMeetingId,
+      selectedActivityTaskId: store.selectedActivityTaskId,
       isCrmSidePanelOpen: store.isCrmSidePanelOpen,
       setDeals: store.setDeals,
       setSelectedCallId: store.setSelectedCallId,
+      setSelectedMeetingId: store.setSelectedMeetingId,
+      setSelectedActivityTaskId: store.setSelectedActivityTaskId,
       openCrmSidePanel: store.openCrmSidePanel
     }))
   );
@@ -165,15 +187,103 @@ const ActivitiesContent: FC = () => {
     isAllTab && feed.data ? feed.data.pages[0].totalItems : rows.length;
   const hasActiveFilters =
     searchTerm.length > 0 || Object.keys(filters).length > 0;
+  const showControls =
+    isLoading || isError || hasActiveFilters || rows.length > 0;
 
   const handleRowClick = (row: ActivityRow): void => {
-    if (row.type !== ActivityType.CALL) return;
-
-    setSelectedCallId(row.id);
-    openCrmSidePanel(CrmSidePanelTypes.CALL_SIDE_PANEL);
+    switch (row.type) {
+      case ActivityType.CALL:
+        setSelectedCallId(row.id);
+        openCrmSidePanel(CrmSidePanelTypes.CALL_SIDE_PANEL);
+        break;
+      case ActivityType.MEETING:
+        setSelectedMeetingId(row.id);
+        openCrmSidePanel(CrmSidePanelTypes.MEETING_SIDE_PANEL);
+        break;
+      case ActivityType.TASK:
+        setSelectedActivityTaskId(row.id);
+        openCrmSidePanel(CrmSidePanelTypes.ACTIVITY_TASK_SIDE_PANEL);
+        break;
+      default:
+        break;
+    }
   };
 
-  const handleToggleComplete = (): void => {};
+  const applyCompletion = (taskId: number, isCompleted: boolean): void => {
+    setTaskCompletions((current) => ({ ...current, [taskId]: isCompleted }));
+  };
+
+  const handleToggleError = ({
+    id,
+    isCompleted
+  }: CrmTaskCompletionPayload): void => {
+    applyCompletion(id, !isCompleted);
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText([
+        "tasks",
+        "common",
+        "toastMessages",
+        "toggleErrorTitle"
+      ]),
+      description: translateText([
+        "tasks",
+        "common",
+        "toastMessages",
+        "toggleErrorDescription"
+      ])
+    });
+  };
+
+  const { mutate: updateTaskCompletion, isPending } =
+    useUpdateTaskCompletion(handleToggleError);
+
+  const handleToggleComplete = (
+    row: ActivityRow,
+    isCompleted: boolean
+  ): void => {
+    if (isPending) return;
+
+    applyCompletion(row.id, isCompleted);
+
+    updateTaskCompletion({ id: row.id, isCompleted });
+  };
+
+  const toolbarActions: Record<
+    ActivityTab,
+    { labelKey: string; onClick: () => void } | null
+  > = {
+    [ActivityTab.ALL]: null,
+    [ActivityTab.TASKS]: {
+      labelKey: "addTaskBtn",
+      onClick: () => setIsAddTaskModalOpen(true)
+    },
+    [ActivityTab.CALLS]: {
+      labelKey: "logCallBtn",
+      onClick: () => setIsLogCallModalOpen(true)
+    },
+    [ActivityTab.MEETINGS]: {
+      labelKey: "logMeetingBtn",
+      onClick: () => setIsLogMeetingModalOpen(true)
+    },
+    [ActivityTab.EMAILS]: null
+  };
+
+  const toolbarAction = toolbarActions[activeTab];
+
+  const actionButton: ButtonV2Props | null = toolbarAction
+    ? {
+        variant: "primary",
+        type: "button",
+        onClick: toolbarAction.onClick,
+        children: translateText([
+          "activities",
+          "toolbar",
+          toolbarAction.labelKey
+        ])
+      }
+    : null;
 
   return (
     <div className="flex flex-col w-full gap-4 pt-5.5 lg:pt-1">
@@ -190,23 +300,21 @@ const ActivitiesContent: FC = () => {
         teamMembers={teamMembers}
         isTeamMembersError={isCrmInitialDataError}
         timeZone={displayZone}
-        showControls={
-          isLoading || isError || hasActiveFilters || rows.length > 0
-        }
-        action={
-          activeTab === ActivityTab.CALLS && (
-            <ButtonV2
-              variant="primary"
-              type="button"
-              onClick={() => setIsLogCallModalOpen(true)}
-            >
-              {translateText(["activities", "toolbar", "logCallBtn"])}
-            </ButtonV2>
-          )
-        }
+        showControls={showControls}
+        action={showControls && actionButton && <ButtonV2 {...actionButton} />}
       />
       {isLogCallModalOpen && (
         <LogCallModalContent onClose={() => setIsLogCallModalOpen(false)} />
+      )}
+      {isLogMeetingModalOpen && (
+        <LogMeetingModalContent
+          onClose={() => setIsLogMeetingModalOpen(false)}
+        />
+      )}
+      {isAddTaskModalOpen && (
+        <AddActivityTaskModalContent
+          onClose={() => setIsAddTaskModalOpen(false)}
+        />
       )}
       <ActivityFeed
         activeTab={activeTab}
@@ -217,6 +325,8 @@ const ActivitiesContent: FC = () => {
         hasNextPage={isAllTab && feed.hasNextPage}
         isFetchingNextPage={isAllTab && feed.isFetchingNextPage}
         timeZone={displayZone}
+        taskCompletions={taskCompletions}
+        emptyStateButton={showControls ? null : actionButton}
         onLoadMore={feed.fetchNextPage}
         onRowClick={handleRowClick}
         onToggleComplete={handleToggleComplete}
@@ -224,6 +334,16 @@ const ActivitiesContent: FC = () => {
       {selectedCallId !== null && (
         <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
           <ActivityCallSidePanel callId={selectedCallId} />
+        </SidePanelWrapper>
+      )}
+      {selectedMeetingId !== null && (
+        <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
+          <ActivityMeetingSidePanel meetingId={selectedMeetingId} />
+        </SidePanelWrapper>
+      )}
+      {selectedActivityTaskId !== null && (
+        <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
+          <ActivityTaskSidePanel taskId={selectedActivityTaskId} />
         </SidePanelWrapper>
       )}
     </div>

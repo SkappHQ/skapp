@@ -1,0 +1,33 @@
+package com.skapp.community.crmplanner.payload.request;
+
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.Instant;
+import java.util.List;
+
+@Getter
+@Setter
+public class CrmActivityEmailEditRequestDto {
+
+	private Instant loggedAt;
+
+	private List<Long> toContactIds;
+
+	private List<Long> ccContactIds;
+
+	private List<Long> bccContactIds;
+
+	private String subject;
+
+	private Long dealId;
+
+	private Boolean isDealRemoved;
+
+	private Long companyId;
+
+	private Boolean isCompanyRemoved;
+
+	private String description;
+
+}
