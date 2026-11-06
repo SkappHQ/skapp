@@ -7,6 +7,7 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import { FC, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -18,7 +19,16 @@ import ActivityAssociations from "~community/crm/components/molecules/ActivityAs
 import ActivityContactsField from "~community/crm/components/molecules/ActivityContactsField/ActivityContactsField";
 import ActivityDealField from "~community/crm/components/molecules/ActivityDealField/ActivityDealField";
 import ActivityRelatedToField from "~community/crm/components/molecules/ActivityRelatedToField/ActivityRelatedToField";
-import { CrmLogEmailFormValues } from "~community/crm/types/CrmCommonTypes";
+import { useCrmStore } from "~community/crm/store/store";
+import {
+  CrmContactEntity,
+  CrmLogEmailFormValues
+} from "~community/crm/types/CrmCommonTypes";
+import {
+  getContactCompanyIds,
+  getContactDisplayName
+} from "~community/crm/utils/contactUtil";
+import { isDealMatchingContacts } from "~community/crm/utils/dealUtil";
 
 interface Props {
   formik: FormikProps<CrmLogEmailFormValues>;
@@ -38,6 +48,66 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
 
   const [isBccOpen, setIsBccOpen] = useState(values.bccContactIds.length > 0);
   const [isCcOpen, setIsCcOpen] = useState(values.ccContactIds.length > 0);
+
+  const { contacts, deals } = useCrmStore(
+    useShallow((store) => ({
+      contacts: store.contacts,
+      deals: store.deals
+    }))
+  );
+
+  const [isDealClearedNoticeVisible, setIsDealClearedNoticeVisible] =
+    useState(false);
+
+  const recipientIds = [
+    ...values.toContactIds,
+    ...values.ccContactIds,
+    ...values.bccContactIds
+  ];
+
+  const recipients = recipientIds.map((contactId) => contacts[contactId]);
+
+  const recipientCompanyIds = Array.from(
+    new Set(getContactCompanyIds(contacts, recipientIds))
+  );
+
+  const isDealMismatch = Boolean(
+    values.dealId &&
+    recipients.length > 0 &&
+    !isDealMatchingContacts(deals[values.dealId], recipients)
+  );
+
+  const handleRecipientsChange = (
+    nextFieldContacts: CrmContactEntity[],
+    otherRecipientIds: number[]
+  ): void => {
+    const selectedDeal = values.dealId ? deals[values.dealId] : null;
+
+    const nextRecipients = [
+      ...nextFieldContacts,
+      ...otherRecipientIds.map((contactId) => contacts[contactId])
+    ];
+
+    const isDealUnmatched =
+      selectedDeal &&
+      nextRecipients.length > 0 &&
+      isDealMatchingContacts(selectedDeal, recipients) &&
+      !isDealMatchingContacts(selectedDeal, nextRecipients);
+
+    if (isDealUnmatched) {
+      setFieldValue("dealId", null);
+      setIsDealClearedNoticeVisible(true);
+    }
+  };
+
+  const primaryRecipient =
+    values.toContactIds.length > 0 ? contacts[values.toContactIds[0]] : null;
+
+  const isCompanyMismatch = Boolean(
+    values.companyId &&
+    primaryRecipient &&
+    values.companyId !== primaryRecipient.companyId
+  );
 
   const pickedDate = values.date ? toPickerDate(values.date) : null;
 
@@ -85,8 +155,8 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
                   "placeholders",
                   "date"
                 ])}
-                errorMessage={touched.date ? errors.date : ""}
-                state={touched.date && errors.date ? "error" : "default"}
+                errorMessage={errors.date}
+                state={errors.date ? "error" : "default"}
                 aria-label={translateAria(["date"])}
                 rightIcon={<CalendarIcon />}
                 fullWidth
@@ -104,8 +174,8 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
             onChange={(value) => setFieldValue("time", value, true)}
             label={translateText(["logEmail", "modal", "labels", "time"])}
             placeholder={translateText(["logActivity", "placeholders", "time"])}
-            variant={touched.time && errors.time ? "primary-error" : "primary"}
-            errorMessage={touched.time ? errors.time : ""}
+            variant={errors.time ? "primary-error" : "primary"}
+            errorMessage={errors.time}
             className="rounded-lg"
             ariaLabel={translateAria(["time"])}
             width="100%"
@@ -128,6 +198,12 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
         ])}
         groupAriaLabel={translateAria(["to"])}
         hiddenContactIds={[...values.ccContactIds, ...values.bccContactIds]}
+        onContactsChange={(nextContacts) =>
+          handleRecipientsChange(nextContacts, [
+            ...values.ccContactIds,
+            ...values.bccContactIds
+          ])
+        }
         required
         fillsRelatedTo
         actions={
@@ -178,6 +254,12 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
                   ...values.toContactIds,
                   ...values.ccContactIds
                 ]}
+                onContactsChange={(nextContacts) =>
+                  handleRecipientsChange(nextContacts, [
+                    ...values.toContactIds,
+                    ...values.ccContactIds
+                  ])
+                }
               />
             </div>
           )}
@@ -199,6 +281,12 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
                   ...values.toContactIds,
                   ...values.bccContactIds
                 ]}
+                onContactsChange={(nextContacts) =>
+                  handleRecipientsChange(nextContacts, [
+                    ...values.toContactIds,
+                    ...values.bccContactIds
+                  ])
+                }
               />
             </div>
           )}
@@ -235,16 +323,31 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
         aria-label={translateAria(["description"])}
       />
 
-      <ActivityAssociations isForcedOpen={false}>
+      <ActivityAssociations
+        isForcedOpen={isDealClearedNoticeVisible || isDealMismatch}
+      >
         <ActivityDealField
           id="log-email-deal"
           formik={formik}
           fieldAriaLabel={translateAria(["deal"])}
+          isClearedNoticeVisible={isDealClearedNoticeVisible}
+          isMismatch={isDealMismatch}
+          onDealChange={() => setIsDealClearedNoticeVisible(false)}
+          {...(recipientCompanyIds.length === 1 && {
+            filterCompanyId: recipientCompanyIds[0]
+          })}
         />
         <ActivityRelatedToField
           id="log-email-related-to"
           formik={formik}
           fieldAriaLabel={translateAria(["relatedTo"])}
+          {...(isCompanyMismatch &&
+            primaryRecipient && {
+              mismatchTooltip: translateText(
+                ["logActivity", "tooltips", "relatedToMismatch"],
+                { name: getContactDisplayName(primaryRecipient) }
+              )
+            })}
         />
       </ActivityAssociations>
     </div>

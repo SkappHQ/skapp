@@ -6,6 +6,7 @@ import { TIME_FORMAT_24_HOUR } from "~community/common/constants/timeConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { ErrorResponse } from "~community/common/types/CommonTypes";
 import { ActivityEmailCreatePayload } from "~community/crm/activities/types/activityTypes";
 import {
   getTimeSlotStart,
@@ -14,6 +15,7 @@ import {
 import { useCreateEmail } from "~community/crm/api/ActivityApi";
 import LogActivityModal from "~community/crm/components/molecules/LogActivityModal/LogActivityModal";
 import LogEmailModalForm from "~community/crm/components/molecules/LogEmailModalForm/LogEmailModalForm";
+import { CrmErrorMessageKeyEnum } from "~community/crm/enums/common";
 import { CrmLogEmailFormValues } from "~community/crm/types/CrmCommonTypes";
 import { getEmailValidationSchema } from "~community/crm/utils/emailValidations";
 
@@ -111,8 +113,19 @@ const LogEmailModalContent: FC<Props> = ({ onClose }) => {
     });
   };
 
-  const handleError = (): void => {
+  const handleError = (error: ErrorResponse): void => {
     setSubmitting(false);
+
+    if (
+      error.response?.data?.results?.[0]?.messageKey ===
+      CrmErrorMessageKeyEnum.ACTIVITY_EMAIL_DEAL_COMPANY_MISMATCH
+    ) {
+      requestAnimationFrame(() => {
+        document.getElementById("log-email-deal-input")?.focus();
+      });
+      return;
+    }
+
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
