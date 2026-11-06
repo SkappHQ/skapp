@@ -178,7 +178,7 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 			if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, deal.getOwner().getEmployeeId())) {
 				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_VIEW_DENIED);
 			}
-			CrmValidations.validateCallDealMatchesContactCompany(deal, contact);
+			CrmValidations.validateDealMatchesContactCompany(deal, contact);
 			call.setDeal(deal);
 		}
 
@@ -238,7 +238,10 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 			call.setContact(contact);
 		}
 
-		if (requestDto.getDealId() != null) {
+		if (Boolean.TRUE.equals(requestDto.getIsDealRemoved())) {
+			call.setDeal(null);
+		}
+		else if (requestDto.getDealId() != null) {
 			CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 			if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, deal.getOwner().getEmployeeId())) {
@@ -247,14 +250,17 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 			call.setDeal(deal);
 		}
 
-		if (requestDto.getCompanyId() != null) {
+		if (Boolean.TRUE.equals(requestDto.getIsCompanyRemoved())) {
+			call.setCompany(null);
+		}
+		else if (requestDto.getCompanyId() != null) {
 			CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
 			call.setCompany(company);
 		}
 
 		if (requestDto.getContactId() != null || requestDto.getDealId() != null) {
-			CrmValidations.validateCallDealMatchesContactCompany(call.getDeal(), call.getContact());
+			CrmValidations.validateDealMatchesContactCompany(call.getDeal(), call.getContact());
 		}
 
 		CrmActivityCall updatedCall = crmActivityCallDao.save(call);

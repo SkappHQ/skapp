@@ -31,6 +31,7 @@ import {
   nowInZone
 } from "~community/common/utils/dateTimeUtils";
 import { DefaultDayCapacityType } from "~community/configurations/types/TimeConfigurationsTypes";
+import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { EmployeeDataResponse } from "~community/people/types/EmployeeTypes";
 
 import { graphDataPreprocessor } from "../actions/attendanceDashboardPreProcessor";
@@ -284,13 +285,21 @@ export const useGetEmployeeLeaveStatus = (
   const currentDate = nowInZone(organizationZone);
   const formattedDate = currentDate.toFormat(DATE_FORMAT);
   const currentHour = currentDate.hour;
+  const { isLeavePoliciesEnabled, isLoading: isLeavePolicyConfigLoading } =
+    useLeavePoliciesEnabled();
 
   const query = useQuery({
-    enabled: !!organizationZone,
-    queryKey: [getAttendanceQueryKeys.employeeLeaveStatus(), formattedDate],
+    enabled: !!organizationZone && !isLeavePolicyConfigLoading,
+    queryKey: [
+      getAttendanceQueryKeys.employeeLeaveStatus(),
+      formattedDate,
+      isLeavePoliciesEnabled
+    ],
     queryFn: async () => {
       return await authFetch.get(
-        attendanceEndpoints.GET_EMPLOYEE_LEAVE_STATUS(formattedDate)
+        isLeavePoliciesEnabled
+          ? attendanceEndpoints.GET_EMPLOYEE_POLICY_LEAVE_STATUS(formattedDate)
+          : attendanceEndpoints.GET_EMPLOYEE_LEAVE_STATUS(formattedDate)
       );
     }
   });
@@ -299,34 +308,32 @@ export const useGetEmployeeLeaveStatus = (
 
   useEffect(() => {
     if (isSuccess && data) {
-      const response = data;
-      if (response?.data.results.length !== 0) {
-        const params = response?.data.results[0];
-        if (
-          isLeaveApplicable(
-            getLeaveDuration(params?.leaveState),
-            currentHour,
-            timeConfigData
-          )
-        ) {
-          setAttendanceLeaveStatus("onLeave", true);
-          setAttendanceLeaveStatus(
-            "duration",
-            getLeaveDuration(params?.leaveState)
-          );
-          setAttendanceLeaveStatus(
-            "date",
-            formatDateWithOrdinalIndicator(new Date(params?.startDate))
-          );
-          setAttendanceLeaveStatus("leaveName", params?.leaveType?.name);
-          setAttendanceLeaveStatus("leaveIcon", params?.leaveType?.emojiCode);
-        } else {
-          setAttendanceLeaveStatus("onLeave", false);
-          setAttendanceLeaveStatus("duration", "");
-          setAttendanceLeaveStatus("date", "");
-          setAttendanceLeaveStatus("leaveName", "");
-          setAttendanceLeaveStatus("leaveIcon", "");
-        }
+      const params = data?.data.results[0];
+      if (
+        params &&
+        isLeaveApplicable(
+          getLeaveDuration(params?.leaveState),
+          currentHour,
+          timeConfigData
+        )
+      ) {
+        setAttendanceLeaveStatus("onLeave", true);
+        setAttendanceLeaveStatus(
+          "duration",
+          getLeaveDuration(params?.leaveState)
+        );
+        setAttendanceLeaveStatus(
+          "date",
+          formatDateWithOrdinalIndicator(new Date(params?.startDate))
+        );
+        setAttendanceLeaveStatus("leaveName", params?.leaveType?.name);
+        setAttendanceLeaveStatus("leaveIcon", params?.leaveType?.emojiCode);
+      } else {
+        setAttendanceLeaveStatus("onLeave", false);
+        setAttendanceLeaveStatus("duration", "");
+        setAttendanceLeaveStatus("date", "");
+        setAttendanceLeaveStatus("leaveName", "");
+        setAttendanceLeaveStatus("leaveIcon", "");
       }
     }
   }, [isSuccess, data, setAttendanceLeaveStatus]);

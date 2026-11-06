@@ -61,6 +61,7 @@ const SidePanelMeetingInfo: FC<Props> = ({
 
       <SidePanelActivityInfo
         date={DateTime.fromISO(meeting.meetingDate)}
+        dateLabel={translateText(["activitySidePanel", "info", "date"])}
         {...(meeting.startAt && {
           startTime: DateTime.fromISO(meeting.startAt)
         })}

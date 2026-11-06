@@ -46,6 +46,7 @@ import {
   TOTAL_PERCENTAGE
 } from "~community/leave/constants/stringConstants";
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
+import { MyRequestModalEnums } from "~community/leave/enums/MyRequestEnums";
 import {
   PolicyLeaveModalEnums,
   PolicyLeaveToastEnums
@@ -53,7 +54,10 @@ import {
 import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 import { useLeaveStore } from "~community/leave/store/store";
 import { MyLeaveRequestPayloadType } from "~community/leave/types/MyRequests";
-import { PolicyLeaveValidationFailure } from "~community/leave/types/PolicyLeaveTypes";
+import {
+  PolicyLeaveRequestType,
+  PolicyLeaveValidationFailure
+} from "~community/leave/types/PolicyLeaveTypes";
 import {
   getDurationInitialValue,
   getDurationSelectorDisabledOptions
@@ -66,7 +70,7 @@ import {
   hasPolicyLeaveFormErrors,
   mapApplyErrorKeyToToastType,
   selectHasUnsavedChanges,
-  toLeaveStatus,
+  toMyLeaveRequestPayloads,
   toResourceAvailabilityPayloads
 } from "~community/leave/utils/policyLeave/policyLeaveUtils";
 import { useGetAllHolidays } from "~community/people/api/HolidayApi";
@@ -75,6 +79,10 @@ import {
   useGetUserPersonalDetails
 } from "~community/people/api/PeopleApi";
 import { useGetMyTeams } from "~community/people/api/TeamApi";
+import {
+  useIsGoogleCalendarConnected,
+  useIsMicrosoftCalendarConnected
+} from "~enterprise/common/api/CalendarApi";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
@@ -126,6 +134,13 @@ const ApplyPolicyLeaveModal = () => {
   const isCalendarSelectionInvalid = useLeaveStore(
     (state) => state.isApplyLeaveModalBtnDisabled
   );
+  const setMyLeaveRequestModalType = useLeaveStore(
+    (state) => state.setMyLeaveRequestModalType
+  );
+  const setLeaveRequestId = useLeaveStore((state) => state.setLeaveRequestId);
+
+  const { data: isGoogleConnected } = useIsGoogleCalendarConnected();
+  const { data: isMicrosoftConnected } = useIsMicrosoftCalendarConnected();
 
   const hasUnsavedChanges = usePolicyLeaveStore(selectHasUnsavedChanges);
 
@@ -184,14 +199,27 @@ const ApplyPolicyLeaveModal = () => {
 
   const { mutate: checkAvailability } = useCheckPolicyLeaveAvailability();
 
-  const onApplySuccess = () => {
+  const onApplySuccess = (data: PolicyLeaveRequestType) => {
     handlePolicyLeaveToast({
       type: PolicyLeaveToastEnums.APPLY_SUCCESS,
       setToastMessage,
       translateText
     });
     sendEvent(GoogleAnalyticsTypes.GA4_LEAVE_REQUEST_APPLIED);
+
+    const isApplyModalOpen =
+      usePolicyLeaveStore.getState().modalType ===
+      PolicyLeaveModalEnums.APPLY_POLICY_LEAVE;
     setModalType(PolicyLeaveModalEnums.NONE);
+
+    if (
+      isApplyModalOpen &&
+      environment === appModes.ENTERPRISE &&
+      (isGoogleConnected || isMicrosoftConnected)
+    ) {
+      setLeaveRequestId(data.leaveRequestId);
+      setMyLeaveRequestModalType(MyRequestModalEnums.MARK_OUT_OF_OFFICE);
+    }
   };
 
   const onApplyError = (messageKey: string) => {
@@ -237,35 +265,10 @@ const ApplyPolicyLeaveModal = () => {
 
   const blockingLeaveRequests: MyLeaveRequestPayloadType[] = useMemo(
     () =>
-      [
+      toMyLeaveRequestPayloads([
         ...(requestsInStartYear ?? []),
         ...(spansTwoYears ? (requestsInEndYear ?? []) : [])
-      ].flatMap((request) => {
-        const status = toLeaveStatus(request.status);
-
-        if (!status) {
-          return [];
-        }
-
-        return [
-          {
-            leaveRequestId: request.leaveRequestId,
-            startDate: request.startDate,
-            endDate: request.endDate,
-            leaveType: {
-              typeId: request.leaveType.id,
-              name: request.leaveType.name,
-              emojiCode: request.leaveType.emojiCode,
-              colorCode: request.leaveType.colorCode
-            },
-            leaveState: request.leaveState,
-            status,
-            isViewed: request.isViewed,
-            durationDays: request.durationDays,
-            requestDesc: request.requestDesc ?? ""
-          }
-        ];
-      }),
+      ]),
     [requestsInStartYear, requestsInEndYear, spansTwoYears]
   );
 

@@ -591,7 +591,8 @@
         },
         "placeholders": {
           "taskName": "Enter the task name",
-          "dueDate": "Select date"
+          "dueDate": "Select date",
+          "notes": "Add message"
         },
         "validations": {
           "name": "Task name is required",
@@ -607,6 +608,13 @@
         }
       }
     },
+    "taskSidePanel": {
+      "noDealsDescription": "No deals are linked to this task",
+      "deleteTask": "Delete task",
+      "info": {
+        "dueDate": "Due date"
+      }
+    },
     "callSidePanel": {
       "noDealsDescription": "No deals are linked to this call",
       "editCall": "Edit call",
@@ -614,6 +622,33 @@
       "info": {
         "contact": "Contact",
         "duration": "Duration"
+      }
+    },
+    "logEmail": {
+      "modal": {
+        "title": "Log email",
+        "labels": {
+          "from": "From",
+          "time": "Time",
+          "to": "To",
+          "cc": "Cc",
+          "bcc": "Bcc",
+          "description": "Description"
+        },
+        "placeholders": {
+          "from": "Enter email address",
+          "recipients": "Search contacts",
+          "description": "Add description"
+        },
+        "validations": {
+          "dateTime": "Date and time are required",
+          "to": "Please select at least one contact"
+        },
+        "toastMessages": {
+          "addSuccessTitle": "Email logged successfully",
+          "addSuccessDescription": "Email has been logged successfully",
+          "errorDescription": "Failed to log email"
+        }
       }
     },
     "logCall": {
@@ -746,7 +781,8 @@
         },
         "reset": "Reset filters",
         "apply": "Apply filters"
-      }
+      },
+      "logEmailBtn": "Log email"
     },
     "logMeeting": {
       "modal": {

@@ -186,17 +186,13 @@ public class CrmContactServiceImpl implements CrmContactService {
 			contact.setContactNumber(requestDto.getContactNumber());
 		}
 
-		if (requestDto.getCompanyId().isPresent()) {
-			Long companyId = requestDto.getCompanyId().get();
-
-			if (companyId != null) {
-				CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(companyId)
-					.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
-				updateContactCompany(contact, company);
-			}
-			else {
-				updateContactCompany(contact, null);
-			}
+		if (Boolean.TRUE.equals(requestDto.getIsCompanyRemoved())) {
+			updateContactCompany(contact, null);
+		}
+		else if (requestDto.getCompanyId() != null) {
+			CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
+			updateContactCompany(contact, company);
 		}
 
 		if (requestDto.getOwnerId() != null) {

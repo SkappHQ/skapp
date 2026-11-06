@@ -15,6 +15,7 @@ import authFetch from "~community/common/utils/axiosInterceptor";
 import {
   ActivityCallCreatePayload,
   ActivityCallResponse,
+  ActivityEmailCreatePayload,
   ActivityEmailResponse,
   ActivityFeedFilters,
   ActivityFeedResponse,
@@ -27,6 +28,7 @@ import {
 import { crmActivityEndpoints } from "~community/crm/api/utils/ApiEndpoints";
 import { crmActivityQueryKeys } from "~community/crm/api/utils/QueryKeys";
 import {
+  CrmActivityTaskEntity,
   CrmCallEntity,
   CrmMeetingEntity,
   CrmTaskCompletionPayload
@@ -97,6 +99,28 @@ export const useGetActivityEmails = (
     enabled,
     refetchOnWindowFocus: false
   });
+
+const createEmail = async (
+  payload: ActivityEmailCreatePayload
+): Promise<void> => {
+  await authFetch.post(crmActivityEndpoints.CREATE_EMAIL, payload);
+};
+
+export const useCreateEmail = (
+  onSuccess: () => void,
+  onError: (error: ErrorResponse) => void
+): UseMutationResult<void, ErrorResponse, ActivityEmailCreatePayload> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createEmail,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
+      onSuccess();
+    },
+    onError
+  });
+};
 
 const fetchActivityMeetings = async (
   params: ActivityListFilters
@@ -251,3 +275,19 @@ export const useCreateTask = (
     onError
   });
 };
+
+const fetchTaskById = async (id: number): Promise<CrmActivityTaskEntity> => {
+  const response = await authFetch.get(crmActivityEndpoints.GET_TASK_BY_ID(id));
+  return response?.data?.results?.[0];
+};
+
+export const useGetActivityTaskById = (
+  id: number,
+  enabled: boolean
+): UseQueryResult<CrmActivityTaskEntity, AxiosError> =>
+  useQuery({
+    queryKey: crmActivityQueryKeys.TASK(id),
+    queryFn: () => fetchTaskById(id),
+    enabled,
+    refetchOnWindowFocus: false
+  });
