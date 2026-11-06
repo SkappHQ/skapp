@@ -19,7 +19,8 @@ import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmAddTaskFormValues,
   CrmLogCallFormValues,
-  CrmLogMeetingFormValues
+  CrmLogMeetingFormValues,
+  CrmScheduleMeetingFormValues
 } from "~community/crm/types/CrmCommonTypes";
 import { updateOwnerRecord } from "~community/crm/utils/commonUtil";
 
@@ -28,7 +29,8 @@ interface Props {
   formik:
     | FormikProps<CrmLogCallFormValues>
     | FormikProps<CrmLogMeetingFormValues>
-    | FormikProps<CrmAddTaskFormValues>;
+    | FormikProps<CrmAddTaskFormValues>
+    | FormikProps<CrmScheduleMeetingFormValues>;
 }
 
 const ActivityOwnerField: FC<Props> = ({ id, formik }) => {
