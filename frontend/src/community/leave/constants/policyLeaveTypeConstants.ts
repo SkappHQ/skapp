@@ -10,3 +10,5 @@ export const MIN_DURATION_ERROR_ID = "policy-leave-type-min-duration-error";
 
 export const MIN_DURATION_GROUP_LABEL_ID =
   "policy-leave-type-min-duration-label";
+
+export const ALL_POLICY_LEAVE_TYPES_ID = -1;

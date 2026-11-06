@@ -70,7 +70,10 @@ export const useGetResourceAvailabilityCalendar = (
   });
 };
 
-export const useGetLeaveTypeBreakdownChartData = (teamIds: string | number) => {
+export const useGetLeaveTypeBreakdownChartData = (
+  teamIds: string | number,
+  enabled = true
+) => {
   return useQuery({
     queryKey: dashboardQueryKeys.LEAVE_UTILIZATION(teamIds),
     queryFn: async () => {
@@ -86,7 +89,7 @@ export const useGetLeaveTypeBreakdownChartData = (teamIds: string | number) => {
     select: (response) => {
       return leaveTypeBreakdownPreProcessor(response?.data?.results?.[0]);
     },
-    enabled: true
+    enabled
   });
 };
 
