@@ -16,12 +16,15 @@ import {
   toPickerDate
 } from "~community/crm/activities/utils/activityUtil";
 import ActivityAssociations from "~community/crm/components/molecules/ActivityAssociations/ActivityAssociations";
+import ActivityContactsField from "~community/crm/components/molecules/ActivityContactsField/ActivityContactsField";
 import ActivityDealField from "~community/crm/components/molecules/ActivityDealField/ActivityDealField";
 import ActivityOwnerField from "~community/crm/components/molecules/ActivityOwnerField/ActivityOwnerField";
 import ActivityRelatedToField from "~community/crm/components/molecules/ActivityRelatedToField/ActivityRelatedToField";
-import MeetingAttendeesField from "~community/crm/components/molecules/MeetingAttendeesField/MeetingAttendeesField";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmLogMeetingFormValues } from "~community/crm/types/CrmCommonTypes";
+import {
+  CrmContactEntity,
+  CrmLogMeetingFormValues
+} from "~community/crm/types/CrmCommonTypes";
 import {
   getContactCompanyIds,
   getContactDisplayName
@@ -65,6 +68,21 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
     attendees.length > 0 &&
     !isDealMatchingContacts(deals[values.dealId], attendees)
   );
+
+  const handleAttendeesChange = (nextAttendees: CrmContactEntity[]): void => {
+    const selectedDeal = values.dealId ? deals[values.dealId] : null;
+
+    const isDealUnmatched =
+      selectedDeal &&
+      nextAttendees.length > 0 &&
+      isDealMatchingContacts(selectedDeal, attendees) &&
+      !isDealMatchingContacts(selectedDeal, nextAttendees);
+
+    if (isDealUnmatched) {
+      setFieldValue("dealId", null);
+      setIsDealClearedNoticeVisible(true);
+    }
+  };
 
   const primaryAttendee = attendees.length > 0 ? attendees[0] : null;
 
@@ -162,11 +180,34 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
 
       <div className="flex flex-row items-start gap-[0.625rem]">
         <div className="flex-1 min-w-0">
-          <MeetingAttendeesField
+          <ActivityContactsField
             id="log-meeting-contactIds"
             formik={formik}
-            isFromDifferentCompanies={attendeeCompanyIds.length > 1}
-            onDealCleared={() => setIsDealClearedNoticeVisible(true)}
+            name="contactIds"
+            label={translateText([
+              "logMeeting",
+              "modal",
+              "labels",
+              "attendees"
+            ])}
+            placeholder={translateText([
+              "logMeeting",
+              "modal",
+              "placeholders",
+              "attendees"
+            ])}
+            groupAriaLabel={translateAria(["attendees"])}
+            fillsRelatedTo
+            {...(attendeeCompanyIds.length > 1 && {
+              warningTooltip: translateText([
+                "logMeeting",
+                "modal",
+                "tooltips",
+                "differentCompanies"
+              ])
+            })}
+            onContactsChange={handleAttendeesChange}
+            required
           />
         </div>
         <div className="flex-1">
