@@ -185,6 +185,10 @@ export interface CrmMeetingEntity {
   contacts: CrmContactEntity[];
   deal?: CrmDealEntity;
   company?: CrmCompanyEntity;
+  meetingVenue?: CrmMeetingVenueEnum;
+  location?: string;
+  locationAddress?: string;
+  locationUrl?: string;
 }
 
 export interface CrmTaskCompletionPayload {

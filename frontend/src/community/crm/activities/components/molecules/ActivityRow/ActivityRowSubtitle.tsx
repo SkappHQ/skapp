@@ -7,6 +7,7 @@ import {
   ActivityType
 } from "~community/crm/activities/types/activityTypes";
 import { getRowSubtitle } from "~community/crm/activities/utils/activityFeedUtil";
+import { CrmMeetingVenueEnum } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
 import { getContactDisplayName } from "~community/crm/utils/contactUtil";
 import { isOverdue } from "~community/crm/utils/taskValidations";
@@ -54,6 +55,17 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
     isOverdue(row.dueAt, timeZone);
 
   const status = getRowSubtitle(row, translateText, timeZone);
+  const venue =
+    row.meetingVenue === CrmMeetingVenueEnum.IN_PERSON
+      ? row.location
+      : row.meetingVenue &&
+        translateText([
+          "activities",
+          "scheduleMeeting",
+          "modal",
+          "venues",
+          row.meetingVenue
+        ]);
   const strikeClass = isStrikethroughApplied ? "line-through" : "";
   const nameColor = isCompletedStyleApplied
     ? "text-secondary-icon"
@@ -79,6 +91,18 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
           className={`shrink-0 ${statusColor} ${strikeClass}`}
         >
           {status}
+        </span>
+      )
+    },
+    {
+      key: "venue",
+      isVisible: Boolean(venue),
+      content: (
+        <span
+          id={`${id}-venue`}
+          className={`min-w-0 truncate ${nameColor} ${strikeClass}`}
+        >
+          {venue}
         </span>
       )
     },

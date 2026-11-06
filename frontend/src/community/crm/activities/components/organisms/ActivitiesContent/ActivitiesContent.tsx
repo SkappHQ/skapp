@@ -2,6 +2,7 @@ import { ButtonV2, ButtonV2Props } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import { GlobalLoginMethod } from "~community/common/enums/CommonEnums";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import useSessionData from "~community/common/hooks/useSessionData";
@@ -52,6 +53,7 @@ import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 import { getMissingDealIds, mergeDeals } from "~community/crm/utils/dealUtil";
 import { useIsGoogleCalendarConnected } from "~enterprise/common/api/CalendarApi";
 import useTier from "~enterprise/common/hooks/useTier";
+import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
 const ActivitiesContent: FC = () => {
   const translateText = useTranslator("crmModule");
@@ -78,6 +80,11 @@ const ActivitiesContent: FC = () => {
     useState(false);
 
   const { isFreeTier } = useTier();
+  const { globalLoginMethod } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      globalLoginMethod: state.globalLoginMethod
+    }))
+  );
   const { data: isGoogleCalendarConnected } = useIsGoogleCalendarConnected();
 
   const handleScheduleMeetingClick = (): void => {
@@ -312,7 +319,8 @@ const ActivitiesContent: FC = () => {
     : null;
 
   const scheduleMeetingButton: ButtonV2Props | null =
-    activeTab === ActivityTab.MEETINGS
+    activeTab === ActivityTab.MEETINGS &&
+    globalLoginMethod !== GlobalLoginMethod.MICROSOFT
       ? {
           variant: "tertiary",
           type: "button",

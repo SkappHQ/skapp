@@ -47,6 +47,8 @@ export interface ActivityRow {
   companyId: number | null;
   contactIds: number[];
   canComplete: boolean;
+  meetingVenue?: CrmMeetingVenueEnum | null;
+  location?: string | null;
 }
 
 export interface ActivityFeedResponse {
@@ -126,6 +128,10 @@ export interface ActivityMeetingResponse extends ActivityListItemBase {
   meetingDate: string | null;
   startAt: string | null;
   contactIds: number[];
+  meetingVenue: CrmMeetingVenueEnum | null;
+  location: string | null;
+  locationAddress: string | null;
+  locationUrl: string | null;
 }
 
 export interface ActivityTaskResponse extends ActivityListItemBase {

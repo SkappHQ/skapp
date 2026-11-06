@@ -212,7 +212,9 @@ export const toMeetingRow = (
   dealId: meeting.dealId,
   companyId: meeting.companyId,
   contactIds: meeting.contactIds,
-  canComplete: false
+  canComplete: false,
+  meetingVenue: meeting.meetingVenue,
+  location: meeting.location
 });
 
 export const toTaskRow = (task: ActivityTaskResponse): ActivityRow => ({
