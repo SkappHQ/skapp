@@ -1,6 +1,7 @@
 import {
   CrmDealStageColorsEnum,
   CrmDealStageEnum,
+  CrmMeetingVenueEnum,
   CrmPriorityEnum
 } from "../enums/common";
 
@@ -228,4 +229,15 @@ export interface CrmActivityTaskEntity {
   contact?: CrmContactEntity;
   deal?: CrmDealEntity;
   company?: CrmCompanyEntity;
+}
+
+export interface CrmScheduleMeetingFormValues extends CrmLogMeetingFormValues {
+  meetingVenue: CrmMeetingVenueEnum;
+  location: string;
+  locationUrl: string;
+}
+
+export interface CrmMeetingLocation {
+  location: string;
+  locationUrl: string;
 }

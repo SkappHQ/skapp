@@ -64,6 +64,8 @@ export const crmActivityEndpoints = {
   GET_TASKS: `${moduleAPIPath.CRM}/activity/task`,
   EDIT_TASK: (id: number) => `${moduleAPIPath.CRM}/activity/task/${id}`,
   CREATE_MEETING: `${moduleAPIPath.CRM}/activity/meeting`,
+  SCHEDULE_MEETING: `/ep${moduleAPIPath.CRM}/activity/meeting/schedule`,
+  SCHEDULE_MEETING_OVERLAPS: `/ep${moduleAPIPath.CRM}/activity/meeting/schedule/overlaps`,
   GET_MEETING_BY_ID: (id: number) =>
     `${moduleAPIPath.CRM}/activity/meeting/${id}`,
   CREATE_TASK: `${moduleAPIPath.CRM}/activity/task`,

@@ -141,7 +141,8 @@ const ActivitiesContent: FC = () => {
   }[activeTab];
 
   const pages: ActivityFeedResponse[] = useMemo(() => {
-    if (isAllTab && feed.data) return feed.data.pages;
+    if (isAllTab && feed.data)
+      return feed.data.pages.filter((page) => Boolean(page));
     if (activeTab === ActivityTab.CALLS && calls.data)
       return toSingleFeedPage(calls.data.map(toCallRow));
     if (activeTab === ActivityTab.EMAILS && emails.data)
@@ -184,7 +185,7 @@ const ActivitiesContent: FC = () => {
   }, [fetchedDeals]);
 
   const resultCount =
-    isAllTab && feed.data ? feed.data.pages[0].totalItems : rows.length;
+    isAllTab && pages.length > 0 ? pages[0].totalItems : rows.length;
   const hasActiveFilters =
     searchTerm.length > 0 || Object.keys(filters).length > 0;
   const showControls =
