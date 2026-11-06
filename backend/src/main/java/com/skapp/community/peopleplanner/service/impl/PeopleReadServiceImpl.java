@@ -21,6 +21,7 @@ import com.skapp.community.peopleplanner.payload.request.employee.EmployeeEmploy
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeePersonalDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeSystemPermissionsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBasicDetailsDto;
+import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBillingDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentIdentificationAndDiversityDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentPreviousEmploymentDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeeExtraInfoDto;
@@ -28,6 +29,7 @@ import com.skapp.community.peopleplanner.payload.request.employee.personal.Emplo
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalGeneralDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalHealthAndOtherDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalSocialMediaDetailsDto;
+import com.skapp.community.peopleplanner.repository.EmployeeBillableRateDao;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.service.PeopleReadService;
 import com.skapp.community.peopleplanner.service.EmployeeSkillService;
@@ -58,6 +60,8 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 	private final UserService userService;
 
 	private final EmployeeSkillService employeeSkillService;
+
+	private final EmployeeBillableRateDao employeeBillableRateDao;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -258,9 +262,21 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 			Optional.ofNullable(employee.getEmployeeVisas())
 				.ifPresent(visas -> dto
 					.setVisaDetails(visas.stream().map(peopleMapper::employeeVisaToVisaDetailsDto).toList()));
+
+			dto.setBillingDetails(mapEmploymentBillingDetails(employee));
 		}
 
 		return dto;
+	}
+
+	private EmployeeEmploymentBillingDetailsDto mapEmploymentBillingDetails(Employee employee) {
+		if (!hasRole(userService.getCurrentUserRoles(), Role.PEOPLE_ADMIN)) {
+			return null;
+		}
+
+		return employeeBillableRateDao.findById(employee.getEmployeeId())
+			.map(peopleMapper::employeeBillableRateToEmployeeEmploymentBillingDetailsDto)
+			.orElse(null);
 	}
 
 	private EmployeeEmploymentIdentificationAndDiversityDetailsDto mapIdentificationAndDiversityDetails(
