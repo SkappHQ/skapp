@@ -2,7 +2,6 @@ package com.skapp.community.crmplanner.payload.request;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.openapitools.jackson.nullable.JsonNullable;
 
 @Getter
 @Setter
@@ -10,14 +9,16 @@ public class CrmCompanyEditDto {
 
 	private String name;
 
-	private JsonNullable<Long> industryId = JsonNullable.undefined();
+	private Long industryId;
+
+	private Boolean isIndustryRemoved;
 
 	private String industryName;
 
-	private JsonNullable<String> website = JsonNullable.undefined();
+	private String website;
 
-	private JsonNullable<String> address = JsonNullable.undefined();
+	private String address;
 
-	private JsonNullable<String> contactNumber = JsonNullable.undefined();
+	private String contactNumber;
 
 }
