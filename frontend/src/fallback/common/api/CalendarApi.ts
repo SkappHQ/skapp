@@ -9,3 +9,9 @@ export const useIsGoogleCalendarConnected = () => {
     data: false
   };
 };
+
+export const useIsMicrosoftCalendarConnected = () => {
+  return {
+    data: false
+  };
+};
