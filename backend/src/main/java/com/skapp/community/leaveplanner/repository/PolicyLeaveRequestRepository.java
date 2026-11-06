@@ -2,6 +2,8 @@ package com.skapp.community.leaveplanner.repository;
 
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveDateWindowDto;
+import com.skapp.community.leaveplanner.payload.PolicyLeaveMonthlyDurationDto;
+import com.skapp.community.leaveplanner.payload.PolicyLeaveSpanDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveUsageDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
@@ -39,6 +41,17 @@ public interface PolicyLeaveRequestRepository {
 
 	long countEmployeesInScope(List<Long> teamIds, Long supervisorEmployeeId);
 
+	long countEmployeesInScope(List<Long> teamIds, Long supervisorEmployeeId, boolean includeOwnTeams);
+
+	List<PolicyLeaveRequest> findApprovedRequestsInRange(LocalDate startDate, LocalDate endDate, List<Long> teamIds,
+			Long supervisorEmployeeId);
+
+	List<PolicyLeaveMonthlyDurationDto> findApprovedSingleMonthDurations(LocalDate startDate, LocalDate endDate,
+			List<Long> leaveTypeIds, List<Long> teamIds, Long supervisorEmployeeId);
+
+	List<PolicyLeaveSpanDto> findApprovedMultiMonthSpans(LocalDate startDate, LocalDate endDate,
+			List<Long> leaveTypeIds, List<Long> teamIds, Long supervisorEmployeeId);
+
 	List<PolicyLeaveRequest> findEmployeesRequestsInRange(Collection<Long> employeeIds,
 			Collection<LeaveRequestStatus> statuses, LocalDate startDate, LocalDate endDate, boolean activeUsersOnly);
 
@@ -49,10 +62,5 @@ public interface PolicyLeaveRequestRepository {
 			LocalDate fromDate);
 
 	List<PolicyLeaveRequest> findUpcomingRequests(Collection<LeaveRequestStatus> statuses, LocalDate fromDate);
-
-	long countEmployeesInScope(List<Long> teamIds, Long supervisorEmployeeId, boolean includeOwnTeams);
-
-	List<PolicyLeaveRequest> findApprovedRequestsInRange(LocalDate startDate, LocalDate endDate, List<Long> teamIds,
-			Long supervisorEmployeeId);
 
 }

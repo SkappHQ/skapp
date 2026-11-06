@@ -15,6 +15,7 @@ import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmAddTaskFormValues,
   CrmLogCallFormValues,
+  CrmLogEmailFormValues,
   CrmLogMeetingFormValues
 } from "~community/crm/types/CrmCommonTypes";
 import { CrmDealFilterRequest } from "~community/crm/types/CrmTypes";
@@ -25,11 +26,12 @@ interface Props {
   formik:
     | FormikProps<CrmLogCallFormValues>
     | FormikProps<CrmLogMeetingFormValues>
-    | FormikProps<CrmAddTaskFormValues>;
+    | FormikProps<CrmAddTaskFormValues>
+    | FormikProps<CrmLogEmailFormValues>;
   fieldAriaLabel: string;
-  isClearedNoticeVisible: boolean;
-  isMismatch: boolean;
-  onDealChange: () => void;
+  isClearedNoticeVisible?: boolean;
+  isMismatch?: boolean;
+  onDealChange?: () => void;
   filterCompanyId?: number;
 }
 
@@ -105,13 +107,13 @@ const ActivityDealField: FC<Props> = ({
 
     setDeals(mergeDeals(deals, [deal]));
     setFieldValue("dealId", deal.id);
-    onDealChange();
+    onDealChange?.();
   };
 
   const handleClear = (): void => {
     setFieldValue("dealId", null);
     setSearchTerm("");
-    onDealChange();
+    onDealChange?.();
   };
 
   return (
