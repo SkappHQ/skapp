@@ -30,4 +30,8 @@ public class PolicyLeaveConstant {
 
 	public static final int MAX_SEARCH_KEYWORD_LENGTH = 100;
 
+	public static final long ALL_TEAMS_ID = -1L;
+
+	public static final long ALL_LEAVE_TYPES_ID = -1L;
+
 }

@@ -19,16 +19,23 @@ import {
   useGetPendingLeavesData,
   useGetResourceAvailability
 } from "~community/leave/api/LeaveDashboard";
+import {
+  useGetPolicyLeaveTypeBreakdown,
+  useGetPolicyPendingLeaveCount
+} from "~community/leave/api/PolicyLeaveApi";
 import AvailabilityCalendarWidget from "~community/leave/components/molecules/AvailabilityCalendar/AvailabilityCalendarWidget";
 import AvailableChip from "~community/leave/components/molecules/LeaveDashboardChips/AvailableChip";
 import AwayChip from "~community/leave/components/molecules/LeaveDashboardChips/AwayChip";
 import HolidayChip from "~community/leave/components/molecules/LeaveDashboardChips/HolidayChip";
 import LeaveTypeBreakdownChart from "~community/leave/components/molecules/LeaveUtilizationGraph/LeaveTypeBreakdownChart";
+import PolicyOnLeaveTodayCard from "~community/leave/components/molecules/PolicyOnLeaveTodayCard/PolicyOnLeaveTodayCard";
+import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useLeaveStore } from "~community/leave/store/store";
 import {
   LeaveRequest,
   ResourceAvailabilityRecord
 } from "~community/leave/types/ResourceAvailabilityTypes";
+import { getNewPendingLeaveRequestCount } from "~community/leave/utils/dashboardUtils";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 
@@ -58,36 +65,70 @@ const LeaveDashboard = (): JSX.Element => {
     setTodaysAvailability
   } = useLeaveStore((state) => state);
 
+  const { isLeavePoliciesEnabled, isLoading: isPolicyConfigLoading } =
+    useLeavePoliciesEnabled();
+
+  const isPolicyConfigReady = isFetchingEnabled && !isPolicyConfigLoading;
+  const isLegacyAvailabilityEnabled =
+    isPolicyConfigReady && !isLeavePoliciesEnabled;
+  const isLegacyTeamDataEnabled = isLegacyAvailabilityEnabled && teamId !== "";
+  const isPolicyDataEnabled = isPolicyConfigReady && isLeavePoliciesEnabled;
+
   const today = DateTime.now().toFormat(DATE_FORMAT);
 
   const { data: todaysAvailability } = useGetAvailability(
     teamId,
     today,
-    isFetchingEnabled
+    isLegacyAvailabilityEnabled
   );
 
   const { data: todaysResourceAvailability } = useGetResourceAvailability(
     teamId,
     today,
     today,
-    isFetchingEnabled
+    isLegacyAvailabilityEnabled
   );
-  const { data: pendingLeaves } = useGetPendingLeavesData(teamId);
+
+  const { data: pendingLeaves } = useGetPendingLeavesData(
+    teamId,
+    isLegacyTeamDataEnabled
+  );
+
+  const { data: policyPendingLeaveCount } = useGetPolicyPendingLeaveCount(
+    teamId,
+    isPolicyDataEnabled
+  );
 
   const { data: absenceRate } = useGetAbsenceRate(teamId, isFetchingEnabled);
-  const {
-    isLoading,
-    error,
-    data: datasets
-  } = useGetLeaveTypeBreakdownChartData(teamId);
+  const legacyBreakdown = useGetLeaveTypeBreakdownChartData(
+    teamId,
+    isLegacyTeamDataEnabled
+  );
+
+  const policyBreakdown = useGetPolicyLeaveTypeBreakdown(
+    teamId,
+    isPolicyDataEnabled
+  );
+
+  const breakdown = isLeavePoliciesEnabled ? policyBreakdown : legacyBreakdown;
+  const isBreakdownLoading = isPolicyConfigLoading || breakdown.isLoading;
 
   useGoogleAnalyticsEvent({
     onMountEventType: GoogleAnalyticsTypes.GA4_LEAVE_DASHBOARD_VIEWED,
     triggerOnMount: true
   });
 
-  const newPendingRequests =
-    pendingLeaves?.[0]?.items?.length - viewedPendingLeaveCount;
+  const currentPendingLeaveCount: number | undefined = isLeavePoliciesEnabled
+    ? policyPendingLeaveCount?.pendingCount
+    : pendingLeaves?.[0]?.items?.length;
+
+  const isPendingLeavesExpandable =
+    !isPolicyConfigLoading && !!currentPendingLeaveCount;
+
+  const newPendingRequests = getNewPendingLeaveRequestCount(
+    currentPendingLeaveCount,
+    viewedPendingLeaveCount
+  );
 
   const todaysAwayEmployees: LeaveRequest[] =
     todaysResourceAvailability?.find(
@@ -99,6 +140,50 @@ const LeaveDashboard = (): JSX.Element => {
     setOnLeaveModalTitle(availabilityModalText(["awayToday"]));
     setIsOnLeaveModalOpen(true);
     setIsManagerModal(true);
+  };
+
+  const handlePendingLeavesExpand = (): void => {
+    setPendingLeaveCount(currentPendingLeaveCount ?? 0);
+    setViewedPendingLeaveCount(currentPendingLeaveCount ?? 0);
+    router.replace(ROUTES.LEAVE.LEAVE_PENDING);
+  };
+
+  const renderPendingLeavesContent = (): JSX.Element | null => {
+    if (isPolicyConfigLoading) {
+      return null;
+    }
+
+    if (!isPendingLeavesExpandable) {
+      return <Typography sx={classes.analytic}>{"-"}</Typography>;
+    }
+
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+        <Typography sx={classes.analytic}>
+          {currentPendingLeaveCount}
+        </Typography>
+        {newPendingRequests > 0 && (
+          <Stack
+            sx={{
+              flexDirection: "row",
+              gap: 1,
+              alignItems: "center",
+              backgroundColor: theme.palette.amber.mid,
+              padding: "0.25rem .75rem",
+              borderRadius: 10,
+              height: "2rem"
+            }}
+          >
+            <Typography
+              sx={{ color: theme.palette.amber.chipText }}
+              variant="caption"
+            >
+              {`${newPendingRequests} ${translateText(["newRequest"])}`}
+            </Typography>
+          </Stack>
+        )}
+      </div>
+    );
   };
 
   useEffect(() => {
@@ -157,6 +242,37 @@ const LeaveDashboard = (): JSX.Element => {
     }
   };
 
+  const renderTodaysAvailabilityCard = () => {
+    if (isPolicyConfigLoading) {
+      return (
+        <AnalyticCard
+          title={translateText(["todayAvailability"]) ?? ""}
+          isExpandable={false}
+        />
+      );
+    }
+
+    if (isLeavePoliciesEnabled) {
+      return (
+        <PolicyOnLeaveTodayCard teamId={teamId} enabled={isFetchingEnabled} />
+      );
+    }
+
+    return (
+      <AnalyticCard
+        title={translateText(["todayAvailability"]) ?? ""}
+        isExpandable={!!todaysAvailability}
+        onExpand={handleTodaysAvailabilityModalOpen}
+        accessibility={{
+          tabIndex: 0,
+          role: "button"
+        }}
+      >
+        {todaysAvailability && resourceDetails()}
+      </AnalyticCard>
+    );
+  };
+
   return (
     <Box sx={classes.container}>
       <Box sx={classes.header}>
@@ -173,61 +289,19 @@ const LeaveDashboard = (): JSX.Element => {
       </Box>
       <Grid container spacing={1}>
         <Grid sx={{ width: { xs: "100%", md: "32.5%" } }}>
-          <AnalyticCard
-            title={translateText(["todayAvailability"]) ?? ""}
-            isExpandable={!!todaysAvailability}
-            onExpand={handleTodaysAvailabilityModalOpen}
-            accessibility={{
-              tabIndex: 0,
-              role: "button"
-            }}
-          >
-            {todaysAvailability && resourceDetails()}
-          </AnalyticCard>
+          {renderTodaysAvailabilityCard()}
         </Grid>
         <Grid sx={{ width: { xs: "100%", md: "32.5%" } }}>
           <AnalyticCard
             title={translateText(["pendingLeaves"]) ?? ""}
-            isExpandable={pendingLeaves?.[0]?.items?.length > 0}
-            onExpand={() => {
-              (setPendingLeaveCount(pendingLeaves?.[0]?.items?.length),
-                setViewedPendingLeaveCount(pendingLeaves?.[0]?.items?.length),
-                router.replace(ROUTES.LEAVE.LEAVE_PENDING));
-            }}
+            isExpandable={isPendingLeavesExpandable}
+            onExpand={handlePendingLeavesExpand}
             accessibility={{
               tabIndex: 0,
               role: "button"
             }}
           >
-            {pendingLeaves?.[0]?.items?.length > 0 ? (
-              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <Typography sx={classes.analytic}>
-                  {pendingLeaves?.[0]?.items?.length}
-                </Typography>
-                {newPendingRequests > 0 && (
-                  <Stack
-                    sx={{
-                      flexDirection: "row",
-                      gap: 1,
-                      alignItems: "center",
-                      backgroundColor: theme.palette.amber.mid,
-                      padding: "0.25rem .75rem",
-                      borderRadius: 10,
-                      height: "2rem"
-                    }}
-                  >
-                    <Typography
-                      sx={{ color: theme.palette.amber.chipText }}
-                      variant="caption"
-                    >
-                      {`${newPendingRequests} ${translateText(["newRequest"])}`}
-                    </Typography>
-                  </Stack>
-                )}
-              </div>
-            ) : (
-              <Typography sx={classes.analytic}>{"-"}</Typography>
-            )}
+            {renderPendingLeavesContent()}
           </AnalyticCard>
         </Grid>
 
@@ -278,9 +352,9 @@ const LeaveDashboard = (): JSX.Element => {
       </Grid>
       <AvailabilityCalendarWidget teams={teamId} />
       <LeaveTypeBreakdownChart
-        datasets={datasets}
-        isLoading={isLoading}
-        error={error}
+        datasets={breakdown.data}
+        isLoading={isBreakdownLoading}
+        error={breakdown.error}
       />
     </Box>
   );

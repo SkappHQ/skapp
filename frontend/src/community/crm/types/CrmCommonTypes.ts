@@ -8,6 +8,7 @@ export interface CrmCompanyEntity {
   id?: number;
   name?: string;
   industryId?: number | null;
+  isIndustryRemoved?: boolean;
   industryName?: string;
   website?: string;
   address?: string;
@@ -38,6 +39,7 @@ export interface CrmContactEntity {
   lastContactAt?: string;
   lastModifiedDate?: string;
   companyId?: number | null;
+  isCompanyRemoved?: boolean;
   companyName?: string;
   ownerId?: number;
   metrics?: CrmContactMetrics;
@@ -106,8 +108,10 @@ export interface CrmTaskEntity {
   typeId?: number;
   ownerId?: number;
   contactId?: number;
+  isContactRemoved?: boolean;
   companyId?: number;
   dealId?: number;
+  isDealRemoved?: boolean;
   relatedTaskIds?: number[];
 }
 
@@ -182,6 +186,11 @@ export interface CrmMeetingEntity {
   company?: CrmCompanyEntity;
 }
 
+export interface CrmTaskCompletionPayload {
+  id: number;
+  isCompleted: boolean;
+}
+
 export interface CrmLogMeetingFormValues {
   subject: string;
   date: string | null;
@@ -196,7 +205,7 @@ export interface CrmLogMeetingFormValues {
 
 export interface CrmAddTaskFormValues {
   name: string;
-  priority: CrmPriorityEnum | null;
+  priority: CrmPriorityEnum;
   dueAt: string | null;
   ownerId: number | null;
   contactId: number | null;
@@ -204,6 +213,8 @@ export interface CrmAddTaskFormValues {
   companyId: number | null;
   notes: string;
 }
+
+export type CrmAddTaskFormErrorField = "name" | "priority" | "dueAt" | "notes";
 
 export interface CrmActivityTaskEntity {
   id: number;

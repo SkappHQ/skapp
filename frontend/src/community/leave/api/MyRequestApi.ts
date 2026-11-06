@@ -151,9 +151,11 @@ export const useApplyLeave = (
 };
 
 export const useGetEmployeeLeaveRequests = (
-  params: MyLeaveRequestParamsType
+  params: MyLeaveRequestParamsType,
+  enabled = true
 ) => {
   return useQuery({
+    enabled,
     queryKey: [leaveQueryKeys.EMPLOYEE_LEAVE_REQUESTS, params],
     queryFn: async () => {
       const url = leaveEndPoints.LEAVES;

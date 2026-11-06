@@ -68,6 +68,7 @@ const SidePanelActivityEmailInfo: FC<Props> = ({
           </PropertyRow>
         }
         date={loggedAt}
+        dateLabel={translateText(["activitySidePanel", "info", "date"])}
         startTime={loggedAt}
         startTimeLabel={translateText(["emailSidePanel", "info", "time"])}
         owner={owner}

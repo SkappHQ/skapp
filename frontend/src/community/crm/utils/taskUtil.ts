@@ -134,11 +134,19 @@ export const getChangedTaskFields = (
   }
 
   if (currentValues.contactId !== initialValues.contactId) {
-    changedFields.contactId = currentValues.contactId;
+    if (currentValues.contactId == null) {
+      changedFields.isContactRemoved = true;
+    } else {
+      changedFields.contactId = currentValues.contactId;
+    }
   }
 
   if (currentValues.dealId !== initialValues.dealId) {
-    changedFields.dealId = currentValues.dealId;
+    if (currentValues.dealId == null) {
+      changedFields.isDealRemoved = true;
+    } else {
+      changedFields.dealId = currentValues.dealId;
+    }
   }
 
   if (currentValues.notes !== initialValues.notes) {

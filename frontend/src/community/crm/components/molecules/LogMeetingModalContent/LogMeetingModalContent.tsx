@@ -6,6 +6,7 @@ import { TIME_FORMAT_24_HOUR } from "~community/common/constants/timeConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { ErrorResponse } from "~community/common/types/CommonTypes";
 import { ActivityMeetingCreatePayload } from "~community/crm/activities/types/activityTypes";
 import {
   getActivityEndTimeSlot,
@@ -15,6 +16,7 @@ import {
 import { useCreateMeeting } from "~community/crm/api/ActivityApi";
 import LogActivityModal from "~community/crm/components/molecules/LogActivityModal/LogActivityModal";
 import LogMeetingModalForm from "~community/crm/components/molecules/LogMeetingModalForm/LogMeetingModalForm";
+import { CrmErrorMessageKeyEnum } from "~community/crm/enums/common";
 import { useDefaultCrmOwner } from "~community/crm/hooks/useDefaultCrmOwner";
 import { CrmLogMeetingFormValues } from "~community/crm/types/CrmCommonTypes";
 import { getMeetingValidationSchema } from "~community/crm/utils/meetingValidations";
@@ -119,8 +121,19 @@ const LogMeetingModalContent: FC<Props> = ({ onClose }) => {
     });
   };
 
-  const handleError = (): void => {
+  const handleError = (error: ErrorResponse): void => {
     setSubmitting(false);
+
+    if (
+      error.response?.data?.results?.[0]?.messageKey ===
+      CrmErrorMessageKeyEnum.ACTIVITY_MEETING_DEAL_COMPANY_MISMATCH
+    ) {
+      requestAnimationFrame(() => {
+        document.getElementById("log-meeting-deal-input")?.focus();
+      });
+      return;
+    }
+
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,

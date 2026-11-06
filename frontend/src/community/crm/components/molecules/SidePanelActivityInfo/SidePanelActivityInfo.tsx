@@ -15,8 +15,10 @@ import { CrmOwnerEntity } from "~community/crm/types/CrmCommonTypes";
 interface Props {
   primaryRow?: ReactNode;
   date: DateTime;
+  dateLabel: string;
   startTime?: DateTime;
   startTimeLabel?: string;
+  hideStartTime?: boolean;
   secondaryRow?: ReactNode;
   owner?: CrmOwnerEntity;
   companyName?: string;
@@ -26,8 +28,10 @@ interface Props {
 const SidePanelActivityInfo: FC<Props> = ({
   primaryRow,
   date,
+  dateLabel,
   startTime,
   startTimeLabel,
+  hideStartTime,
   secondaryRow,
   owner,
   companyName,
@@ -46,17 +50,19 @@ const SidePanelActivityInfo: FC<Props> = ({
     <div className="flex flex-col border border-secondary-accent rounded-xl p-3">
       {primaryRow}
 
-      <PropertyRow label={translateText(["date"])}>
+      <PropertyRow label={dateLabel}>
         <span className="body2">
           {`${formatDayWithOrdinalIndicator(date)} ${date.toFormat(SHORT_MONTH_YEAR_FORMAT)}`}
         </span>
       </PropertyRow>
 
-      <PropertyRow label={startTimeLabel ?? translateText(["startTime"])}>
-        <span className="body2">
-          {startTime ? startTime.toFormat(TIME_FORMAT_12_HOUR) : noValue}
-        </span>
-      </PropertyRow>
+      {!hideStartTime && (
+        <PropertyRow label={startTimeLabel ?? translateText(["startTime"])}>
+          <span className="body2">
+            {startTime ? startTime.toFormat(TIME_FORMAT_12_HOUR) : noValue}
+          </span>
+        </PropertyRow>
+      )}
 
       {secondaryRow}
 

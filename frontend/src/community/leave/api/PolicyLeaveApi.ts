@@ -6,15 +6,27 @@ import {
   useQueryClient
 } from "@tanstack/react-query";
 
+import { invalidateAttendanceLeaveQueries } from "~community/attendance/api/utils/invalidateAttendanceQueries";
 import { ErrorResponse } from "~community/common/types/CommonTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
+import { LeaveTrendForYearPreProcessor } from "~community/leave/actions/LeaveTrendPreProcessor";
+import { leaveTypeBreakdownPreProcessor } from "~community/leave/actions/LeaveTypeBreakdownPreProcessor";
 import { policyLeaveEndPoints } from "~community/leave/api/utils/ApiEndpoints";
 import { policyLeaveQueryKeys } from "~community/leave/api/utils/QueryKeys";
-import { UNPAGINATED_SIZE } from "~community/leave/constants/policyLeaveTypeConstants";
+import {
+  ALL_POLICY_LEAVE_TYPES_ID,
+  UNPAGINATED_SIZE
+} from "~community/leave/constants/policyLeaveTypeConstants";
 import { initialPolicyLeaveRequestParams } from "~community/leave/store/policyLeaveStore";
+import {
+  LeaveTypeBreakDownReturnTypes,
+  LeaveTypeBreakdownResponseType
+} from "~community/leave/types/LeaveUtilizationTypes";
 import {
   EmployeePolicyBalanceType,
   EmployeePolicyBalancesResponse,
+  PolicyEmployeesOnLeaveResponse,
+  PolicyEmployeesOnLeaveType,
   PolicyLeaveAvailabilityPayload,
   PolicyLeaveAvailabilityResponse,
   PolicyLeaveAvailabilityType,
@@ -23,8 +35,18 @@ import {
   PolicyLeaveRequestPayload,
   PolicyLeaveRequestQueryParams,
   PolicyLeaveRequestResponse,
-  PolicyLeaveRequestType
+  PolicyLeaveRequestType,
+  PolicyPendingLeaveCountResponse,
+  PolicyPendingLeaveCountType,
+  PolicyResourceAvailabilityDayType,
+  PolicyResourceAvailabilityParams,
+  PolicyResourceAvailabilityResponse
 } from "~community/leave/types/PolicyLeaveTypes";
+import {
+  APIResponseDataType,
+  LeaveTrendForYearResponseType,
+  LeaveTrendReturnTypes
+} from "~community/leave/types/TeamLeaveAnalyticsTypes";
 import { getPolicyLeaveRequestQueryParams } from "~community/leave/utils/policyLeave/policyLeaveUtils";
 
 const getMyPolicyBalances = async (
@@ -45,6 +67,130 @@ export const useGetMyPolicyBalances = (
     queryFn: () => getMyPolicyBalances(year),
     enabled,
     refetchOnWindowFocus: false
+  });
+};
+
+const getPolicyPendingLeaveCount = async (
+  teamId: number | string
+): Promise<PolicyPendingLeaveCountType | undefined> => {
+  const response = await authFetch.get<PolicyPendingLeaveCountResponse>(
+    policyLeaveEndPoints.GET_PENDING_LEAVE_COUNT,
+    { params: { teamIds: teamId } }
+  );
+  return response.data.results[0];
+};
+
+const getPolicyEmployeesOnLeaveToday = async (
+  teamId: number | string
+): Promise<PolicyEmployeesOnLeaveType> => {
+  const response = await authFetch.get<PolicyEmployeesOnLeaveResponse>(
+    policyLeaveEndPoints.GET_EMPLOYEES_ON_LEAVE_TODAY,
+    { params: { teamIds: teamId } }
+  );
+  return response.data.results[0];
+};
+
+export const useGetPolicyPendingLeaveCount = (
+  teamId: number | string,
+  enabled = true
+): UseQueryResult<PolicyPendingLeaveCountType | undefined> => {
+  return useQuery({
+    queryKey: policyLeaveQueryKeys.PENDING_LEAVE_COUNT(teamId),
+    queryFn: () => getPolicyPendingLeaveCount(teamId),
+    enabled: enabled && teamId !== ""
+  });
+};
+
+export const useGetPolicyEmployeesOnLeaveToday = (
+  teamId: number | string,
+  enabled = true
+): UseQueryResult<PolicyEmployeesOnLeaveType> => {
+  return useQuery({
+    queryKey: policyLeaveQueryKeys.EMPLOYEES_ON_LEAVE_TODAY(teamId),
+    queryFn: () => getPolicyEmployeesOnLeaveToday(teamId),
+    enabled: enabled && teamId !== "",
+    refetchOnWindowFocus: false
+  });
+};
+
+const getPolicyResourceAvailability = async (
+  teamIds: number | string | null,
+  startDate: string,
+  endDate: string
+): Promise<PolicyResourceAvailabilityDayType[]> => {
+  const response = await authFetch.get<PolicyResourceAvailabilityResponse>(
+    policyLeaveEndPoints.GET_RESOURCE_AVAILABILITY,
+    { params: { teamIds, startDate, endDate } }
+  );
+  return response.data.results;
+};
+
+export const useGetPolicyResourceAvailability = ({
+  teamIds,
+  startDate,
+  endDate,
+  enabled = true
+}: PolicyResourceAvailabilityParams): UseQueryResult<
+  PolicyResourceAvailabilityDayType[]
+> => {
+  return useQuery({
+    queryKey: policyLeaveQueryKeys.RESOURCE_AVAILABILITY(
+      teamIds,
+      startDate,
+      endDate
+    ),
+    queryFn: () => getPolicyResourceAvailability(teamIds, startDate, endDate),
+    enabled:
+      enabled && teamIds !== null && teamIds !== "" && !!startDate && !!endDate
+  });
+};
+
+const isTeamIdSelected = (teamId: number | string): boolean =>
+  teamId !== "" && !Number.isNaN(Number(teamId));
+
+const getPolicyTeamLeaveTrend = async (
+  teamId: number | string
+): Promise<APIResponseDataType<LeaveTrendForYearResponseType>> => {
+  const response = await authFetch.get<
+    APIResponseDataType<LeaveTrendForYearResponseType>
+  >(policyLeaveEndPoints.GET_TEAM_LEAVE_TREND, {
+    params: { teamId, leaveTypeIds: ALL_POLICY_LEAVE_TYPES_ID }
+  });
+  return response.data;
+};
+
+export const useGetPolicyTeamLeaveTrend = (
+  teamId: number | string,
+  enabled = true
+): UseQueryResult<LeaveTrendReturnTypes> => {
+  return useQuery({
+    queryKey: policyLeaveQueryKeys.TEAM_LEAVE_TREND(teamId),
+    queryFn: () => getPolicyTeamLeaveTrend(teamId),
+    select: (data) => LeaveTrendForYearPreProcessor(data),
+    enabled: enabled && isTeamIdSelected(teamId)
+  });
+};
+
+const getPolicyLeaveTypeBreakdown = async (
+  teamId: number | string
+): Promise<APIResponseDataType<LeaveTypeBreakdownResponseType>> => {
+  const response = await authFetch.get<
+    APIResponseDataType<LeaveTypeBreakdownResponseType>
+  >(policyLeaveEndPoints.GET_LEAVE_TYPE_BREAKDOWN, {
+    params: { teamIds: teamId }
+  });
+  return response.data;
+};
+
+export const useGetPolicyLeaveTypeBreakdown = (
+  teamId: number | string,
+  enabled = true
+): UseQueryResult<LeaveTypeBreakDownReturnTypes> => {
+  return useQuery({
+    queryKey: policyLeaveQueryKeys.LEAVE_TYPE_BREAKDOWN(teamId),
+    queryFn: () => getPolicyLeaveTypeBreakdown(teamId),
+    select: (data) => leaveTypeBreakdownPreProcessor(data?.results?.[0]),
+    enabled: enabled && isTeamIdSelected(teamId)
   });
 };
 
@@ -143,6 +289,22 @@ export const useApplyPolicyLeave = (
       });
       queryClient.invalidateQueries({
         queryKey: policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS(year)
+      });
+      queryClient.invalidateQueries({
+        queryKey: policyLeaveQueryKeys.ALL_PENDING_LEAVE_COUNT()
+      });
+      queryClient.invalidateQueries({
+        queryKey: policyLeaveQueryKeys.ALL_EMPLOYEES_ON_LEAVE_TODAY()
+      });
+      invalidateAttendanceLeaveQueries(queryClient);
+      queryClient.invalidateQueries({
+        queryKey: policyLeaveQueryKeys.ALL_RESOURCE_AVAILABILITY()
+      });
+      queryClient.invalidateQueries({
+        queryKey: policyLeaveQueryKeys.ALL_TEAM_LEAVE_TREND()
+      });
+      queryClient.invalidateQueries({
+        queryKey: policyLeaveQueryKeys.ALL_LEAVE_TYPE_BREAKDOWN()
       });
       onSuccess(data);
     },

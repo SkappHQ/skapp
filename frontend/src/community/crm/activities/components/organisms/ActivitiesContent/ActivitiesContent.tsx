@@ -1,10 +1,12 @@
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, ButtonV2Props } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import ActivityCallSidePanel from "~community/crm/activities/components/organisms/ActivityCallSidePanel/ActivityCallSidePanel";
 import ActivityEmailSidePanel from "~community/crm/activities/components/organisms/ActivityEmailSidePanel/ActivityEmailSidePanel";
 import ActivityFeed from "~community/crm/activities/components/organisms/ActivityFeed/ActivityFeed";
@@ -33,21 +35,25 @@ import {
   useGetActivityEmails,
   useGetActivityFeed,
   useGetActivityMeetings,
-  useGetActivityTasks
+  useGetActivityTasks,
+  useUpdateTaskCompletion
 } from "~community/crm/api/ActivityApi";
 import { useGetDealsByIds } from "~community/crm/api/DealApi";
 import AddActivityTaskModalContent from "~community/crm/components/molecules/AddActivityTaskModalContent/AddActivityTaskModalContent";
 import LogCallModalContent from "~community/crm/components/molecules/LogCallModalContent/LogCallModalContent";
+import LogEmailModalContent from "~community/crm/components/molecules/LogEmailModalContent/LogEmailModalContent";
 import LogMeetingModalContent from "~community/crm/components/molecules/LogMeetingModalContent/LogMeetingModalContent";
 import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
 import { useCrmStore } from "~community/crm/store/store";
+import { CrmTaskCompletionPayload } from "~community/crm/types/CrmCommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 import { getMissingDealIds, mergeDeals } from "~community/crm/utils/dealUtil";
 
 const ActivitiesContent: FC = () => {
   const translateText = useTranslator("crmModule");
   const displayZone = useDisplayZone();
+  const { setToastMessage } = useToast();
   const { isCrmSalesManager } = useSessionData();
   const isManager = Boolean(isCrmSalesManager);
 
@@ -56,9 +62,13 @@ const ActivitiesContent: FC = () => {
   const [activeTab, setActiveTab] = useState<ActivityTab>(DEFAULT_ACTIVITY_TAB);
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<ActivityFilterValues>({});
+  const [taskCompletions, setTaskCompletions] = useState<
+    Record<number, boolean>
+  >({});
   const [isLogCallModalOpen, setIsLogCallModalOpen] = useState(false);
   const [isLogMeetingModalOpen, setIsLogMeetingModalOpen] = useState(false);
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
+  const [isLogEmailModalOpen, setIsLogEmailModalOpen] = useState(false);
 
   const isAllTab = activeTab === ActivityTab.ALL;
 
@@ -184,6 +194,8 @@ const ActivitiesContent: FC = () => {
     isAllTab && feed.data ? feed.data.pages[0].totalItems : rows.length;
   const hasActiveFilters =
     searchTerm.length > 0 || Object.keys(filters).length > 0;
+  const showControls =
+    isLoading || isError || hasActiveFilters || rows.length > 0;
 
   const handleRowClick = (row: ActivityRow): void => {
     switch (row.type) {
@@ -208,7 +220,46 @@ const ActivitiesContent: FC = () => {
     }
   };
 
-  const handleToggleComplete = (): void => {};
+  const applyCompletion = (taskId: number, isCompleted: boolean): void => {
+    setTaskCompletions((current) => ({ ...current, [taskId]: isCompleted }));
+  };
+
+  const handleToggleError = ({
+    id,
+    isCompleted
+  }: CrmTaskCompletionPayload): void => {
+    applyCompletion(id, !isCompleted);
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText([
+        "tasks",
+        "common",
+        "toastMessages",
+        "toggleErrorTitle"
+      ]),
+      description: translateText([
+        "tasks",
+        "common",
+        "toastMessages",
+        "toggleErrorDescription"
+      ])
+    });
+  };
+
+  const { mutate: updateTaskCompletion, isPending } =
+    useUpdateTaskCompletion(handleToggleError);
+
+  const handleToggleComplete = (
+    row: ActivityRow,
+    isCompleted: boolean
+  ): void => {
+    if (isPending) return;
+
+    applyCompletion(row.id, isCompleted);
+
+    updateTaskCompletion({ id: row.id, isCompleted });
+  };
 
   const toolbarActions: Record<
     ActivityTab,
@@ -227,8 +278,26 @@ const ActivitiesContent: FC = () => {
       labelKey: "logMeetingBtn",
       onClick: () => setIsLogMeetingModalOpen(true)
     },
-    [ActivityTab.EMAILS]: null
+    [ActivityTab.EMAILS]: {
+      labelKey: "logEmailBtn",
+      onClick: () => setIsLogEmailModalOpen(true)
+    }
   };
+
+  const toolbarAction = toolbarActions[activeTab];
+
+  const actionButton: ButtonV2Props | null = toolbarAction
+    ? {
+        variant: "primary",
+        type: "button",
+        onClick: toolbarAction.onClick,
+        children: translateText([
+          "activities",
+          "toolbar",
+          toolbarAction.labelKey
+        ])
+      }
+    : null;
 
   return (
     <div className="flex flex-col w-full gap-4 pt-5.5 lg:pt-1">
@@ -245,24 +314,8 @@ const ActivitiesContent: FC = () => {
         teamMembers={teamMembers}
         isTeamMembersError={isCrmInitialDataError}
         timeZone={displayZone}
-        showControls={
-          isLoading || isError || hasActiveFilters || rows.length > 0
-        }
-        action={
-          toolbarActions[activeTab] && (
-            <ButtonV2
-              variant="primary"
-              type="button"
-              onClick={toolbarActions[activeTab].onClick}
-            >
-              {translateText([
-                "activities",
-                "toolbar",
-                toolbarActions[activeTab].labelKey
-              ])}
-            </ButtonV2>
-          )
-        }
+        showControls={showControls}
+        action={showControls && actionButton && <ButtonV2 {...actionButton} />}
       />
       {isLogCallModalOpen && (
         <LogCallModalContent onClose={() => setIsLogCallModalOpen(false)} />
@@ -277,6 +330,9 @@ const ActivitiesContent: FC = () => {
           onClose={() => setIsAddTaskModalOpen(false)}
         />
       )}
+      {isLogEmailModalOpen && (
+        <LogEmailModalContent onClose={() => setIsLogEmailModalOpen(false)} />
+      )}
       <ActivityFeed
         activeTab={activeTab}
         pages={pages}
@@ -286,6 +342,8 @@ const ActivitiesContent: FC = () => {
         hasNextPage={isAllTab && feed.hasNextPage}
         isFetchingNextPage={isAllTab && feed.isFetchingNextPage}
         timeZone={displayZone}
+        taskCompletions={taskCompletions}
+        emptyStateButton={showControls ? null : actionButton}
         onLoadMore={feed.fetchNextPage}
         onRowClick={handleRowClick}
         onToggleComplete={handleToggleComplete}
