@@ -68,8 +68,11 @@ const LeaveDashboard = (): JSX.Element => {
   const { isLeavePoliciesEnabled, isLoading: isPolicyConfigLoading } =
     useLeavePoliciesEnabled();
 
+  const isPolicyConfigReady = isFetchingEnabled && !isPolicyConfigLoading;
   const isLegacyAvailabilityEnabled =
-    isFetchingEnabled && !isPolicyConfigLoading && !isLeavePoliciesEnabled;
+    isPolicyConfigReady && !isLeavePoliciesEnabled;
+  const isLegacyTeamDataEnabled = isLegacyAvailabilityEnabled && teamId !== "";
+  const isPolicyDataEnabled = isPolicyConfigReady && isLeavePoliciesEnabled;
 
   const today = DateTime.now().toFormat(DATE_FORMAT);
 
@@ -88,40 +91,27 @@ const LeaveDashboard = (): JSX.Element => {
 
   const { data: pendingLeaves } = useGetPendingLeavesData(
     teamId,
-    isFetchingEnabled &&
-      teamId !== "" &&
-      !isPolicyConfigLoading &&
-      !isLeavePoliciesEnabled
+    isLegacyTeamDataEnabled
   );
 
   const { data: policyPendingLeaveCount } = useGetPolicyPendingLeaveCount(
     teamId,
-    isFetchingEnabled && isLeavePoliciesEnabled
+    isPolicyDataEnabled
   );
 
   const { data: absenceRate } = useGetAbsenceRate(teamId, isFetchingEnabled);
   const legacyBreakdown = useGetLeaveTypeBreakdownChartData(
     teamId,
-    isFetchingEnabled &&
-      teamId !== "" &&
-      !isPolicyConfigLoading &&
-      !isLeavePoliciesEnabled
+    isLegacyTeamDataEnabled
   );
 
   const policyBreakdown = useGetPolicyLeaveTypeBreakdown(
     teamId,
-    isFetchingEnabled && !isPolicyConfigLoading && isLeavePoliciesEnabled
+    isPolicyDataEnabled
   );
 
-  const { error, data: datasets } = isLeavePoliciesEnabled
-    ? policyBreakdown
-    : legacyBreakdown;
-
-  const isLoading =
-    isPolicyConfigLoading ||
-    (isLeavePoliciesEnabled
-      ? policyBreakdown.isLoading
-      : legacyBreakdown.isLoading);
+  const breakdown = isLeavePoliciesEnabled ? policyBreakdown : legacyBreakdown;
+  const isBreakdownLoading = isPolicyConfigLoading || breakdown.isLoading;
 
   useGoogleAnalyticsEvent({
     onMountEventType: GoogleAnalyticsTypes.GA4_LEAVE_DASHBOARD_VIEWED,
@@ -362,9 +352,9 @@ const LeaveDashboard = (): JSX.Element => {
       </Grid>
       <AvailabilityCalendarWidget teams={teamId} />
       <LeaveTypeBreakdownChart
-        datasets={datasets}
-        isLoading={isLoading}
-        error={error}
+        datasets={breakdown.data}
+        isLoading={isBreakdownLoading}
+        error={breakdown.error}
       />
     </Box>
   );

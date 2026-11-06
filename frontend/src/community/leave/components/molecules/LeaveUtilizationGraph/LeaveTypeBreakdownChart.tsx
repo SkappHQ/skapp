@@ -124,77 +124,81 @@ const LeaveTypeBreakdownChart = ({
     }
   };
 
+  const handleChartFocus = (): void => {
+    const chartInstance = chartRef.current?.getEchartsInstance();
+    if (chartInstance && datasets?.months?.length) {
+      chartInstance.dispatchAction({
+        type: "showTip",
+        seriesIndex: 0,
+        dataIndex: highlightedIndex
+      });
+    }
+  };
+
+  const renderChartContent = (): JSX.Element => {
+    if (error) {
+      return (
+        <Box sx={classes.errorContainer}>
+          <Typography>{translateTexts(["somethingWentWrong"])}</Typography>
+        </Box>
+      );
+    }
+
+    if (toggle === undefined) {
+      return <Box sx={classes.loadingPlaceholder} />;
+    }
+
+    const isAnyLeaveTypeVisible = Object.values(toggle).some(Boolean);
+
+    return (
+      <Box
+        sx={{
+          display: isAnyLeaveTypeVisible ? "block" : "none",
+          ...classes.chartContainer
+        }}
+        tabIndex={getTabIndex(!isFreeTier || !isUserProfileView)}
+        role="application"
+        aria-label={translateAria(["leaveUtilizationChart"])}
+        onKeyDown={handleKeyPress}
+        onFocus={handleChartFocus}
+      >
+        <ReactECharts
+          option={chartData}
+          ref={chartRef}
+          style={{ width: "100%" }}
+          opts={{ renderer: "canvas" }}
+          onEvents={{
+            rendered: resizeChart
+          }}
+        />
+      </Box>
+    );
+  };
+
+  if (isLoading) {
+    return <LeaveTypeBreakdownSkeleton />;
+  }
+
   return (
-    <>
-      {!isLoading ? (
-        <Stack sx={classes.container}>
-          <Stack sx={classes.innerContainer}>
-            <Stack sx={classes.header}>
-              <Typography variant="h2" component="h2">
-                {translateTexts(["leaveUtilization"])}
-              </Typography>
-              <LeaveTypeBreakdownButtons
-                toggle={toggle}
-                onClick={toggleData}
-                colors={formatChartButtonList({
-                  colorList: buttonColors,
-                  labelList: datasets?.labels || []
-                })}
-                isGraph
-              />
-            </Stack>
-            {isLoading ? (
-              <Box sx={classes.loadingPlaceholder} />
-            ) : error ? (
-              <Box sx={classes.errorContainer}>
-                <Typography>
-                  {translateTexts(["somethingWentWrong"])}
-                </Typography>
-              </Box>
-            ) : toggle === undefined ? (
-              <Box sx={classes.loadingPlaceholder} />
-            ) : (
-              <Box
-                sx={{
-                  display:
-                    toggle &&
-                    !Object.values(toggle).every((value: Object) => !value)
-                      ? "block"
-                      : "none",
-                  ...classes.chartContainer
-                }}
-                tabIndex={getTabIndex(!isFreeTier || !isUserProfileView)}
-                role="application"
-                aria-label={translateAria(["leaveUtilizationChart"])}
-                onKeyDown={handleKeyPress}
-                onFocus={() => {
-                  const chartInstance = chartRef.current?.getEchartsInstance();
-                  if (chartInstance && datasets?.months?.length) {
-                    chartInstance.dispatchAction({
-                      type: "showTip",
-                      seriesIndex: 0,
-                      dataIndex: highlightedIndex
-                    });
-                  }
-                }}
-              >
-                <ReactECharts
-                  option={chartData}
-                  ref={chartRef}
-                  style={{ width: "100%" }}
-                  opts={{ renderer: "canvas" }}
-                  onEvents={{
-                    rendered: resizeChart
-                  }}
-                />
-              </Box>
-            )}
-          </Stack>
+    <Stack sx={classes.container}>
+      <Stack sx={classes.innerContainer}>
+        <Stack sx={classes.header}>
+          <Typography variant="h2" component="h2">
+            {translateTexts(["leaveUtilization"])}
+          </Typography>
+          <LeaveTypeBreakdownButtons
+            toggle={toggle}
+            onClick={toggleData}
+            colors={formatChartButtonList({
+              colorList: buttonColors,
+              labelList: datasets?.labels || []
+            })}
+            isGraph
+          />
         </Stack>
-      ) : (
-        <LeaveTypeBreakdownSkeleton />
-      )}
-    </>
+        {renderChartContent()}
+      </Stack>
+    </Stack>
   );
 };
 
