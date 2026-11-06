@@ -13,6 +13,8 @@ public class PolicyLeaveMonthlyDurationDto {
 
 	private Long leaveTypeId;
 
+	private Integer year;
+
 	private Integer month;
 
 	private Double durationDays;

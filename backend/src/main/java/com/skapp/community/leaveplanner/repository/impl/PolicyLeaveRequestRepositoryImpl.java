@@ -299,6 +299,8 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
 		Join<PolicyLeaveRequest, Employee> employee = root.join(PolicyLeaveRequest_.employee);
 		Path<Long> leaveTypeId = leaveTypeIdPath(root);
+		Expression<Integer> year = criteriaBuilder.function("YEAR", Integer.class,
+				root.get(PolicyLeaveRequest_.startDate));
 		Expression<Integer> month = criteriaBuilder.function("MONTH", Integer.class,
 				root.get(PolicyLeaveRequest_.startDate));
 
@@ -307,10 +309,10 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		predicates.add(singleMonthWithinWindowPredicate(criteriaBuilder, root, startDate, endDate));
 
 		criteriaQuery
-			.select(criteriaBuilder.construct(PolicyLeaveMonthlyDurationDto.class, leaveTypeId, month,
+			.select(criteriaBuilder.construct(PolicyLeaveMonthlyDurationDto.class, leaveTypeId, year, month,
 					criteriaBuilder.sumAsDouble(root.get(PolicyLeaveRequest_.durationDays))))
 			.where(predicates.toArray(new Predicate[0]))
-			.groupBy(leaveTypeId, month);
+			.groupBy(leaveTypeId, year, month);
 
 		return entityManager.createQuery(criteriaQuery).getResultList();
 	}

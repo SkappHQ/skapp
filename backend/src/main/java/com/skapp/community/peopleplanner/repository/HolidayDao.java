@@ -1,6 +1,7 @@
 package com.skapp.community.peopleplanner.repository;
 
 import com.skapp.community.peopleplanner.model.Holiday;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -20,6 +21,9 @@ public interface HolidayDao extends JpaRepository<Holiday, Long>, JpaSpecificati
 	List<Holiday> findAllByIsActiveTrueAndWorkLocationsIsEmpty();
 
 	List<Holiday> findAllByIsActiveTrueAndDateBetween(LocalDate startDate, LocalDate endDate);
+
+	@EntityGraph(attributePaths = "workLocations")
+	List<Holiday> findAllWithWorkLocationsByIsActiveTrueAndDateBetween(LocalDate startDate, LocalDate endDate);
 
 	Holiday findByIsActiveTrueAndDate(LocalDate currentDate);
 

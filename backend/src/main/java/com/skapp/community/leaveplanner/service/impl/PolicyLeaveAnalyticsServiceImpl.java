@@ -19,6 +19,7 @@ import com.skapp.community.leaveplanner.payload.request.PolicyTeamLeaveTrendFilt
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTrendDataResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTrendResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeBreakdownDataResponseDto;
+import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeBasicInfoResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeBreakdownResponseDto;
 import com.skapp.community.leaveplanner.repository.PolicyLeaveRequestDao;
 import com.skapp.community.leaveplanner.repository.PolicyLeaveTypeDao;
@@ -45,12 +46,14 @@ import org.springframework.util.CollectionUtils;
 import java.time.LocalDate;
 import java.time.MonthDay;
 import java.time.YearMonth;
+import java.time.temporal.ChronoUnit;
 import java.time.format.TextStyle;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 @Slf4j
 @Service
@@ -93,17 +96,18 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 		List<PolicyLeaveType> leaveTypes = resolveTrendLeaveTypes(filterDto.getLeaveTypeIds());
 		PolicyLeaveDateWindowDto window = resolveTrendWindow(filterDto.getStartDate(), filterDto.getEndDate());
 
-		Map<Long, Map<Integer, Double>> durations = sumApprovedLeaveByTypeAndMonth(window,
+		Map<Long, Map<YearMonth, Double>> durations = sumApprovedLeaveByTypeAndMonth(window,
 				leaveTypes.stream().map(PolicyLeaveType::getId).toList(), List.of(team.getTeamId()), null);
 
 		PolicyLeaveTrendResponseDto responseDto = new PolicyLeaveTrendResponseDto();
 		responseDto.setTotalLeaves(toMonthNameMap(window, sumByMonth(durations)));
-		responseDto.setTotalLeavesWithType(leaveTypes.stream().map(leaveType -> {
-			PolicyLeaveTrendDataResponseDto dataResponseDto = new PolicyLeaveTrendDataResponseDto();
-			dataResponseDto.setLeaveType(leaveMapper.policyLeaveTypeToPolicyLeaveTypeBasicInfoResponseDto(leaveType));
-			dataResponseDto.setLeaveTrendData(toMonthNameMap(window, durations.get(leaveType.getId())));
-			return dataResponseDto;
-		}).toList());
+		responseDto
+			.setTotalLeavesWithType(buildLeaveTypeMonthData(leaveTypes, window, durations, (leaveType, monthData) -> {
+				PolicyLeaveTrendDataResponseDto dataResponseDto = new PolicyLeaveTrendDataResponseDto();
+				dataResponseDto.setLeaveType(leaveType);
+				dataResponseDto.setLeaveTrendData(monthData);
+				return dataResponseDto;
+			}));
 
 		log.info("getTeamLeaveTrendForTheYear: execution ended");
 		return new ResponseEntityDto(false, responseDto);
@@ -119,29 +123,44 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 		Long supervisorEmployeeId = LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser) ? null
 				: currentUser.getEmployee().getEmployeeId();
 
+		List<Long> teamIds = resolveTeamIds(filterDto.getTeamIds());
+		if (!teamIds.isEmpty()) {
+			LeaveModuleUtil.validateTeamsForLeaveAnalytics(teamIds, currentUser, teamDao.findByTeamIdIn(teamIds));
+		}
+
 		List<PolicyLeaveType> leaveTypes = resolveBreakdownLeaveTypes(filterDto.getTypeIds());
 		PolicyLeaveDateWindowDto window = resolveCurrentCycle();
 
-		Map<Long, Map<Integer, Double>> durations = sumApprovedLeaveByTypeAndMonth(window,
-				leaveTypes.stream().map(PolicyLeaveType::getId).toList(), resolveTeamIds(filterDto.getTeamIds()),
-				supervisorEmployeeId);
+		Map<Long, Map<YearMonth, Double>> durations = sumApprovedLeaveByTypeAndMonth(window,
+				leaveTypes.stream().map(PolicyLeaveType::getId).toList(), teamIds, supervisorEmployeeId);
 
 		PolicyLeaveTypeBreakdownResponseDto responseDto = new PolicyLeaveTypeBreakdownResponseDto();
 		responseDto.setTotalLeaves(toMonthNameMap(window, sumByMonth(durations)));
-		responseDto.setTotalLeavesWithType(leaveTypes.stream().map(leaveType -> {
-			PolicyLeaveTypeBreakdownDataResponseDto dataResponseDto = new PolicyLeaveTypeBreakdownDataResponseDto();
-			dataResponseDto.setLeaveType(leaveMapper.policyLeaveTypeToPolicyLeaveTypeBasicInfoResponseDto(leaveType));
-			dataResponseDto.setLeaveUtilizationData(toMonthNameMap(window, durations.get(leaveType.getId())));
-			return dataResponseDto;
-		}).toList());
+		responseDto
+			.setTotalLeavesWithType(buildLeaveTypeMonthData(leaveTypes, window, durations, (leaveType, monthData) -> {
+				PolicyLeaveTypeBreakdownDataResponseDto dataResponseDto = new PolicyLeaveTypeBreakdownDataResponseDto();
+				dataResponseDto.setLeaveType(leaveType);
+				dataResponseDto.setLeaveUtilizationData(monthData);
+				return dataResponseDto;
+			}));
 
 		log.info("getLeaveTypeBreakdown: execution ended");
 		return new ResponseEntityDto(false, responseDto);
 	}
 
-	private Map<Long, Map<Integer, Double>> sumApprovedLeaveByTypeAndMonth(PolicyLeaveDateWindowDto window,
+	private <T> List<T> buildLeaveTypeMonthData(List<PolicyLeaveType> leaveTypes, PolicyLeaveDateWindowDto window,
+			Map<Long, Map<YearMonth, Double>> durations,
+			BiFunction<PolicyLeaveTypeBasicInfoResponseDto, Map<String, Float>, T> dataBuilder) {
+		return leaveTypes.stream()
+			.map(leaveType -> dataBuilder.apply(
+					leaveMapper.policyLeaveTypeToPolicyLeaveTypeBasicInfoResponseDto(leaveType),
+					toMonthNameMap(window, durations.get(leaveType.getId()))))
+			.toList();
+	}
+
+	private Map<Long, Map<YearMonth, Double>> sumApprovedLeaveByTypeAndMonth(PolicyLeaveDateWindowDto window,
 			List<Long> leaveTypeIds, List<Long> teamIds, Long supervisorEmployeeId) {
-		Map<Long, Map<Integer, Double>> durations = new HashMap<>();
+		Map<Long, Map<YearMonth, Double>> durations = new HashMap<>();
 		if (leaveTypeIds.isEmpty()) {
 			return durations;
 		}
@@ -150,7 +169,8 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 			.findApprovedSingleMonthDurations(window.getStartDate(), window.getEndDate(), leaveTypeIds, teamIds,
 					supervisorEmployeeId);
 		for (PolicyLeaveMonthlyDurationDto duration : singleMonthDurations) {
-			addDuration(durations, duration.getLeaveTypeId(), duration.getMonth(), duration.getDurationDays());
+			addDuration(durations, duration.getLeaveTypeId(), YearMonth.of(duration.getYear(), duration.getMonth()),
+					duration.getDurationDays());
 		}
 
 		List<PolicyLeaveSpanDto> multiMonthSpans = policyLeaveRequestDao.findApprovedMultiMonthSpans(
@@ -168,35 +188,43 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 			.map(PolicyLeaveSpanDto::getEndDate)
 			.max(LocalDate::compareTo)
 			.orElse(window.getEndDate());
-		List<Holiday> holidays = holidayDao.findAllByIsActiveTrueAndDateBetween(earliestStart, latestEnd);
+		List<Holiday> holidays = holidayDao.findAllWithWorkLocationsByIsActiveTrueAndDateBetween(earliestStart,
+				latestEnd);
+		Map<Long, List<Holiday>> holidaysByWorkLocation = new HashMap<>();
 
 		for (PolicyLeaveSpanDto span : multiMonthSpans) {
-			splitAcrossMonths(durations, span, window, timeConfigs,
-					holidaysForWorkLocation(holidays, span.getWorkLocationId()));
+			List<Holiday> spanHolidays = holidaysByWorkLocation.computeIfAbsent(span.getWorkLocationId(),
+					workLocationId -> holidaysForWorkLocation(holidays, workLocationId));
+			splitAcrossMonths(durations, span, window, timeConfigs, spanHolidays);
 		}
 
 		return durations;
 	}
 
-	private void splitAcrossMonths(Map<Long, Map<Integer, Double>> durations, PolicyLeaveSpanDto span,
+	private void splitAcrossMonths(Map<Long, Map<YearMonth, Double>> durations, PolicyLeaveSpanDto span,
 			PolicyLeaveDateWindowDto window, List<TimeConfig> timeConfigs, List<Holiday> holidays) {
-		float requestWorkingDays = LeaveModuleUtil.getWorkingDaysBetweenTwoDates(span.getStartDate(), span.getEndDate(),
-				timeConfigs, holidays);
-		if (requestWorkingDays <= 0f || span.getDurationDays() == null) {
+		if (span.getDurationDays() == null) {
 			return;
 		}
 
-		double durationPerWorkingDay = span.getDurationDays() / requestWorkingDays;
+		BiFunction<LocalDate, LocalDate, Double> dayCounter = (start,
+				end) -> (double) LeaveModuleUtil.getWorkingDaysBetweenTwoDates(start, end, timeConfigs, holidays);
+		double requestDays = dayCounter.apply(span.getStartDate(), span.getEndDate());
+		if (requestDays <= 0) {
+			log.warn("splitAcrossMonths: approved leave span has no working days, splitting by calendar days");
+			dayCounter = (start, end) -> (double) (ChronoUnit.DAYS.between(start, end) + 1);
+			requestDays = dayCounter.apply(span.getStartDate(), span.getEndDate());
+		}
+
+		double durationPerDay = span.getDurationDays() / requestDays;
 		LocalDate from = latest(span.getStartDate(), window.getStartDate());
 		LocalDate to = earliest(span.getEndDate(), window.getEndDate());
 		YearMonth lastMonth = YearMonth.from(to);
 
 		for (YearMonth month = YearMonth.from(from); !month.isAfter(lastMonth); month = month.plusMonths(1)) {
-			float segmentWorkingDays = LeaveModuleUtil.getWorkingDaysBetweenTwoDates(latest(from, month.atDay(1)),
-					earliest(to, month.atEndOfMonth()), timeConfigs, holidays);
-			if (segmentWorkingDays > 0f) {
-				addDuration(durations, span.getLeaveTypeId(), month.getMonthValue(),
-						segmentWorkingDays * durationPerWorkingDay);
+			double segmentDays = dayCounter.apply(latest(from, month.atDay(1)), earliest(to, month.atEndOfMonth()));
+			if (segmentDays > 0) {
+				addDuration(durations, span.getLeaveTypeId(), month, segmentDays * durationPerDay);
 			}
 		}
 	}
@@ -210,7 +238,7 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 			.toList();
 	}
 
-	private void addDuration(Map<Long, Map<Integer, Double>> durations, Long leaveTypeId, Integer month,
+	private void addDuration(Map<Long, Map<YearMonth, Double>> durations, Long leaveTypeId, YearMonth month,
 			Double durationDays) {
 		if (durationDays == null) {
 			return;
@@ -218,30 +246,31 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 		durations.computeIfAbsent(leaveTypeId, key -> new HashMap<>()).merge(month, durationDays, Double::sum);
 	}
 
-	private Map<Integer, Double> sumByMonth(Map<Long, Map<Integer, Double>> durations) {
-		Map<Integer, Double> totals = new HashMap<>();
+	private Map<YearMonth, Double> sumByMonth(Map<Long, Map<YearMonth, Double>> durations) {
+		Map<YearMonth, Double> totals = new HashMap<>();
 		durations.values()
 			.forEach(durationsByMonth -> durationsByMonth
 				.forEach((month, durationDays) -> totals.merge(month, durationDays, Double::sum)));
 		return totals;
 	}
 
-	private Map<String, Float> toMonthNameMap(PolicyLeaveDateWindowDto window, Map<Integer, Double> durationsByMonth) {
+	private Map<String, Float> toMonthNameMap(PolicyLeaveDateWindowDto window,
+			Map<YearMonth, Double> durationsByMonth) {
 		Map<String, Float> monthNameMap = new LinkedHashMap<>();
 		YearMonth lastMonth = YearMonth.from(window.getEndDate());
 
 		for (YearMonth month = YearMonth.from(window.getStartDate()); !month.isAfter(lastMonth); month = month
 			.plusMonths(1)) {
-			Double durationDays = durationsByMonth == null ? null : durationsByMonth.get(month.getMonthValue());
-			monthNameMap.put(month.getMonth().getDisplayName(TextStyle.SHORT, Locale.ENGLISH),
-					durationDays == null ? 0f : durationDays.floatValue());
+			Double durationDays = durationsByMonth == null ? null : durationsByMonth.get(month);
+			monthNameMap.merge(month.getMonth().getDisplayName(TextStyle.SHORT, Locale.ENGLISH),
+					durationDays == null ? 0f : durationDays.floatValue(), Float::sum);
 		}
 
 		return monthNameMap;
 	}
 
 	private List<PolicyLeaveType> resolveTrendLeaveTypes(List<Long> leaveTypeIds) {
-		if (isAllSelected(leaveTypeIds)) {
+		if (isAllSelected(leaveTypeIds, PolicyLeaveConstant.ALL_LEAVE_TYPES_ID)) {
 			return policyLeaveTypeDao.findAll(Sort.by(Sort.Direction.ASC, "id"));
 		}
 
@@ -253,18 +282,18 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 	}
 
 	private List<PolicyLeaveType> resolveBreakdownLeaveTypes(List<Long> typeIds) {
-		List<PolicyLeaveType> leaveTypes = isAllSelected(typeIds)
+		List<PolicyLeaveType> leaveTypes = isAllSelected(typeIds, PolicyLeaveConstant.ALL_LEAVE_TYPES_ID)
 				? policyLeaveTypeDao.findAll(Sort.by(Sort.Direction.ASC, "id"))
 				: policyLeaveTypeDao.findAllById(typeIds);
 		return leaveTypes.stream().filter(leaveType -> Boolean.TRUE.equals(leaveType.getIsActive())).toList();
 	}
 
-	private boolean isAllSelected(List<Long> ids) {
-		return CollectionUtils.isEmpty(ids) || ids.contains(PolicyLeaveConstant.ALL_TEAMS_ID);
+	private boolean isAllSelected(List<Long> ids, long allSelectionId) {
+		return CollectionUtils.isEmpty(ids) || ids.contains(allSelectionId);
 	}
 
 	private List<Long> resolveTeamIds(List<Long> teamIds) {
-		return isAllSelected(teamIds) ? List.of() : teamIds;
+		return isAllSelected(teamIds, PolicyLeaveConstant.ALL_TEAMS_ID) ? List.of() : teamIds;
 	}
 
 	private PolicyLeaveDateWindowDto resolveTrendWindow(LocalDate startDate, LocalDate endDate) {
@@ -273,7 +302,8 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 		}
 
 		int currentYear = timeZoneService.currentOrganizationDate().getYear();
-		if (startDate.getYear() < currentYear - 1 || endDate.getYear() < currentYear - 1) {
+		if (startDate.isAfter(endDate) || startDate.getYear() < currentYear - 1 || endDate
+			.isAfter(startDate.plusMonths(PolicyLeaveConstant.MAX_ANALYTICS_WINDOW_MONTHS).minusDays(1))) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_START_DATE_END_DATE_NOT_VALID);
 		}
 		return new PolicyLeaveDateWindowDto(startDate, endDate);
