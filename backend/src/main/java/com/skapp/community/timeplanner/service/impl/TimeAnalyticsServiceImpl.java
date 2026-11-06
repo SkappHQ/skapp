@@ -11,7 +11,10 @@ import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
+import com.skapp.community.leaveplanner.payload.PolicyAttendanceLeavesDto;
+import com.skapp.community.leaveplanner.payload.response.LeaveRequestResponseDto;
 import com.skapp.community.leaveplanner.repository.LeaveRequestDao;
+import com.skapp.community.leaveplanner.service.PolicyAttendanceLeaveService;
 import com.skapp.community.leaveplanner.type.LeaveState;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -61,6 +64,8 @@ import java.time.LocalTime;
 import java.time.Month;
 import java.time.Year;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -101,6 +106,8 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 
 	private final TimeZoneService timeZoneService;
 
+	private final PolicyAttendanceLeaveService policyAttendanceLeaveService;
+
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getClockInClockOutTrend(ClockInClockOutTrendFilterDto filterDto) {
@@ -126,8 +133,10 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		List<TimeRecord> timeRecords = getTimeRecords(filterDto.getTeams());
 
 		ZoneId organizationZone = timeZoneService.organizationTimezone();
+		PolicyAttendanceLeavesDto policyLeaves = getPolicyLeaves(policyAttendanceLeaveService.isLeavePoliciesEnabled(),
+				timeRecords);
 		List<TimeRecord> lateArrivals = timeRecords.stream()
-			.filter(timeRecord -> isLateArrival(timeRecord, organizationZone))
+			.filter(timeRecord -> isLateArrival(timeRecord, organizationZone, policyLeaves))
 			.toList();
 
 		Map<String, Long> lateArrivalCount = filterDto.getTrendPeriod().equals(TrendPeriod.MONTHLY)
@@ -154,7 +163,7 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 			.collect(Collectors.groupingBy(TimeRecord::getDate, Collectors.summingDouble(TimeRecord::getWorkedHours)));
 
 		Map<String, Double> dailyAverageHours = calculateDailyAverageHoursForTeam(dailyWorkedHours,
-				filterDto.getMonth(), filterDto.getTeams());
+				filterDto.getMonth(), filterDto.getTeams(), policyAttendanceLeaveService.isLeavePoliciesEnabled());
 
 		log.info("averageHoursWorkedTrend: execution ended successfully");
 		return new ResponseEntityDto(false, dailyAverageHours);
@@ -172,13 +181,15 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 			return buildEmptyDashboardSummary();
 		}
 
+		boolean leavePoliciesEnabled = policyAttendanceLeaveService.isLeavePoliciesEnabled();
 		List<TimeRecord> timeRecords = getTimeRecordsForDate(filterDto.getTeams(), currentDate);
-		long totalEmployeeCount = getTotalEmployeeCount(filterDto.getTeams(), currentDate);
+		long totalEmployeeCount = getTotalEmployeeCount(filterDto.getTeams(), currentDate, leavePoliciesEnabled);
 
 		long actualClockIns = timeRecords.stream().filter(timeRecord -> timeRecord.getClockInTime() != null).count();
 		ZoneId organizationZone = timeZoneService.organizationTimezone();
+		PolicyAttendanceLeavesDto policyLeaves = getPolicyLeaves(leavePoliciesEnabled, timeRecords);
 		long lateArrivals = timeRecords.stream()
-			.filter(timeRecord -> isLateArrival(timeRecord, organizationZone))
+			.filter(timeRecord -> isLateArrival(timeRecord, organizationZone, policyLeaves))
 			.count();
 
 		Map<String, Object> dashboardSummary = buildDashboardSummary(actualClockIns, totalEmployeeCount, lateArrivals);
@@ -213,9 +224,13 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 
 		ZoneId organizationZone = timeZoneService.organizationTimezone();
 		ZoneId requestZone = timeZoneService.requestTimezone();
+		LocalDate today = DateTimeUtils.currentDateAt(organizationZone);
+		PolicyAttendanceLeavesDto policyLeaves = getPolicyLeaves(policyAttendanceLeaveService.isLeavePoliciesEnabled(),
+				employees.stream().map(Employee::getEmployeeId).toList(),
+				date.equals(today) ? List.of(today) : List.of(today, date));
 		List<ClockInSummaryResponseDto> clockInSummaryResponseDtos = employees.stream()
 			.map(employee -> buildClockInSummaryResponse(clockInSummaryFilterDto, employee, organizationZone,
-					requestZone))
+					requestZone, policyLeaves))
 			.filter(Optional::isPresent)
 			.map(Optional::get)
 			.toList();
@@ -282,48 +297,60 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 	}
 
 	private Optional<ClockInSummaryResponseDto> buildClockInSummaryResponse(ClockInSummaryFilterDto filterDto,
-			Employee employee, ZoneId organizationZone, ZoneId requestZone) {
+			Employee employee, ZoneId organizationZone, ZoneId requestZone, PolicyAttendanceLeavesDto policyLeaves) {
 
 		if (employee.getAccountStatus().equals(AccountStatus.PENDING)) {
 			return Optional.empty();
 		}
 
-		List<LeaveRequest> leaveRequestsList = leaveRequestDao
-			.findLeaveRequestsForTodayByUser(DateTimeUtils.currentDateAt(organizationZone), employee.getEmployeeId());
+		LocalDate today = DateTimeUtils.currentDateAt(organizationZone);
+		boolean isOnLeaveToday;
+		if (Boolean.TRUE.equals(policyLeaves.getEnabled())) {
+			isOnLeaveToday = policyAttendanceLeaveService.isOnApprovedLeave(policyLeaves.getLeaveRequests(),
+					employee.getEmployeeId(), today);
+		}
+		else {
+			List<LeaveRequest> leaveRequestsList = leaveRequestDao.findLeaveRequestsForTodayByUser(today,
+					employee.getEmployeeId());
+			isOnLeaveToday = !leaveRequestsList.isEmpty();
+		}
 
 		boolean clockInOnLeaveDaysStatus = attendanceConfigService
 			.getAttendanceConfigByType(AttendanceConfigType.CLOCK_IN_ON_LEAVE_DAYS);
 
-		if (!clockInOnLeaveDaysStatus && !leaveRequestsList.isEmpty()) {
+		if (!clockInOnLeaveDaysStatus && isOnLeaveToday) {
 			return Optional.empty();
 		}
 
 		TimeRecord timeRecord = timeRecordDao.findByDateAndEmployee(filterDto.getDate(), employee);
 
 		if (filterDto.getClockInType().contains(ClockInType.ALL_CLOCK_INS) || filterDto.getClockInType().isEmpty()) {
-			return createClockInSummaryResponse(filterDto, employee, timeRecord, organizationZone, requestZone);
+			return createClockInSummaryResponse(filterDto, employee, timeRecord, organizationZone, requestZone,
+					policyLeaves);
 		}
 
 		if (filterDto.getClockInType().contains(ClockInType.LATE_CLOCK_INS)
 				&& filterDto.getClockInType().contains(ClockInType.NOT_CLOCKED_INS) && timeRecord != null
-				&& !isLateArrival(timeRecord, organizationZone)) {
+				&& !isLateArrival(timeRecord, organizationZone, policyLeaves)) {
 			return Optional.empty();
 		}
 
 		if (filterDto.getClockInType().contains(ClockInType.LATE_CLOCK_INS)
 				&& !filterDto.getClockInType().contains(ClockInType.NOT_CLOCKED_INS)
-				&& (timeRecord == null || !isLateArrival(timeRecord, organizationZone))) {
+				&& (timeRecord == null || !isLateArrival(timeRecord, organizationZone, policyLeaves))) {
 			return Optional.empty();
 		}
 
-		return createClockInSummaryResponse(filterDto, employee, timeRecord, organizationZone, requestZone);
+		return createClockInSummaryResponse(filterDto, employee, timeRecord, organizationZone, requestZone,
+				policyLeaves);
 	}
 
 	private Optional<ClockInSummaryResponseDto> createClockInSummaryResponse(ClockInSummaryFilterDto filterDto,
-			Employee employee, TimeRecord timeRecord, ZoneId organizationZone, ZoneId requestZone) {
+			Employee employee, TimeRecord timeRecord, ZoneId organizationZone, ZoneId requestZone,
+			PolicyAttendanceLeavesDto policyLeaves) {
 		ClockInSummaryResponseDto responseDto = new ClockInSummaryResponseDto();
 		responseDto.setEmployee(peopleMapper.employeeToEmployeeBasicDetailsResponseDto(employee));
-		responseDto.setIsLateArrival(timeRecord != null && isLateArrival(timeRecord, organizationZone));
+		responseDto.setIsLateArrival(timeRecord != null && isLateArrival(timeRecord, organizationZone, policyLeaves));
 
 		if (timeRecord != null) {
 			responseDto.setTimeRecordId(timeRecord.getTimeRecordId());
@@ -335,7 +362,10 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		}
 
 		responseDto.setHoliday(getHoliday(filterDto.getDate()));
-		responseDto.setLeave(getLeaveRequest(employee, filterDto.getDate()));
+		responseDto.setLeave(Boolean.TRUE.equals(policyLeaves.getEnabled())
+				? policyAttendanceLeaveService.findClockInSummaryLeaveRequest(policyLeaves.getLeaveRequests(),
+						employee.getEmployeeId(), filterDto.getDate())
+				: getLeaveRequest(employee, filterDto.getDate()));
 
 		return Optional.of(responseDto);
 	}
@@ -396,7 +426,52 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 				: timeRecordDao.getTimeRecordsByTeam(teamIds);
 	}
 
-	private boolean isLateArrival(TimeRecord timeRecord, ZoneId organizationZone) {
+	private PolicyAttendanceLeavesDto getPolicyLeaves(boolean leavePoliciesEnabled, List<TimeRecord> timeRecords) {
+		if (!leavePoliciesEnabled) {
+			return new PolicyAttendanceLeavesDto(Boolean.FALSE, Map.of());
+		}
+
+		List<TimeRecord> employeeTimeRecords = timeRecords.stream()
+			.filter(timeRecord -> timeRecord.getEmployee() != null && timeRecord.getDate() != null)
+			.toList();
+		if (employeeTimeRecords.isEmpty()) {
+			return new PolicyAttendanceLeavesDto(Boolean.TRUE, Map.of());
+		}
+
+		List<Long> employeeIds = employeeTimeRecords.stream()
+			.map(timeRecord -> timeRecord.getEmployee().getEmployeeId())
+			.distinct()
+			.toList();
+		LocalDate startDate = employeeTimeRecords.stream()
+			.map(TimeRecord::getDate)
+			.min(LocalDate::compareTo)
+			.orElseThrow();
+		LocalDate endDate = employeeTimeRecords.stream()
+			.map(TimeRecord::getDate)
+			.max(LocalDate::compareTo)
+			.orElseThrow();
+
+		return new PolicyAttendanceLeavesDto(Boolean.TRUE,
+				policyAttendanceLeaveService.getEmployeesLeaveRequests(employeeIds, startDate, endDate, false));
+	}
+
+	private PolicyAttendanceLeavesDto getPolicyLeaves(boolean leavePoliciesEnabled, List<Long> employeeIds,
+			List<LocalDate> dates) {
+		if (!leavePoliciesEnabled) {
+			return new PolicyAttendanceLeavesDto(Boolean.FALSE, Map.of());
+		}
+
+		Map<Long, List<LeaveRequestResponseDto>> leaveRequests = new HashMap<>();
+		if (!employeeIds.isEmpty()) {
+			dates.forEach(date -> policyAttendanceLeaveService.getEmployeesLeaveRequests(employeeIds, date, date, false)
+				.forEach((employeeId, requests) -> leaveRequests.computeIfAbsent(employeeId, key -> new ArrayList<>())
+					.addAll(requests)));
+		}
+		return new PolicyAttendanceLeavesDto(Boolean.TRUE, leaveRequests);
+	}
+
+	private boolean isLateArrival(TimeRecord timeRecord, ZoneId organizationZone,
+			PolicyAttendanceLeavesDto policyLeaves) {
 		if (timeRecord.getEmployee() == null)
 			return false;
 
@@ -410,9 +485,30 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		LocalTime recordStartTime = DateTimeUtils.toTimeAt(timeRecord.getClockInTime(), organizationZone);
 		LocalTime lateThreshold = LocalTime.of(timeConfig.getStartHour(), timeConfig.getStartMinute());
 
+		if (Boolean.TRUE.equals(policyLeaves.getEnabled())) {
+			LeaveRequestResponseDto policyLeaveRequest = policyAttendanceLeaveService.findLeaveRequestOnDate(
+					policyLeaves.getLeaveRequests(), timeRecord.getEmployee().getEmployeeId(), timeRecord.getDate());
+			return isLateArrivalBasedOnPolicyLeave(policyLeaveRequest, recordStartTime, timeConfig, lateThreshold);
+		}
+
 		LeaveRequest leaveRequest = leaveRequestDao.findByEmployeeAndDate(timeRecord.getEmployee().getEmployeeId(),
 				timeRecord.getDate());
 		return isLateArrivalBasedOnLeave(leaveRequest, recordStartTime, timeConfig, lateThreshold);
+	}
+
+	private boolean isLateArrivalBasedOnPolicyLeave(LeaveRequestResponseDto policyLeaveRequest,
+			LocalTime recordStartTime, TimeConfig timeConfig, LocalTime lateThreshold) {
+		if (policyLeaveRequest != null) {
+			if (policyLeaveRequest.getLeaveState() == LeaveState.FULLDAY)
+				return false;
+			if (policyLeaveRequest.getLeaveState() == LeaveState.HALFDAY_MORNING) {
+				TimeBlockDto timeBlockDto = processTimeBlocks(timeConfig.getTimeBlocks(), timeConfig.getTotalHours());
+				LocalTime adjustedLateThreshold = lateThreshold
+					.plusHours((long) Double.parseDouble(timeBlockDto.getMorningHours()));
+				return recordStartTime.isAfter(adjustedLateThreshold);
+			}
+		}
+		return recordStartTime.isAfter(lateThreshold);
 	}
 
 	private boolean isLateArrivalBasedOnLeave(LeaveRequest leaveRequest, LocalTime recordStartTime,
@@ -458,19 +554,20 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		return timeRecordDao.getTimeRecordsByTeamAndDate(teamIds, date, currentUser.getUserId());
 	}
 
-	private long getTotalEmployeeCount(List<Long> teamIds, LocalDate date) {
+	private long getTotalEmployeeCount(List<Long> teamIds, LocalDate date, boolean leavePoliciesEnabled) {
 		User currentUser = userService.getCurrentUser();
-		return employeeTeamDao.countAvailableEmployeesByTeamIdsAndDate(teamIds, date, currentUser.getUserId());
+		return employeeTeamDao.countAvailableEmployeesByTeamIdsAndDate(teamIds, date, currentUser.getUserId(),
+				leavePoliciesEnabled);
 	}
 
 	private Map<String, Double> calculateDailyAverageHoursForTeam(Map<LocalDate, Double> dailyWorkedHours,
-			Month selectedMonth, List<Long> teamIds) {
+			Month selectedMonth, List<Long> teamIds, boolean leavePoliciesEnabled) {
 		Map<String, Double> dailyAverageHours = new LinkedHashMap<>();
 		LocalDate startOfMonth = LocalDate.of(timeZoneService.currentOrganizationYear(), selectedMonth, 1);
 		LocalDate endOfMonth = startOfMonth.withDayOfMonth(startOfMonth.lengthOfMonth());
 
 		for (LocalDate date = startOfMonth; !date.isAfter(endOfMonth); date = date.plusDays(1)) {
-			long totalEmployeeCount = getTotalEmployeeCount(teamIds, date);
+			long totalEmployeeCount = getTotalEmployeeCount(teamIds, date, leavePoliciesEnabled);
 
 			double totalWorkedHours = dailyWorkedHours.getOrDefault(date, 0.0);
 			double averageHoursWorked = totalEmployeeCount > 0 ? totalWorkedHours / totalEmployeeCount : 0;
