@@ -29,6 +29,7 @@ import com.skapp.community.peopleplanner.payload.request.employee.personal.Emplo
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalGeneralDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalHealthAndOtherDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalSocialMediaDetailsDto;
+import com.skapp.community.peopleplanner.repository.EmployeeBillableRateDao;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.service.PeopleReadService;
 import com.skapp.community.peopleplanner.service.EmployeeSkillService;
@@ -59,6 +60,8 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 	private final UserService userService;
 
 	private final EmployeeSkillService employeeSkillService;
+
+	private final EmployeeBillableRateDao employeeBillableRateDao;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -266,8 +269,14 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 		return dto;
 	}
 
-	protected EmployeeEmploymentBillingDetailsDto mapEmploymentBillingDetails(Employee employee) {
-		return null;
+	private EmployeeEmploymentBillingDetailsDto mapEmploymentBillingDetails(Employee employee) {
+		if (!hasRole(userService.getCurrentUserRoles(), Role.PEOPLE_ADMIN)) {
+			return null;
+		}
+
+		return employeeBillableRateDao.findById(employee.getEmployeeId())
+			.map(peopleMapper::employeeBillableRateToEmployeeEmploymentBillingDetailsDto)
+			.orElse(null);
 	}
 
 	private EmployeeEmploymentIdentificationAndDiversityDetailsDto mapIdentificationAndDiversityDetails(
