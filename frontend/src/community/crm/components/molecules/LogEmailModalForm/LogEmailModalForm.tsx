@@ -100,19 +100,7 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
     }
   };
 
-  const primaryRecipient = contacts[values.toContactIds[0]];
-
-  const isCompanyMismatch = Boolean(
-    values.companyId &&
-    primaryRecipient &&
-    values.companyId !== primaryRecipient.companyId
-  );
-
   const pickedDate = values.date ? toPickerDate(values.date) : null;
-
-  const fromAddressError = touched.fromAddress ? errors.fromAddress : "";
-
-  const subjectError = touched.subject ? errors.subject : "";
 
   const handleDateSelect = (date?: Date): void => {
     setFieldValue("date", date ? toDateFieldValue(date) : null, true);
@@ -131,8 +119,8 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
           "placeholders",
           "from"
         ])}
-        errorMessage={fromAddressError}
-        state={fromAddressError ? "error" : "default"}
+        errorMessage={touched.fromAddress ? errors.fromAddress : ""}
+        state={touched.fromAddress && errors.fromAddress ? "error" : "default"}
         onChange={handleChange}
         onBlur={handleBlur}
         aria-label={translateAria(["from"])}
@@ -210,30 +198,28 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
         required
         fillsRelatedTo
         actions={
-          (!isBccOpen || !isCcOpen) && (
-            <div className="flex flex-row gap-6">
-              {!isBccOpen && (
-                <button
-                  type="button"
-                  className="text-primary-text"
-                  aria-label={translateAria(["bcc"])}
-                  onClick={() => setIsBccOpen(true)}
-                >
-                  {translateText(["logEmail", "modal", "labels", "bcc"])}
-                </button>
-              )}
-              {!isCcOpen && (
-                <button
-                  type="button"
-                  className="text-primary-text"
-                  aria-label={translateAria(["cc"])}
-                  onClick={() => setIsCcOpen(true)}
-                >
-                  {translateText(["logEmail", "modal", "labels", "cc"])}
-                </button>
-              )}
-            </div>
-          )
+          <>
+            {!isBccOpen && (
+              <button
+                type="button"
+                className="text-primary-text"
+                aria-label={translateAria(["bcc"])}
+                onClick={() => setIsBccOpen(true)}
+              >
+                {translateText(["logEmail", "modal", "labels", "bcc"])}
+              </button>
+            )}
+            {!isCcOpen && (
+              <button
+                type="button"
+                className="text-primary-text"
+                aria-label={translateAria(["cc"])}
+                onClick={() => setIsCcOpen(true)}
+              >
+                {translateText(["logEmail", "modal", "labels", "cc"])}
+              </button>
+            )}
+          </>
         }
       />
 
@@ -302,8 +288,8 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
         value={values.subject}
         label={translateText(["logActivity", "labels", "subject"])}
         placeholder={translateText(["logActivity", "placeholders", "subject"])}
-        errorMessage={subjectError}
-        state={subjectError ? "error" : "default"}
+        errorMessage={touched.subject ? errors.subject : ""}
+        state={touched.subject && errors.subject ? "error" : "default"}
         onChange={handleChange}
         onBlur={handleBlur}
         aria-label={translateAria(["subject"])}
@@ -344,11 +330,14 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
           id="log-email-related-to"
           formik={formik}
           fieldAriaLabel={translateAria(["relatedTo"])}
-          {...(isCompanyMismatch &&
-            primaryRecipient && {
+          {...(values.companyId &&
+            values.toContactIds.length > 0 &&
+            values.companyId !== contacts[values.toContactIds[0]].companyId && {
               mismatchTooltip: translateText(
                 ["logActivity", "tooltips", "relatedToMismatch"],
-                { name: getContactDisplayName(primaryRecipient) }
+                {
+                  name: getContactDisplayName(contacts[values.toContactIds[0]])
+                }
               )
             })}
         />
