@@ -1,15 +1,20 @@
 package com.skapp.community.leaveplanner.service.impl;
 
+import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.EmailService;
 import com.skapp.community.common.service.NotificationService;
 import com.skapp.community.common.service.TimeZoneService;
+import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.type.NotificationCategory;
 import com.skapp.community.common.type.NotificationType;
+import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
 import com.skapp.community.leaveplanner.constant.PolicyLeaveConstant;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveDateWindowDto;
+import com.skapp.community.leaveplanner.payload.request.LeaveRequestAvailabilityFilterDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveRequestResponseDto;
 import com.skapp.community.leaveplanner.repository.PolicyLeaveRequestDao;
 import com.skapp.community.leaveplanner.service.LeavePolicyService;
@@ -22,6 +27,7 @@ import com.skapp.community.peopleplanner.util.PeopleUtil;
 import com.skapp.community.timeplanner.model.TimeConfig;
 import com.skapp.community.timeplanner.payload.email.AttendanceEmailDynamicFields;
 import com.skapp.community.timeplanner.payload.response.ClockInSummaryLeaveRequestResponseDto;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -55,9 +61,30 @@ public class PolicyAttendanceLeaveServiceImpl implements PolicyAttendanceLeaveSe
 
 	private final NotificationService notificationService;
 
+	private final UserService userService;
+
 	@Override
 	public boolean isLeavePoliciesEnabled() {
 		return leavePolicyService.isLeavePoliciesEnabled();
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getPolicyLeaveDayAvailability(
+			@NonNull LeaveRequestAvailabilityFilterDto leaveRequestAvailabilityFilterDto) {
+		log.info("getPolicyLeaveDayAvailability: execution started");
+		if (!leavePolicyService.isLeavePoliciesEnabled()) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_NOT_ENABLED);
+		}
+
+		LocalDate date = leaveRequestAvailabilityFilterDto.getDate() != null
+				? leaveRequestAvailabilityFilterDto.getDate() : timeZoneService.currentOrganizationDate();
+		Long employeeId = userService.getCurrentUser().getEmployee().getEmployeeId();
+
+		List<LeaveRequestResponseDto> leaveRequests = getEmployeeLeaveRequests(employeeId, date, date, false);
+
+		log.info("getPolicyLeaveDayAvailability: execution ended");
+		return new ResponseEntityDto(false, leaveRequests);
 	}
 
 	@Override

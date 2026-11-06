@@ -3,7 +3,6 @@ package com.skapp.community.leaveplanner.service;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveBalanceDto;
-import com.skapp.community.leaveplanner.payload.request.LeaveRequestAvailabilityFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyEmployeesOnLeaveFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveAvailabilityRequestDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestDto;
@@ -39,9 +38,6 @@ public interface PolicyLeaveService {
 	ResponseEntityDto getPolicyLeaveRequestNudgeStatus(Long id);
 
 	ResponseEntityDto getEmployeesOnLeaveToday(PolicyEmployeesOnLeaveFilterDto policyEmployeesOnLeaveFilterDto);
-
-	ResponseEntityDto getPolicyLeaveDayAvailability(
-			LeaveRequestAvailabilityFilterDto leaveRequestAvailabilityFilterDto);
 
 	ResponseEntityDto getResourceAvailability(PolicyResourceAvailabilityFilterDto policyResourceAvailabilityFilterDto);
 

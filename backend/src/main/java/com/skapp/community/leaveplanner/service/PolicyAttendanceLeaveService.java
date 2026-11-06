@@ -1,5 +1,7 @@
 package com.skapp.community.leaveplanner.service;
 
+import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.leaveplanner.payload.request.LeaveRequestAvailabilityFilterDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveRequestResponseDto;
 import com.skapp.community.timeplanner.model.TimeConfig;
 import com.skapp.community.timeplanner.payload.response.ClockInSummaryLeaveRequestResponseDto;
@@ -14,6 +16,9 @@ import java.util.Set;
 public interface PolicyAttendanceLeaveService {
 
 	boolean isLeavePoliciesEnabled();
+
+	ResponseEntityDto getPolicyLeaveDayAvailability(
+			LeaveRequestAvailabilityFilterDto leaveRequestAvailabilityFilterDto);
 
 	List<LeaveRequestResponseDto> getEmployeeLeaveRequests(Long employeeId, LocalDate startDate, LocalDate endDate,
 			boolean activeUsersOnly);

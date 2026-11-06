@@ -29,7 +29,6 @@ import com.skapp.community.leaveplanner.payload.PolicyLeaveBalanceDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveDateWindowDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveUsageDto;
 import com.skapp.community.leaveplanner.payload.email.LeaveEmailDynamicFields;
-import com.skapp.community.leaveplanner.payload.request.LeaveRequestAvailabilityFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyEmployeesOnLeaveFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveAttachmentDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveAvailabilityRequestDto;
@@ -40,7 +39,6 @@ import com.skapp.community.leaveplanner.payload.request.PolicyPendingLeaveCountF
 import com.skapp.community.leaveplanner.payload.request.PolicyResourceAvailabilityFilterDto;
 import com.skapp.community.leaveplanner.payload.response.EmployeePolicyBalanceResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveNotificationNudgeResponseDto;
-import com.skapp.community.leaveplanner.payload.response.LeaveRequestResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyEmployeesOnLeaveResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveAvailabilityResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveRequestResponseDto;
@@ -53,7 +51,6 @@ import com.skapp.community.leaveplanner.service.LeaveCycleService;
 import com.skapp.community.leaveplanner.service.LeaveEmailService;
 import com.skapp.community.leaveplanner.service.LeaveNotificationService;
 import com.skapp.community.leaveplanner.service.LeavePolicyService;
-import com.skapp.community.leaveplanner.service.PolicyAttendanceLeaveService;
 import com.skapp.community.leaveplanner.service.PolicyLeaveService;
 import com.skapp.community.leaveplanner.type.EmployeeLeavePolicyStatus;
 import com.skapp.community.leaveplanner.type.LeaveDuration;
@@ -142,8 +139,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 	private final NotificationDao notificationDao;
 
 	private final MessageUtil messageUtil;
-
-	private final PolicyAttendanceLeaveService policyAttendanceLeaveService;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -477,24 +472,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 		log.info("getEmployeesOnLeaveToday: execution ended");
 		return new ResponseEntityDto(false, responseDto);
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public ResponseEntityDto getPolicyLeaveDayAvailability(
-			@NonNull LeaveRequestAvailabilityFilterDto leaveRequestAvailabilityFilterDto) {
-		log.info("getPolicyLeaveDayAvailability: execution started");
-		requireLeavePoliciesEnabled();
-
-		LocalDate date = leaveRequestAvailabilityFilterDto.getDate() != null
-				? leaveRequestAvailabilityFilterDto.getDate() : timeZoneService.currentOrganizationDate();
-		Long employeeId = userService.getCurrentUser().getEmployee().getEmployeeId();
-
-		List<LeaveRequestResponseDto> leaveRequests = policyAttendanceLeaveService.getEmployeeLeaveRequests(employeeId,
-				date, date, false);
-
-		log.info("getPolicyLeaveDayAvailability: execution ended");
-		return new ResponseEntityDto(false, leaveRequests);
 	}
 
 	@Override

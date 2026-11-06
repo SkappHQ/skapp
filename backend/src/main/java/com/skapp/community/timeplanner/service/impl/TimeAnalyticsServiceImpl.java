@@ -51,6 +51,8 @@ import com.skapp.community.timeplanner.type.RecordType;
 import com.skapp.community.timeplanner.type.TimeBlocks;
 import com.skapp.community.timeplanner.type.TimeConfigFieldName;
 import com.skapp.community.timeplanner.type.TrendPeriod;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -303,8 +305,8 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 
 		LocalDate today = DateTimeUtils.currentDateAt(organizationZone);
 		boolean isOnLeaveToday;
-		if (policyLeaves.enabled()) {
-			isOnLeaveToday = policyAttendanceLeaveService.isOnApprovedLeave(policyLeaves.leaveRequests(),
+		if (policyLeaves.isEnabled()) {
+			isOnLeaveToday = policyAttendanceLeaveService.isOnApprovedLeave(policyLeaves.getLeaveRequests(),
 					employee.getEmployeeId(), today);
 		}
 		else {
@@ -360,8 +362,8 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		}
 
 		responseDto.setHoliday(getHoliday(filterDto.getDate()));
-		responseDto.setLeave(policyLeaves.enabled()
-				? policyAttendanceLeaveService.findClockInSummaryLeaveRequest(policyLeaves.leaveRequests(),
+		responseDto.setLeave(policyLeaves.isEnabled()
+				? policyAttendanceLeaveService.findClockInSummaryLeaveRequest(policyLeaves.getLeaveRequests(),
 						employee.getEmployeeId(), filterDto.getDate())
 				: getLeaveRequest(employee, filterDto.getDate()));
 
@@ -481,9 +483,9 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		LocalTime recordStartTime = DateTimeUtils.toTimeAt(timeRecord.getClockInTime(), organizationZone);
 		LocalTime lateThreshold = LocalTime.of(timeConfig.getStartHour(), timeConfig.getStartMinute());
 
-		if (policyLeaves.enabled()) {
+		if (policyLeaves.isEnabled()) {
 			LeaveRequestResponseDto policyLeaveRequest = policyAttendanceLeaveService.findLeaveRequestOnDate(
-					policyLeaves.leaveRequests(), timeRecord.getEmployee().getEmployeeId(), timeRecord.getDate());
+					policyLeaves.getLeaveRequests(), timeRecord.getEmployee().getEmployeeId(), timeRecord.getDate());
 			return isLateArrivalBasedOnPolicyLeave(policyLeaveRequest, recordStartTime, timeConfig, lateThreshold);
 		}
 
@@ -697,9 +699,15 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 				: timeRecordDao.getEmployeeClockOutTrend(teamIds, timeOffset, filterDto.getDate());
 	}
 
-	private record PolicyLeaves(boolean enabled, Map<Long, List<LeaveRequestResponseDto>> leaveRequests) {
+	@Getter
+	@AllArgsConstructor
+	private static class PolicyLeaves {
 
 		private static final PolicyLeaves DISABLED = new PolicyLeaves(false, Map.of());
+
+		private final boolean enabled;
+
+		private final Map<Long, List<LeaveRequestResponseDto>> leaveRequests;
 
 	}
 

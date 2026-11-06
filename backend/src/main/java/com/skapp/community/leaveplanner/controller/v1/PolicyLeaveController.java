@@ -9,6 +9,7 @@ import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestFilter
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestUpdateDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyPendingLeaveCountFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyResourceAvailabilityFilterDto;
+import com.skapp.community.leaveplanner.service.PolicyAttendanceLeaveService;
 import com.skapp.community.leaveplanner.service.PolicyLeaveService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,6 +37,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class PolicyLeaveController {
 
 	private final PolicyLeaveService policyLeaveService;
+
+	private final PolicyAttendanceLeaveService policyAttendanceLeaveService;
 
 	@Operation(summary = "Get the current user's leave policy balances",
 			description = "One card per assigned policy; policies sharing a leave type are never merged. "
@@ -92,14 +95,11 @@ public class PolicyLeaveController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get the current user's policy leave on a date",
-			description = "Returns the current user's pending and approved policy leave covering the given date "
-					+ "(default: today), in the same shape as /v1/leave/availability, for the attendance screens")
 	@GetMapping("/day-availability")
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> getPolicyLeaveDayAvailability(
 			@Valid LeaveRequestAvailabilityFilterDto leaveRequestAvailabilityFilterDto) {
-		ResponseEntityDto response = policyLeaveService
+		ResponseEntityDto response = policyAttendanceLeaveService
 			.getPolicyLeaveDayAvailability(leaveRequestAvailabilityFilterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
