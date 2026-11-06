@@ -10,6 +10,7 @@ import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
 import com.skapp.community.leaveplanner.constant.PolicyLeaveConstant;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
 import com.skapp.community.leaveplanner.model.PolicyLeaveType;
+import com.skapp.community.leaveplanner.model.PolicyLeaveType_;
 import com.skapp.community.leaveplanner.payload.LeaveCycleDetailsDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveDateWindowDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveMonthlyDurationDto;
@@ -84,7 +85,7 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 		User currentUser = userService.getCurrentUser();
 		Team team = teamDao.findByTeamIdAndIsActive(filterDto.getTeamId(), true)
 			.orElseThrow(() -> new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_NOT_FOUND));
-		validateTeamSupervision(currentUser, team);
+		LeaveModuleUtil.validateTeamsForLeaveAnalytics(List.of(team.getTeamId()), currentUser, List.of(team));
 
 		List<PolicyLeaveType> leaveTypes = resolveTrendLeaveTypes(filterDto.getLeaveTypeIds());
 		PolicyLeaveDateWindowDto window = resolveTrendWindow(filterDto.getStartDate(), filterDto.getEndDate());
@@ -183,8 +184,7 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 			.map(PolicyLeaveSpanDto::getEndDate)
 			.max(LocalDate::compareTo)
 			.orElse(window.getEndDate());
-		List<Holiday> holidays = holidayDao.findAllWithWorkLocationsByIsActiveTrueAndDateBetween(earliestStart,
-				latestEnd);
+		List<Holiday> holidays = holidayDao.findAllByIsActiveTrueAndDateBetween(earliestStart, latestEnd);
 		Map<Long, List<Holiday>> holidaysByWorkLocation = new HashMap<>();
 
 		for (PolicyLeaveSpanDto span : multiMonthSpans) {
@@ -198,7 +198,7 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 
 	private List<PolicyLeaveType> resolveTrendLeaveTypes(List<Long> leaveTypeIds) {
 		if (PolicyLeaveAnalyticsUtil.isAllSelected(leaveTypeIds, PolicyLeaveConstant.ALL_LEAVE_TYPES_ID)) {
-			return policyLeaveTypeDao.findAll(Sort.by(Sort.Direction.ASC, "id"));
+			return policyLeaveTypeDao.findAll(Sort.by(Sort.Direction.ASC, PolicyLeaveType_.ID));
 		}
 
 		List<PolicyLeaveType> leaveTypes = policyLeaveTypeDao.findAllById(leaveTypeIds);
@@ -210,7 +210,8 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 
 	private List<PolicyLeaveType> resolveBreakdownLeaveTypes(List<Long> typeIds) {
 		List<PolicyLeaveType> leaveTypes = PolicyLeaveAnalyticsUtil.isAllSelected(typeIds,
-				PolicyLeaveConstant.ALL_LEAVE_TYPES_ID) ? policyLeaveTypeDao.findAll(Sort.by(Sort.Direction.ASC, "id"))
+				PolicyLeaveConstant.ALL_LEAVE_TYPES_ID)
+						? policyLeaveTypeDao.findAll(Sort.by(Sort.Direction.ASC, PolicyLeaveType_.ID))
 						: policyLeaveTypeDao.findAllById(typeIds);
 		return leaveTypes.stream().filter(leaveType -> Boolean.TRUE.equals(leaveType.getIsActive())).toList();
 	}
@@ -225,8 +226,7 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 		}
 
 		int currentYear = timeZoneService.currentOrganizationDate().getYear();
-		if (startDate.isAfter(endDate) || startDate.getYear() < currentYear - 1 || endDate
-			.isAfter(startDate.plusMonths(PolicyLeaveConstant.MAX_ANALYTICS_WINDOW_MONTHS).minusDays(1))) {
+		if (startDate.isAfter(endDate) || startDate.getYear() < currentYear - 1) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_START_DATE_END_DATE_NOT_VALID);
 		}
 		return new PolicyLeaveDateWindowDto(startDate, endDate);
@@ -240,23 +240,6 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 			.getStartDate()
 			.getYear();
 		return PolicyLeaveAccrualUtil.resolveCycle(cycleYear, cycleAnchor);
-	}
-
-	private void validateTeamSupervision(User currentUser, Team team) {
-		if (LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser)) {
-			return;
-		}
-
-		Long currentEmployeeId = currentUser.getEmployee().getEmployeeId();
-		boolean isSupervisor = team.getEmployees()
-			.stream()
-			.anyMatch(employeeTeam -> Boolean.TRUE.equals(employeeTeam.getIsSupervisor())
-					&& employeeTeam.getEmployee().getEmployeeId().equals(currentEmployeeId));
-		if (!isSupervisor) {
-			throw new EntityNotFoundException(
-					PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_UNDER_CURRENT_EMPLOYEE_SUPERVISION,
-					new String[] { "Team", PolicyLeaveConstant.LEAVE_TREND_ANALYTICS });
-		}
 	}
 
 	private void requireLeavePoliciesEnabled() {
