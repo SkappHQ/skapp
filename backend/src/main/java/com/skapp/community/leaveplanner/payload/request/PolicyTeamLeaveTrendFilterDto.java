@@ -1,6 +1,5 @@
 package com.skapp.community.leaveplanner.payload.request;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,7 +10,6 @@ import java.util.List;
 @Setter
 public class PolicyTeamLeaveTrendFilterDto {
 
-	@NotNull
 	private Long teamId;
 
 	private List<Long> leaveTypeIds;

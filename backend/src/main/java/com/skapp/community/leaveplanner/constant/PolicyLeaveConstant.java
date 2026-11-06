@@ -36,4 +36,6 @@ public class PolicyLeaveConstant {
 
 	public static final int MAX_ANALYTICS_WINDOW_MONTHS = 12;
 
+	public static final String LEAVE_TREND_ANALYTICS = "Leave Trend";
+
 }

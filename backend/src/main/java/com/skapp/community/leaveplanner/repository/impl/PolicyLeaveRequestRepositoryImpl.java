@@ -4,6 +4,7 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.User_;
 import com.skapp.community.common.model.WorkLocation;
 import com.skapp.community.common.model.WorkLocation_;
+import com.skapp.community.common.type.CriteriaBuilderSqlFunction;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
 import com.skapp.community.leaveplanner.model.LeavePolicy_;
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
@@ -298,11 +299,13 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 			.createQuery(PolicyLeaveMonthlyDurationDto.class);
 		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
 		Join<PolicyLeaveRequest, Employee> employee = root.join(PolicyLeaveRequest_.employee);
-		Path<Long> leaveTypeId = leaveTypeIdPath(root);
-		Expression<Integer> year = criteriaBuilder.function("YEAR", Integer.class,
-				root.get(PolicyLeaveRequest_.startDate));
-		Expression<Integer> month = criteriaBuilder.function("MONTH", Integer.class,
-				root.get(PolicyLeaveRequest_.startDate));
+		Path<Long> leaveTypeId = root.get(PolicyLeaveRequest_.policy)
+			.get(LeavePolicy_.leaveType)
+			.get(PolicyLeaveType_.id);
+		Expression<Integer> year = criteriaBuilder.function(CriteriaBuilderSqlFunction.YEAR.getFunctionName(),
+				Integer.class, root.get(PolicyLeaveRequest_.startDate));
+		Expression<Integer> month = criteriaBuilder.function(CriteriaBuilderSqlFunction.MONTH.getFunctionName(),
+				Integer.class, root.get(PolicyLeaveRequest_.startDate));
 
 		List<Predicate> predicates = buildApprovedLeaveInWindowPredicates(criteriaBuilder, criteriaQuery, root,
 				employee, startDate, endDate, leaveTypeIds, teamIds, supervisorEmployeeId);
@@ -333,16 +336,13 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 			.add(criteriaBuilder.not(singleMonthWithinWindowPredicate(criteriaBuilder, root, startDate, endDate)));
 
 		criteriaQuery
-			.select(criteriaBuilder.construct(PolicyLeaveSpanDto.class, leaveTypeIdPath(root),
+			.select(criteriaBuilder.construct(PolicyLeaveSpanDto.class,
+					root.get(PolicyLeaveRequest_.policy).get(LeavePolicy_.leaveType).get(PolicyLeaveType_.id),
 					root.get(PolicyLeaveRequest_.startDate), root.get(PolicyLeaveRequest_.endDate),
 					root.get(PolicyLeaveRequest_.durationDays), workLocation.get(WorkLocation_.workLocationId)))
 			.where(predicates.toArray(new Predicate[0]));
 
 		return entityManager.createQuery(criteriaQuery).getResultList();
-	}
-
-	private Path<Long> leaveTypeIdPath(Root<PolicyLeaveRequest> root) {
-		return root.get(PolicyLeaveRequest_.policy).get(LeavePolicy_.leaveType).get(PolicyLeaveType_.id);
 	}
 
 	private List<Predicate> buildApprovedLeaveInWindowPredicates(CriteriaBuilder criteriaBuilder,
@@ -356,7 +356,10 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), startDate));
 
 		if (!CollectionUtils.isEmpty(leaveTypeIds)) {
-			predicates.add(leaveTypeIdPath(root).in(leaveTypeIds));
+			predicates.add(root.get(PolicyLeaveRequest_.policy)
+				.get(LeavePolicy_.leaveType)
+				.get(PolicyLeaveType_.id)
+				.in(leaveTypeIds));
 		}
 
 		return predicates;
@@ -369,10 +372,16 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 
 		return criteriaBuilder.and(criteriaBuilder.greaterThanOrEqualTo(requestStart, startDate),
 				criteriaBuilder.lessThanOrEqualTo(requestEnd, endDate),
-				criteriaBuilder.equal(criteriaBuilder.function("YEAR", Integer.class, requestStart),
-						criteriaBuilder.function("YEAR", Integer.class, requestEnd)),
-				criteriaBuilder.equal(criteriaBuilder.function("MONTH", Integer.class, requestStart),
-						criteriaBuilder.function("MONTH", Integer.class, requestEnd)));
+				criteriaBuilder.equal(
+						criteriaBuilder.function(CriteriaBuilderSqlFunction.YEAR.getFunctionName(), Integer.class,
+								requestStart),
+						criteriaBuilder.function(CriteriaBuilderSqlFunction.YEAR.getFunctionName(), Integer.class,
+								requestEnd)),
+				criteriaBuilder.equal(
+						criteriaBuilder.function(CriteriaBuilderSqlFunction.MONTH.getFunctionName(), Integer.class,
+								requestStart),
+						criteriaBuilder.function(CriteriaBuilderSqlFunction.MONTH.getFunctionName(), Integer.class,
+								requestEnd)));
 	}
 
 	private void fetchPolicy(Root<PolicyLeaveRequest> root) {

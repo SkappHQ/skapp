@@ -7,7 +7,6 @@ import com.skapp.community.leaveplanner.service.PolicyLeaveAnalyticsService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,8 +20,8 @@ public class PolicyLeaveAnalyticsController {
 
 	private final PolicyLeaveAnalyticsService policyLeaveAnalyticsService;
 
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_LEAVE_MANAGER')")
-	@GetMapping(value = "/team-leave-trend", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasRole('ROLE_LEAVE_MANAGER')")
+	@GetMapping("/team-leave-trend")
 	public ResponseEntity<ResponseEntityDto> getTeamLeaveTrendForTheYear(
 			@Valid PolicyTeamLeaveTrendFilterDto policyTeamLeaveTrendFilterDto) {
 		ResponseEntityDto response = policyLeaveAnalyticsService
@@ -30,8 +29,8 @@ public class PolicyLeaveAnalyticsController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_LEAVE_MANAGER')")
-	@GetMapping(value = "/leave-type-breakdown", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasRole('ROLE_LEAVE_MANAGER')")
+	@GetMapping("/leave-type-breakdown")
 	public ResponseEntity<ResponseEntityDto> getLeaveTypeBreakdown(
 			@Valid PolicyLeaveTypeBreakdownFilterDto policyLeaveTypeBreakdownFilterDto) {
 		ResponseEntityDto response = policyLeaveAnalyticsService
