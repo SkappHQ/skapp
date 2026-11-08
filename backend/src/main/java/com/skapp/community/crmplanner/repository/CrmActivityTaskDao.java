@@ -7,6 +7,4 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CrmActivityTaskDao extends JpaRepository<CrmActivityTask, Long>, CrmActivityTaskRepository {
 
-	long countByIsDeletedFalse();
-
 }
