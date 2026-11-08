@@ -63,7 +63,7 @@ const AddToGoogleCalendarModal: FC<Props> = ({
       ])}
       content={
         <div className="flex flex-col gap-6">
-          <p className="text-base text-primary-text">
+          <p className="text-base">
             {hasOverlaps
               ? translateText([
                   "scheduleMeeting",

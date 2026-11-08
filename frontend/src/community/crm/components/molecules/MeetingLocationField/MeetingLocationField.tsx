@@ -158,12 +158,12 @@ const MeetingLocationField: FC<Props> = ({
           className="absolute z-10 mt-1 flex w-full flex-col rounded-lg bg-white py-1 shadow-md"
         >
           {isBusy && (
-            <li className="px-3 py-2 text-sm text-primary-text">
+            <li className="px-3 py-2 text-sm">
               {translateText(["location", "searching"])}
             </li>
           )}
           {hasNoResults && (
-            <li className="px-3 py-2 text-sm text-primary-text">
+            <li className="px-3 py-2 text-sm">
               {translateText(["location", "noPlaces"])}
             </li>
           )}
@@ -178,7 +178,7 @@ const MeetingLocationField: FC<Props> = ({
                   onClick={() => handlePick(prediction)}
                 >
                   {prediction.mainText && (
-                    <span className="block text-sm font-medium text-primary-text">
+                    <span className="block text-sm font-medium">
                       {prediction.mainText.text}
                     </span>
                   )}

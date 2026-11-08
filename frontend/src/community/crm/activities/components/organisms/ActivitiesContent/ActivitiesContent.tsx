@@ -2,6 +2,7 @@ import { ButtonV2, ButtonV2Props } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import { appModes } from "~community/common/constants/configs";
 import { GlobalLoginMethod } from "~community/common/enums/CommonEnums";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
@@ -52,8 +53,11 @@ import { CrmTaskCompletionPayload } from "~community/crm/types/CrmCommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 import { getMissingDealIds, mergeDeals } from "~community/crm/utils/dealUtil";
 import { useIsGoogleCalendarConnected } from "~enterprise/common/api/CalendarApi";
+import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import useTier from "~enterprise/common/hooks/useTier";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
+import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
+import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 const ActivitiesContent: FC = () => {
   const translateText = useTranslator("crmModule");
@@ -80,6 +84,8 @@ const ActivitiesContent: FC = () => {
     useState(false);
 
   const { isFreeTier } = useTier();
+  const { guardCrmCreate } = useCrmLimitGuard();
+  const isEnterpriseMode = useGetEnvironment() === appModes.ENTERPRISE;
   const { globalLoginMethod } = useCommonEnterpriseStore(
     useShallow((state) => ({
       globalLoginMethod: state.globalLoginMethod
@@ -92,11 +98,11 @@ const ActivitiesContent: FC = () => {
       setIsScheduleUpgradeModalOpen(true);
       return;
     }
-    if (isGoogleCalendarConnected) {
-      setIsScheduleMeetingModalOpen(true);
-      return;
-    }
-    setIsConnectCalendarModalOpen(true);
+    guardCrmCreate(CrmLimitResource.ACTIVITIES, () =>
+      isGoogleCalendarConnected
+        ? setIsScheduleMeetingModalOpen(true)
+        : setIsConnectCalendarModalOpen(true)
+    );
   };
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
 
@@ -290,15 +296,24 @@ const ActivitiesContent: FC = () => {
     [ActivityTab.ALL]: null,
     [ActivityTab.TASKS]: {
       labelKey: "addTaskBtn",
-      onClick: () => setIsAddTaskModalOpen(true)
+      onClick: () =>
+        guardCrmCreate(CrmLimitResource.ACTIVITIES, () =>
+          setIsAddTaskModalOpen(true)
+        )
     },
     [ActivityTab.CALLS]: {
       labelKey: "logCallBtn",
-      onClick: () => setIsLogCallModalOpen(true)
+      onClick: () =>
+        guardCrmCreate(CrmLimitResource.ACTIVITIES, () =>
+          setIsLogCallModalOpen(true)
+        )
     },
     [ActivityTab.MEETINGS]: {
       labelKey: "logMeetingBtn",
-      onClick: () => setIsLogMeetingModalOpen(true)
+      onClick: () =>
+        guardCrmCreate(CrmLimitResource.ACTIVITIES, () =>
+          setIsLogMeetingModalOpen(true)
+        )
     },
     [ActivityTab.EMAILS]: null
   };
@@ -320,6 +335,7 @@ const ActivitiesContent: FC = () => {
 
   const scheduleMeetingButton: ButtonV2Props | null =
     activeTab === ActivityTab.MEETINGS &&
+    isEnterpriseMode &&
     globalLoginMethod !== GlobalLoginMethod.MICROSOFT
       ? {
           variant: "tertiary",
