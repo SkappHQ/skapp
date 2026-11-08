@@ -933,6 +933,7 @@
         "title": "Upgrade to Skapp Core",
         "description": "Calendar sync adds the meetings you schedule in Skapp to your Google calendar automatically, so you don't have to enter them twice and your schedule stays up to date.",
         "upgradeDescription": "Experience the full potential of Skapp by upgrading to Skapp Core.",
+        "contactAdminDescription": "Contact the super admin to upgrade to Skapp Core to unlock additional features and enhance your experience.",
         "upgradeBtn": "Upgrade to Core",
         "imageAlt": "Meetings scheduled in Skapp shown in a Google calendar"
       }
