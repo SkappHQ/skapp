@@ -104,6 +104,7 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 	@Transactional
 	public ResponseEntityDto createMeeting(CrmActivityMeetingCreateRequestDto requestDto) {
 		log.info("createMeeting: execution started");
+		validateActivityCreationLimit();
 
 		CrmValidations.validateMeetingSubject(requestDto.getName());
 		CrmValidations.validateMeetingDate(requestDto.getMeetingDate());
@@ -207,6 +208,9 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 
 		log.info("getMeetingById: execution ended");
 		return new ResponseEntityDto(false, response);
+	}
+
+	protected void validateActivityCreationLimit() {
 	}
 
 }

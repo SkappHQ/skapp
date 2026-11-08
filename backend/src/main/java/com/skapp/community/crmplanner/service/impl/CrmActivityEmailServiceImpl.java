@@ -108,6 +108,7 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 	@Transactional
 	public ResponseEntityDto createEmail(CrmActivityEmailCreateRequestDto requestDto) {
 		log.info("createEmail: execution started");
+		validateActivityCreationLimit();
 
 		List<Long> toIds = requestDto.getToContactIds();
 		List<Long> ccIds = requestDto.getCcContactIds() != null ? requestDto.getCcContactIds() : List.of();
@@ -355,6 +356,9 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 			.filter(contact -> !Boolean.TRUE.equals(contact.getIsDeleted()))
 			.map(crmMapper::crmContactToCrmContactLookupResponseDto)
 			.toList();
+	}
+
+	protected void validateActivityCreationLimit() {
 	}
 
 }
