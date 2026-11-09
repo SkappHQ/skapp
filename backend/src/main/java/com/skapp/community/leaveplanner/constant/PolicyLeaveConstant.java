@@ -34,8 +34,4 @@ public class PolicyLeaveConstant {
 
 	public static final long ALL_LEAVE_TYPES_ID = -1L;
 
-	public static final String LEAVE_HISTORY_ANALYTICS = "Leave History";
-
-	public static final String EMPLOYEE_ANALYTICS_SUBJECT = "Employee";
-
 }

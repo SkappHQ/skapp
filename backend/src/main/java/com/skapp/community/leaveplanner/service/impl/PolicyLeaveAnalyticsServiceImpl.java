@@ -167,6 +167,7 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 	public ResponseEntityDto getTeamLeaveHistory(Long teamId, PolicyTeamLeaveHistoryFilterDto filterDto) {
 		log.info("getTeamLeaveHistory: execution started");
 		requireLeavePoliciesEnabled();
+		validateHistoryPagination(filterDto);
 
 		User currentUser = userService.getCurrentUser();
 		Team team = teamDao.findByTeamIdAndIsActive(teamId, true)
@@ -189,6 +190,7 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 	public ResponseEntityDto getEmployeeLeaveHistory(Long employeeId, PolicyLeaveHistoryFilterDto filterDto) {
 		log.info("getEmployeeLeaveHistory: execution started");
 		requireLeavePoliciesEnabled();
+		validateHistoryPagination(filterDto);
 
 		User currentUser = userService.getCurrentUser();
 		Employee employee = employeeDao.findById(employeeId)
@@ -218,9 +220,7 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 		if (!isDirectManager
 				&& !employeeTeamDao.existsEmployeeInSupervisedTeam(employee.getEmployeeId(), currentEmployeeId)) {
 			throw new EntityNotFoundException(
-					PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_UNDER_CURRENT_EMPLOYEE_SUPERVISION,
-					new String[] { PolicyLeaveConstant.EMPLOYEE_ANALYTICS_SUBJECT,
-							PolicyLeaveConstant.LEAVE_HISTORY_ANALYTICS });
+					LeaveMessageConstant.LEAVE_ERROR_EMPLOYEE_LEAVE_HISTORY_NOT_UNDER_SUPERVISION);
 		}
 	}
 
@@ -235,6 +235,16 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 			.collect(Collectors.toSet());
 		if (!memberIds.containsAll(teamMemberIds)) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_MEMBER_IDS_NOT_VALID);
+		}
+	}
+
+	private void validateHistoryPagination(PolicyLeaveHistoryFilterDto filterDto) {
+		if (filterDto.getPage() < 0) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INVALID_PAGE);
+		}
+
+		if (filterDto.getSize() < 1) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INVALID_PAGE_SIZE);
 		}
 	}
 
