@@ -226,17 +226,26 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_MEETING_VIEW_DENIED);
 		}
 
+		List<Long> relatedContactIds = meeting.getContacts()
+			.stream()
+			.map(CrmActivityMeetingContact::getContact)
+			.filter(contact -> !Boolean.TRUE.equals(contact.getIsDeleted()))
+			.map(CrmContact::getId)
+			.toList();
+
+		if (relatedContactIds.isEmpty() && meeting.getDeal() == null) {
+			log.info("getRelatedMeetings: execution ended");
+			return new ResponseEntityDto(false, List.of());
+		}
+
 		CrmActivityMeetingFilterParams params = new CrmActivityMeetingFilterParams();
 		params.setSortKey(CrmActivityMeetingSort.START_AT);
 		params.setSortOrder(Sort.Direction.DESC);
 		params.setCurrentEmployeeId(currentUser.getEmployee().getEmployeeId());
 		params.setIsRestrictedToOwner(CrmUtil.isCrmSalesRepresentative(currentUser));
-		params.setRelatedContactIds(meeting.getContacts()
-			.stream()
-			.map(CrmActivityMeetingContact::getContact)
-			.filter(contact -> !Boolean.TRUE.equals(contact.getIsDeleted()))
-			.map(CrmContact::getId)
-			.toList());
+		if (!relatedContactIds.isEmpty()) {
+			params.setRelatedContactIds(relatedContactIds);
+		}
 		if (meeting.getDeal() != null) {
 			params.setRelatedDealId(meeting.getDeal().getId());
 		}
