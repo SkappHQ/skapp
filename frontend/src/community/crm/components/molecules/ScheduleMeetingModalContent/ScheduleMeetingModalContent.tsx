@@ -55,6 +55,7 @@ const ScheduleMeetingModalContent: FC<Props> = ({ onClose }) => {
       endTime: getActivityEndTimeSlot(slotStart).toFormat(TIME_FORMAT_24_HOUR),
       meetingVenue: CrmMeetingVenueEnum.ONLINE,
       location: "",
+      locationAddress: "",
       locationUrl: "",
       contactIds: [],
       ownerId: defaultOwner ? defaultOwner.employeeId : null,
@@ -84,7 +85,8 @@ const ScheduleMeetingModalContent: FC<Props> = ({ onClose }) => {
           : null,
       meetingVenue: values.meetingVenue,
       location: isInPerson ? values.location.trim() : null,
-      locationAddress: null,
+      locationAddress:
+        isInPerson && values.locationAddress ? values.locationAddress : null,
       locationUrl: isInPerson && values.locationUrl ? values.locationUrl : null,
       contactIds: values.contactIds,
       dealId: values.dealId,
