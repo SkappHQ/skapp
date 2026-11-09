@@ -3,6 +3,7 @@ package com.skapp.community.leaveplanner.service.impl;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
@@ -11,14 +12,18 @@ import com.skapp.community.leaveplanner.constant.PolicyLeaveConstant;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
 import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
+import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
+import com.skapp.community.leaveplanner.model.PolicyLeaveRequest_;
 import com.skapp.community.leaveplanner.model.PolicyLeaveType;
 import com.skapp.community.leaveplanner.model.PolicyLeaveType_;
 import com.skapp.community.leaveplanner.payload.LeaveCycleDetailsDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveDateWindowDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveMonthlyDurationDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveSpanDto;
+import com.skapp.community.leaveplanner.payload.request.PolicyLeaveHistoryFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveTypeBreakdownFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveUtilizationFilterDto;
+import com.skapp.community.leaveplanner.payload.request.PolicyTeamLeaveHistoryFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyTeamLeaveTrendFilterDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTrendDataResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTrendResponseDto;
@@ -33,6 +38,7 @@ import com.skapp.community.leaveplanner.service.LeavePolicyService;
 import com.skapp.community.leaveplanner.service.PolicyLeaveAnalyticsService;
 import com.skapp.community.leaveplanner.type.EmployeeLeavePolicyStatus;
 import com.skapp.community.leaveplanner.type.LeavePolicyStatus;
+import com.skapp.community.leaveplanner.type.LeaveRequestSort;
 import com.skapp.community.leaveplanner.util.LeaveModuleUtil;
 import com.skapp.community.leaveplanner.util.PolicyLeaveAccrualUtil;
 import com.skapp.community.leaveplanner.util.PolicyLeaveAnalyticsUtil;
@@ -48,6 +54,9 @@ import com.skapp.community.timeplanner.model.TimeConfig;
 import com.skapp.community.timeplanner.repository.TimeConfigDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -197,6 +206,121 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 				return dataResponseDto;
 			}));
 		return responseDto;
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getTeamLeaveHistory(Long teamId, PolicyTeamLeaveHistoryFilterDto filterDto) {
+		log.info("getTeamLeaveHistory: execution started");
+		requireLeavePoliciesEnabled();
+		validateHistoryPagination(filterDto);
+
+		User currentUser = userService.getCurrentUser();
+		Team team = teamDao.findByTeamIdAndIsActive(teamId, true)
+			.orElseThrow(() -> new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_NOT_FOUND));
+		LeaveModuleUtil.validateTeamsForLeaveAnalytics(List.of(team.getTeamId()), currentUser, List.of(team));
+		validateTeamMembers(team, filterDto.getTeamMemberIds());
+
+		PolicyLeaveDateWindowDto window = resolveHistoryWindow(filterDto.getStartDate(), filterDto.getEndDate());
+		Page<PolicyLeaveRequest> leaveRequests = policyLeaveRequestDao.findLeaveHistory(team.getTeamId(),
+				filterDto.getTeamMemberIds(), window.getStartDate(), window.getEndDate(), filterDto,
+				resolveHistoryPageable(filterDto));
+
+		log.info("getTeamLeaveHistory: execution ended");
+		return new ResponseEntityDto(false, toPageDto(leaveRequests,
+				leaveMapper.policyLeaveRequestListToPolicyTeamLeaveHistoryResponseDtoList(leaveRequests.getContent())));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getEmployeeLeaveHistory(Long employeeId, PolicyLeaveHistoryFilterDto filterDto) {
+		log.info("getEmployeeLeaveHistory: execution started");
+		requireLeavePoliciesEnabled();
+		validateHistoryPagination(filterDto);
+
+		User currentUser = userService.getCurrentUser();
+		Employee employee = employeeDao.findById(employeeId)
+			.orElseThrow(() -> new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND));
+		validateEmployeeUnderSupervision(currentUser, employee);
+
+		PolicyLeaveDateWindowDto window = resolveHistoryWindow(filterDto.getStartDate(), filterDto.getEndDate());
+		Page<PolicyLeaveRequest> leaveRequests = policyLeaveRequestDao.findLeaveHistory(null,
+				List.of(employee.getEmployeeId()), window.getStartDate(), window.getEndDate(), filterDto,
+				resolveHistoryPageable(filterDto));
+
+		log.info("getEmployeeLeaveHistory: execution ended");
+		return new ResponseEntityDto(false, toPageDto(leaveRequests,
+				leaveMapper.policyLeaveRequestListToPolicyLeaveHistoryResponseDtoList(leaveRequests.getContent())));
+	}
+
+	private void validateEmployeeUnderSupervision(User currentUser, Employee employee) {
+		if (LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser)) {
+			return;
+		}
+
+		Long currentEmployeeId = currentUser.getEmployee().getEmployeeId();
+		boolean isDirectManager = employee.getEmployeeManagers()
+			.stream()
+			.anyMatch(employeeManager -> employeeManager.getManager().getEmployeeId().equals(currentEmployeeId));
+
+		if (!isDirectManager
+				&& !employeeTeamDao.existsEmployeeInSupervisedTeam(employee.getEmployeeId(), currentEmployeeId)) {
+			throw new EntityNotFoundException(
+					LeaveMessageConstant.LEAVE_ERROR_EMPLOYEE_LEAVE_HISTORY_NOT_UNDER_SUPERVISION);
+		}
+	}
+
+	private void validateTeamMembers(Team team, List<Long> teamMemberIds) {
+		if (teamMemberIds == null) {
+			return;
+		}
+
+		Set<Long> memberIds = team.getEmployees()
+			.stream()
+			.map(employeeTeam -> employeeTeam.getEmployee().getEmployeeId())
+			.collect(Collectors.toSet());
+		if (!memberIds.containsAll(teamMemberIds)) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_MEMBER_IDS_NOT_VALID);
+		}
+	}
+
+	private void validateHistoryPagination(PolicyLeaveHistoryFilterDto filterDto) {
+		if (filterDto.getPage() < 0) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INVALID_PAGE);
+		}
+
+		if (filterDto.getSize() < 1) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INVALID_PAGE_SIZE);
+		}
+	}
+
+	private PolicyLeaveDateWindowDto resolveHistoryWindow(LocalDate startDate, LocalDate endDate) {
+		if (startDate == null || endDate == null) {
+			return resolveCurrentCycle();
+		}
+
+		if (startDate.isAfter(endDate)) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_START_DATE_END_DATE_NOT_VALID);
+		}
+		return new PolicyLeaveDateWindowDto(startDate, endDate);
+	}
+
+	private Pageable resolveHistoryPageable(PolicyLeaveHistoryFilterDto filterDto) {
+		LeaveRequestSort sortKey = filterDto.getSortKey() == null ? LeaveRequestSort.START_DATE
+				: filterDto.getSortKey();
+		Sort.Direction sortOrder = filterDto.getSortOrder() == null ? Sort.Direction.DESC : filterDto.getSortOrder();
+		Sort sort = Sort.by(sortOrder, sortKey.toString()).and(Sort.by(sortOrder, PolicyLeaveRequest_.ID));
+		return Boolean.TRUE.equals(filterDto.getIsExport()) ? Pageable.unpaged(sort)
+				: PageRequest.of(filterDto.getPage(), filterDto.getSize(), sort);
+	}
+
+	private PageDto toPageDto(Page<PolicyLeaveRequest> leaveRequests, List<?> items) {
+		PageDto pageDto = new PageDto();
+		pageDto.setCurrentPage(leaveRequests.getNumber());
+		pageDto.setTotalPages(leaveRequests.getTotalPages());
+		pageDto.setTotalItems(leaveRequests.getTotalElements());
+		pageDto.setItems(items);
+		return pageDto;
 	}
 
 	private <T> List<T> buildLeaveTypeMonthData(List<PolicyLeaveType> leaveTypes, PolicyLeaveDateWindowDto window,
