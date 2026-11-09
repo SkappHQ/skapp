@@ -10,7 +10,11 @@ import {
   LeaveRequestStates
 } from "~community/common/types/CommonTypes";
 import { ToastProps } from "~community/common/types/ToastTypes";
-import { getOrdinalIndicator } from "~community/common/utils/dateTimeUtils";
+import {
+  convertDateToFormat,
+  getDateForPeriod,
+  getOrdinalIndicator
+} from "~community/common/utils/dateTimeUtils";
 import { SUCCESS_TOAST_DURATION_MS } from "~community/leave/constants/stringConstants";
 import {
   ApplyPolicyLeaveErrorKeys,
@@ -33,6 +37,7 @@ import {
 import {
   EmployeePolicyBalanceType,
   PolicyBalanceDisabledReason,
+  PolicyEmployeeLeaveHistoryQueryParams,
   PolicyEmployeesOnLeaveType,
   PolicyLeaveRequestQueryParams,
   PolicyLeaveRequestStatus,
@@ -353,6 +358,29 @@ export const getPolicyLeaveRequestQueryParams = (
     year,
     status: status.length ? status.join(",") : undefined,
     policyId: policyId.length ? policyId.join(",") : undefined
+  };
+};
+
+export const getPolicyEmployeeLeaveHistoryParams = (
+  selectedDates: Date[],
+  status: string[],
+  type: string[],
+  page: number,
+  size: number,
+  isExport: boolean
+): PolicyEmployeeLeaveHistoryQueryParams => {
+  return {
+    startDate: selectedDates[0]
+      ? convertDateToFormat(selectedDates[0], DATE_FORMAT)
+      : getDateForPeriod("year", "start"),
+    endDate: selectedDates[1]
+      ? convertDateToFormat(selectedDates[1], DATE_FORMAT)
+      : getDateForPeriod("year", "end"),
+    leaveType: type?.length ? type.join(",") : undefined,
+    status: status?.length ? status.join(",") : undefined,
+    isExport,
+    page: page.toString(),
+    size: size.toString()
   };
 };
 
