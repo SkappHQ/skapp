@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmActivityFeedFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmActivityRecordFilterDto;
 import com.skapp.community.crmplanner.service.CrmActivityFeedService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,13 @@ public class CrmActivityController {
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getActivities(CrmActivityFeedFilterDto filterDto) {
 		ResponseEntityDto response = crmActivityFeedService.getActivities(filterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@GetMapping("/record")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> getRecordActivities(CrmActivityRecordFilterDto filterDto) {
+		ResponseEntityDto response = crmActivityFeedService.getRecordActivities(filterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
