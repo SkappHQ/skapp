@@ -117,14 +117,13 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 		CrmValidations.validateEmailSubject(requestDto.getSubject());
 		CrmValidations.validateEmailLoggedAt(requestDto.getLoggedAt());
 		CrmValidations.validateEmailRecipientIds(toIds, ccIds, bccIds);
-		String fromAddress = requestDto.getFromAddress() != null ? requestDto.getFromAddress().trim() : null;
-		Validations.validateEmail(fromAddress);
+		Validations.validateEmail(requestDto.getFromAddress());
 
 		User currentUser = userService.getCurrentUser();
 
 		CrmActivityEmail email = new CrmActivityEmail();
 		email.setSubject(requestDto.getSubject());
-		email.setFromAddress(fromAddress);
+		email.setFromAddress(requestDto.getFromAddress());
 		email.setLoggedAt(requestDto.getLoggedAt());
 		email.setDescription(requestDto.getDescription());
 		email.setOwner(currentUser.getEmployee());
@@ -228,9 +227,8 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 		}
 
 		if (requestDto.getFromAddress() != null) {
-			String fromAddress = requestDto.getFromAddress().trim();
-			Validations.validateEmail(fromAddress);
-			email.setFromAddress(fromAddress);
+			Validations.validateEmail(requestDto.getFromAddress());
+			email.setFromAddress(requestDto.getFromAddress());
 		}
 
 		if (requestDto.getLoggedAt() != null) {
