@@ -21,7 +21,7 @@ import { updateContactRecord } from "~community/crm/utils/contactUtil";
 
 interface Props {
   call: CrmCallEntity;
-  onSave: (payload: Omit<ActivityCallEditPayload, "id">) => void;
+  onSave: (payload: ActivityCallEditPayload) => void;
 }
 
 const SidePanelCallEditForm: FC<Props> = ({ call, onSave }) => {
@@ -50,7 +50,7 @@ const SidePanelCallEditForm: FC<Props> = ({ call, onSave }) => {
     initialValues,
     validationSchema: getCallValidationSchema(translateText),
     onSubmit: (values, { resetForm }) => {
-      onSave(toCallEditPayload(values, formik.initialValues));
+      onSave(toCallEditPayload(call.id, values, formik.initialValues));
       resetForm({ values });
     }
   });

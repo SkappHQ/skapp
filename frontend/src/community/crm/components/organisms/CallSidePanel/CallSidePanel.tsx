@@ -15,7 +15,7 @@ interface Props {
   related: ReactNode;
   onTitleSave: (title: string) => void;
   onCommentsSave: (comments: string) => void;
-  onDetailsSave: (payload: Omit<ActivityCallEditPayload, "id">) => void;
+  onDetailsSave: (payload: ActivityCallEditPayload) => void;
   onDelete: () => void;
 }
 

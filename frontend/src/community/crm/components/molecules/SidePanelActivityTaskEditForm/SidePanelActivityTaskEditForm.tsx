@@ -21,7 +21,7 @@ import { updateContactRecord } from "~community/crm/utils/contactUtil";
 
 interface Props {
   task: CrmActivityTaskEntity;
-  onSave: (payload: Omit<ActivityTaskEditPayload, "id">) => void;
+  onSave: (payload: ActivityTaskEditPayload) => void;
 }
 
 const SidePanelActivityTaskEditForm: FC<Props> = ({ task, onSave }) => {
@@ -53,7 +53,7 @@ const SidePanelActivityTaskEditForm: FC<Props> = ({ task, onSave }) => {
     initialValues,
     validationSchema: getActivityTaskValidationSchema(translateText),
     onSubmit: (values, { resetForm }) => {
-      onSave(toActivityTaskEditPayload(values, formik.initialValues));
+      onSave(toActivityTaskEditPayload(task.id, values, formik.initialValues));
       resetForm({ values });
     }
   });

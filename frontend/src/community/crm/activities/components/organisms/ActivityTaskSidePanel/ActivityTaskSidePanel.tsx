@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -15,6 +15,7 @@ import {
 import DeleteActivityModal from "~community/crm/components/molecules/DeleteActivityModal/DeleteActivityModal";
 import SidePanelRelatedActivities from "~community/crm/components/molecules/SidePanelRelatedActivities/SidePanelRelatedActivities";
 import TaskActivitySidePanel from "~community/crm/components/organisms/TaskActivitySidePanel/TaskActivitySidePanel";
+import { useActivitySidePanelActions } from "~community/crm/hooks/useActivitySidePanelActions";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 
@@ -26,8 +27,6 @@ interface Props {
 const ActivityTaskSidePanel: FC<Props> = ({ taskId, onAdd }) => {
   const translateText = useTranslator("crmModule");
   const { setToastMessage } = useToast();
-
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const {
     isCrmSidePanelOpen,
@@ -59,6 +58,15 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId, onAdd }) => {
     closeCrmSidePanel();
   };
 
+  const {
+    isDeleteModalOpen,
+    openDeleteModal,
+    closeDeleteModal,
+    handleSaveError,
+    handleDeleteSuccess,
+    handleDeleteError
+  } = useActivitySidePanelActions(handleClose);
+
   useEffect(() => {
     if (!isError || isFetching) return;
 
@@ -71,62 +79,6 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId, onAdd }) => {
     });
     handleClose();
   }, [isError, isFetching]);
-
-  const handleSaveError = (): void => {
-    setToastMessage({
-      open: true,
-      toastType: ToastType.WARN,
-      title: translateText([
-        "activities",
-        "logActivity",
-        "toastMessages",
-        "errorTitle"
-      ]),
-      description: translateText([
-        "activities",
-        "activitySidePanel",
-        "toastMessages",
-        "saveErrorDescription"
-      ]),
-      isIcon: true
-    });
-  };
-
-  const handleDeleteSuccess = (): void => {
-    setIsDeleteModalOpen(false);
-    handleClose();
-    setToastMessage({
-      open: true,
-      toastType: ToastType.SUCCESS,
-      title: translateText([
-        "activities",
-        "activitySidePanel",
-        "toastMessages",
-        "deleteSuccessTitle"
-      ])
-    });
-  };
-
-  const handleDeleteError = (): void => {
-    setIsDeleteModalOpen(false);
-    setToastMessage({
-      open: true,
-      toastType: ToastType.WARN,
-      title: translateText([
-        "activities",
-        "logActivity",
-        "toastMessages",
-        "errorTitle"
-      ]),
-      description: translateText([
-        "activities",
-        "activitySidePanel",
-        "toastMessages",
-        "deleteErrorDescription"
-      ]),
-      isIcon: true
-    });
-  };
 
   const { mutate: updateTask } = useUpdateActivityTask(handleSaveError);
   const { mutate: deleteTask, isPending: isDeleting } = useDeleteActivityTask(
@@ -150,40 +102,42 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId, onAdd }) => {
         isOpen={isOpen}
         onClose={handleClose}
         related={
-          <SidePanelRelatedActivities
-            title={translateText([
-              "activities",
-              "taskSidePanel",
-              "relatedTitle"
-            ])}
-            rows={(relatedTasks ?? []).map(toTaskRow)}
-            emptyTitle={translateText([
-              "activities",
-              "taskSidePanel",
-              "noRelatedTitle"
-            ])}
-            emptyDescription={translateText([
-              "activities",
-              "taskSidePanel",
-              "noRelatedDescription"
-            ])}
-            addLabel={translateText(["activities", "toolbar", "addTaskBtn"])}
-            onAdd={handleAdd}
-            onRowClick={handleRelatedRowClick}
-          />
+          relatedTasks && (
+            <SidePanelRelatedActivities
+              title={translateText([
+                "activities",
+                "taskSidePanel",
+                "relatedTitle"
+              ])}
+              rows={(relatedTasks ?? []).map(toTaskRow)}
+              emptyTitle={translateText([
+                "activities",
+                "taskSidePanel",
+                "noRelatedTitle"
+              ])}
+              emptyDescription={translateText([
+                "activities",
+                "taskSidePanel",
+                "noRelatedDescription"
+              ])}
+              addLabel={translateText(["activities", "toolbar", "addTaskBtn"])}
+              onAdd={handleAdd}
+              onRowClick={handleRelatedRowClick}
+            />
+          )
         }
         onTitleSave={(name) => updateTask({ id: taskId, name })}
         onCommentsSave={(notes) => updateTask({ id: taskId, notes })}
-        onDelete={() => setIsDeleteModalOpen(true)}
+        onDelete={openDeleteModal}
         onMarkAsDone={() => updateTask({ id: taskId, isCompleted: true })}
         onReopen={() => updateTask({ id: taskId, isCompleted: false })}
-        onDetailsSave={(payload) => updateTask({ id: taskId, ...payload })}
+        onDetailsSave={updateTask}
       />
       <DeleteActivityModal
         isOpen={isDeleteModalOpen}
         isPending={isDeleting}
         onConfirm={() => deleteTask(taskId)}
-        onClose={() => setIsDeleteModalOpen(false)}
+        onClose={closeDeleteModal}
       />
     </>
   );

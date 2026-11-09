@@ -21,7 +21,7 @@ import { getMeetingValidationSchema } from "~community/crm/utils/meetingValidati
 
 interface Props {
   meeting: CrmMeetingEntity;
-  onSave: (payload: Omit<ActivityMeetingEditPayload, "id">) => void;
+  onSave: (payload: ActivityMeetingEditPayload) => void;
 }
 
 const SidePanelMeetingEditForm: FC<Props> = ({ meeting, onSave }) => {
@@ -52,7 +52,7 @@ const SidePanelMeetingEditForm: FC<Props> = ({ meeting, onSave }) => {
     initialValues,
     validationSchema: getMeetingValidationSchema(translateText),
     onSubmit: (values, { resetForm }) => {
-      onSave(toMeetingEditPayload(values, formik.initialValues));
+      onSave(toMeetingEditPayload(meeting.id, values, formik.initialValues));
       resetForm({ values });
     }
   });

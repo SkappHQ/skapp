@@ -109,9 +109,11 @@ export const toCallFormValues = (
 });
 
 export const toCallEditPayload = (
+  id: number,
   values: CrmLogCallFormValues,
   saved: CrmLogCallFormValues
-): Omit<ActivityCallEditPayload, "id"> => ({
+): ActivityCallEditPayload => ({
+  id,
   ...toLinkEditPayload(values, saved),
   ...((values.date !== saved.date || values.time !== saved.time) &&
     values.date && {
@@ -141,14 +143,16 @@ export const toMeetingFormValues = (
 });
 
 export const toMeetingEditPayload = (
+  id: number,
   values: CrmLogMeetingFormValues,
   saved: CrmLogMeetingFormValues
-): Omit<ActivityMeetingEditPayload, "id"> => {
+): ActivityMeetingEditPayload => {
   const isDateChanged = values.date !== saved.date;
   const isContactsChanged =
     values.contactIds.join(",") !== saved.contactIds.join(",");
 
   return {
+    id,
     ...toLinkEditPayload(values, saved),
     ...(isDateChanged &&
       values.date && {
@@ -182,9 +186,11 @@ export const toActivityTaskFormValues = (
 });
 
 export const toActivityTaskEditPayload = (
+  id: number,
   values: CrmAddTaskFormValues,
   saved: CrmAddTaskFormValues
-): Omit<ActivityTaskEditPayload, "id"> => ({
+): ActivityTaskEditPayload => ({
+  id,
   ...toLinkEditPayload(values, saved),
   ...(values.priority !== saved.priority && { priority: values.priority }),
   ...(values.dueAt !== saved.dueAt && { dueAt: values.dueAt }),

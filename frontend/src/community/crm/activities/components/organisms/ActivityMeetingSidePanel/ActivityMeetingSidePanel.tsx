@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -15,6 +15,7 @@ import {
 import DeleteActivityModal from "~community/crm/components/molecules/DeleteActivityModal/DeleteActivityModal";
 import SidePanelRelatedActivities from "~community/crm/components/molecules/SidePanelRelatedActivities/SidePanelRelatedActivities";
 import MeetingSidePanel from "~community/crm/components/organisms/MeetingSidePanel/MeetingSidePanel";
+import { useActivitySidePanelActions } from "~community/crm/hooks/useActivitySidePanelActions";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 
@@ -26,8 +27,6 @@ interface Props {
 const ActivityMeetingSidePanel: FC<Props> = ({ meetingId, onAdd }) => {
   const translateText = useTranslator("crmModule");
   const { setToastMessage } = useToast();
-
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const {
     isCrmSidePanelOpen,
@@ -59,6 +58,15 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId, onAdd }) => {
     closeCrmSidePanel();
   };
 
+  const {
+    isDeleteModalOpen,
+    openDeleteModal,
+    closeDeleteModal,
+    handleSaveError,
+    handleDeleteSuccess,
+    handleDeleteError
+  } = useActivitySidePanelActions(handleClose);
+
   useEffect(() => {
     if (!isError || isFetching) return;
 
@@ -71,62 +79,6 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId, onAdd }) => {
     });
     handleClose();
   }, [isError, isFetching]);
-
-  const handleSaveError = (): void => {
-    setToastMessage({
-      open: true,
-      toastType: ToastType.WARN,
-      title: translateText([
-        "activities",
-        "logActivity",
-        "toastMessages",
-        "errorTitle"
-      ]),
-      description: translateText([
-        "activities",
-        "activitySidePanel",
-        "toastMessages",
-        "saveErrorDescription"
-      ]),
-      isIcon: true
-    });
-  };
-
-  const handleDeleteSuccess = (): void => {
-    setIsDeleteModalOpen(false);
-    handleClose();
-    setToastMessage({
-      open: true,
-      toastType: ToastType.SUCCESS,
-      title: translateText([
-        "activities",
-        "activitySidePanel",
-        "toastMessages",
-        "deleteSuccessTitle"
-      ])
-    });
-  };
-
-  const handleDeleteError = (): void => {
-    setIsDeleteModalOpen(false);
-    setToastMessage({
-      open: true,
-      toastType: ToastType.WARN,
-      title: translateText([
-        "activities",
-        "logActivity",
-        "toastMessages",
-        "errorTitle"
-      ]),
-      description: translateText([
-        "activities",
-        "activitySidePanel",
-        "toastMessages",
-        "deleteErrorDescription"
-      ]),
-      isIcon: true
-    });
-  };
 
   const { mutate: updateMeeting } = useUpdateMeeting(handleSaveError);
   const { mutate: deleteMeeting, isPending: isDeleting } = useDeleteMeeting(
@@ -150,42 +102,46 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId, onAdd }) => {
         isOpen={isOpen}
         onClose={handleClose}
         related={
-          <SidePanelRelatedActivities
-            title={translateText([
-              "activities",
-              "meetingSidePanel",
-              "relatedTitle"
-            ])}
-            rows={(relatedMeetings ?? []).map(toMeetingRow)}
-            emptyTitle={translateText([
-              "activities",
-              "meetingSidePanel",
-              "noRelatedTitle"
-            ])}
-            emptyDescription={translateText([
-              "activities",
-              "meetingSidePanel",
-              "noRelatedDescription"
-            ])}
-            addLabel={translateText(["activities", "toolbar", "logMeetingBtn"])}
-            onAdd={handleAdd}
-            onRowClick={handleRelatedRowClick}
-          />
+          relatedMeetings && (
+            <SidePanelRelatedActivities
+              title={translateText([
+                "activities",
+                "meetingSidePanel",
+                "relatedTitle"
+              ])}
+              rows={(relatedMeetings ?? []).map(toMeetingRow)}
+              emptyTitle={translateText([
+                "activities",
+                "meetingSidePanel",
+                "noRelatedTitle"
+              ])}
+              emptyDescription={translateText([
+                "activities",
+                "meetingSidePanel",
+                "noRelatedDescription"
+              ])}
+              addLabel={translateText([
+                "activities",
+                "toolbar",
+                "logMeetingBtn"
+              ])}
+              onAdd={handleAdd}
+              onRowClick={handleRelatedRowClick}
+            />
+          )
         }
         onTitleSave={(name) => updateMeeting({ id: meetingId, name })}
         onCommentsSave={(comments) =>
           updateMeeting({ id: meetingId, comments })
         }
-        onDelete={() => setIsDeleteModalOpen(true)}
-        onDetailsSave={(payload) =>
-          updateMeeting({ id: meetingId, ...payload })
-        }
+        onDelete={openDeleteModal}
+        onDetailsSave={updateMeeting}
       />
       <DeleteActivityModal
         isOpen={isDeleteModalOpen}
         isPending={isDeleting}
         onConfirm={() => deleteMeeting(meetingId)}
-        onClose={() => setIsDeleteModalOpen(false)}
+        onClose={closeDeleteModal}
       />
     </>
   );

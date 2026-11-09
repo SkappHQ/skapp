@@ -24,7 +24,7 @@ interface Props {
   onDelete: () => void;
   onMarkAsDone: () => void;
   onReopen: () => void;
-  onDetailsSave: (payload: Omit<ActivityTaskEditPayload, "id">) => void;
+  onDetailsSave: (payload: ActivityTaskEditPayload) => void;
 }
 
 const TaskActivitySidePanel: FC<Props> = ({

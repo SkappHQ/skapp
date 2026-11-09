@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -15,6 +15,7 @@ import {
 import DeleteActivityModal from "~community/crm/components/molecules/DeleteActivityModal/DeleteActivityModal";
 import SidePanelRelatedActivities from "~community/crm/components/molecules/SidePanelRelatedActivities/SidePanelRelatedActivities";
 import CallSidePanel from "~community/crm/components/organisms/CallSidePanel/CallSidePanel";
+import { useActivitySidePanelActions } from "~community/crm/hooks/useActivitySidePanelActions";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 
@@ -26,8 +27,6 @@ interface Props {
 const ActivityCallSidePanel: FC<Props> = ({ callId, onAdd }) => {
   const translateText = useTranslator("crmModule");
   const { setToastMessage } = useToast();
-
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const {
     isCrmSidePanelOpen,
@@ -55,6 +54,15 @@ const ActivityCallSidePanel: FC<Props> = ({ callId, onAdd }) => {
     closeCrmSidePanel();
   };
 
+  const {
+    isDeleteModalOpen,
+    openDeleteModal,
+    closeDeleteModal,
+    handleSaveError,
+    handleDeleteSuccess,
+    handleDeleteError
+  } = useActivitySidePanelActions(handleClose);
+
   useEffect(() => {
     if (!isError) return;
 
@@ -67,62 +75,6 @@ const ActivityCallSidePanel: FC<Props> = ({ callId, onAdd }) => {
     });
     handleClose();
   }, [isError]);
-
-  const handleSaveError = (): void => {
-    setToastMessage({
-      open: true,
-      toastType: ToastType.WARN,
-      title: translateText([
-        "activities",
-        "logActivity",
-        "toastMessages",
-        "errorTitle"
-      ]),
-      description: translateText([
-        "activities",
-        "activitySidePanel",
-        "toastMessages",
-        "saveErrorDescription"
-      ]),
-      isIcon: true
-    });
-  };
-
-  const handleDeleteSuccess = (): void => {
-    setIsDeleteModalOpen(false);
-    handleClose();
-    setToastMessage({
-      open: true,
-      toastType: ToastType.SUCCESS,
-      title: translateText([
-        "activities",
-        "activitySidePanel",
-        "toastMessages",
-        "deleteSuccessTitle"
-      ])
-    });
-  };
-
-  const handleDeleteError = (): void => {
-    setIsDeleteModalOpen(false);
-    setToastMessage({
-      open: true,
-      toastType: ToastType.WARN,
-      title: translateText([
-        "activities",
-        "logActivity",
-        "toastMessages",
-        "errorTitle"
-      ]),
-      description: translateText([
-        "activities",
-        "activitySidePanel",
-        "toastMessages",
-        "deleteErrorDescription"
-      ]),
-      isIcon: true
-    });
-  };
 
   const { mutate: updateCall } = useUpdateCall(handleSaveError);
   const { mutate: deleteCall, isPending: isDeleting } = useDeleteCall(
@@ -146,38 +98,40 @@ const ActivityCallSidePanel: FC<Props> = ({ callId, onAdd }) => {
         isOpen={isOpen}
         onClose={handleClose}
         related={
-          <SidePanelRelatedActivities
-            title={translateText([
-              "activities",
-              "callSidePanel",
-              "relatedTitle"
-            ])}
-            rows={(relatedCalls ?? []).map(toCallRow)}
-            emptyTitle={translateText([
-              "activities",
-              "callSidePanel",
-              "noRelatedTitle"
-            ])}
-            emptyDescription={translateText([
-              "activities",
-              "callSidePanel",
-              "noRelatedDescription"
-            ])}
-            addLabel={translateText(["activities", "toolbar", "logCallBtn"])}
-            onAdd={handleAdd}
-            onRowClick={handleRelatedRowClick}
-          />
+          relatedCalls && (
+            <SidePanelRelatedActivities
+              title={translateText([
+                "activities",
+                "callSidePanel",
+                "relatedTitle"
+              ])}
+              rows={(relatedCalls ?? []).map(toCallRow)}
+              emptyTitle={translateText([
+                "activities",
+                "callSidePanel",
+                "noRelatedTitle"
+              ])}
+              emptyDescription={translateText([
+                "activities",
+                "callSidePanel",
+                "noRelatedDescription"
+              ])}
+              addLabel={translateText(["activities", "toolbar", "logCallBtn"])}
+              onAdd={handleAdd}
+              onRowClick={handleRelatedRowClick}
+            />
+          )
         }
         onTitleSave={(subject) => updateCall({ id: callId, subject })}
         onCommentsSave={(comments) => updateCall({ id: callId, comments })}
-        onDelete={() => setIsDeleteModalOpen(true)}
-        onDetailsSave={(payload) => updateCall({ id: callId, ...payload })}
+        onDelete={openDeleteModal}
+        onDetailsSave={updateCall}
       />
       <DeleteActivityModal
         isOpen={isDeleteModalOpen}
         isPending={isDeleting}
         onConfirm={() => deleteCall(callId)}
-        onClose={() => setIsDeleteModalOpen(false)}
+        onClose={closeDeleteModal}
       />
     </>
   );

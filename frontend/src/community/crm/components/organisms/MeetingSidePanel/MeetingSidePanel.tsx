@@ -16,7 +16,7 @@ interface Props {
   onTitleSave: (title: string) => void;
   onCommentsSave: (comments: string) => void;
   onDelete: () => void;
-  onDetailsSave: (payload: Omit<ActivityMeetingEditPayload, "id">) => void;
+  onDetailsSave: (payload: ActivityMeetingEditPayload) => void;
 }
 
 const MeetingSidePanel: FC<Props> = ({

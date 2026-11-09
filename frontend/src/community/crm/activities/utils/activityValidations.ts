@@ -39,11 +39,7 @@ export const getActivityOwnerValidation = (
 export const validateActivityTitle = (
   title: string,
   translator: TranslatorFunctionType
-): string => {
-  try {
-    getActivitySubjectValidation(translator).validateSync(title);
-    return "";
-  } catch (error) {
-    return (error as Yup.ValidationError).message;
-  }
-};
+): string =>
+  getActivitySubjectValidation(translator).isValidSync(title)
+    ? ""
+    : translator(["activities", "logActivity", "validations", "subject"]);
