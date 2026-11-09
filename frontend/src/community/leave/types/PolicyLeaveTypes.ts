@@ -244,6 +244,17 @@ export interface PolicyEmployeeLeaveHistoryQueryParams {
   size: string;
 }
 
+export interface UseGetPolicyEmployeeLeaveHistoryArgs {
+  employeeId: number;
+  selectedDates: Date[];
+  status: string[];
+  type: string[];
+  page: number;
+  size: number;
+  isExport: boolean;
+  enabled?: boolean;
+}
+
 export interface PolicyTeamLeaveHistoryResponse {
   results: TeamLeaveHistoryDataTypes[];
 }

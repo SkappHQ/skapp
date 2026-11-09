@@ -210,16 +210,16 @@ const UserLeaveHistory: FC<Props> = ({
     );
 
   const { data: policyLeaveHistoryData, isLoading: isPolicyHistoryLoading } =
-    useGetPolicyEmployeeLeaveHistory(
+    useGetPolicyEmployeeLeaveHistory({
       employeeId,
       selectedDates,
-      leaveRequestsFilter.status,
-      leaveRequestsFilter.type,
-      currentPage,
-      USER_LEAVE_HISTORY_PAGE_SIZE,
-      false,
-      isPolicyHistoryEnabled
-    );
+      status: leaveRequestsFilter.status,
+      type: leaveRequestsFilter.type,
+      page: currentPage,
+      size: USER_LEAVE_HISTORY_PAGE_SIZE,
+      isExport: false,
+      enabled: isPolicyHistoryEnabled
+    });
 
   const leaveHistoryData = isLeavePoliciesEnabled
     ? policyLeaveHistoryData
@@ -244,16 +244,16 @@ const UserLeaveHistory: FC<Props> = ({
     isLegacyHistoryEnabled
   );
 
-  const { data: policyExportHistoryData } = useGetPolicyEmployeeLeaveHistory(
+  const { data: policyExportHistoryData } = useGetPolicyEmployeeLeaveHistory({
     employeeId,
     selectedDates,
-    leaveRequestsFilter.status,
-    leaveRequestsFilter.type,
-    0,
-    USER_LEAVE_HISTORY_PAGE_SIZE,
-    true,
-    isPolicyHistoryEnabled
-  );
+    status: leaveRequestsFilter.status,
+    type: leaveRequestsFilter.type,
+    page: 0,
+    size: USER_LEAVE_HISTORY_PAGE_SIZE,
+    isExport: true,
+    enabled: isPolicyHistoryEnabled
+  });
 
   const exportHistoryData = isLeavePoliciesEnabled
     ? policyExportHistoryData

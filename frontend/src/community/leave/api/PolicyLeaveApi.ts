@@ -46,7 +46,8 @@ import {
   PolicyResourceAvailabilityParams,
   PolicyResourceAvailabilityResponse,
   PolicyTeamLeaveHistoryQueryParams,
-  PolicyTeamLeaveHistoryResponse
+  PolicyTeamLeaveHistoryResponse,
+  UseGetPolicyEmployeeLeaveHistoryArgs
 } from "~community/leave/types/PolicyLeaveTypes";
 import {
   APIResponseDataType,
@@ -239,16 +240,16 @@ const getPolicyEmployeeLeaveHistory = async (
   return response.data.results[0];
 };
 
-export const useGetPolicyEmployeeLeaveHistory = (
-  employeeId: number,
-  selectedDates: Date[],
-  status: string[],
-  type: string[],
-  page: number,
-  size: number,
-  isExport: boolean,
+export const useGetPolicyEmployeeLeaveHistory = ({
+  employeeId,
+  selectedDates,
+  status,
+  type,
+  page,
+  size,
+  isExport,
   enabled = true
-): UseQueryResult<EmployeeLeaveHistoryDataTypes> => {
+}: UseGetPolicyEmployeeLeaveHistoryArgs): UseQueryResult<EmployeeLeaveHistoryDataTypes> => {
   const params = getPolicyEmployeeLeaveHistoryParams(
     selectedDates,
     status,
