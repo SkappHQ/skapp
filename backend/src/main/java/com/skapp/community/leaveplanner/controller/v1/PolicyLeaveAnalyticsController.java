@@ -41,7 +41,7 @@ public class PolicyLeaveAnalyticsController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_LEAVE_MANAGER')")
+	@PreAuthorize("hasRole('ROLE_LEAVE_MANAGER')")
 	@GetMapping("/team-leave-history/{id}")
 	public ResponseEntity<ResponseEntityDto> getTeamLeaveHistory(@PathVariable Long id,
 			PolicyTeamLeaveHistoryFilterDto policyTeamLeaveHistoryFilterDto) {
@@ -50,7 +50,7 @@ public class PolicyLeaveAnalyticsController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_LEAVE_MANAGER')")
+	@PreAuthorize("hasRole('ROLE_LEAVE_MANAGER')")
 	@GetMapping("/employee-leave-history/{id}")
 	public ResponseEntity<ResponseEntityDto> getEmployeeLeaveHistory(@PathVariable Long id,
 			PolicyLeaveHistoryFilterDto policyLeaveHistoryFilterDto) {
