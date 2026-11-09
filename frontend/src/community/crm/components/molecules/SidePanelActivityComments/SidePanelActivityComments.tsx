@@ -42,6 +42,8 @@ const SidePanelActivityComments: FC<Props> = ({
     onSave
   });
 
+  const emptyLabel = emptyText ? emptyText : translateText(["noComments"]);
+
   return (
     <div className="flex flex-col gap-1">
       <p className="subtitle1">{title ? title : translateText(["comments"])}</p>
@@ -83,7 +85,7 @@ const SidePanelActivityComments: FC<Props> = ({
           aria-label={translateAria(["editComments"])}
           onClick={startEditing}
         >
-          {comments ? comments : (emptyText ?? translateText(["noComments"]))}
+          {comments ? comments : emptyLabel}
         </button>
       )}
     </div>
