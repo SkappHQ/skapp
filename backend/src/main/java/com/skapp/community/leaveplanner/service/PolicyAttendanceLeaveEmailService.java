@@ -1,0 +1,28 @@
+package com.skapp.community.leaveplanner.service;
+
+import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
+import com.skapp.community.timeplanner.model.TimeConfig;
+
+import java.util.List;
+
+public interface PolicyAttendanceLeaveEmailService {
+
+	void sendNonWorkingDaySingleDayPendingLeaveRequestCancelEmployeeEmail(PolicyLeaveRequest policyLeaveRequest);
+
+	void sendNonWorkingDaySingleDayPendingLeaveRequestCancelManagerEmail(PolicyLeaveRequest policyLeaveRequest);
+
+	void sendNonWorkingDayMultiDayPendingLeaveRequestCancelEmployeeEmail(PolicyLeaveRequest policyLeaveRequest,
+			List<TimeConfig> removingConfigs);
+
+	void sendNonWorkingDayMultiDayPendingLeaveRequestCancelManagerEmail(PolicyLeaveRequest policyLeaveRequest,
+			List<TimeConfig> removingConfigs);
+
+	void sendNonWorkingDaySingleDayApprovedLeaveRequestRevokedEmployeeEmail(PolicyLeaveRequest policyLeaveRequest);
+
+	void sendNonWorkingDaySingleDayApprovedLeaveRequestRevokedManagerEmail(PolicyLeaveRequest policyLeaveRequest);
+
+	void sendNonWorkingDayMultiDayApprovedLeaveRequestRevokedEmployeeEmail(PolicyLeaveRequest policyLeaveRequest);
+
+	void sendNonWorkingDayMultiDayApprovedLeaveRequestRevokedManagerEmail(PolicyLeaveRequest policyLeaveRequest);
+
+}

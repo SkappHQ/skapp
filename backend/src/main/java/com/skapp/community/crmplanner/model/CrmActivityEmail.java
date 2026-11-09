@@ -32,6 +32,9 @@ public class CrmActivityEmail extends Auditable<String> {
 	@Column(name = "subject")
 	private String subject;
 
+	@Column(name = "from_address")
+	private String fromAddress;
+
 	@Column(name = "logged_at")
 	private Instant loggedAt;
 

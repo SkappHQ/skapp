@@ -199,6 +199,19 @@ public interface LeaveMapper {
 	List<PolicyLeaveRequestResponseDto> policyLeaveRequestListToPolicyLeaveRequestResponseDtoList(
 			List<PolicyLeaveRequest> policyLeaveRequests);
 
+	@Mapping(target = "typeId", source = "id")
+	@Mapping(target = "leaveDuration", source = "minDuration")
+	@Mapping(target = "isCommentMandatory", source = "isCommentMust")
+	@Mapping(target = "isAttachmentMandatory", source = "isAttachmentMust")
+	LeaveTypeBasicDetailsResponseDto policyLeaveTypeToLeaveTypeBasicDetailsResponseDto(PolicyLeaveType policyLeaveType);
+
+	@Mapping(target = "leaveRequestId", source = "id")
+	@Mapping(target = "leaveType", source = "policy.leaveType")
+	LeaveRequestResponseDto policyLeaveRequestToLeaveRequestResponseDto(PolicyLeaveRequest policyLeaveRequest);
+
+	ClockInSummaryLeaveRequestResponseDto leaveRequestResponseDtoToClockInSummaryLeaveRequestResponseDto(
+			LeaveRequestResponseDto leaveRequestResponseDto);
+
 	@Mapping(target = "leaveRequestId", source = "id")
 	@Mapping(target = "policyName", source = "policy.name")
 	@Mapping(target = "leaveType", source = "policy.leaveType")

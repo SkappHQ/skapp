@@ -3,8 +3,11 @@ package com.skapp.community.peopleplanner.repository.impl;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.User_;
 import com.skapp.community.common.type.Role;
+import com.skapp.community.leaveplanner.constant.PolicyLeaveConstant;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.leaveplanner.model.LeaveRequest_;
+import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
+import com.skapp.community.leaveplanner.model.PolicyLeaveRequest_;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
@@ -47,7 +50,7 @@ public class EmployeeTeamRepositoryImpl implements EmployeeTeamRepository {
 
 	@Override
 	public Long countAvailableEmployeesByTeamIdsAndDate(List<Long> teamsFilter, LocalDate currentDate,
-			Long currentUserId) {
+			Long currentUserId, boolean leavePoliciesEnabled) {
 		if (teamsFilter == null || teamsFilter.isEmpty()) {
 			return 0L;
 		}
@@ -101,13 +104,26 @@ public class EmployeeTeamRepositoryImpl implements EmployeeTeamRepository {
 		}
 
 		Subquery<Long> leaveSubquery = criteriaQuery.subquery(Long.class);
-		Root<LeaveRequest> leaveRequestRoot = leaveSubquery.from(LeaveRequest.class);
-		leaveSubquery.select(leaveRequestRoot.get(LeaveRequest_.employee).get(Employee_.employeeId))
-			.where(criteriaBuilder.and(
-					criteriaBuilder.lessThanOrEqualTo(leaveRequestRoot.get(LeaveRequest_.startDate), currentDate),
-					criteriaBuilder.greaterThanOrEqualTo(leaveRequestRoot.get(LeaveRequest_.endDate), currentDate),
-					leaveRequestRoot.get(LeaveRequest_.status)
-						.in(LeaveRequestStatus.APPROVED, LeaveRequestStatus.PENDING)));
+		if (leavePoliciesEnabled) {
+			Root<PolicyLeaveRequest> policyLeaveRequestRoot = leaveSubquery.from(PolicyLeaveRequest.class);
+			leaveSubquery.select(policyLeaveRequestRoot.get(PolicyLeaveRequest_.employee).get(Employee_.employeeId))
+				.where(criteriaBuilder.and(
+						criteriaBuilder.lessThanOrEqualTo(policyLeaveRequestRoot.get(PolicyLeaveRequest_.startDate),
+								currentDate),
+						criteriaBuilder.greaterThanOrEqualTo(policyLeaveRequestRoot.get(PolicyLeaveRequest_.endDate),
+								currentDate),
+						policyLeaveRequestRoot.get(PolicyLeaveRequest_.status)
+							.in(PolicyLeaveConstant.ATTENDANCE_LEAVE_STATUSES)));
+		}
+		else {
+			Root<LeaveRequest> leaveRequestRoot = leaveSubquery.from(LeaveRequest.class);
+			leaveSubquery.select(leaveRequestRoot.get(LeaveRequest_.employee).get(Employee_.employeeId))
+				.where(criteriaBuilder.and(
+						criteriaBuilder.lessThanOrEqualTo(leaveRequestRoot.get(LeaveRequest_.startDate), currentDate),
+						criteriaBuilder.greaterThanOrEqualTo(leaveRequestRoot.get(LeaveRequest_.endDate), currentDate),
+						leaveRequestRoot.get(LeaveRequest_.status)
+							.in(LeaveRequestStatus.APPROVED, LeaveRequestStatus.PENDING)));
+		}
 
 		predicates.add(criteriaBuilder.not(employeeRoot.get(Employee_.employeeId).in(leaveSubquery)));
 
