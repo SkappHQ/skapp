@@ -18,6 +18,8 @@ import {
   UNPAGINATED_SIZE
 } from "~community/leave/constants/policyLeaveTypeConstants";
 import { initialPolicyLeaveRequestParams } from "~community/leave/store/policyLeaveStore";
+import { useLeaveStore } from "~community/leave/store/store";
+import { LeaveHistoryDataTypes as EmployeeLeaveHistoryDataTypes } from "~community/leave/types/AnalyticsTypes";
 import {
   LeaveTypeBreakDownReturnTypes,
   LeaveTypeBreakdownResponseType
@@ -25,6 +27,8 @@ import {
 import {
   EmployeePolicyBalanceType,
   EmployeePolicyBalancesResponse,
+  PolicyEmployeeLeaveHistoryQueryParams,
+  PolicyEmployeeLeaveHistoryResponse,
   PolicyEmployeesOnLeaveResponse,
   PolicyEmployeesOnLeaveType,
   PolicyLeaveAvailabilityPayload,
@@ -40,14 +44,21 @@ import {
   PolicyPendingLeaveCountType,
   PolicyResourceAvailabilityDayType,
   PolicyResourceAvailabilityParams,
-  PolicyResourceAvailabilityResponse
+  PolicyResourceAvailabilityResponse,
+  PolicyTeamLeaveHistoryQueryParams,
+  PolicyTeamLeaveHistoryResponse,
+  UseGetPolicyEmployeeLeaveHistoryArgs
 } from "~community/leave/types/PolicyLeaveTypes";
 import {
   APIResponseDataType,
   LeaveTrendForYearResponseType,
-  LeaveTrendReturnTypes
+  LeaveTrendReturnTypes,
+  LeaveHistoryDataTypes as TeamLeaveHistoryDataTypes
 } from "~community/leave/types/TeamLeaveAnalyticsTypes";
-import { getPolicyLeaveRequestQueryParams } from "~community/leave/utils/policyLeave/policyLeaveUtils";
+import {
+  getPolicyEmployeeLeaveHistoryParams,
+  getPolicyLeaveRequestQueryParams
+} from "~community/leave/utils/policyLeave/policyLeaveUtils";
 
 const getMyPolicyBalances = async (
   year: string
@@ -217,6 +228,67 @@ export const useGetPolicyEmployeeLeaveUtilization = (
   });
 };
 
+const getPolicyTeamLeaveHistory = async (
+  teamId: number,
+  params: PolicyTeamLeaveHistoryQueryParams
+): Promise<TeamLeaveHistoryDataTypes> => {
+  const response = await authFetch.get<PolicyTeamLeaveHistoryResponse>(
+    policyLeaveEndPoints.GET_TEAM_LEAVE_HISTORY(teamId),
+    { params }
+  );
+  return response.data.results[0];
+};
+
+export const useGetPolicyTeamLeaveHistory = (
+  teamId: number,
+  enabled = true
+): UseQueryResult<TeamLeaveHistoryDataTypes> => {
+  const params = useLeaveStore((state) => state.teamLeaveAnalyticParams);
+
+  return useQuery({
+    queryKey: policyLeaveQueryKeys.TEAM_LEAVE_HISTORY(teamId, params),
+    queryFn: () => getPolicyTeamLeaveHistory(teamId, params),
+    enabled: enabled && !Number.isNaN(teamId)
+  });
+};
+
+const getPolicyEmployeeLeaveHistory = async (
+  employeeId: number,
+  params: PolicyEmployeeLeaveHistoryQueryParams
+): Promise<EmployeeLeaveHistoryDataTypes> => {
+  const response = await authFetch.get<PolicyEmployeeLeaveHistoryResponse>(
+    policyLeaveEndPoints.GET_EMPLOYEE_LEAVE_HISTORY(employeeId),
+    { params }
+  );
+  return response.data.results[0];
+};
+
+export const useGetPolicyEmployeeLeaveHistory = ({
+  employeeId,
+  selectedDates,
+  status,
+  type,
+  page,
+  size,
+  isExport,
+  enabled = true
+}: UseGetPolicyEmployeeLeaveHistoryArgs): UseQueryResult<EmployeeLeaveHistoryDataTypes> => {
+  const params = getPolicyEmployeeLeaveHistoryParams(
+    selectedDates,
+    status,
+    type,
+    page,
+    size,
+    isExport
+  );
+
+  return useQuery({
+    queryKey: policyLeaveQueryKeys.EMPLOYEE_LEAVE_HISTORY(employeeId, params),
+    queryFn: () => getPolicyEmployeeLeaveHistory(employeeId, params),
+    enabled
+  });
+};
+
 const getMyPolicyLeaveRequestsPage = async (
   queryParams: PolicyLeaveRequestQueryParams
 ): Promise<PolicyLeaveRequestPageType> => {
@@ -331,6 +403,12 @@ export const useApplyPolicyLeave = (
       });
       queryClient.invalidateQueries({
         queryKey: policyLeaveQueryKeys.ALL_EMPLOYEE_LEAVE_UTILIZATION()
+      });
+      queryClient.invalidateQueries({
+        queryKey: policyLeaveQueryKeys.ALL_TEAM_LEAVE_HISTORY()
+      });
+      queryClient.invalidateQueries({
+        queryKey: policyLeaveQueryKeys.ALL_EMPLOYEE_LEAVE_HISTORY()
       });
       onSuccess(data);
     },

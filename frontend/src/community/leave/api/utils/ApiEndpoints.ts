@@ -85,7 +85,11 @@ export const policyLeaveEndPoints = {
   GET_TEAM_LEAVE_TREND: `${moduleAPIPath.LEAVE}/policy-leave/analytics/team-leave-trend`,
   GET_LEAVE_TYPE_BREAKDOWN: `${moduleAPIPath.LEAVE}/policy-leave/analytics/leave-type-breakdown`,
   GET_EMPLOYEE_LEAVE_UTILIZATION: (employeeId: number): string =>
-    `${moduleAPIPath.LEAVE}/policy-leave/employees/${employeeId}/leave-utilization`
+    `${moduleAPIPath.LEAVE}/policy-leave/employees/${employeeId}/leave-utilization`,
+  GET_TEAM_LEAVE_HISTORY: (teamId: number): string =>
+    `${moduleAPIPath.LEAVE}/policy-leave/analytics/team-leave-history/${teamId}`,
+  GET_EMPLOYEE_LEAVE_HISTORY: (employeeId: number): string =>
+    `${moduleAPIPath.LEAVE}/policy-leave/analytics/employee-leave-history/${employeeId}`
 };
 
 export const policyLeaveReviewEndPoints = {

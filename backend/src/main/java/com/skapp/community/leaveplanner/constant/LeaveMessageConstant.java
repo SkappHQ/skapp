@@ -116,6 +116,8 @@ public enum LeaveMessageConstant implements MessageConstant {
 	// Policy leave errors
 	LEAVE_ERROR_POLICY_LEAVE_NOT_ENABLED("api.error.leave.policy-leave-not-enabled"),
 	LEAVE_ERROR_POLICY_LEAVE_POLICY_NOT_ASSIGNED("api.error.leave.policy-leave-policy-not-assigned"),
+	LEAVE_ERROR_EMPLOYEE_LEAVE_HISTORY_NOT_UNDER_SUPERVISION(
+			"api.error.leave.employee-leave-history-not-under-supervision"),
 	LEAVE_ERROR_POLICY_LEAVE_POLICY_INACTIVE("api.error.leave.policy-leave-policy-inactive"),
 	LEAVE_ERROR_POLICY_LEAVE_TYPE_INACTIVE("api.error.leave.policy-leave-type-inactive"),
 	LEAVE_ERROR_POLICY_LEAVE_INVALID_DATE_RANGE("api.error.leave.policy-leave-invalid-date-range"),

@@ -37,7 +37,8 @@ const getPolicyLeaveTypes = async (
 export const useGetPolicyLeaveTypes = ({
   isActive,
   page,
-  size
+  size,
+  enabled = true
 }: UseGetPolicyLeaveTypesArgs): UseQueryResult<PolicyLeaveTypesPage> => {
   return useQuery({
     queryKey: policyLeaveTypeQueryKeys.LIST(isActive, page, size),
@@ -46,7 +47,8 @@ export const useGetPolicyLeaveTypes = ({
         isActive,
         page,
         size
-      })
+      }),
+    enabled
   });
 };
 

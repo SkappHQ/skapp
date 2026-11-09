@@ -26,7 +26,17 @@ import {
 import { getTabIndex } from "~community/common/utils/keyboardUtils";
 import { useGetEmployeeLeaveHistory } from "~community/leave/api/LeaveAnalyticsApi";
 import { useGetLeaveRequestData } from "~community/leave/api/LeaveApi";
+import { useGetPolicyEmployeeLeaveHistory } from "~community/leave/api/PolicyLeaveApi";
+import { useGetPolicyLeaveTypes } from "~community/leave/api/PolicyLeaveTypeApi";
 import LeaveRequestMenu from "~community/leave/components/molecules/LeaveRequestMenu/LeaveRequestMenu";
+import PolicyLeaveReviewModalController from "~community/leave/components/organisms/PolicyLeaveReviewModalController/PolicyLeaveReviewModalController";
+import {
+  UNPAGINATED_PAGE,
+  UNPAGINATED_SIZE
+} from "~community/leave/constants/policyLeaveTypeConstants";
+import { USER_LEAVE_HISTORY_PAGE_SIZE } from "~community/leave/constants/stringConstants";
+import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
+import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 import { useLeaveStore } from "~community/leave/store/store";
 import {
   LeaveHistoryDataTypes,
@@ -123,7 +133,45 @@ const UserLeaveHistory: FC<Props> = ({
     supervisedData?.isPrimaryManager || supervisedData?.isSecondaryManager
   );
 
+  const { isLeavePoliciesEnabled, isLoading: isPolicyConfigLoading } =
+    useLeavePoliciesEnabled();
+
+  const isLegacyHistoryEnabled =
+    isAtLeastCoreTier && !isPolicyConfigLoading && !isLeavePoliciesEnabled;
+  const isPolicyHistoryEnabled =
+    isAtLeastCoreTier && !isPolicyConfigLoading && isLeavePoliciesEnabled;
+
+  const openPolicyManagerModal = usePolicyLeaveStore(
+    (state) => state.openManagerModal
+  );
+
+  const { data: policyLeaveTypes } = useGetPolicyLeaveTypes({
+    page: UNPAGINATED_PAGE,
+    size: UNPAGINATED_SIZE,
+    enabled: isPolicyHistoryEnabled
+  });
+
+  const leaveTypeButtons = useMemo(
+    () =>
+      isLeavePoliciesEnabled && isAtLeastCoreTier
+        ? (policyLeaveTypes?.items ?? []).map((leaveType) => ({
+            id: leaveType.id.toString(),
+            text: leaveType.name
+          }))
+        : requestedLeaveTypesPreProcessor(leaveTypesList),
+    [
+      isLeavePoliciesEnabled,
+      isAtLeastCoreTier,
+      policyLeaveTypes,
+      leaveTypesList
+    ]
+  );
+
   const handleRowClick = (leaveRequest: { id: number }) => {
+    if (isLeavePoliciesEnabled) {
+      openPolicyManagerModal(leaveRequest.id);
+      return;
+    }
     setIsManagerModal(false);
     setLeaveRequestData({} as leaveRequestRowDataTypes);
     setNewLeaveId(leaveRequest.id);
@@ -149,31 +197,67 @@ const UserLeaveHistory: FC<Props> = ({
 
   const filterId = filterBeOpen ? "filter-popper" : undefined;
 
-  const { data: leaveHistoryData, isLoading } = useGetEmployeeLeaveHistory(
-    employeeId,
-    selectedDates,
-    leaveRequestsFilter.status,
-    leaveRequestsFilter.type,
-    currentPage,
-    6,
-    false,
-    isAtLeastCoreTier
-  );
+  const { data: legacyLeaveHistoryData, isLoading: isLegacyHistoryLoading } =
+    useGetEmployeeLeaveHistory(
+      employeeId,
+      selectedDates,
+      leaveRequestsFilter.status,
+      leaveRequestsFilter.type,
+      currentPage,
+      USER_LEAVE_HISTORY_PAGE_SIZE,
+      false,
+      isLegacyHistoryEnabled
+    );
+
+  const { data: policyLeaveHistoryData, isLoading: isPolicyHistoryLoading } =
+    useGetPolicyEmployeeLeaveHistory({
+      employeeId,
+      selectedDates,
+      status: leaveRequestsFilter.status,
+      type: leaveRequestsFilter.type,
+      page: currentPage,
+      size: USER_LEAVE_HISTORY_PAGE_SIZE,
+      isExport: false,
+      enabled: isPolicyHistoryEnabled
+    });
+
+  const leaveHistoryData = isLeavePoliciesEnabled
+    ? policyLeaveHistoryData
+    : legacyLeaveHistoryData;
+
+  const isLoading =
+    isPolicyConfigLoading ||
+    (isLeavePoliciesEnabled ? isPolicyHistoryLoading : isLegacyHistoryLoading);
 
   const leaveHistory = useMemo(() => {
     return isAtLeastCoreTier ? leaveHistoryData : leaveHistoryMockData;
   }, [isAtLeastCoreTier, leaveHistoryData]);
 
-  const { data: exportHistoryData } = useGetEmployeeLeaveHistory(
+  const { data: legacyExportHistoryData } = useGetEmployeeLeaveHistory(
     employeeId,
     selectedDates,
     leaveRequestsFilter.status,
     leaveRequestsFilter.type,
     0,
-    6,
+    USER_LEAVE_HISTORY_PAGE_SIZE,
     true,
-    isAtLeastCoreTier
+    isLegacyHistoryEnabled
   );
+
+  const { data: policyExportHistoryData } = useGetPolicyEmployeeLeaveHistory({
+    employeeId,
+    selectedDates,
+    status: leaveRequestsFilter.status,
+    type: leaveRequestsFilter.type,
+    page: 0,
+    size: USER_LEAVE_HISTORY_PAGE_SIZE,
+    isExport: true,
+    enabled: isPolicyHistoryEnabled
+  });
+
+  const exportHistoryData = isLeavePoliciesEnabled
+    ? policyExportHistoryData
+    : legacyExportHistoryData;
 
   const columns = [
     {
@@ -492,7 +576,7 @@ const UserLeaveHistory: FC<Props> = ({
           menuType={MenuTypes.FILTER}
           id={filterId}
           open={filterOpen}
-          leaveTypeButtons={requestedLeaveTypesPreProcessor(leaveTypesList)}
+          leaveTypeButtons={leaveTypeButtons}
           onReset={onClickReset}
         />
       </Box>
@@ -507,7 +591,7 @@ const UserLeaveHistory: FC<Props> = ({
 
   useEffect(() => {
     setFilterArray(leaveRequestFilterOrder);
-    setLeaveRequestParams("size", "6");
+    setLeaveRequestParams("size", USER_LEAVE_HISTORY_PAGE_SIZE.toString());
     const startDate = getDateForPeriod("year", "start");
     const endDate = getDateForPeriod("year", "end");
 
@@ -596,7 +680,11 @@ const UserLeaveHistory: FC<Props> = ({
           }
         }}
       />
-      <LeaveManagerModalController />
+      {isLeavePoliciesEnabled ? (
+        <PolicyLeaveReviewModalController />
+      ) : (
+        <LeaveManagerModalController />
+      )}
     </Box>
   );
 };
