@@ -58,6 +58,7 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 	@Transactional
 	public ResponseEntityDto createTask(CrmActivityTaskCreateRequestDto requestDto) {
 		log.info("createTask: execution started");
+		validateActivityCreationLimit();
 
 		CrmValidations.validateTaskName(requestDto.getName());
 		CrmValidations.validateTaskDueAt(requestDto.getDueAt());
@@ -260,6 +261,9 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 
 		log.info("getRelatedTasks: execution ended");
 		return new ResponseEntityDto(false, tasks);
+	}
+
+	protected void validateActivityCreationLimit() {
 	}
 
 }

@@ -6,6 +6,8 @@ import com.skapp.community.crmplanner.model.CrmActivityMeetingContactId;
 import com.skapp.community.crmplanner.model.CrmActivityMeetingContactId_;
 import com.skapp.community.crmplanner.model.CrmActivityMeetingContact_;
 import com.skapp.community.crmplanner.model.CrmActivityMeeting_;
+import com.skapp.community.crmplanner.model.CrmActivityScheduledMeeting;
+import com.skapp.community.crmplanner.model.CrmActivityScheduledMeeting_;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.model.CrmContact;
@@ -59,6 +61,9 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 
 		Join<CrmActivityMeeting, CrmDeal> deal = meeting.join(CrmActivityMeeting_.deal, JoinType.LEFT);
 		deal.on(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+
+		Join<CrmActivityMeeting, CrmActivityScheduledMeeting> scheduledMeeting = meeting
+			.join(CrmActivityMeeting_.scheduledMeeting, JoinType.LEFT);
 
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.isFalse(meeting.get(CrmActivityMeeting_.isDeleted)));
@@ -126,10 +131,13 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 
 		query
 			.multiselect(meeting.get(CrmActivityMeeting_.id), meeting.get(CrmActivityMeeting_.name),
-					meeting.get(CrmActivityMeeting_.isScheduled), meeting.get(CrmActivityMeeting_.meetingVenue),
-					meeting.get(CrmActivityMeeting_.location), meeting.get(CrmActivityMeeting_.startAt),
+					meeting.get(CrmActivityMeeting_.isScheduled), meeting.get(CrmActivityMeeting_.startAt),
 					meeting.get(CrmActivityMeeting_.endAt), ownerId, deal.get(CrmDeal_.id), company.get(CrmCompany_.id),
-					meeting.get(CrmActivityMeeting_.meetingDate), meeting.get(CrmActivityMeeting_.comments))
+					meeting.get(CrmActivityMeeting_.meetingDate), meeting.get(CrmActivityMeeting_.comments),
+					scheduledMeeting.get(CrmActivityScheduledMeeting_.meetingVenue),
+					scheduledMeeting.get(CrmActivityScheduledMeeting_.location),
+					scheduledMeeting.get(CrmActivityScheduledMeeting_.locationAddress),
+					scheduledMeeting.get(CrmActivityScheduledMeeting_.locationUrl))
 			.where(predicates.toArray(new Predicate[0]))
 			.orderBy(orders);
 
@@ -143,15 +151,17 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 				dto.setId(row.get(0, Long.class));
 				dto.setName(row.get(1, String.class));
 				dto.setIsScheduled(row.get(2, Boolean.class));
-				dto.setMeetingVenue(row.get(3, CrmActivityMeetingVenue.class));
-				dto.setLocation(row.get(4, String.class));
-				dto.setStartAt(row.get(5, Instant.class));
-				dto.setEndAt(row.get(6, Instant.class));
-				dto.setOwnerId(row.get(7, Long.class));
-				dto.setDealId(row.get(8, Long.class));
-				dto.setCompanyId(row.get(9, Long.class));
-				dto.setMeetingDate(row.get(10, LocalDate.class));
-				dto.setComments(row.get(11, String.class));
+				dto.setStartAt(row.get(3, Instant.class));
+				dto.setEndAt(row.get(4, Instant.class));
+				dto.setOwnerId(row.get(5, Long.class));
+				dto.setDealId(row.get(6, Long.class));
+				dto.setCompanyId(row.get(7, Long.class));
+				dto.setMeetingDate(row.get(8, LocalDate.class));
+				dto.setComments(row.get(9, String.class));
+				dto.setMeetingVenue(row.get(10, CrmActivityMeetingVenue.class));
+				dto.setLocation(row.get(11, String.class));
+				dto.setLocationAddress(row.get(12, String.class));
+				dto.setLocationUrl(row.get(13, String.class));
 				return dto;
 			})
 			.toList();
@@ -189,6 +199,7 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 			.fetch(CrmActivityMeetingContact_.contact, JoinType.LEFT);
 		meeting.fetch(CrmActivityMeeting_.deal, JoinType.LEFT);
 		meeting.fetch(CrmActivityMeeting_.company, JoinType.LEFT);
+		meeting.fetch(CrmActivityMeeting_.scheduledMeeting, JoinType.LEFT);
 
 		query.select(meeting)
 			.where(cb.equal(meeting.get(CrmActivityMeeting_.id), id),
