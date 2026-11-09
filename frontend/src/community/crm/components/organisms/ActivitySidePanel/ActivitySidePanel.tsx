@@ -7,7 +7,10 @@ import {
 import { FC, ReactNode, useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import SidePanelActivityComments from "~community/crm/components/molecules/SidePanelActivityComments/SidePanelActivityComments";
+import SidePanelActivityTitle from "~community/crm/components/molecules/SidePanelActivityTitle/SidePanelActivityTitle";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
 import SidePanelHeaderSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
@@ -34,6 +37,9 @@ interface Props {
   comments?: string;
   deal?: CrmDealEntity;
   info?: ReactNode;
+  related?: ReactNode;
+  onTitleSave: (title: string) => void;
+  onCommentsSave: (comments: string) => void;
 }
 
 const ActivitySidePanel: FC<Props> = ({
@@ -52,7 +58,10 @@ const ActivitySidePanel: FC<Props> = ({
   title,
   comments,
   deal,
-  info
+  info,
+  related,
+  onTitleSave,
+  onCommentsSave
 }) => {
   const translateText = useTranslator(
     "crmModule",
@@ -73,23 +82,28 @@ const ActivitySidePanel: FC<Props> = ({
     setDeals(mergeDeals(deals, [deal]));
   }, [deal]);
 
+  const { isCrmSalesManager, isCrmAdmin, isSuperAdmin } = useSessionData();
+  const isDeleteAllowed = isCrmSalesManager || isCrmAdmin || isSuperAdmin;
+
+  const deleteItem: MenuItemProps = {
+    id: "delete",
+    label: deleteLabel,
+    icon: {
+      start: (
+        <DeleteButtonIcon
+          width="12px"
+          height="14px"
+          fill="var(--color-semantic-red-text)"
+        />
+      )
+    },
+    activeBehavior: "hover:bg-semantic-red-background text-semantic-red-text",
+    onClick: onDelete
+  };
+
   const actionItems: MenuItemProps[] = [
     ...menuItems,
-    {
-      id: "delete",
-      label: deleteLabel,
-      icon: {
-        start: (
-          <DeleteButtonIcon
-            width="12px"
-            height="14px"
-            fill="var(--color-semantic-red-text)"
-          />
-        )
-      },
-      activeBehavior: "hover:bg-semantic-red-background text-semantic-red-text",
-      onClick: onDelete
-    }
+    ...(isDeleteAllowed ? [deleteItem] : [])
   ];
 
   return (
@@ -103,7 +117,13 @@ const ActivitySidePanel: FC<Props> = ({
         ) : (
           <div className="flex items-center gap-4 pl-2">
             {icon}
-            <h2 className="h2 text-black">{title}</h2>
+            {title && (
+              <SidePanelActivityTitle
+                id={id}
+                title={title}
+                onSave={onTitleSave}
+              />
+            )}
           </div>
         )
       }
@@ -111,15 +131,17 @@ const ActivitySidePanel: FC<Props> = ({
         isLoading ? (
           <SidePanelHeaderActionsSkeleton />
         ) : (
-          <KebabMenu
-            id={`${id}-actions`}
-            menuItems={actionItems}
-            anchorButton={{ "aria-label": menuAriaLabel }}
-            className={{
-              anchorElement:
-                "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
-            }}
-          />
+          actionItems.length > 0 && (
+            <KebabMenu
+              id={`${id}-actions`}
+              menuItems={actionItems}
+              anchorButton={{ "aria-label": menuAriaLabel }}
+              className={{
+                anchorElement:
+                  "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
+              }}
+            />
+          )
         )
       }
     >
@@ -130,14 +152,13 @@ const ActivitySidePanel: FC<Props> = ({
       ) : (
         <div className="flex gap-6 pb-4">
           <div className="flex flex-col flex-1 gap-6 min-w-0">
-            <div className="flex flex-col gap-1">
-              <p className="subtitle1">
-                {commentsTitle ?? translateText(["comments"])}
-              </p>
-              <p className="subtitle3 max-h-24 overflow-y-auto break-words">
-                {comments ?? emptyCommentsText ?? translateText(["noComments"])}
-              </p>
-            </div>
+            <SidePanelActivityComments
+              id={id}
+              comments={comments}
+              onSave={onCommentsSave}
+              {...(commentsTitle && { title: commentsTitle })}
+              {...(emptyCommentsText && { emptyText: emptyCommentsText })}
+            />
 
             <div className="flex flex-col gap-3">
               <h2 className="h2">{translateText(["dealsTitle"])}</h2>
@@ -149,6 +170,8 @@ const ActivitySidePanel: FC<Props> = ({
                 emptyDescription={emptyDealsDescription}
               />
             </div>
+
+            {related}
           </div>
 
           <div className="w-[18.438rem] shrink-0">{info}</div>

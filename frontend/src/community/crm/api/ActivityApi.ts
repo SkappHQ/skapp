@@ -14,15 +14,19 @@ import { ErrorResponse } from "~community/common/types/CommonTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import {
   ActivityCallCreatePayload,
+  ActivityCallEditPayload,
   ActivityCallResponse,
   ActivityEmailCreatePayload,
+  ActivityEmailEditPayload,
   ActivityEmailResponse,
   ActivityFeedFilters,
   ActivityFeedResponse,
   ActivityListFilters,
   ActivityMeetingCreatePayload,
+  ActivityMeetingEditPayload,
   ActivityMeetingResponse,
   ActivityTaskCreatePayload,
+  ActivityTaskEditPayload,
   ActivityTaskResponse
 } from "~community/crm/activities/types/activityTypes";
 import { crmActivityEndpoints } from "~community/crm/api/utils/ApiEndpoints";
@@ -310,3 +314,222 @@ export const useGetEmailById = (
     enabled,
     refetchOnWindowFocus: false
   });
+
+const updateCall = async ({
+  id,
+  ...payload
+}: ActivityCallEditPayload): Promise<void> => {
+  await authFetch.patch(crmActivityEndpoints.EDIT_CALL(id), payload);
+};
+
+export const useUpdateCall = (
+  onError: (error: ErrorResponse) => void
+): UseMutationResult<void, ErrorResponse, ActivityCallEditPayload> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateCall,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL }),
+    onError
+  });
+};
+
+const updateMeeting = async ({
+  id,
+  ...payload
+}: ActivityMeetingEditPayload): Promise<void> => {
+  await authFetch.patch(crmActivityEndpoints.EDIT_MEETING(id), payload);
+};
+
+export const useUpdateMeeting = (
+  onError: (error: ErrorResponse) => void
+): UseMutationResult<void, ErrorResponse, ActivityMeetingEditPayload> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateMeeting,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL }),
+    onError
+  });
+};
+
+const updateActivityTask = async ({
+  id,
+  ...payload
+}: ActivityTaskEditPayload): Promise<void> => {
+  await authFetch.patch(crmActivityEndpoints.EDIT_TASK(id), payload);
+};
+
+export const useUpdateActivityTask = (
+  onError: (error: ErrorResponse) => void
+): UseMutationResult<void, ErrorResponse, ActivityTaskEditPayload> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateActivityTask,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL }),
+    onError
+  });
+};
+
+const deleteCall = async (id: number): Promise<void> => {
+  await authFetch.delete(crmActivityEndpoints.DELETE_CALL(id));
+};
+
+export const useDeleteCall = (
+  onSuccess: () => void,
+  onError: (error: ErrorResponse) => void
+): UseMutationResult<void, ErrorResponse, number> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteCall,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
+      onSuccess();
+    },
+    onError
+  });
+};
+
+const deleteMeeting = async (id: number): Promise<void> => {
+  await authFetch.delete(crmActivityEndpoints.DELETE_MEETING(id));
+};
+
+export const useDeleteMeeting = (
+  onSuccess: () => void,
+  onError: (error: ErrorResponse) => void
+): UseMutationResult<void, ErrorResponse, number> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteMeeting,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
+      onSuccess();
+    },
+    onError
+  });
+};
+
+const deleteActivityTask = async (id: number): Promise<void> => {
+  await authFetch.delete(crmActivityEndpoints.DELETE_TASK(id));
+};
+
+export const useDeleteActivityTask = (
+  onSuccess: () => void,
+  onError: (error: ErrorResponse) => void
+): UseMutationResult<void, ErrorResponse, number> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteActivityTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
+      onSuccess();
+    },
+    onError
+  });
+};
+
+const fetchRelatedCalls = async (
+  id: number
+): Promise<ActivityCallResponse[]> => {
+  const response = await authFetch.get(
+    crmActivityEndpoints.GET_RELATED_CALLS(id)
+  );
+  return response?.data?.results;
+};
+
+export const useGetRelatedCalls = (
+  id: number,
+  enabled: boolean
+): UseQueryResult<ActivityCallResponse[], AxiosError> =>
+  useQuery({
+    queryKey: crmActivityQueryKeys.RELATED_CALLS(id),
+    queryFn: () => fetchRelatedCalls(id),
+    enabled,
+    refetchOnWindowFocus: false
+  });
+
+const fetchRelatedMeetings = async (
+  id: number
+): Promise<ActivityMeetingResponse[]> => {
+  const response = await authFetch.get(
+    crmActivityEndpoints.GET_RELATED_MEETINGS(id)
+  );
+  return response?.data?.results;
+};
+
+export const useGetRelatedMeetings = (
+  id: number,
+  enabled: boolean
+): UseQueryResult<ActivityMeetingResponse[], AxiosError> =>
+  useQuery({
+    queryKey: crmActivityQueryKeys.RELATED_MEETINGS(id),
+    queryFn: () => fetchRelatedMeetings(id),
+    enabled,
+    refetchOnWindowFocus: false
+  });
+
+const fetchRelatedActivityTasks = async (
+  id: number
+): Promise<ActivityTaskResponse[]> => {
+  const response = await authFetch.get(
+    crmActivityEndpoints.GET_RELATED_TASKS(id)
+  );
+  return response?.data?.results;
+};
+
+export const useGetRelatedActivityTasks = (
+  id: number,
+  enabled: boolean
+): UseQueryResult<ActivityTaskResponse[], AxiosError> =>
+  useQuery({
+    queryKey: crmActivityQueryKeys.RELATED_TASKS(id),
+    queryFn: () => fetchRelatedActivityTasks(id),
+    enabled,
+    refetchOnWindowFocus: false
+  });
+const updateEmail = async ({
+  id,
+  ...payload
+}: ActivityEmailEditPayload): Promise<void> => {
+  await authFetch.patch(crmActivityEndpoints.EDIT_EMAIL(id), payload);
+};
+
+export const useUpdateEmail = (
+  onError: (error: ErrorResponse) => void
+): UseMutationResult<void, ErrorResponse, ActivityEmailEditPayload> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateEmail,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL }),
+    onError
+  });
+};
+
+const deleteEmail = async (id: number): Promise<void> => {
+  await authFetch.delete(crmActivityEndpoints.DELETE_EMAIL(id));
+};
+
+export const useDeleteEmail = (
+  onSuccess: () => void,
+  onError: (error: ErrorResponse) => void
+): UseMutationResult<void, ErrorResponse, number> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteEmail,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
+      onSuccess();
+    },
+    onError
+  });
+};

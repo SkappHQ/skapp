@@ -231,6 +231,18 @@
     "meetingSidePanel": {
       "kebabMenu": "Meeting actions",
       "attendees": "Meeting attendees"
+    },
+    "activitySidePanel": {
+      "title": "Activity title",
+      "editTitle": "Edit activity title",
+      "saveTitle": "Save activity title",
+      "discardTitle": "Discard activity title changes",
+      "comments": "Activity comments",
+      "editComments": "Edit activity comments",
+      "deleteModal": {
+        "confirm": "Delete activity",
+        "cancel": "Cancel deleting activity"
+      }
     }
   }
 }

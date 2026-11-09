@@ -12,6 +12,8 @@ interface Props {
   email?: CrmActivityEmailEntity;
   isOpen: boolean;
   onClose: () => void;
+  onTitleSave: (title: string) => void;
+  onCommentsSave: (comments: string) => void;
   onDelete: () => void;
   onCompanyClick: () => void;
 }
@@ -20,6 +22,8 @@ const EmailActivitySidePanel: FC<Props> = ({
   email,
   isOpen,
   onClose,
+  onTitleSave,
+  onCommentsSave,
   onDelete,
   onCompanyClick
 }) => {
@@ -42,6 +46,8 @@ const EmailActivitySidePanel: FC<Props> = ({
       isOpen={isOpen}
       isLoading={!email}
       onClose={onClose}
+      onTitleSave={onTitleSave}
+      onCommentsSave={onCommentsSave}
       icon={
         <EmailFilledIcon
           width={TASK_DETAIL_ICON_SIZE}
