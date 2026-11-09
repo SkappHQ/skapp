@@ -2,10 +2,10 @@ import { MeetingFilledIcon } from "@rootcodelabs/skapp-ui";
 import { FC, ReactNode } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import SidePanelMeetingInfo from "~community/crm/components/molecules/SidePanelMeetingInfo/SidePanelMeetingInfo";
+import { ActivityMeetingEditPayload } from "~community/crm/activities/types/activityTypes";
+import SidePanelMeetingEditForm from "~community/crm/components/molecules/SidePanelMeetingEditForm/SidePanelMeetingEditForm";
 import ActivitySidePanel from "~community/crm/components/organisms/ActivitySidePanel/ActivitySidePanel";
 import { TASK_DETAIL_ICON_SIZE } from "~community/crm/constants/taskConstants";
-import { useCrmStore } from "~community/crm/store/store";
 import { CrmMeetingEntity } from "~community/crm/types/CrmCommonTypes";
 
 interface Props {
@@ -16,7 +16,7 @@ interface Props {
   onTitleSave: (title: string) => void;
   onCommentsSave: (comments: string) => void;
   onDelete: () => void;
-  onCompanyClick: () => void;
+  onDetailsSave: (payload: Omit<ActivityMeetingEditPayload, "id">) => void;
 }
 
 const MeetingSidePanel: FC<Props> = ({
@@ -27,7 +27,7 @@ const MeetingSidePanel: FC<Props> = ({
   onTitleSave,
   onCommentsSave,
   onDelete,
-  onCompanyClick
+  onDetailsSave
 }) => {
   const translateText = useTranslator(
     "crmModule",
@@ -39,8 +39,6 @@ const MeetingSidePanel: FC<Props> = ({
     "activities",
     "meetingSidePanel"
   );
-
-  const owners = useCrmStore((state) => state.owners);
 
   return (
     <ActivitySidePanel
@@ -67,10 +65,10 @@ const MeetingSidePanel: FC<Props> = ({
         comments: meeting.comments,
         deal: meeting.deal,
         info: (
-          <SidePanelMeetingInfo
+          <SidePanelMeetingEditForm
+            key={meeting.id}
             meeting={meeting}
-            owner={owners[meeting.ownerId]}
-            onCompanyClick={onCompanyClick}
+            onSave={onDetailsSave}
           />
         )
       })}

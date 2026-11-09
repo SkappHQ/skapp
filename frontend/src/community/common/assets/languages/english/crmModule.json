@@ -881,7 +881,7 @@
       },
       "deleteModal": {
         "title": "Are you sure?",
-        "description": "This activity will be permanently deleted.",
+        "description": "This activity will be deleted and this can't be undone.",
         "buttons": {
           "confirm": "Delete",
           "cancel": "Cancel"
@@ -889,9 +889,8 @@
       },
       "toastMessages": {
         "deleteSuccessTitle": "Activity deleted successfully",
-        "deleteErrorTitle": "Failed to delete activity",
-        "saveErrorTitle": "Failed to save activity",
-        "errorDescription": "Something went wrong. Please try again."
+        "saveErrorDescription": "Failed to save activity",
+        "deleteErrorDescription": "Failed to delete activity"
       }
     },
     "meetingSidePanel": {

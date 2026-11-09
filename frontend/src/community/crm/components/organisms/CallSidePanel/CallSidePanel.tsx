@@ -2,10 +2,10 @@ import { PhoneFilledIcon } from "@rootcodelabs/skapp-ui";
 import { FC, ReactNode } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import SidePanelCallInfo from "~community/crm/components/molecules/SidePanelCallInfo/SidePanelCallInfo";
+import { ActivityCallEditPayload } from "~community/crm/activities/types/activityTypes";
+import SidePanelCallEditForm from "~community/crm/components/molecules/SidePanelCallEditForm/SidePanelCallEditForm";
 import ActivitySidePanel from "~community/crm/components/organisms/ActivitySidePanel/ActivitySidePanel";
 import { TASK_DETAIL_ICON_SIZE } from "~community/crm/constants/taskConstants";
-import { useCrmStore } from "~community/crm/store/store";
 import { CrmCallEntity } from "~community/crm/types/CrmCommonTypes";
 
 interface Props {
@@ -15,9 +15,8 @@ interface Props {
   related: ReactNode;
   onTitleSave: (title: string) => void;
   onCommentsSave: (comments: string) => void;
+  onDetailsSave: (payload: Omit<ActivityCallEditPayload, "id">) => void;
   onDelete: () => void;
-  onContactClick: () => void;
-  onCompanyClick: () => void;
 }
 
 const CallSidePanel: FC<Props> = ({
@@ -27,9 +26,8 @@ const CallSidePanel: FC<Props> = ({
   related,
   onTitleSave,
   onCommentsSave,
-  onDelete,
-  onContactClick,
-  onCompanyClick
+  onDetailsSave,
+  onDelete
 }) => {
   const translateText = useTranslator(
     "crmModule",
@@ -37,8 +35,6 @@ const CallSidePanel: FC<Props> = ({
     "callSidePanel"
   );
   const translateAria = useTranslator("crmAria", "activities", "callSidePanel");
-
-  const owners = useCrmStore((state) => state.owners);
 
   return (
     <ActivitySidePanel
@@ -65,11 +61,10 @@ const CallSidePanel: FC<Props> = ({
         comments: call.comments,
         deal: call.deal,
         info: (
-          <SidePanelCallInfo
+          <SidePanelCallEditForm
+            key={call.id}
             call={call}
-            owner={owners[call.ownerId]}
-            onContactClick={onContactClick}
-            onCompanyClick={onCompanyClick}
+            onSave={onDetailsSave}
           />
         )
       })}

@@ -24,9 +24,10 @@ import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
 
 interface Props {
   formik: FormikProps<CrmLogCallFormValues>;
+  isDetailsOnly?: boolean;
 }
 
-const LogCallModalForm: FC<Props> = ({ formik }) => {
+const LogCallModalForm: FC<Props> = ({ formik, isDetailsOnly = false }) => {
   const {
     values,
     errors,
@@ -67,20 +68,26 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
 
   return (
     <div className="flex flex-col gap-2 overflow-y-auto pr-1">
-      <InputField
-        id="log-call-subject-input"
-        name="subject"
-        value={values.subject}
-        label={translateText(["logActivity", "labels", "subject"])}
-        placeholder={translateText(["logActivity", "placeholders", "subject"])}
-        errorMessage={touched.subject ? errors.subject : ""}
-        state={touched.subject && errors.subject ? "error" : "default"}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        aria-label={translateAria(["subject"])}
-        fullWidth
-        required
-      />
+      {!isDetailsOnly && (
+        <InputField
+          id="log-call-subject-input"
+          name="subject"
+          value={values.subject}
+          label={translateText(["logActivity", "labels", "subject"])}
+          placeholder={translateText([
+            "logActivity",
+            "placeholders",
+            "subject"
+          ])}
+          errorMessage={touched.subject ? errors.subject : ""}
+          state={touched.subject && errors.subject ? "error" : "default"}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          aria-label={translateAria(["subject"])}
+          fullWidth
+          required
+        />
+      )}
 
       <div className="flex flex-row items-start gap-[0.625rem]">
         <div className="flex-1">
@@ -160,15 +167,21 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
         </div>
       </div>
 
-      <TextArea
-        name="comments"
-        value={values.comments}
-        label={translateText(["logActivity", "labels", "comments"])}
-        placeholder={translateText(["logActivity", "placeholders", "comments"])}
-        onChange={handleChange}
-        rows={2}
-        aria-label={translateAria(["comments"])}
-      />
+      {!isDetailsOnly && (
+        <TextArea
+          name="comments"
+          value={values.comments}
+          label={translateText(["logActivity", "labels", "comments"])}
+          placeholder={translateText([
+            "logActivity",
+            "placeholders",
+            "comments"
+          ])}
+          onChange={handleChange}
+          rows={2}
+          aria-label={translateAria(["comments"])}
+        />
+      )}
 
       <ActivityAssociations
         isForcedOpen={isDealClearedNoticeVisible || isDealMismatch}

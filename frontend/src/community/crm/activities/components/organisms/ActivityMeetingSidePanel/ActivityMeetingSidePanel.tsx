@@ -1,8 +1,6 @@
-import { useRouter } from "next/router";
 import { FC, useEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
-import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -28,7 +26,6 @@ interface Props {
 const ActivityMeetingSidePanel: FC<Props> = ({ meetingId, onAdd }) => {
   const translateText = useTranslator("crmModule");
   const { setToastMessage } = useToast();
-  const router = useRouter();
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -78,18 +75,18 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId, onAdd }) => {
   const handleSaveError = (): void => {
     setToastMessage({
       open: true,
-      toastType: ToastType.ERROR,
+      toastType: ToastType.WARN,
       title: translateText([
         "activities",
-        "activitySidePanel",
+        "logActivity",
         "toastMessages",
-        "saveErrorTitle"
+        "errorTitle"
       ]),
       description: translateText([
         "activities",
         "activitySidePanel",
         "toastMessages",
-        "errorDescription"
+        "saveErrorDescription"
       ]),
       isIcon: true
     });
@@ -114,18 +111,18 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId, onAdd }) => {
     setIsDeleteModalOpen(false);
     setToastMessage({
       open: true,
-      toastType: ToastType.ERROR,
+      toastType: ToastType.WARN,
       title: translateText([
         "activities",
-        "activitySidePanel",
+        "logActivity",
         "toastMessages",
-        "deleteErrorTitle"
+        "errorTitle"
       ]),
       description: translateText([
         "activities",
         "activitySidePanel",
         "toastMessages",
-        "errorDescription"
+        "deleteErrorDescription"
       ]),
       isIcon: true
     });
@@ -136,13 +133,6 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId, onAdd }) => {
     handleDeleteSuccess,
     handleDeleteError
   );
-
-  const handleCompanyClick = (): void => {
-    if (meeting?.company?.id) {
-      handleClose();
-      router.push(ROUTES.CRM.COMPANY_DETAIL(meeting.company.id));
-    }
-  };
 
   const handleAdd = (): void => {
     handleClose();
@@ -187,7 +177,9 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId, onAdd }) => {
           updateMeeting({ id: meetingId, comments })
         }
         onDelete={() => setIsDeleteModalOpen(true)}
-        onCompanyClick={handleCompanyClick}
+        onDetailsSave={(payload) =>
+          updateMeeting({ id: meetingId, ...payload })
+        }
       />
       <DeleteActivityModal
         isOpen={isDeleteModalOpen}

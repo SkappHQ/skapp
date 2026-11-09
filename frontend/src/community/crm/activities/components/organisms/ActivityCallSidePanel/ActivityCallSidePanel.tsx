@@ -1,8 +1,6 @@
-import { useRouter } from "next/router";
 import { FC, useEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
-import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -28,7 +26,6 @@ interface Props {
 const ActivityCallSidePanel: FC<Props> = ({ callId, onAdd }) => {
   const translateText = useTranslator("crmModule");
   const { setToastMessage } = useToast();
-  const router = useRouter();
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -74,18 +71,18 @@ const ActivityCallSidePanel: FC<Props> = ({ callId, onAdd }) => {
   const handleSaveError = (): void => {
     setToastMessage({
       open: true,
-      toastType: ToastType.ERROR,
+      toastType: ToastType.WARN,
       title: translateText([
         "activities",
-        "activitySidePanel",
+        "logActivity",
         "toastMessages",
-        "saveErrorTitle"
+        "errorTitle"
       ]),
       description: translateText([
         "activities",
         "activitySidePanel",
         "toastMessages",
-        "errorDescription"
+        "saveErrorDescription"
       ]),
       isIcon: true
     });
@@ -110,18 +107,18 @@ const ActivityCallSidePanel: FC<Props> = ({ callId, onAdd }) => {
     setIsDeleteModalOpen(false);
     setToastMessage({
       open: true,
-      toastType: ToastType.ERROR,
+      toastType: ToastType.WARN,
       title: translateText([
         "activities",
-        "activitySidePanel",
+        "logActivity",
         "toastMessages",
-        "deleteErrorTitle"
+        "errorTitle"
       ]),
       description: translateText([
         "activities",
         "activitySidePanel",
         "toastMessages",
-        "errorDescription"
+        "deleteErrorDescription"
       ]),
       isIcon: true
     });
@@ -132,23 +129,6 @@ const ActivityCallSidePanel: FC<Props> = ({ callId, onAdd }) => {
     handleDeleteSuccess,
     handleDeleteError
   );
-
-  const openRecord = (url: string): void => {
-    handleClose();
-    router.push(url);
-  };
-
-  const handleContactClick = (): void => {
-    if (call?.contact?.id) {
-      openRecord(ROUTES.CRM.CONTACT_DETAIL(call.contact.id));
-    }
-  };
-
-  const handleCompanyClick = (): void => {
-    if (call?.company?.id) {
-      openRecord(ROUTES.CRM.COMPANY_DETAIL(call.company.id));
-    }
-  };
 
   const handleAdd = (): void => {
     handleClose();
@@ -191,8 +171,7 @@ const ActivityCallSidePanel: FC<Props> = ({ callId, onAdd }) => {
         onTitleSave={(subject) => updateCall({ id: callId, subject })}
         onCommentsSave={(comments) => updateCall({ id: callId, comments })}
         onDelete={() => setIsDeleteModalOpen(true)}
-        onContactClick={handleContactClick}
-        onCompanyClick={handleCompanyClick}
+        onDetailsSave={(payload) => updateCall({ id: callId, ...payload })}
       />
       <DeleteActivityModal
         isOpen={isDeleteModalOpen}

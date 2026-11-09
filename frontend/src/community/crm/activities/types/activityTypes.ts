@@ -168,21 +168,39 @@ export interface ActivityTaskCreatePayload {
   notes: string;
 }
 
-export interface ActivityCallEditPayload {
+export interface ActivityLinkEditPayload {
+  ownerId?: number;
+  dealId?: number;
+  isDealRemoved?: boolean;
+  companyId?: number;
+  isCompanyRemoved?: boolean;
+}
+
+export interface ActivityCallEditPayload extends ActivityLinkEditPayload {
   id: number;
   subject?: string;
   comments?: string;
+  loggedAt?: string | null;
+  durationMinutes?: number | null;
+  contactId?: number;
 }
 
-export interface ActivityMeetingEditPayload {
+export interface ActivityMeetingEditPayload extends ActivityLinkEditPayload {
   id: number;
   name?: string;
   comments?: string;
+  meetingDate?: string | null;
+  startAt?: string | null;
+  endAt?: string | null;
+  contactIds?: number[];
 }
 
-export interface ActivityTaskEditPayload {
+export interface ActivityTaskEditPayload extends ActivityLinkEditPayload {
   id: number;
   name?: string;
   notes?: string;
   isCompleted?: boolean;
+  priority?: CrmPriorityEnum;
+  dueAt?: string | null;
+  contactId?: number;
 }
