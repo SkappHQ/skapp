@@ -25,7 +25,6 @@ import {
 import {
   EmployeePolicyBalanceType,
   EmployeePolicyBalancesResponse,
-  PolicyEmployeeLeaveUtilizationResponse,
   PolicyEmployeesOnLeaveResponse,
   PolicyEmployeesOnLeaveType,
   PolicyLeaveAvailabilityPayload,
@@ -197,11 +196,12 @@ export const useGetPolicyLeaveTypeBreakdown = (
 
 const getPolicyEmployeeLeaveUtilization = async (
   employeeId: number
-): Promise<PolicyEmployeeLeaveUtilizationResponse> => {
-  const response = await authFetch.get<PolicyEmployeeLeaveUtilizationResponse>(
-    policyLeaveEndPoints.GET_EMPLOYEE_LEAVE_UTILIZATION(employeeId),
-    { params: { leaveTypeIds: ALL_POLICY_LEAVE_TYPES_ID } }
-  );
+): Promise<APIResponseDataType<LeaveTypeBreakdownResponseType>> => {
+  const response = await authFetch.get<
+    APIResponseDataType<LeaveTypeBreakdownResponseType>
+  >(policyLeaveEndPoints.GET_EMPLOYEE_LEAVE_UTILIZATION(employeeId), {
+    params: { leaveTypeIds: ALL_POLICY_LEAVE_TYPES_ID }
+  });
   return response.data;
 };
 

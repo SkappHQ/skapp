@@ -6,7 +6,6 @@ import {
 } from "~community/common/types/CommonTypes";
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
 import { PolicyType } from "~community/leave/types/LeavePolicyTypes";
-import { LeaveTypeBreakdownResponseType } from "~community/leave/types/LeaveUtilizationTypes";
 import { HolidayDurationType } from "~community/people/types/HolidayTypes";
 
 export enum PolicyBalanceDisabledReason {
@@ -168,10 +167,6 @@ export interface PolicyEmployeesOnLeaveType {
 
 export interface PolicyEmployeesOnLeaveResponse {
   results: PolicyEmployeesOnLeaveType[];
-}
-
-export interface PolicyEmployeeLeaveUtilizationResponse {
-  results: LeaveTypeBreakdownResponseType[];
 }
 
 export interface PolicyLeaveUtilizationSourceParams {

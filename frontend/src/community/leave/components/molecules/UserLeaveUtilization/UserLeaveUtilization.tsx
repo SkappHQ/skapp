@@ -28,7 +28,7 @@ const UserLeaveUtilization: FC<Props> = ({ employeeId, leaveTypesList }) => {
 
   const legacyUtilization = GetLeaveUtilizationChartDetails(
     employeeId,
-    leaveTypesList as unknown as LeaveType[],
+    leaveTypesList,
     isLegacyEnabled
   );
 
