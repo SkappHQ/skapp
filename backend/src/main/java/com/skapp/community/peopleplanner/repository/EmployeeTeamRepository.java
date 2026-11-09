@@ -12,7 +12,8 @@ import java.util.List;
 @Repository
 public interface EmployeeTeamRepository {
 
-	Long countAvailableEmployeesByTeamIdsAndDate(List<Long> teamsFilter, LocalDate currentDate, Long currentUserId);
+	Long countAvailableEmployeesByTeamIdsAndDate(List<Long> teamsFilter, LocalDate currentDate, Long currentUserId,
+			boolean leavePoliciesEnabled);
 
 	List<Employee> getEmployeesByTeamIds(String searchKeyword, List<Long> teams, List<ClockInType> clockInType,
 			LocalDate date, Long currentUserId);
