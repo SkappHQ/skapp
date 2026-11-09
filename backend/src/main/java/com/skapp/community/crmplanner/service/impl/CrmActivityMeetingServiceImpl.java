@@ -316,7 +316,8 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 			crmActivityMeetingContactDao.saveAll(addedAttendees);
 		}
 
-		if (meeting.getDeal() != null && (requestDto.getDealId() != null || requestDto.getContactIds() != null)) {
+		if (meeting.getDeal() != null && !Boolean.TRUE.equals(meeting.getDeal().getIsDeleted())
+				&& (requestDto.getDealId() != null || requestDto.getContactIds() != null)) {
 			CrmValidations.validateMeetingDealMatchesAttendeeCompanies(meeting.getDeal(), attendeeContacts);
 		}
 
