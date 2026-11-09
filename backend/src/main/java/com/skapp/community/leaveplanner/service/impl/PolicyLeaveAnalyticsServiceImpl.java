@@ -32,6 +32,7 @@ import com.skapp.community.leaveplanner.service.LeaveCycleService;
 import com.skapp.community.leaveplanner.service.LeavePolicyService;
 import com.skapp.community.leaveplanner.service.PolicyLeaveAnalyticsService;
 import com.skapp.community.leaveplanner.type.EmployeeLeavePolicyStatus;
+import com.skapp.community.leaveplanner.type.LeavePolicyStatus;
 import com.skapp.community.leaveplanner.util.LeaveModuleUtil;
 import com.skapp.community.leaveplanner.util.PolicyLeaveAccrualUtil;
 import com.skapp.community.leaveplanner.util.PolicyLeaveAnalyticsUtil;
@@ -59,7 +60,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -170,10 +170,12 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 		if (PolicyLeaveAnalyticsUtil.isAllSelected(filterDto.getLeaveTypeIds(),
 				PolicyLeaveConstant.ALL_LEAVE_TYPES_ID)) {
 			durations = sumApprovedLeaveByTypeAndMonth(window, null, List.of(), null, employeeId);
-			leaveTypes = resolveEmployeeLeaveTypes(employeeId, durations.keySet());
+			leaveTypes = resolveEmployeeLeaveTypes(employeeId, durations.keySet(), window);
 		}
 		else {
-			leaveTypes = resolveTrendLeaveTypes(filterDto.getLeaveTypeIds());
+			leaveTypes = resolveTrendLeaveTypes(filterDto.getLeaveTypeIds()).stream()
+				.sorted(Comparator.comparing(PolicyLeaveType::getId))
+				.toList();
 			durations = sumApprovedLeaveByTypeAndMonth(window, leaveTypes.stream().map(PolicyLeaveType::getId).toList(),
 					List.of(), null, employeeId);
 		}
@@ -269,14 +271,17 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 		return leaveTypes.stream().filter(leaveType -> Boolean.TRUE.equals(leaveType.getIsActive())).toList();
 	}
 
-	private List<PolicyLeaveType> resolveEmployeeLeaveTypes(Long employeeId, Collection<Long> usedLeaveTypeIds) {
+	private List<PolicyLeaveType> resolveEmployeeLeaveTypes(Long employeeId, Collection<Long> usedLeaveTypeIds,
+			PolicyLeaveDateWindowDto window) {
 		Set<Long> leaveTypeIds = Stream
 			.concat(employeeLeavePolicyDao
 				.findByEmployeeIdAndStatusOrderByPolicyNameAsc(employeeId, EmployeeLeavePolicyStatus.ACTIVE)
 				.stream()
+				.filter(assignment -> !assignment.getEffectiveFrom().isAfter(window.getEndDate()))
 				.map(EmployeeLeavePolicy::getPolicy)
+				.filter(policy -> LeavePolicyStatus.ACTIVE.equals(policy.getStatus()))
 				.map(LeavePolicy::getLeaveType)
-				.filter(Objects::nonNull)
+				.filter(leaveType -> leaveType != null && Boolean.TRUE.equals(leaveType.getIsActive()))
 				.map(PolicyLeaveType::getId), usedLeaveTypeIds.stream())
 			.collect(Collectors.toSet());
 		if (leaveTypeIds.isEmpty()) {

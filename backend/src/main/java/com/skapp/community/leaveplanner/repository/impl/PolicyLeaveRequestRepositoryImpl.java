@@ -438,15 +438,12 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 			CriteriaQuery<?> criteriaQuery, Root<PolicyLeaveRequest> root, Join<PolicyLeaveRequest, Employee> employee,
 			LocalDate startDate, LocalDate endDate, List<Long> leaveTypeIds, List<Long> teamIds,
 			Long supervisorEmployeeId, Long employeeId) {
-		List<Predicate> predicates = buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee, teamIds,
-				supervisorEmployeeId);
+		List<Predicate> predicates = employeeId == null
+				? buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee, teamIds, supervisorEmployeeId)
+				: new ArrayList<>(List.of(criteriaBuilder.equal(employee.get(Employee_.employeeId), employeeId)));
 		predicates.add(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.status), LeaveRequestStatus.APPROVED));
 		predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get(PolicyLeaveRequest_.startDate), endDate));
 		predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), startDate));
-
-		if (employeeId != null) {
-			predicates.add(criteriaBuilder.equal(employee.get(Employee_.employeeId), employeeId));
-		}
 
 		if (!CollectionUtils.isEmpty(leaveTypeIds)) {
 			predicates.add(root.get(PolicyLeaveRequest_.policy)
