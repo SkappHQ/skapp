@@ -615,8 +615,6 @@
         "dueDate": "Due date"
       },
       "relatedTitle": "Related tasks",
-      "noRelatedTitle": "No tasks",
-      "noRelatedDescription": "No related tasks yet",
       "undo": "Undo"
     },
     "callSidePanel": {
@@ -626,9 +624,7 @@
         "contact": "Contact",
         "duration": "Duration"
       },
-      "relatedTitle": "Related calls",
-      "noRelatedTitle": "No calls",
-      "noRelatedDescription": "No related calls yet"
+      "relatedTitle": "Related calls"
     },
     "logEmail": {
       "modal": {
@@ -900,9 +896,7 @@
         "attendees": "Attendees",
         "endTime": "End time"
       },
-      "relatedTitle": "Related meetings",
-      "noRelatedTitle": "No meetings",
-      "noRelatedDescription": "No related meetings yet"
+      "relatedTitle": "Related meetings"
     }
   }
 }

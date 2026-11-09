@@ -23,10 +23,9 @@ import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 
 interface Props {
   taskId: number;
-  onAdd: () => void;
 }
 
-const ActivityTaskSidePanel: FC<Props> = ({ taskId, onAdd }) => {
+const ActivityTaskSidePanel: FC<Props> = ({ taskId }) => {
   const translateText = useTranslator("crmModule");
   const { setToastMessage } = useToast();
   const router = useRouter();
@@ -106,11 +105,6 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId, onAdd }) => {
     }
   };
 
-  const handleAdd = (): void => {
-    handleClose();
-    onAdd();
-  };
-
   const handleRelatedRowClick = (row: ActivityRow): void => {
     setSelectedActivityTaskId(row.id);
   };
@@ -122,7 +116,8 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId, onAdd }) => {
         isOpen={isOpen}
         onClose={handleClose}
         related={
-          relatedTasks && (
+          relatedTasks &&
+          relatedTasks.length > 0 && (
             <SidePanelRelatedActivities
               title={translateText([
                 "activities",
@@ -130,18 +125,6 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId, onAdd }) => {
                 "relatedTitle"
               ])}
               rows={(relatedTasks ?? []).map(toTaskRow)}
-              emptyTitle={translateText([
-                "activities",
-                "taskSidePanel",
-                "noRelatedTitle"
-              ])}
-              emptyDescription={translateText([
-                "activities",
-                "taskSidePanel",
-                "noRelatedDescription"
-              ])}
-              addLabel={translateText(["activities", "toolbar", "addTaskBtn"])}
-              onAdd={handleAdd}
               onRowClick={handleRelatedRowClick}
             />
           )
