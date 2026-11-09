@@ -41,18 +41,11 @@ const SidePanelActivityTitle: FC<Props> = ({ id, title, onSave }) => {
   const handleInputKeyDown: KeyboardEventHandler<HTMLInputElement> = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      save();
+      void save();
     }
     if (e.key === "Escape") {
       e.preventDefault();
       discard();
-    }
-  };
-
-  const handleTitleKeyDown: KeyboardEventHandler<HTMLDivElement> = (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      startEditing();
     }
   };
 
@@ -76,7 +69,7 @@ const SidePanelActivityTitle: FC<Props> = ({ id, title, onSave }) => {
           aria-label={translateAria(["saveTitle"])}
           isRounded
           icon={<TickIcon fill="var(--color-primary-accent)" />}
-          onClick={save}
+          onClick={() => void save()}
           variant="outlined"
         />
         <IconButton
@@ -90,17 +83,15 @@ const SidePanelActivityTitle: FC<Props> = ({ id, title, onSave }) => {
   }
 
   return (
-    <div
+    <button
       id={`${id}-title`}
-      role="button"
-      tabIndex={0}
-      className="h2 text-black flex-1 min-w-0 cursor-pointer hover:bg-secondary-background py-1 rounded"
+      type="button"
+      className="h2 text-black text-left flex-1 min-w-0 cursor-pointer hover:bg-secondary-background py-1 rounded bg-transparent border-none"
       aria-label={translateAria(["editTitle"])}
       onClick={startEditing}
-      onKeyDown={handleTitleKeyDown}
     >
       {title}
-    </div>
+    </button>
   );
 };
 

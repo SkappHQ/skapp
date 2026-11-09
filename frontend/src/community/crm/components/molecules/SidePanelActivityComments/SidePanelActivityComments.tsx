@@ -1,5 +1,5 @@
 import { ButtonV2, TextArea } from "@rootcodelabs/skapp-ui";
-import { FC, KeyboardEventHandler } from "react";
+import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useInlineEditForm } from "~community/crm/hooks/useInlineEditForm";
@@ -34,13 +34,6 @@ const SidePanelActivityComments: FC<Props> = ({ id, comments, onSave }) => {
     onSave
   });
 
-  const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      startEditing();
-    }
-  };
-
   return (
     <div className="flex flex-col gap-1">
       <p className="subtitle1">{translateText(["comments"])}</p>
@@ -64,23 +57,26 @@ const SidePanelActivityComments: FC<Props> = ({ id, comments, onSave }) => {
             >
               {translateText(["buttons", "discard"])}
             </ButtonV2>
-            <ButtonV2 onClick={save} size="md" type="button" variant="primary">
+            <ButtonV2
+              onClick={() => void save()}
+              size="md"
+              type="button"
+              variant="primary"
+            >
               {translateText(["buttons", "save"])}
             </ButtonV2>
           </div>
         </div>
       ) : (
-        <div
+        <button
           id={`${id}-comments`}
-          role="button"
-          tabIndex={0}
-          className="subtitle3 max-h-24 overflow-y-auto break-words cursor-pointer hover:bg-secondary-background rounded"
+          type="button"
+          className="subtitle3 max-h-24 overflow-y-auto break-words cursor-pointer hover:bg-secondary-background rounded text-left w-full bg-transparent border-none"
           aria-label={translateAria(["editComments"])}
           onClick={startEditing}
-          onKeyDown={handleKeyDown}
         >
-          {comments || translateText(["noComments"])}
-        </div>
+          {comments ? comments : translateText(["noComments"])}
+        </button>
       )}
     </div>
   );

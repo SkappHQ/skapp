@@ -113,11 +113,13 @@ const ActivitySidePanel: FC<Props> = ({
         ) : (
           <div className="flex items-center gap-4 pl-2">
             {icon}
-            <SidePanelActivityTitle
-              id={id}
-              title={title ?? ""}
-              onSave={onTitleSave}
-            />
+            {title && (
+              <SidePanelActivityTitle
+                id={id}
+                title={title}
+                onSave={onTitleSave}
+              />
+            )}
           </div>
         )
       }
