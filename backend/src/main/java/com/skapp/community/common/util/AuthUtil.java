@@ -4,11 +4,17 @@ import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.type.Role;
 import lombok.experimental.UtilityClass;
 
+import java.time.Instant;
+
 @UtilityClass
 public class AuthUtil {
 
 	public static String withRolePrefix(Role role) {
 		return AuthConstants.AUTH_ROLE + role.name();
+	}
+
+	public static Instant tempPasswordExpiryFromNow() {
+		return Instant.now().plus(AuthConstants.TEMP_PASSWORD_VALIDITY);
 	}
 
 }

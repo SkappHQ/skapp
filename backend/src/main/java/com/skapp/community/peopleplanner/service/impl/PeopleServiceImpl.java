@@ -712,6 +712,7 @@ public class PeopleServiceImpl implements PeopleService {
 			CommonModuleUtils.setIfExists(() -> encodedTempPassword, user::setTempPassword);
 			CommonModuleUtils.setIfExists(() -> encodedTempPassword, user::setPassword);
 			user.setIsPasswordChangedForTheFirstTime(false);
+			user.setTempPasswordExpiresAt(AuthUtil.tempPasswordExpiryFromNow());
 		}
 		else if (loginMethod == LoginMethod.GOOGLE) {
 			user.setIsPasswordChangedForTheFirstTime(true);
@@ -734,6 +735,7 @@ public class PeopleServiceImpl implements PeopleService {
 		String encodedTempPassword = passwordEncoder.encode(tempPassword);
 		CommonModuleUtils.setIfExists(() -> encodedTempPassword, user::setTempPassword);
 		CommonModuleUtils.setIfExists(() -> encodedTempPassword, user::setPassword);
+		user.setTempPasswordExpiresAt(AuthUtil.tempPasswordExpiryFromNow());
 
 		peopleEmailService.sendUserInvitationEmail(user, tempPassword);
 
@@ -2515,6 +2517,7 @@ public class PeopleServiceImpl implements PeopleService {
 			user.setTempPassword(encodedTempPassword);
 			user.setPassword(encodedTempPassword);
 			user.setIsPasswordChangedForTheFirstTime(false);
+			user.setTempPasswordExpiresAt(AuthUtil.tempPasswordExpiryFromNow());
 			user.setLoginMethod(LoginMethod.CREDENTIALS);
 		}
 

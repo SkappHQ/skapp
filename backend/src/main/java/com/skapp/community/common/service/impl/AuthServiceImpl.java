@@ -34,6 +34,7 @@ import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.common.type.NotificationSettingsType;
 import com.skapp.community.common.type.OrganizationConfigType;
 import com.skapp.community.common.type.Role;
+import com.skapp.community.common.util.AuthUtil;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.CookieUtil;
 import com.skapp.community.common.util.DateTimeUtils;
@@ -69,6 +70,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -176,8 +178,6 @@ public class AuthServiceImpl implements AuthService {
 			throw exception;
 		}
 
-		onSignInSuccess(signInRequestDto.getEmail());
-
 		Optional<User> optionalUser = userDao.findByEmail(signInRequestDto.getEmail());
 		if (optionalUser.isEmpty()) {
 			log.warn("performSignIn: User not found for email={}", signInRequestDto.getEmail());
@@ -195,6 +195,11 @@ public class AuthServiceImpl implements AuthService {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 		log.info("performSignIn: Employee found for userEmail={}", user.getEmail());
+
+		if (isTempPasswordPending(user)) {
+			redeemTempPassword(user, signInRequestDto.getEmail());
+		}
+		onSignInSuccess(signInRequestDto.getEmail());
 
 		EmployeeSignInResponseDto employeeSignInResponseDto = peopleMapper
 			.employeeToEmployeeSignInResponseDto(employee.get());
@@ -409,6 +414,7 @@ public class AuthServiceImpl implements AuthService {
 		user.setTempPassword(passwordEncoder.encode(tempPassword));
 		user.setPassword(passwordEncoder.encode(tempPassword));
 		user.setIsPasswordChangedForTheFirstTime(false);
+		user.setTempPasswordExpiresAt(AuthUtil.tempPasswordExpiryFromNow());
 		userDao.save(user);
 
 		SharePasswordResponseDto sharePasswordResponseDto = getSharePasswordResponseDto(user, user, tempPassword);
@@ -435,6 +441,7 @@ public class AuthServiceImpl implements AuthService {
 		user.setTempPassword(passwordEncoder.encode(tempPassword));
 		user.setPassword(passwordEncoder.encode(tempPassword));
 		user.setIsPasswordChangedForTheFirstTime(false);
+		user.setTempPasswordExpiresAt(AuthUtil.tempPasswordExpiryFromNow());
 		User savedUser = userDao.save(user);
 
 		log.info("resetAndSharePassword: User password reset and saved for  userEmail={}", user.getEmail());
@@ -667,6 +674,7 @@ public class AuthServiceImpl implements AuthService {
 		user.setPassword(encodedNewPassword);
 		user.setIsPasswordChangedForTheFirstTime(true);
 		user.setTempPassword(null);
+		user.setTempPasswordExpiresAt(null);
 		log.info("createNewPassword: execution ended={}", user.getEmail());
 
 		userDao.save(user);
@@ -708,6 +716,7 @@ public class AuthServiceImpl implements AuthService {
 				user.setTempPassword(passwordEncoder.encode(tempPassword));
 				user.setPassword(passwordEncoder.encode(tempPassword));
 				user.setIsPasswordChangedForTheFirstTime(false);
+				user.setTempPasswordExpiresAt(AuthUtil.tempPasswordExpiryFromNow());
 			}
 
 			userDao.save(user);
@@ -728,6 +737,22 @@ public class AuthServiceImpl implements AuthService {
 		errorLog.setStatus(BulkItemStatus.ERROR);
 		errorLog.setMessage(String.join("; ", errors));
 		return errorLog;
+	}
+
+	private boolean isTempPasswordPending(User user) {
+		return !Boolean.TRUE.equals(user.getIsPasswordChangedForTheFirstTime()) && user.getTempPassword() != null;
+	}
+
+	private void redeemTempPassword(User user, String signInEmail) {
+		Instant expiresAt = user.getTempPasswordExpiresAt();
+		if (expiresAt == null || !Instant.now().isBefore(expiresAt)) {
+			onSignInFailed(signInEmail);
+			throw new BadCredentialsException(
+					messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_INVALID_CREDENTIALS));
+		}
+
+		user.setTempPasswordExpiresAt(null);
+		userDao.save(user);
 	}
 
 	protected void onSignInFailed(String email) {

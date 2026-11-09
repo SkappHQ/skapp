@@ -18,6 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,6 +43,9 @@ public class User {
 
 	@Column(name = "temp_password")
 	private String tempPassword;
+
+	@Column(name = "temp_password_expires_at")
+	private Instant tempPasswordExpiresAt;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "login_method", columnDefinition = "varchar(255)")
