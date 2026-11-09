@@ -14,6 +14,7 @@ import com.skapp.community.crmplanner.type.CrmActivityCallSort;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
@@ -102,8 +103,11 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 			.where(predicates.toArray(new Predicate[0]))
 			.orderBy(orders);
 
-		int maxResults = params.getMaxResults() != null ? params.getMaxResults() : Integer.MAX_VALUE;
-		return entityManager.createQuery(query).setMaxResults(maxResults).getResultList();
+		TypedQuery<CrmActivityCallResponseDto> typedQuery = entityManager.createQuery(query);
+		if (params.getMaxResults() != null) {
+			typedQuery.setMaxResults(params.getMaxResults());
+		}
+		return typedQuery.getResultList();
 	}
 
 	@Override
