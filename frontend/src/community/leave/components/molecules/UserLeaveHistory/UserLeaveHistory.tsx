@@ -34,6 +34,7 @@ import {
   UNPAGINATED_PAGE,
   UNPAGINATED_SIZE
 } from "~community/leave/constants/policyLeaveTypeConstants";
+import { USER_LEAVE_HISTORY_PAGE_SIZE } from "~community/leave/constants/stringConstants";
 import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 import { useLeaveStore } from "~community/leave/store/store";
@@ -145,7 +146,6 @@ const UserLeaveHistory: FC<Props> = ({
   );
 
   const { data: policyLeaveTypes } = useGetPolicyLeaveTypes({
-    isActive: true,
     page: UNPAGINATED_PAGE,
     size: UNPAGINATED_SIZE,
     enabled: isPolicyHistoryEnabled
@@ -153,13 +153,18 @@ const UserLeaveHistory: FC<Props> = ({
 
   const leaveTypeButtons = useMemo(
     () =>
-      isLeavePoliciesEnabled
+      isLeavePoliciesEnabled && isAtLeastCoreTier
         ? (policyLeaveTypes?.items ?? []).map((leaveType) => ({
             id: leaveType.id.toString(),
             text: leaveType.name
           }))
         : requestedLeaveTypesPreProcessor(leaveTypesList),
-    [isLeavePoliciesEnabled, policyLeaveTypes, leaveTypesList]
+    [
+      isLeavePoliciesEnabled,
+      isAtLeastCoreTier,
+      policyLeaveTypes,
+      leaveTypesList
+    ]
   );
 
   const handleRowClick = (leaveRequest: { id: number }) => {
@@ -199,7 +204,7 @@ const UserLeaveHistory: FC<Props> = ({
       leaveRequestsFilter.status,
       leaveRequestsFilter.type,
       currentPage,
-      6,
+      USER_LEAVE_HISTORY_PAGE_SIZE,
       false,
       isLegacyHistoryEnabled
     );
@@ -211,7 +216,7 @@ const UserLeaveHistory: FC<Props> = ({
       leaveRequestsFilter.status,
       leaveRequestsFilter.type,
       currentPage,
-      6,
+      USER_LEAVE_HISTORY_PAGE_SIZE,
       false,
       isPolicyHistoryEnabled
     );
@@ -234,7 +239,7 @@ const UserLeaveHistory: FC<Props> = ({
     leaveRequestsFilter.status,
     leaveRequestsFilter.type,
     0,
-    6,
+    USER_LEAVE_HISTORY_PAGE_SIZE,
     true,
     isLegacyHistoryEnabled
   );
@@ -245,7 +250,7 @@ const UserLeaveHistory: FC<Props> = ({
     leaveRequestsFilter.status,
     leaveRequestsFilter.type,
     0,
-    6,
+    USER_LEAVE_HISTORY_PAGE_SIZE,
     true,
     isPolicyHistoryEnabled
   );
@@ -586,7 +591,7 @@ const UserLeaveHistory: FC<Props> = ({
 
   useEffect(() => {
     setFilterArray(leaveRequestFilterOrder);
-    setLeaveRequestParams("size", "6");
+    setLeaveRequestParams("size", USER_LEAVE_HISTORY_PAGE_SIZE.toString());
     const startDate = getDateForPeriod("year", "start");
     const endDate = getDateForPeriod("year", "end");
 

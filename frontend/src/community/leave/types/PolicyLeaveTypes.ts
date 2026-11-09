@@ -7,7 +7,6 @@ import {
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
 import { LeaveHistoryDataTypes as EmployeeLeaveHistoryDataTypes } from "~community/leave/types/AnalyticsTypes";
 import { PolicyType } from "~community/leave/types/LeavePolicyTypes";
-import { LeaveStore } from "~community/leave/types/StoreTypes";
 import { LeaveHistoryDataTypes as TeamLeaveHistoryDataTypes } from "~community/leave/types/TeamLeaveAnalyticsTypes";
 import { HolidayDurationType } from "~community/people/types/HolidayTypes";
 
@@ -222,8 +221,18 @@ export interface PolicyLeaveRequestQueryParams {
   policyId?: string;
 }
 
-export type PolicyTeamLeaveHistoryQueryParams =
-  LeaveStore["teamLeaveAnalyticParams"];
+export interface PolicyTeamLeaveHistoryQueryParams {
+  status?: string | null;
+  leaveType?: string | null;
+  startDate?: string;
+  endDate?: string;
+  teamMemberIds?: string | null;
+  page?: number;
+  sortKey?: SortKeyTypes;
+  sortOrder?: SortOrderTypes;
+  size?: string;
+  isExport?: boolean;
+}
 
 export interface PolicyEmployeeLeaveHistoryQueryParams {
   startDate: string;

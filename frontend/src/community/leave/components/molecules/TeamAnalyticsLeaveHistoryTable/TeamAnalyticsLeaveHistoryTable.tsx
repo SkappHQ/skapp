@@ -72,7 +72,6 @@ const TeamAnalyticsLeaveHistoryTable: FC<Props> = ({
     enabled: !isPolicyConfigLoading && !isLeavePoliciesEnabled
   });
   const { data: policyLeaveTypesData } = useGetPolicyLeaveTypes({
-    isActive: true,
     page: UNPAGINATED_PAGE,
     size: UNPAGINATED_SIZE,
     enabled: !isPolicyConfigLoading && isLeavePoliciesEnabled

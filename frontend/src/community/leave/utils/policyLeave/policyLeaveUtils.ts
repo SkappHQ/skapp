@@ -12,8 +12,8 @@ import {
 import { ToastProps } from "~community/common/types/ToastTypes";
 import {
   convertDateToFormat,
-  getOrdinalIndicator,
-  getStartAndEndOfYear
+  getDateForPeriod,
+  getOrdinalIndicator
 } from "~community/common/utils/dateTimeUtils";
 import { SUCCESS_TOAST_DURATION_MS } from "~community/leave/constants/stringConstants";
 import {
@@ -369,15 +369,13 @@ export const getPolicyEmployeeLeaveHistoryParams = (
   size: number,
   isExport: boolean
 ): PolicyEmployeeLeaveHistoryQueryParams => {
-  const { startDateOfYear, endDateOfYear } = getStartAndEndOfYear(DATE_FORMAT);
-
   return {
     startDate: selectedDates[0]
       ? convertDateToFormat(selectedDates[0], DATE_FORMAT)
-      : String(startDateOfYear),
+      : getDateForPeriod("year", "start"),
     endDate: selectedDates[1]
       ? convertDateToFormat(selectedDates[1], DATE_FORMAT)
-      : String(endDateOfYear),
+      : getDateForPeriod("year", "end"),
     leaveType: type?.length ? type.join(",") : undefined,
     status: status?.length ? status.join(",") : undefined,
     isExport,
