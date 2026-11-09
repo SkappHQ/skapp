@@ -7,6 +7,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.StringUtils;
+import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmActivityCall;
@@ -267,6 +268,39 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 
 		log.info("editCall: execution ended");
 		return new ResponseEntityDto(false, crmMapper.crmActivityCallToCrmActivityCallResponseDto(updatedCall));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getRelatedCalls(Long id) {
+		log.info("getRelatedCalls: execution started");
+
+		CrmActivityCall call = crmActivityCallDao.findCallById(id);
+		if (call == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_NOT_FOUND);
+		}
+
+		User currentUser = userService.getCurrentUser();
+		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, call.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_VIEW_DENIED);
+		}
+
+		CrmActivityCallFilterParams params = new CrmActivityCallFilterParams();
+		params.setSortKey(CrmActivityCallSort.LOGGED_AT);
+		params.setSortOrder(Sort.Direction.DESC);
+		params.setCurrentEmployeeId(currentUser.getEmployee().getEmployeeId());
+		params.setIsRestrictedToOwner(CrmUtil.isCrmSalesRepresentative(currentUser));
+		params.setRelatedContactIds(List.of(call.getContact().getId()));
+		if (call.getDeal() != null) {
+			params.setRelatedDealId(call.getDeal().getId());
+		}
+		params.setExcludedId(id);
+		params.setMaxResults(CrmConstants.RELATED_ACTIVITY_LIMIT);
+
+		List<CrmActivityCallResponseDto> calls = crmActivityCallDao.findCalls(params);
+
+		log.info("getRelatedCalls: execution ended");
+		return new ResponseEntityDto(false, calls);
 	}
 
 }

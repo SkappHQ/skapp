@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.repository.impl;
 
 import com.skapp.community.crmplanner.model.CrmActivityMeeting;
 import com.skapp.community.crmplanner.model.CrmActivityMeetingContact;
+import com.skapp.community.crmplanner.model.CrmActivityMeetingContactId;
 import com.skapp.community.crmplanner.model.CrmActivityMeetingContactId_;
 import com.skapp.community.crmplanner.model.CrmActivityMeetingContact_;
 import com.skapp.community.crmplanner.model.CrmActivityMeeting_;
@@ -62,6 +63,23 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.isFalse(meeting.get(CrmActivityMeeting_.isDeleted)));
 
+		if (params.getRelatedContactIds() != null) {
+			Subquery<Long> attendeeMatch = query.subquery(Long.class);
+			Root<CrmActivityMeetingContact> attendee = attendeeMatch.from(CrmActivityMeetingContact.class);
+			Path<CrmActivityMeetingContactId> attendeeId = attendee.get(CrmActivityMeetingContact_.id);
+			attendeeMatch.select(attendeeId.get(CrmActivityMeetingContactId_.meetingId))
+				.where(cb.equal(attendeeId.get(CrmActivityMeetingContactId_.meetingId),
+						meeting.get(CrmActivityMeeting_.id)),
+						attendeeId.get(CrmActivityMeetingContactId_.contactId).in(params.getRelatedContactIds()));
+			predicates.add(cb.exists(attendeeMatch));
+		}
+		if (params.getRelatedDealId() != null) {
+			predicates.add(cb.equal(meeting.get(CrmActivityMeeting_.deal).get(CrmDeal_.id), params.getRelatedDealId()));
+		}
+		if (params.getExcludedId() != null) {
+			predicates.add(cb.notEqual(meeting.get(CrmActivityMeeting_.id), params.getExcludedId()));
+		}
+
 		if (Boolean.TRUE.equals(params.getIsRestrictedToOwner())) {
 			predicates.add(cb.equal(ownerId, params.getCurrentEmployeeId()));
 		}
@@ -115,7 +133,9 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 			.where(predicates.toArray(new Predicate[0]))
 			.orderBy(orders);
 
+		int maxResults = params.getMaxResults() != null ? params.getMaxResults() : Integer.MAX_VALUE;
 		List<CrmActivityMeetingResponseDto> meetings = entityManager.createQuery(query)
+			.setMaxResults(maxResults)
 			.getResultList()
 			.stream()
 			.map(row -> {

@@ -61,6 +61,15 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 			predicates.add(cb.lessThan(loggedAt, params.getRangeEnd()));
 		}
 		predicates.add(cb.isFalse(call.get(CrmActivityCall_.isDeleted)));
+		if (params.getRelatedContactIds() != null) {
+			predicates.add(call.get(CrmActivityCall_.contact).get(CrmContact_.id).in(params.getRelatedContactIds()));
+		}
+		if (params.getRelatedDealId() != null) {
+			predicates.add(cb.equal(call.get(CrmActivityCall_.deal).get(CrmDeal_.id), params.getRelatedDealId()));
+		}
+		if (params.getExcludedId() != null) {
+			predicates.add(cb.notEqual(call.get(CrmActivityCall_.id), params.getExcludedId()));
+		}
 
 		if (params.getSearchPattern() != null) {
 			Join<CrmActivityCall, CrmContact> contact = call.join(CrmActivityCall_.contact, JoinType.LEFT);
@@ -93,7 +102,8 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 			.where(predicates.toArray(new Predicate[0]))
 			.orderBy(orders);
 
-		return entityManager.createQuery(query).getResultList();
+		int maxResults = params.getMaxResults() != null ? params.getMaxResults() : Integer.MAX_VALUE;
+		return entityManager.createQuery(query).setMaxResults(maxResults).getResultList();
 	}
 
 	@Override

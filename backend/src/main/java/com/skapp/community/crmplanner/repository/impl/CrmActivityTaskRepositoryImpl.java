@@ -63,6 +63,15 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 			predicates.add(cb.lessThan(dueAt, params.getRangeEnd()));
 		}
 		predicates.add(cb.isFalse(task.get(CrmActivityTask_.isDeleted)));
+		if (params.getRelatedContactIds() != null) {
+			predicates.add(task.get(CrmActivityTask_.contact).get(CrmContact_.id).in(params.getRelatedContactIds()));
+		}
+		if (params.getRelatedDealId() != null) {
+			predicates.add(cb.equal(task.get(CrmActivityTask_.deal).get(CrmDeal_.id), params.getRelatedDealId()));
+		}
+		if (params.getExcludedId() != null) {
+			predicates.add(cb.notEqual(task.get(CrmActivityTask_.id), params.getExcludedId()));
+		}
 
 		if (params.getSearchPattern() != null) {
 			Join<CrmActivityTask, CrmContact> contact = task.join(CrmActivityTask_.contact, JoinType.LEFT);
@@ -97,7 +106,8 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 			.where(predicates.toArray(new Predicate[0]))
 			.orderBy(orders);
 
-		return entityManager.createQuery(query).getResultList().stream().map(row -> {
+		int maxResults = params.getMaxResults() != null ? params.getMaxResults() : Integer.MAX_VALUE;
+		return entityManager.createQuery(query).setMaxResults(maxResults).getResultList().stream().map(row -> {
 			CrmActivityTaskResponseDto dto = new CrmActivityTaskResponseDto();
 			dto.setId(row.get(0, Long.class));
 			dto.setName(row.get(1, String.class));
