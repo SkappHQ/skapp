@@ -1,6 +1,7 @@
 package com.skapp.community.crmplanner.mapper;
 
 import com.skapp.community.crmplanner.model.CrmActivityCall;
+import com.skapp.community.crmplanner.model.CrmActivityEmail;
 import com.skapp.community.crmplanner.model.CrmActivityMeeting;
 import com.skapp.community.crmplanner.model.CrmActivityMeetingContact;
 import com.skapp.community.crmplanner.model.CrmActivityTask;
@@ -14,7 +15,7 @@ import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityCallDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityCallResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmActivityMeetingDetailResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmActivityEmailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityMeetingResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityTaskResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyLookupResponseDto;
@@ -121,6 +122,10 @@ public interface CrmMapper {
 	@Mapping(target = "ownerId", source = "owner.employeeId")
 	@Mapping(target = "dealId", source = "deal.id")
 	@Mapping(target = "companyId", source = "company.id")
+	@Mapping(target = "meetingVenue", source = "scheduledMeeting.meetingVenue")
+	@Mapping(target = "location", source = "scheduledMeeting.location")
+	@Mapping(target = "locationAddress", source = "scheduledMeeting.locationAddress")
+	@Mapping(target = "locationUrl", source = "scheduledMeeting.locationUrl")
 	CrmActivityMeetingResponseDto crmActivityMeetingToCrmActivityMeetingResponseDto(CrmActivityMeeting meeting);
 
 	@Mapping(target = "id", source = "contact.id")
@@ -130,7 +135,8 @@ public interface CrmMapper {
 			CrmActivityMeetingContact attendee);
 
 	@Mapping(target = "ownerId", source = "owner.employeeId")
-	CrmActivityMeetingDetailResponseDto crmActivityMeetingToCrmActivityMeetingDetailResponseDto(
-			CrmActivityMeeting meeting);
+	@Mapping(target = "dealId", source = "deal.id")
+	@Mapping(target = "companyId", source = "company.id")
+	CrmActivityEmailResponseDto crmActivityEmailToCrmActivityEmailResponseDto(CrmActivityEmail email);
 
 }

@@ -152,6 +152,7 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 	@Transactional
 	public ResponseEntityDto createCall(CrmActivityCallCreateRequestDto requestDto) {
 		log.info("createCall: execution started");
+		validateActivityCreationLimit();
 
 		CrmValidations.validateCallSubject(requestDto.getSubject());
 		CrmValidations.validateCallContactId(requestDto.getContactId());
@@ -238,7 +239,10 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 			call.setContact(contact);
 		}
 
-		if (requestDto.getDealId() != null) {
+		if (Boolean.TRUE.equals(requestDto.getIsDealRemoved())) {
+			call.setDeal(null);
+		}
+		else if (requestDto.getDealId() != null) {
 			CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 			if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, deal.getOwner().getEmployeeId())) {
@@ -247,7 +251,10 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 			call.setDeal(deal);
 		}
 
-		if (requestDto.getCompanyId() != null) {
+		if (Boolean.TRUE.equals(requestDto.getIsCompanyRemoved())) {
+			call.setCompany(null);
+		}
+		else if (requestDto.getCompanyId() != null) {
 			CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
 			call.setCompany(company);
@@ -261,6 +268,9 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 
 		log.info("editCall: execution ended");
 		return new ResponseEntityDto(false, crmMapper.crmActivityCallToCrmActivityCallResponseDto(updatedCall));
+	}
+
+	protected void validateActivityCreationLimit() {
 	}
 
 }

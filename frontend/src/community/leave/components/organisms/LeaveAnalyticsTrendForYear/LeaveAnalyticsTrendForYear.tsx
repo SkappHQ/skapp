@@ -17,6 +17,7 @@ import LeaveTypeBreakdownButtons from "../../molecules/LeaveTypeBreakdownButtons
 
 interface Props {
   isLoading: boolean;
+  error?: Error | null;
   data: LeaveTrendReturnTypes;
   chartFilters: SelectedFiltersTypes;
   setChartFilters: (value: SelectedFiltersTypes) => void;
@@ -25,6 +26,7 @@ interface Props {
 const LeaveAnalyticsTrendForYear: FC<Props> = ({
   data,
   isLoading,
+  error,
   chartFilters,
   setChartFilters
 }) => {
@@ -125,12 +127,16 @@ const LeaveAnalyticsTrendForYear: FC<Props> = ({
               />
             )}
           </Stack>
-          <LeaveTrendForYear
-            leaveTrendData={data}
-            labels={getLabels}
-            selectedValues={chartFilters}
-            selectedToggleCount={getSelectedToggleCount}
-          />
+          {error ? (
+            <Typography>{translateText(["somethingWentWrong"])}</Typography>
+          ) : (
+            <LeaveTrendForYear
+              leaveTrendData={data}
+              labels={getLabels}
+              selectedValues={chartFilters}
+              selectedToggleCount={getSelectedToggleCount}
+            />
+          )}
         </>
       ) : (
         <AnalyticGraphSkeleton />

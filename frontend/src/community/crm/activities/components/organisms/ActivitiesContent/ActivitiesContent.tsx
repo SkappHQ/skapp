@@ -10,6 +10,7 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import ActivityCallSidePanel from "~community/crm/activities/components/organisms/ActivityCallSidePanel/ActivityCallSidePanel";
 import ActivityFeed from "~community/crm/activities/components/organisms/ActivityFeed/ActivityFeed";
 import ActivityMeetingSidePanel from "~community/crm/activities/components/organisms/ActivityMeetingSidePanel/ActivityMeetingSidePanel";
+import ActivityTaskSidePanel from "~community/crm/activities/components/organisms/ActivityTaskSidePanel/ActivityTaskSidePanel";
 import ActivityToolbar from "~community/crm/activities/components/organisms/ActivityToolbar/ActivityToolbar";
 import { DEFAULT_ACTIVITY_TAB } from "~community/crm/activities/constants/activityConstants";
 import {
@@ -39,6 +40,7 @@ import {
 import { useGetDealsByIds } from "~community/crm/api/DealApi";
 import AddActivityTaskModalContent from "~community/crm/components/molecules/AddActivityTaskModalContent/AddActivityTaskModalContent";
 import LogCallModalContent from "~community/crm/components/molecules/LogCallModalContent/LogCallModalContent";
+import LogEmailModalContent from "~community/crm/components/molecules/LogEmailModalContent/LogEmailModalContent";
 import LogMeetingModalContent from "~community/crm/components/molecules/LogMeetingModalContent/LogMeetingModalContent";
 import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
@@ -65,6 +67,7 @@ const ActivitiesContent: FC = () => {
   const [isLogCallModalOpen, setIsLogCallModalOpen] = useState(false);
   const [isLogMeetingModalOpen, setIsLogMeetingModalOpen] = useState(false);
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
+  const [isLogEmailModalOpen, setIsLogEmailModalOpen] = useState(false);
 
   const isAllTab = activeTab === ActivityTab.ALL;
 
@@ -73,10 +76,12 @@ const ActivitiesContent: FC = () => {
     deals,
     selectedCallId,
     selectedMeetingId,
+    selectedActivityTaskId,
     isCrmSidePanelOpen,
     setDeals,
     setSelectedCallId,
     setSelectedMeetingId,
+    setSelectedActivityTaskId,
     openCrmSidePanel
   } = useCrmStore(
     useShallow((store) => ({
@@ -84,10 +89,12 @@ const ActivitiesContent: FC = () => {
       deals: store.deals,
       selectedCallId: store.selectedCallId,
       selectedMeetingId: store.selectedMeetingId,
+      selectedActivityTaskId: store.selectedActivityTaskId,
       isCrmSidePanelOpen: store.isCrmSidePanelOpen,
       setDeals: store.setDeals,
       setSelectedCallId: store.setSelectedCallId,
       setSelectedMeetingId: store.setSelectedMeetingId,
+      setSelectedActivityTaskId: store.setSelectedActivityTaskId,
       openCrmSidePanel: store.openCrmSidePanel
     }))
   );
@@ -195,6 +202,10 @@ const ActivitiesContent: FC = () => {
         setSelectedMeetingId(row.id);
         openCrmSidePanel(CrmSidePanelTypes.MEETING_SIDE_PANEL);
         break;
+      case ActivityType.TASK:
+        setSelectedActivityTaskId(row.id);
+        openCrmSidePanel(CrmSidePanelTypes.ACTIVITY_TASK_SIDE_PANEL);
+        break;
       default:
         break;
     }
@@ -258,7 +269,10 @@ const ActivitiesContent: FC = () => {
       labelKey: "logMeetingBtn",
       onClick: () => setIsLogMeetingModalOpen(true)
     },
-    [ActivityTab.EMAILS]: null
+    [ActivityTab.EMAILS]: {
+      labelKey: "logEmailBtn",
+      onClick: () => setIsLogEmailModalOpen(true)
+    }
   };
 
   const toolbarAction = toolbarActions[activeTab];
@@ -307,6 +321,9 @@ const ActivitiesContent: FC = () => {
           onClose={() => setIsAddTaskModalOpen(false)}
         />
       )}
+      {isLogEmailModalOpen && (
+        <LogEmailModalContent onClose={() => setIsLogEmailModalOpen(false)} />
+      )}
       <ActivityFeed
         activeTab={activeTab}
         pages={pages}
@@ -330,6 +347,11 @@ const ActivitiesContent: FC = () => {
       {selectedMeetingId !== null && (
         <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
           <ActivityMeetingSidePanel meetingId={selectedMeetingId} />
+        </SidePanelWrapper>
+      )}
+      {selectedActivityTaskId !== null && (
+        <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
+          <ActivityTaskSidePanel taskId={selectedActivityTaskId} />
         </SidePanelWrapper>
       )}
     </div>

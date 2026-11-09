@@ -143,6 +143,9 @@
         "save": "Save task"
       }
     },
+    "taskSidePanel": {
+      "kebabMenu": "Task actions"
+    },
     "callSidePanel": {
       "kebabMenu": "Call actions"
     },
@@ -154,7 +157,6 @@
         "to": "Email to recipients",
         "cc": "Email cc recipients",
         "bcc": "Email bcc recipients",
-        "removeRecipient": "Remove recipient {{name}}",
         "subject": "Email subject",
         "description": "Email description",
         "deal": "Email deal",

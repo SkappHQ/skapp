@@ -287,7 +287,11 @@ export const getChangedContactFields = (
   }
 
   if (currentValues.companyId !== initialValues.companyId) {
-    changedFields.companyId = currentValues.companyId;
+    if (currentValues.companyId == null) {
+      changedFields.isCompanyRemoved = true;
+    } else {
+      changedFields.companyId = currentValues.companyId;
+    }
   }
 
   if (currentValues.ownerId !== initialValues.ownerId) {

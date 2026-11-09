@@ -70,7 +70,7 @@ import {
   hasPolicyLeaveFormErrors,
   mapApplyErrorKeyToToastType,
   selectHasUnsavedChanges,
-  toLeaveStatus,
+  toMyLeaveRequestPayloads,
   toResourceAvailabilityPayloads
 } from "~community/leave/utils/policyLeave/policyLeaveUtils";
 import { useGetAllHolidays } from "~community/people/api/HolidayApi";
@@ -265,35 +265,10 @@ const ApplyPolicyLeaveModal = () => {
 
   const blockingLeaveRequests: MyLeaveRequestPayloadType[] = useMemo(
     () =>
-      [
+      toMyLeaveRequestPayloads([
         ...(requestsInStartYear ?? []),
         ...(spansTwoYears ? (requestsInEndYear ?? []) : [])
-      ].flatMap((request) => {
-        const status = toLeaveStatus(request.status);
-
-        if (!status) {
-          return [];
-        }
-
-        return [
-          {
-            leaveRequestId: request.leaveRequestId,
-            startDate: request.startDate,
-            endDate: request.endDate,
-            leaveType: {
-              typeId: request.leaveType.id,
-              name: request.leaveType.name,
-              emojiCode: request.leaveType.emojiCode,
-              colorCode: request.leaveType.colorCode
-            },
-            leaveState: request.leaveState,
-            status,
-            isViewed: request.isViewed,
-            durationDays: request.durationDays,
-            requestDesc: request.requestDesc ?? ""
-          }
-        ];
-      }),
+      ]),
     [requestsInStartYear, requestsInEndYear, spansTwoYears]
   );
 

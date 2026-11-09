@@ -50,13 +50,13 @@ describe("getChangedCompanyFields", () => {
     expect(result).toEqual({ industryId: 2 });
   });
 
-  it("includes a cleared industry id as null", () => {
+  it("marks a cleared industry as removed", () => {
     const result = getChangedCompanyFields(
       { name: "Acme Corp", industryId: 1 },
       { name: "Acme Corp", industryId: null }
     );
 
-    expect(result).toEqual({ industryId: null });
+    expect(result).toEqual({ isIndustryRemoved: true });
   });
 
   it("includes a new industry name", () => {

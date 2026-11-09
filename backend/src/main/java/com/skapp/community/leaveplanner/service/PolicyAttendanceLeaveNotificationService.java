@@ -1,0 +1,26 @@
+package com.skapp.community.leaveplanner.service;
+
+import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
+
+public interface PolicyAttendanceLeaveNotificationService {
+
+	void sendNonWorkingDaySingleDayPendingLeaveRequestCancelEmployeeNotification(PolicyLeaveRequest policyLeaveRequest);
+
+	void sendNonWorkingDaySingleDayPendingLeaveRequestCancelManagerNotification(PolicyLeaveRequest policyLeaveRequest);
+
+	void sendNonWorkingDayMultiDayPendingLeaveRequestCancelEmployeeNotification(PolicyLeaveRequest policyLeaveRequest);
+
+	void sendNonWorkingDayMultiDayPendingLeaveRequestCancelManagerNotification(PolicyLeaveRequest policyLeaveRequest);
+
+	void sendNonWorkingDaySingleDayApprovedLeaveRequestRevokedEmployeeNotification(
+			PolicyLeaveRequest policyLeaveRequest);
+
+	void sendNonWorkingDaySingleDayApprovedLeaveRequestRevokedManagerNotification(
+			PolicyLeaveRequest policyLeaveRequest);
+
+	void sendNonWorkingDayMultiDayApprovedLeaveRequestRevokedEmployeeNotification(
+			PolicyLeaveRequest policyLeaveRequest);
+
+	void sendNonWorkingDayMultiDayApprovedLeaveRequestRevokedManagerNotification(PolicyLeaveRequest policyLeaveRequest);
+
+}

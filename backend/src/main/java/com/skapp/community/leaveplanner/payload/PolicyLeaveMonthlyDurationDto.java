@@ -1,0 +1,22 @@
+package com.skapp.community.leaveplanner.payload;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class PolicyLeaveMonthlyDurationDto {
+
+	private Long leaveTypeId;
+
+	private Integer year;
+
+	private Integer month;
+
+	private Double durationDays;
+
+}

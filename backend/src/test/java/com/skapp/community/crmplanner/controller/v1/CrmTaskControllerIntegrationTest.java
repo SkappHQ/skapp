@@ -6,7 +6,6 @@ import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
-import org.openapitools.jackson.nullable.JsonNullable;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import com.skapp.community.crmplanner.model.CrmCompany;
@@ -1208,7 +1207,7 @@ class CrmTaskControllerIntegrationTest {
 	void editTask_UpdateNotes_ReturnsOk() throws Exception {
 		CrmTask task = savedTask();
 		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
-		dto.setNotes(JsonNullable.of("Updated notes content"));
+		dto.setNotes("Updated notes content");
 
 		performEditRequest(task.getId(), dto).andDo(print())
 			.andExpect(status().isOk())
@@ -1264,7 +1263,7 @@ class CrmTaskControllerIntegrationTest {
 	void editTask_NotesTooLong_ReturnsBadRequest() throws Exception {
 		CrmTask task = savedTask();
 		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
-		dto.setNotes(JsonNullable.of("a".repeat(1001)));
+		dto.setNotes("a".repeat(1001));
 
 		performEditRequest(task.getId(), dto).andDo(print())
 			.andExpect(status().isBadRequest())
@@ -1292,7 +1291,7 @@ class CrmTaskControllerIntegrationTest {
 	void editTask_NonExistentContact_ReturnsBadRequest() throws Exception {
 		CrmTask task = savedTask();
 		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
-		dto.setContactId(JsonNullable.of(999999L));
+		dto.setContactId(999999L);
 
 		performEditRequest(task.getId(), dto).andDo(print())
 			.andExpect(status().isBadRequest())
@@ -1422,7 +1421,7 @@ class CrmTaskControllerIntegrationTest {
 		CrmTask task = savedTask("Unlink Task", false, false, contact.getId(), null, company);
 
 		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
-		dto.setContactId(JsonNullable.of(null));
+		dto.setIsContactRemoved(true);
 
 		performEditRequest(task.getId(), dto).andDo(print())
 			.andExpect(status().isOk())
@@ -1440,7 +1439,7 @@ class CrmTaskControllerIntegrationTest {
 		CrmTask task = savedTask("Deal Task", false, false, contactId, deal);
 
 		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
-		dto.setDealId(JsonNullable.of(null));
+		dto.setIsDealRemoved(true);
 
 		performEditRequest(task.getId(), dto).andDo(print())
 			.andExpect(status().isOk())

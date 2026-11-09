@@ -3,7 +3,6 @@ package com.skapp.community.crmplanner.payload.request;
 import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import lombok.Getter;
 import lombok.Setter;
-import org.openapitools.jackson.nullable.JsonNullable;
 
 import java.time.Instant;
 
@@ -21,12 +20,16 @@ public class CrmTaskEditRequestDto {
 
 	private Instant dueAt;
 
-	private JsonNullable<String> notes = JsonNullable.undefined();
+	private String notes;
 
 	private Long ownerId;
 
-	private JsonNullable<Long> contactId = JsonNullable.undefined();
+	private Long contactId;
 
-	private JsonNullable<Long> dealId = JsonNullable.undefined();
+	private Boolean isContactRemoved;
+
+	private Long dealId;
+
+	private Boolean isDealRemoved;
 
 }

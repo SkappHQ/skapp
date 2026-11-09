@@ -297,27 +297,26 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 			existingCompany.setName(crmCompany.getName());
 		}
 
-		if (crmCompany.getContactNumber().isPresent()) {
-			String contactNumber = crmCompany.getContactNumber().get();
-			CrmValidations.validateContactNumber(contactNumber);
-			existingCompany.setContactNumber(contactNumber);
+		if (crmCompany.getContactNumber() != null) {
+			CrmValidations.validateContactNumber(crmCompany.getContactNumber());
+			existingCompany.setContactNumber(crmCompany.getContactNumber());
 		}
 
-		if (crmCompany.getWebsite().isPresent()) {
-			String website = crmCompany.getWebsite().get();
-			CrmValidations.validateWebsite(website);
-			existingCompany.setWebsite(website);
+		if (crmCompany.getWebsite() != null) {
+			CrmValidations.validateWebsite(crmCompany.getWebsite());
+			existingCompany.setWebsite(crmCompany.getWebsite());
 		}
 
-		if (crmCompany.getAddress().isPresent()) {
-			String address = crmCompany.getAddress().get();
-			CrmValidations.validateAddress(address);
-			existingCompany.setAddress(address);
+		if (crmCompany.getAddress() != null) {
+			CrmValidations.validateAddress(crmCompany.getAddress());
+			existingCompany.setAddress(crmCompany.getAddress());
 		}
 
-		if (crmCompany.getIndustryId().isPresent() || crmCompany.getIndustryName() != null) {
-			existingCompany
-				.setIndustry(resolveIndustry(crmCompany.getIndustryId().orElse(null), crmCompany.getIndustryName()));
+		if (Boolean.TRUE.equals(crmCompany.getIsIndustryRemoved())) {
+			existingCompany.setIndustry(null);
+		}
+		else if (crmCompany.getIndustryId() != null || crmCompany.getIndustryName() != null) {
+			existingCompany.setIndustry(resolveIndustry(crmCompany.getIndustryId(), crmCompany.getIndustryName()));
 		}
 
 		CrmCompany updatedCompany = crmCompanyDao.save(existingCompany);
