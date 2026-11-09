@@ -143,15 +143,9 @@ const ScheduleMeetingModalForm: FC<Props> = ({ formik }) => {
   };
 
   const handlePlacePick = (picked: CrmMeetingLocation): void => {
-    if (picked.location) {
-      setFieldValue("location", picked.location, true);
-    }
-    if (picked.locationAddress) {
-      setFieldValue("locationAddress", picked.locationAddress, false);
-    }
-    if (picked.locationUrl) {
-      setFieldValue("locationUrl", picked.locationUrl, false);
-    }
+    setFieldValue("location", picked.location, true);
+    setFieldValue("locationAddress", picked.locationAddress, false);
+    setFieldValue("locationUrl", picked.locationUrl, false);
   };
 
   const handleLocationBlur = (): void => {
