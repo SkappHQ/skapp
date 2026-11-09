@@ -75,11 +75,9 @@ const MeetingLocationField: FC<Props> = ({
     });
 
     return {
-      ...(place.displayName && { location: place.displayName }),
-      ...(place.formattedAddress && {
-        locationAddress: place.formattedAddress
-      }),
-      ...(place.googleMapsURI && { locationUrl: place.googleMapsURI })
+      location: place.displayName ?? value,
+      locationAddress: place.formattedAddress ?? "",
+      locationUrl: place.googleMapsURI ?? ""
     };
   };
 
@@ -110,7 +108,7 @@ const MeetingLocationField: FC<Props> = ({
   const { mutate: pickPlace, isPending: isPicking } = useMutation({
     mutationFn: fetchPlaceDetails,
     onSuccess: (location: CrmMeetingLocation) => {
-      if (location.location) setPickedLocation(location.location);
+      setPickedLocation(location.location);
       onPlacePick(location);
       closeList();
       setSessionToken(null);
@@ -121,8 +119,7 @@ const MeetingLocationField: FC<Props> = ({
   const isDebouncing = value.trim() !== debouncedValue;
   const isBusy = isDebouncing || isSearching || isPicking;
   const options = !isBusy && predictions ? predictions : [];
-  const hasNoResults =
-    !isBusy && (isError || (predictions && predictions.length === 0));
+  const hasNoResults = !isBusy && (isError || predictions?.length === 0);
   const listId = `${id}-list`;
 
   const handleFocus = (): void => {
