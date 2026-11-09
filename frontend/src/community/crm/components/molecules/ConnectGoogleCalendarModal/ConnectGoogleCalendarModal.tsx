@@ -76,7 +76,7 @@ const ConnectGoogleCalendarModal: FC<Props> = ({ onClose }) => {
               ])
             ]}
           />
-          <p className="text-base">
+          <p className="text-base text-black">
             {translateText([
               "scheduleMeeting",
               "connectCalendarModal",
