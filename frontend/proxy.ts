@@ -423,13 +423,13 @@ const resolveInvoiceIntegrationsAccess: AccessGuard = ({
   claims,
   roles
 }) => {
-  const canUseXero =
+  if (!currentPath.startsWith(ROUTES.INVOICE.INTEGRATIONS.BASE)) return null;
+
+  const canAccessInvoiceIntegrations =
     roles.includes(AdminTypes.INVOICE_ADMIN) &&
     getClaimTiers(claims).includes(TierEnum.PRO);
 
-  return currentPath.startsWith(ROUTES.INVOICE.INTEGRATIONS.BASE) && !canUseXero
-    ? redirectToUnauthorized(request)
-    : null;
+  return canAccessInvoiceIntegrations ? null : redirectToUnauthorized(request);
 };
 
 const resolveReportAccess: AccessGuard = ({ request, currentPath, claims }) =>
