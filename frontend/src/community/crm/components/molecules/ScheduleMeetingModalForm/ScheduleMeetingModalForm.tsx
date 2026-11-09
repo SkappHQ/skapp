@@ -7,7 +7,8 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { APIProvider } from "@vis.gl/react-google-maps";
 import { FormikProps } from "formik";
-import { FC } from "react";
+import { FC, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -15,16 +16,24 @@ import {
   toDateFieldValue,
   toPickerDate
 } from "~community/crm/activities/utils/activityUtil";
+import ActivityAssociations from "~community/crm/components/molecules/ActivityAssociations/ActivityAssociations";
 import ActivityContactsField from "~community/crm/components/molecules/ActivityContactsField/ActivityContactsField";
+import ActivityDealField from "~community/crm/components/molecules/ActivityDealField/ActivityDealField";
 import ActivityOwnerField from "~community/crm/components/molecules/ActivityOwnerField/ActivityOwnerField";
+import ActivityRelatedToField from "~community/crm/components/molecules/ActivityRelatedToField/ActivityRelatedToField";
 import MeetingLocationField from "~community/crm/components/molecules/MeetingLocationField/MeetingLocationField";
 import { CrmMeetingVenueEnum } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
 import {
+  CrmContactEntity,
   CrmMeetingLocation,
   CrmScheduleMeetingFormValues
 } from "~community/crm/types/CrmCommonTypes";
-import { getContactCompanyIds } from "~community/crm/utils/contactUtil";
+import {
+  getContactCompanyIds,
+  getContactDisplayName
+} from "~community/crm/utils/contactUtil";
+import { isDealMatchingContacts } from "~community/crm/utils/dealUtil";
 
 interface Props {
   formik: FormikProps<CrmScheduleMeetingFormValues>;
@@ -57,10 +66,49 @@ const ScheduleMeetingModalForm: FC<Props> = ({ formik }) => {
     "modal"
   );
 
-  const contacts = useCrmStore((state) => state.contacts);
+  const { contacts, deals } = useCrmStore(
+    useShallow((store) => ({
+      contacts: store.contacts,
+      deals: store.deals
+    }))
+  );
+
+  const [isDealClearedNoticeVisible, setIsDealClearedNoticeVisible] =
+    useState(false);
+
+  const attendees = values.contactIds.map((contactId) => contacts[contactId]);
 
   const attendeeCompanyIds = Array.from(
     new Set(getContactCompanyIds(contacts, values.contactIds))
+  );
+
+  const isDealMismatch = Boolean(
+    values.dealId &&
+    attendees.length > 0 &&
+    !isDealMatchingContacts(deals[values.dealId], attendees)
+  );
+
+  const handleAttendeesChange = (nextAttendees: CrmContactEntity[]): void => {
+    const selectedDeal = values.dealId ? deals[values.dealId] : null;
+
+    const isDealUnmatched =
+      selectedDeal &&
+      nextAttendees.length > 0 &&
+      isDealMatchingContacts(selectedDeal, attendees) &&
+      !isDealMatchingContacts(selectedDeal, nextAttendees);
+
+    if (isDealUnmatched) {
+      setFieldValue("dealId", null);
+      setIsDealClearedNoticeVisible(true);
+    }
+  };
+
+  const primaryAttendee = attendees.length > 0 ? attendees[0] : null;
+
+  const isCompanyMismatch = Boolean(
+    values.companyId &&
+    primaryAttendee &&
+    values.companyId !== primaryAttendee.companyId
   );
 
   const isInPerson = values.meetingVenue === CrmMeetingVenueEnum.IN_PERSON;
@@ -73,6 +121,8 @@ const ScheduleMeetingModalForm: FC<Props> = ({ formik }) => {
 
   const pickedDate = values.date ? toPickerDate(values.date) : null;
 
+  const locationErrorMessage = touched.location && errors.location;
+
   const handleDateSelect = (date?: Date): void => {
     setFieldValue("date", date ? toDateFieldValue(date) : null, true);
   };
@@ -81,18 +131,31 @@ const ScheduleMeetingModalForm: FC<Props> = ({ formik }) => {
     setFieldValue("meetingVenue", venue, true);
     if (venue === CrmMeetingVenueEnum.ONLINE) {
       setFieldValue("location", "", false);
+      setFieldValue("locationAddress", "", false);
       setFieldValue("locationUrl", "", false);
     }
   };
 
   const handleLocationTextChange = (text: string): void => {
     setFieldValue("location", text, false);
+    setFieldValue("locationAddress", "", false);
     setFieldValue("locationUrl", "", false);
   };
 
   const handlePlacePick = (picked: CrmMeetingLocation): void => {
-    setFieldValue("location", picked.location, true);
-    setFieldValue("locationUrl", picked.locationUrl, false);
+    if (picked.location) {
+      setFieldValue("location", picked.location, true);
+    }
+    if (picked.locationAddress) {
+      setFieldValue("locationAddress", picked.locationAddress, false);
+    }
+    if (picked.locationUrl) {
+      setFieldValue("locationUrl", picked.locationUrl, false);
+    }
+  };
+
+  const handleLocationBlur = (): void => {
+    setFieldTouched("location", true, true);
   };
 
   return (
@@ -137,6 +200,7 @@ const ScheduleMeetingModalForm: FC<Props> = ({ formik }) => {
                 rightIcon={<CalendarIcon />}
                 fullWidth
                 readOnly
+                required
               />
             </div>
           </DatePicker>
@@ -215,23 +279,42 @@ const ScheduleMeetingModalForm: FC<Props> = ({ formik }) => {
             <MeetingLocationField
               id="schedule-meeting-location-input"
               value={values.location}
-              {...(touched.location &&
-                errors.location && { errorMessage: errors.location })}
+              {...(locationErrorMessage && {
+                errorMessage: locationErrorMessage
+              })}
               onTextChange={handleLocationTextChange}
               onPlacePick={handlePlacePick}
-              onBlur={() => setFieldTouched("location", true, true)}
+              onBlur={handleLocationBlur}
             />
           </APIProvider>
         )}
         {isInPerson && !googleMapsApiKey && (
-          <p className="text-sm text-[var(--color-semantic-red-text)]">
-            {translateText([
+          <InputField
+            id="schedule-meeting-location-input"
+            name="location"
+            value={values.location}
+            label={translateText([
               "scheduleMeeting",
               "modal",
-              "location",
-              "missingApiKey"
+              "labels",
+              "location"
             ])}
-          </p>
+            placeholder={translateText([
+              "scheduleMeeting",
+              "modal",
+              "placeholders",
+              "location"
+            ])}
+            {...(locationErrorMessage && {
+              errorMessage: locationErrorMessage
+            })}
+            state={locationErrorMessage ? "error" : "default"}
+            onChange={(event) => handleLocationTextChange(event.target.value)}
+            onBlur={handleLocationBlur}
+            aria-label={translateScheduleAria(["location"])}
+            fullWidth
+            required
+          />
         )}
         {isInPerson && values.locationUrl && (
           <a
@@ -262,6 +345,7 @@ const ScheduleMeetingModalForm: FC<Props> = ({ formik }) => {
           "attendees"
         ])}
         groupAriaLabel={translateAria(["attendees"])}
+        fillsRelatedTo
         {...(attendeeCompanyIds.length > 1 && {
           warningTooltip: translateText([
             "logMeeting",
@@ -270,6 +354,7 @@ const ScheduleMeetingModalForm: FC<Props> = ({ formik }) => {
             "differentCompanies"
           ])
         })}
+        onContactsChange={handleAttendeesChange}
         required
       />
 
@@ -284,6 +369,34 @@ const ScheduleMeetingModalForm: FC<Props> = ({ formik }) => {
         rows={3}
         aria-label={translateAria(["comments"])}
       />
+
+      <ActivityAssociations
+        isForcedOpen={isDealClearedNoticeVisible || isDealMismatch}
+      >
+        <ActivityDealField
+          id="schedule-meeting-deal"
+          formik={formik}
+          fieldAriaLabel={translateAria(["deal"])}
+          isClearedNoticeVisible={isDealClearedNoticeVisible}
+          isMismatch={isDealMismatch}
+          onDealChange={() => setIsDealClearedNoticeVisible(false)}
+          {...(attendeeCompanyIds.length === 1 && {
+            filterCompanyId: attendeeCompanyIds[0]
+          })}
+        />
+        <ActivityRelatedToField
+          id="schedule-meeting-related-to"
+          formik={formik}
+          fieldAriaLabel={translateAria(["relatedTo"])}
+          {...(isCompanyMismatch &&
+            primaryAttendee && {
+              mismatchTooltip: translateText(
+                ["logActivity", "tooltips", "relatedToMismatch"],
+                { name: getContactDisplayName(primaryAttendee) }
+              )
+            })}
+        />
+      </ActivityAssociations>
     </div>
   );
 };

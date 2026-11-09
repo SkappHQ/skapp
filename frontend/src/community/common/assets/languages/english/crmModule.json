@@ -910,10 +910,7 @@
           "location": "Location is required for in-person meetings"
         },
         "location": {
-          "suggestions": "Location suggestions",
-          "searching": "Searching...",
           "noPlaces": "No places found",
-          "missingApiKey": "Google Maps isn't set up. NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is missing.",
           "openInMaps": "Open in Google Maps"
         },
         "toastMessages": {

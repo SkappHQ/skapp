@@ -287,7 +287,7 @@ const checkMeetingOverlaps = async (
     crmActivityEndpoints.SCHEDULE_MEETING_OVERLAPS,
     { params }
   );
-  return response.data.results;
+  return response?.data?.results;
 };
 
 export const useCheckMeetingOverlaps = (

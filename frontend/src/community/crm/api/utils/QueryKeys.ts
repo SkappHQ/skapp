@@ -63,7 +63,12 @@ export const crmActivityQueryKeys = {
   TASKS: (params: ActivityListFilters) => [CRM_ACTIVITIES, "tasks", params],
   MEETING: (id: number) => [CRM_ACTIVITIES, "meeting", id],
   TASK: (id: number) => [CRM_ACTIVITIES, "task", id],
-  EMAIL: (id: number) => [CRM_ACTIVITIES, "email", id]
+  EMAIL: (id: number) => [CRM_ACTIVITIES, "email", id],
+  PLACE_PREDICTIONS: (input: string) => [
+    CRM_ACTIVITIES,
+    "placePredictions",
+    input
+  ]
 };
 
 export const crmDealQueryKeys = {

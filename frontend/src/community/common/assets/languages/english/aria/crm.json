@@ -237,7 +237,8 @@
         "cancel": "Cancel schedule a meeting",
         "save": "Schedule meeting",
         "venue": "Meeting venue",
-        "location": "Meeting location"
+        "location": "Meeting location",
+        "locationSuggestions": "Location suggestions"
       }
     }
   }

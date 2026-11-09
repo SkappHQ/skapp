@@ -248,10 +248,12 @@ export interface CrmActivityEmailEntity {
 export interface CrmScheduleMeetingFormValues extends CrmLogMeetingFormValues {
   meetingVenue: CrmMeetingVenueEnum;
   location: string;
+  locationAddress: string;
   locationUrl: string;
 }
 
 export interface CrmMeetingLocation {
-  location: string;
-  locationUrl: string;
+  location?: string;
+  locationAddress?: string;
+  locationUrl?: string;
 }

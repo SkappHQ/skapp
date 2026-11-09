@@ -20,7 +20,8 @@ import {
   CrmAddTaskFormValues,
   CrmLogCallFormValues,
   CrmLogEmailFormValues,
-  CrmLogMeetingFormValues
+  CrmLogMeetingFormValues,
+  CrmScheduleMeetingFormValues
 } from "~community/crm/types/CrmCommonTypes";
 import { CrmCompanyFilterRequest } from "~community/crm/types/CrmTypes";
 import {
@@ -34,7 +35,8 @@ interface Props {
     | FormikProps<CrmLogCallFormValues>
     | FormikProps<CrmLogMeetingFormValues>
     | FormikProps<CrmAddTaskFormValues>
-    | FormikProps<CrmLogEmailFormValues>;
+    | FormikProps<CrmLogEmailFormValues>
+    | FormikProps<CrmScheduleMeetingFormValues>;
   fieldAriaLabel: string;
   mismatchTooltip?: string;
 }
