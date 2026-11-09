@@ -662,4 +662,24 @@ public class DateTimeUtils {
 		return dateTime.format(INSTANT_ESIGN_CERT_FORMATTER);
 	}
 
+	/**
+	 * Returns the later of two dates.
+	 * @param first The first date. Cannot be null.
+	 * @param second The second date. Cannot be null.
+	 * @return The date that is after the other, or the second date when they are equal.
+	 */
+	public static LocalDate getLaterDate(LocalDate first, LocalDate second) {
+		return first.isAfter(second) ? first : second;
+	}
+
+	/**
+	 * Returns the earlier of two dates.
+	 * @param first The first date. Cannot be null.
+	 * @param second The second date. Cannot be null.
+	 * @return The date that is before the other, or the second date when they are equal.
+	 */
+	public static LocalDate getEarlierDate(LocalDate first, LocalDate second) {
+		return first.isBefore(second) ? first : second;
+	}
+
 }

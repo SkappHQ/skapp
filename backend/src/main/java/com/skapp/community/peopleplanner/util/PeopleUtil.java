@@ -137,4 +137,10 @@ public class PeopleUtil {
 				|| !Objects.equals(oldRole.getIsSuperAdmin(), newRole.getIsSuperAdmin());
 	}
 
+	public static void validateBillableRate(Double billableRate) {
+		if (billableRate != null && billableRate <= 0) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_INVALID_BILLABLE_RATE);
+		}
+	}
+
 }

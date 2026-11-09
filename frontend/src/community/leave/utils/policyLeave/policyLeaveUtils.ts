@@ -26,13 +26,17 @@ import {
   PolicyLeaveStore,
   initialPolicyLeaveFormErrors
 } from "~community/leave/store/policyLeaveStore";
-import { ResourceAvailabilityPayload } from "~community/leave/types/MyRequests";
+import {
+  MyLeaveRequestPayloadType,
+  ResourceAvailabilityPayload
+} from "~community/leave/types/MyRequests";
 import {
   EmployeePolicyBalanceType,
   PolicyBalanceDisabledReason,
   PolicyEmployeesOnLeaveType,
   PolicyLeaveRequestQueryParams,
   PolicyLeaveRequestStatus,
+  PolicyLeaveRequestType,
   PolicyLeaveValidationFailure,
   PolicyResourceAvailabilityDayType,
   PolicyResourceAvailabilityEmployeeType,
@@ -159,6 +163,45 @@ export const toLeaveStatus = (
       return null;
   }
 };
+
+export const uniqueByLeaveRequestId = (
+  requests: PolicyLeaveRequestType[]
+): PolicyLeaveRequestType[] =>
+  Array.from(
+    new Map(
+      requests.map((request) => [request.leaveRequestId, request])
+    ).values()
+  );
+
+export const toMyLeaveRequestPayloads = (
+  requests: PolicyLeaveRequestType[]
+): MyLeaveRequestPayloadType[] =>
+  requests.flatMap((request) => {
+    const status = toLeaveStatus(request.status);
+
+    if (!status) {
+      return [];
+    }
+
+    return [
+      {
+        leaveRequestId: request.leaveRequestId,
+        startDate: request.startDate,
+        endDate: request.endDate,
+        leaveType: {
+          typeId: request.leaveType.id,
+          name: request.leaveType.name,
+          emojiCode: request.leaveType.emojiCode,
+          colorCode: request.leaveType.colorCode
+        },
+        leaveState: request.leaveState,
+        status,
+        isViewed: request.isViewed,
+        durationDays: request.durationDays,
+        requestDesc: request.requestDesc ?? ""
+      }
+    ];
+  });
 
 export const getAvailabilityErrorMessage = ({
   failureReason,

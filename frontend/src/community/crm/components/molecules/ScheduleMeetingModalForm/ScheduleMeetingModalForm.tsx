@@ -15,8 +15,8 @@ import {
   toDateFieldValue,
   toPickerDate
 } from "~community/crm/activities/utils/activityUtil";
+import ActivityContactsField from "~community/crm/components/molecules/ActivityContactsField/ActivityContactsField";
 import ActivityOwnerField from "~community/crm/components/molecules/ActivityOwnerField/ActivityOwnerField";
-import MeetingAttendeesField from "~community/crm/components/molecules/MeetingAttendeesField/MeetingAttendeesField";
 import MeetingLocationField from "~community/crm/components/molecules/MeetingLocationField/MeetingLocationField";
 import { CrmMeetingVenueEnum } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
@@ -250,11 +250,27 @@ const ScheduleMeetingModalForm: FC<Props> = ({ formik }) => {
         )}
       </div>
 
-      <MeetingAttendeesField
+      <ActivityContactsField
         id="schedule-meeting-contactIds"
         formik={formik}
-        isFromDifferentCompanies={attendeeCompanyIds.length > 1}
-        onDealCleared={() => setFieldValue("dealId", null, false)}
+        name="contactIds"
+        label={translateText(["logMeeting", "modal", "labels", "attendees"])}
+        placeholder={translateText([
+          "logMeeting",
+          "modal",
+          "placeholders",
+          "attendees"
+        ])}
+        groupAriaLabel={translateAria(["attendees"])}
+        {...(attendeeCompanyIds.length > 1 && {
+          warningTooltip: translateText([
+            "logMeeting",
+            "modal",
+            "tooltips",
+            "differentCompanies"
+          ])
+        })}
+        required
       />
 
       <ActivityOwnerField id="schedule-meeting-ownerId" formik={formik} />

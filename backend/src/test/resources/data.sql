@@ -336,10 +336,15 @@ INSERT INTO crm_activity_email (id, subject, logged_at, description, owner_id, i
 VALUES (default, 'Intro email', TIMESTAMP WITH TIME ZONE '2026-01-10 08:15:00+00', 'Shared product overview', 1,
         false);
 
-INSERT INTO crm_activity_meeting (id, name, is_scheduled, meeting_venue, location, meeting_date, start_at, end_at,
-                                  sync_status, calendar_provider, comments, owner_id, is_deleted)
-VALUES (default, 'Discovery call', true, 'ONLINE', null, '2026-01-12', TIMESTAMP WITH TIME ZONE '2026-01-12 10:00:00+00',
-        TIMESTAMP WITH TIME ZONE '2026-01-12 11:00:00+00', 'SYNCED', 'GOOGLE', null, 1, false),
-       (default, 'Site visit', false, 'IN_PERSON', 'Colombo office', '2026-01-18',
-        TIMESTAMP WITH TIME ZONE '2026-01-18 04:30:00+00',
-        TIMESTAMP WITH TIME ZONE '2026-01-18 06:00:00+00', null, null, 'Bring signed NDA', 1, false);
+INSERT INTO crm_activity_meeting (id, name, is_scheduled, meeting_date, start_at, end_at, comments, owner_id,
+                                  is_deleted)
+VALUES (default, 'Discovery call', true, '2026-01-12', TIMESTAMP WITH TIME ZONE '2026-01-12 10:00:00+00',
+        TIMESTAMP WITH TIME ZONE '2026-01-12 11:00:00+00', null, 1, false),
+       (default, 'Site visit', false, '2026-01-18', TIMESTAMP WITH TIME ZONE '2026-01-18 04:30:00+00',
+        TIMESTAMP WITH TIME ZONE '2026-01-18 06:00:00+00', 'Bring signed NDA', 1, false);
+
+INSERT INTO crm_activity_scheduled_meeting (meeting_id, meeting_venue, location, location_address, location_url,
+                                            calendar_provider, external_event_id)
+SELECT id, 'ONLINE', null, null, null, 'GOOGLE', null
+FROM crm_activity_meeting
+WHERE name = 'Discovery call';
