@@ -11,6 +11,7 @@ import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
 import com.skapp.community.leaveplanner.constant.PolicyLeaveConstant;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
+import com.skapp.community.leaveplanner.model.PolicyLeaveRequest_;
 import com.skapp.community.leaveplanner.model.PolicyLeaveType;
 import com.skapp.community.leaveplanner.model.PolicyLeaveType_;
 import com.skapp.community.leaveplanner.payload.LeaveCycleDetailsDto;
@@ -170,7 +171,7 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 		User currentUser = userService.getCurrentUser();
 		Team team = teamDao.findByTeamIdAndIsActive(teamId, true)
 			.orElseThrow(() -> new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_NOT_FOUND));
-		validateTeamUnderSupervision(currentUser, team);
+		LeaveModuleUtil.validateTeamsForLeaveAnalytics(List.of(team.getTeamId()), currentUser, List.of(team));
 		validateTeamMembers(team, filterDto.getTeamMemberIds());
 
 		PolicyLeaveDateWindowDto window = resolveHistoryWindow(filterDto.getStartDate(), filterDto.getEndDate());
@@ -202,24 +203,6 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 		log.info("getEmployeeLeaveHistory: execution ended");
 		return new ResponseEntityDto(false, toPageDto(leaveRequests,
 				leaveMapper.policyLeaveRequestListToPolicyLeaveHistoryResponseDtoList(leaveRequests.getContent())));
-	}
-
-	private void validateTeamUnderSupervision(User currentUser, Team team) {
-		if (LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser)) {
-			return;
-		}
-
-		Long currentEmployeeId = currentUser.getEmployee().getEmployeeId();
-		boolean isSupervisor = team.getEmployees()
-			.stream()
-			.anyMatch(employeeTeam -> Boolean.TRUE.equals(employeeTeam.getIsSupervisor())
-					&& employeeTeam.getEmployee().getEmployeeId().equals(currentEmployeeId));
-
-		if (!isSupervisor) {
-			throw new EntityNotFoundException(
-					PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_UNDER_CURRENT_EMPLOYEE_SUPERVISION, new String[] {
-							PolicyLeaveConstant.TEAM_ANALYTICS_SUBJECT, PolicyLeaveConstant.LEAVE_HISTORY_ANALYTICS });
-		}
 	}
 
 	private void validateEmployeeUnderSupervision(User currentUser, Employee employee) {
@@ -256,21 +239,21 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 	}
 
 	private PolicyLeaveDateWindowDto resolveHistoryWindow(LocalDate startDate, LocalDate endDate) {
-		PolicyLeaveDateWindowDto currentCycle = startDate == null || endDate == null ? resolveCurrentCycle() : null;
-		LocalDate windowStart = startDate != null ? startDate : currentCycle.getStartDate();
-		LocalDate windowEnd = endDate != null ? endDate : currentCycle.getEndDate();
+		if (startDate == null || endDate == null) {
+			return resolveCurrentCycle();
+		}
 
-		if (windowStart.isAfter(windowEnd)) {
+		if (startDate.isAfter(endDate)) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_START_DATE_END_DATE_NOT_VALID);
 		}
-		return new PolicyLeaveDateWindowDto(windowStart, windowEnd);
+		return new PolicyLeaveDateWindowDto(startDate, endDate);
 	}
 
 	private Pageable resolveHistoryPageable(PolicyLeaveHistoryFilterDto filterDto) {
 		LeaveRequestSort sortKey = filterDto.getSortKey() == null ? LeaveRequestSort.START_DATE
 				: filterDto.getSortKey();
 		Sort.Direction sortOrder = filterDto.getSortOrder() == null ? Sort.Direction.DESC : filterDto.getSortOrder();
-		Sort sort = Sort.by(sortOrder, sortKey.toString());
+		Sort sort = Sort.by(sortOrder, sortKey.toString()).and(Sort.by(sortOrder, PolicyLeaveRequest_.ID));
 		return Boolean.TRUE.equals(filterDto.getIsExport()) ? Pageable.unpaged(sort)
 				: PageRequest.of(filterDto.getPage(), filterDto.getSize(), sort);
 	}

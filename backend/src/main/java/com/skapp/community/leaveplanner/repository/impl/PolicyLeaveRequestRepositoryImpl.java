@@ -154,11 +154,12 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		CriteriaQuery<PolicyLeaveRequest> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveRequest.class);
 		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
 		fetchPolicy(root);
-		root.fetch(PolicyLeaveRequest_.employee, JoinType.INNER);
+		Join<PolicyLeaveRequest, Employee> employee = (Join<PolicyLeaveRequest, Employee>) root
+			.fetch(PolicyLeaveRequest_.employee, JoinType.INNER);
 
 		criteriaQuery.select(root)
-			.where(buildLeaveHistoryPredicates(criteriaBuilder, criteriaQuery, root,
-					root.join(PolicyLeaveRequest_.employee), teamId, employeeIds, startDate, endDate, filterDto)
+			.where(buildLeaveHistoryPredicates(criteriaBuilder, criteriaQuery, root, employee, teamId, employeeIds,
+					startDate, endDate, filterDto)
 				.toArray(new Predicate[0]));
 		criteriaQuery.orderBy(QueryUtils.toOrders(pageable.getSort(), root, criteriaBuilder));
 
