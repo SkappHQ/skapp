@@ -13,10 +13,7 @@ const CalendarEventCard: FC<Props> = ({ icon, title, details }) => {
       <div className="flex flex-col gap-1">
         <span className="text-base font-medium text-black">{title}</span>
         {details.map((detail) => (
-          <span
-            key={detail}
-            className="text-sm text-[var(--color-label-text-slate)]"
-          >
+          <span key={detail} className="text-sm text-black">
             {detail}
           </span>
         ))}

@@ -35,8 +35,8 @@ const ScheduleMeetingUpgradeModal: FC<Props> = ({ onClose }) => {
       title={translateText(["title"])}
       content={
         <div className="flex flex-col gap-4">
-          <p className="body2">{translateText(["description"])}</p>
-          <p className="body2">
+          <p className="body2 text-black">{translateText(["description"])}</p>
+          <p className="body2 text-black">
             {isSuperAdmin
               ? translateText(["upgradeDescription"])
               : translateText(["contactAdminDescription"])}
