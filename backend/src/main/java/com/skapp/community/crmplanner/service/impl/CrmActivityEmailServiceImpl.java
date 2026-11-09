@@ -31,6 +31,7 @@ import com.skapp.community.crmplanner.type.CrmActivityEmailFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityEmailSort;
 import com.skapp.community.crmplanner.util.CrmUtil;
 import com.skapp.community.crmplanner.util.CrmValidations;
+import com.skapp.community.peopleplanner.util.Validations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
@@ -116,13 +117,14 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 		CrmValidations.validateEmailSubject(requestDto.getSubject());
 		CrmValidations.validateEmailLoggedAt(requestDto.getLoggedAt());
 		CrmValidations.validateEmailRecipientIds(toIds, ccIds, bccIds);
-		CrmValidations.validateEmailFromAddress(requestDto.getFromAddress());
+		String fromAddress = requestDto.getFromAddress() != null ? requestDto.getFromAddress().trim() : null;
+		Validations.validateEmail(fromAddress);
 
 		User currentUser = userService.getCurrentUser();
 
 		CrmActivityEmail email = new CrmActivityEmail();
 		email.setSubject(requestDto.getSubject());
-		email.setFromAddress(requestDto.getFromAddress());
+		email.setFromAddress(fromAddress);
 		email.setLoggedAt(requestDto.getLoggedAt());
 		email.setDescription(requestDto.getDescription());
 		email.setOwner(currentUser.getEmployee());
@@ -226,8 +228,9 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 		}
 
 		if (requestDto.getFromAddress() != null) {
-			CrmValidations.validateEmailFromAddress(requestDto.getFromAddress());
-			email.setFromAddress(requestDto.getFromAddress());
+			String fromAddress = requestDto.getFromAddress().trim();
+			Validations.validateEmail(fromAddress);
+			email.setFromAddress(fromAddress);
 		}
 
 		if (requestDto.getLoggedAt() != null) {
