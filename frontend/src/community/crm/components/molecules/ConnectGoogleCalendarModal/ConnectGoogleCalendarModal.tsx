@@ -17,7 +17,7 @@ const ConnectGoogleCalendarModal: FC<Props> = ({ onClose }) => {
   const { setToastMessage } = useToast();
 
   const handleSuccess = (data: { authUrl?: string }): void => {
-    if (data && data.authUrl) {
+    if (data?.authUrl) {
       globalThis.location.href = data.authUrl;
     }
   };
