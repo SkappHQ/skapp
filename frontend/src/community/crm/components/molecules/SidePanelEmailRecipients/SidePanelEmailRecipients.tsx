@@ -3,7 +3,10 @@ import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { CrmContactEntity } from "~community/crm/types/CrmCommonTypes";
-import { getContactDisplayName } from "~community/crm/utils/contactUtil";
+import {
+  getContactDisplayName,
+  getContactNameParts
+} from "~community/crm/utils/contactUtil";
 
 interface Props {
   id: string;
@@ -32,7 +35,7 @@ const SidePanelEmailRecipients: FC<Props> = ({
         <ul aria-label={ariaLabel} className="flex flex-wrap gap-2">
           {recipients.map((recipient) => {
             const recipientName = getContactDisplayName(recipient);
-            const [firstName, lastName] = recipientName.split(" ");
+            const { firstName, lastName } = getContactNameParts(recipient);
 
             return (
               <li key={recipient.id}>
