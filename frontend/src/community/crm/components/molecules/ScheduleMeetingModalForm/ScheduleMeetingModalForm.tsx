@@ -103,7 +103,7 @@ const ScheduleMeetingModalForm: FC<Props> = ({ formik }) => {
     }
   };
 
-  const primaryAttendee = attendees.length > 0 ? attendees[0] : null;
+  const primaryAttendee = attendees[0] ?? null;
 
   const isCompanyMismatch = Boolean(
     values.companyId &&
@@ -152,6 +152,17 @@ const ScheduleMeetingModalForm: FC<Props> = ({ formik }) => {
     setFieldTouched("location", true, true);
   };
 
+  const locationField = (
+    <MeetingLocationField
+      id="schedule-meeting-location-input"
+      value={values.location}
+      {...(locationErrorMessage && { errorMessage: locationErrorMessage })}
+      onTextChange={handleLocationTextChange}
+      onPlacePick={handlePlacePick}
+      onBlur={handleLocationBlur}
+    />
+  );
+
   return (
     <div className="flex flex-col gap-2 overflow-y-auto pr-1">
       <InputField
@@ -181,7 +192,7 @@ const ScheduleMeetingModalForm: FC<Props> = ({ formik }) => {
               <InputField
                 id="schedule-meeting-date-input"
                 name="date"
-                value={pickedDate ? pickedDate.toLocaleDateString() : ""}
+                value={pickedDate?.toLocaleDateString() ?? ""}
                 label={translateText(["logActivity", "labels", "date"])}
                 placeholder={translateText([
                   "logActivity",
@@ -269,47 +280,9 @@ const ScheduleMeetingModalForm: FC<Props> = ({ formik }) => {
 
       <div aria-live="polite">
         {isInPerson && googleMapsApiKey && (
-          <APIProvider apiKey={googleMapsApiKey}>
-            <MeetingLocationField
-              id="schedule-meeting-location-input"
-              value={values.location}
-              {...(locationErrorMessage && {
-                errorMessage: locationErrorMessage
-              })}
-              onTextChange={handleLocationTextChange}
-              onPlacePick={handlePlacePick}
-              onBlur={handleLocationBlur}
-            />
-          </APIProvider>
+          <APIProvider apiKey={googleMapsApiKey}>{locationField}</APIProvider>
         )}
-        {isInPerson && !googleMapsApiKey && (
-          <InputField
-            id="schedule-meeting-location-input"
-            name="location"
-            value={values.location}
-            label={translateText([
-              "scheduleMeeting",
-              "modal",
-              "labels",
-              "location"
-            ])}
-            placeholder={translateText([
-              "scheduleMeeting",
-              "modal",
-              "placeholders",
-              "location"
-            ])}
-            {...(locationErrorMessage && {
-              errorMessage: locationErrorMessage
-            })}
-            state={locationErrorMessage ? "error" : "default"}
-            onChange={(event) => handleLocationTextChange(event.target.value)}
-            onBlur={handleLocationBlur}
-            aria-label={translateScheduleAria(["location"])}
-            fullWidth
-            required
-          />
-        )}
+        {isInPerson && !googleMapsApiKey && locationField}
         {isInPerson && values.locationUrl && (
           <a
             href={values.locationUrl}
