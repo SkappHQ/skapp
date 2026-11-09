@@ -39,7 +39,7 @@ import com.skapp.community.peopleplanner.payload.request.JobTitleDto;
 import com.skapp.community.peopleplanner.payload.request.TeamRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.emergency.EmployeeEmergencyContactDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBasicDetailsManagerDetailsDto;
-import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBillingDetailsDto;
+import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBillableRateDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentCareerProgressionDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentVisaDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalEducationalDetailsDto;
@@ -302,7 +302,7 @@ public interface PeopleMapper {
 	EmployeeVisa visaDetailsDtoToEmployeeVisa(EmployeeEmploymentVisaDetailsDto dto);
 
 	@Mapping(target = "billableRateCurrency", source = "currency")
-	EmployeeEmploymentBillingDetailsDto employeeBillableRateToEmployeeEmploymentBillingDetailsDto(
+	EmployeeEmploymentBillableRateDetailsDto employeeBillableRateToEmployeeEmploymentBillableRateDetailsDto(
 			EmployeeBillableRate employeeBillableRate);
 
 }

@@ -1,7 +1,7 @@
 package com.skapp.community.peopleplanner.payload.request.employee;
 
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBasicDetailsDto;
-import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBillingDetailsDto;
+import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBillableRateDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentCareerProgressionDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentIdentificationAndDiversityDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentPreviousEmploymentDetailsDto;
@@ -25,6 +25,6 @@ public class EmployeeEmploymentDetailsDto {
 
 	private List<EmployeeEmploymentVisaDetailsDto> visaDetails;
 
-	private EmployeeEmploymentBillingDetailsDto billingDetails;
+	private EmployeeEmploymentBillableRateDetailsDto billingDetails;
 
 }

@@ -84,7 +84,7 @@ import com.skapp.community.peopleplanner.payload.request.employee.EmployeePerson
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeSystemPermissionsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.emergency.EmployeeEmergencyContactDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBasicDetailsDto;
-import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBillingDetailsDto;
+import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBillableRateDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentIdentificationAndDiversityDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBasicDetailsManagerDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentCareerProgressionDetailsDto;
@@ -351,29 +351,16 @@ public class PeopleServiceImpl implements PeopleService {
 	public ResponseEntityDto updateEmployee(Long employeeId, CreateEmployeeRequestDto requestDto) {
 		User user = findUserById(employeeId);
 		employeeValidationService.validateEmployeeUpdateAccess(userService.getCurrentUser(), user, requestDto);
-
-		EmployeeEmploymentBillingDetailsDto billingDetailsDto = requestDto.getEmployment() != null
-				? requestDto.getEmployment().getBillingDetails() : null;
-		if (billingDetailsDto != null) {
-			PeopleUtil.validateBillableRate(billingDetailsDto.getBillableRate());
-			validateBillableRateCurrency(billingDetailsDto.getBillableRateCurrency());
-		}
-
-		ResponseEntityDto response = applyEmployeeUpdate(user, requestDto);
-
-		if (billingDetailsDto != null) {
-			updateEmployeeBillableRate(user.getEmployee(), billingDetailsDto);
-		}
-
-		return response;
+		return applyEmployeeUpdate(user, requestDto);
 	}
 
-	private void updateEmployeeBillableRate(Employee employee, EmployeeEmploymentBillingDetailsDto billingDetailsDto) {
+	private void updateEmployeeBillableRate(Employee employee,
+			EmployeeEmploymentBillableRateDetailsDto billableRateDetailsDto) {
 		EmployeeBillableRate employeeBillableRate = employeeBillableRateDao.findById(employee.getEmployeeId())
 			.orElse(new EmployeeBillableRate());
 		employeeBillableRate.setEmployee(employee);
-		employeeBillableRate.setBillableRate(billingDetailsDto.getBillableRate());
-		employeeBillableRate.setCurrency(billingDetailsDto.getBillableRateCurrency());
+		employeeBillableRate.setBillableRate(billableRateDetailsDto.getBillableRate());
+		employeeBillableRate.setCurrency(billableRateDetailsDto.getBillableRateCurrency());
 		employeeBillableRateDao.save(employeeBillableRate);
 	}
 
@@ -454,10 +441,21 @@ public class PeopleServiceImpl implements PeopleService {
 		employeeValidationService.validateCreateEmployeeRequestPersonalDetails(requestDto.getPersonal(), user);
 		rolesService.validateRoles(requestDto.getSystemPermissions(), user);
 
+		EmployeeEmploymentBillableRateDetailsDto billableRateDetailsDto = requestDto.getEmployment() != null
+				? requestDto.getEmployment().getBillingDetails() : null;
+		if (billableRateDetailsDto != null) {
+			PeopleUtil.validateBillableRate(billableRateDetailsDto.getBillableRate());
+			validateBillableRateCurrency(billableRateDetailsDto.getBillableRateCurrency());
+		}
+
 		employee.setUser(createUserEntity(user, requestDto));
 		user.setEmployee(createEmployeeEntity(employee, requestDto));
 
 		userDao.save(user);
+
+		if (billableRateDetailsDto != null) {
+			updateEmployeeBillableRate(employee, billableRateDetailsDto);
+		}
 
 		addUpdatedEmployeeTimeLineRecords(currentEmployeeDto, requestDto);
 		invalidateUserCache();

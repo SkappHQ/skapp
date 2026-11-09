@@ -21,7 +21,7 @@ import com.skapp.community.peopleplanner.payload.request.employee.EmployeeEmploy
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeePersonalDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeSystemPermissionsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBasicDetailsDto;
-import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBillingDetailsDto;
+import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBillableRateDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentIdentificationAndDiversityDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentPreviousEmploymentDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeeExtraInfoDto;
@@ -263,19 +263,19 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 				.ifPresent(visas -> dto
 					.setVisaDetails(visas.stream().map(peopleMapper::employeeVisaToVisaDetailsDto).toList()));
 
-			dto.setBillingDetails(mapEmploymentBillingDetails(employee));
+			dto.setBillingDetails(mapEmploymentBillableRateDetails(employee));
 		}
 
 		return dto;
 	}
 
-	private EmployeeEmploymentBillingDetailsDto mapEmploymentBillingDetails(Employee employee) {
+	private EmployeeEmploymentBillableRateDetailsDto mapEmploymentBillableRateDetails(Employee employee) {
 		if (!hasRole(userService.getCurrentUserRoles(), Role.PEOPLE_ADMIN)) {
 			return null;
 		}
 
 		return employeeBillableRateDao.findById(employee.getEmployeeId())
-			.map(peopleMapper::employeeBillableRateToEmployeeEmploymentBillingDetailsDto)
+			.map(peopleMapper::employeeBillableRateToEmployeeEmploymentBillableRateDetailsDto)
 			.orElse(null);
 	}
 

@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class EmployeeEmploymentBillingDetailsDto {
+public class EmployeeEmploymentBillableRateDetailsDto {
 
 	private Double billableRate;
 
