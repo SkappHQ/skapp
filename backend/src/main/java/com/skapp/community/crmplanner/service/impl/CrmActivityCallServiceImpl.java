@@ -155,6 +155,7 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 	@Transactional
 	public ResponseEntityDto createCall(CrmActivityCallCreateRequestDto requestDto) {
 		log.info("createCall: execution started");
+		validateActivityCreationLimit();
 
 		CrmValidations.validateCallSubject(requestDto.getSubject());
 		CrmValidations.validateCallContactId(requestDto.getContactId());
@@ -287,6 +288,9 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 
 		log.info("deleteCall: execution ended");
 		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_ACTIVITY_DELETED), false);
+	}
+
+	protected void validateActivityCreationLimit() {
 	}
 
 }
