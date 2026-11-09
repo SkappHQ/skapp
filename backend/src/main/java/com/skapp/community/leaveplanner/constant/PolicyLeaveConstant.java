@@ -37,4 +37,8 @@ public class PolicyLeaveConstant {
 
 	public static final long ALL_LEAVE_TYPES_ID = -1L;
 
+	public static final String SUPERVISION_TARGET_EMPLOYEE = "Employee";
+
+	public static final String SUPERVISION_ANALYTICS_LEAVE_UTILIZATION = "Leave Utilization";
+
 }
