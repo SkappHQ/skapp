@@ -186,15 +186,17 @@ const LogCallModalForm: FC<Props> = ({ formik, isDetailsOnly = false }) => {
       <ActivityAssociations
         isForcedOpen={isDealClearedNoticeVisible || isDealMismatch}
       >
-        <ActivityDealField
-          id="log-call-deal"
-          formik={formik}
-          fieldAriaLabel={translateAria(["deal"])}
-          isClearedNoticeVisible={isDealClearedNoticeVisible}
-          isMismatch={isDealMismatch}
-          onDealChange={() => setIsDealClearedNoticeVisible(false)}
-          {...(contactCompanyId && { filterCompanyId: contactCompanyId })}
-        />
+        {!isDetailsOnly && (
+          <ActivityDealField
+            id="log-call-deal"
+            formik={formik}
+            fieldAriaLabel={translateAria(["deal"])}
+            isClearedNoticeVisible={isDealClearedNoticeVisible}
+            isMismatch={isDealMismatch}
+            onDealChange={() => setIsDealClearedNoticeVisible(false)}
+            {...(contactCompanyId && { filterCompanyId: contactCompanyId })}
+          />
+        )}
         <ActivityRelatedToField
           id="log-call-related-to"
           formik={formik}

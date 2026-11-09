@@ -197,15 +197,17 @@ const AddActivityTaskModalForm: FC<Props> = ({
       <ActivityAssociations
         isForcedOpen={isDealClearedNoticeVisible || isDealMismatch}
       >
-        <ActivityDealField
-          id="add-task-deal"
-          formik={formik}
-          fieldAriaLabel={translateAria(["deal"])}
-          isClearedNoticeVisible={isDealClearedNoticeVisible}
-          isMismatch={isDealMismatch}
-          onDealChange={() => setIsDealClearedNoticeVisible(false)}
-          {...(contactCompanyId && { filterCompanyId: contactCompanyId })}
-        />
+        {!isDetailsOnly && (
+          <ActivityDealField
+            id="add-task-deal"
+            formik={formik}
+            fieldAriaLabel={translateAria(["deal"])}
+            isClearedNoticeVisible={isDealClearedNoticeVisible}
+            isMismatch={isDealMismatch}
+            onDealChange={() => setIsDealClearedNoticeVisible(false)}
+            {...(contactCompanyId && { filterCompanyId: contactCompanyId })}
+          />
+        )}
         <ActivityRelatedToField
           id="add-task-related-to"
           formik={formik}

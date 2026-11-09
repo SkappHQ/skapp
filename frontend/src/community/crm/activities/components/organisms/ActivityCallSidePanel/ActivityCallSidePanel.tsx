@@ -6,6 +6,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { ActivityRow } from "~community/crm/activities/types/activityTypes";
 import { toCallRow } from "~community/crm/activities/utils/activityFeedUtil";
+import { toDealEditPayload } from "~community/crm/activities/utils/activityUtil";
 import {
   useDeleteCall,
   useGetCallById,
@@ -108,6 +109,7 @@ const ActivityCallSidePanel: FC<Props> = ({ callId }) => {
         onTitleSave={(subject) => updateCall({ id: callId, subject })}
         onCommentsSave={(comments) => updateCall({ id: callId, comments })}
         onDelete={openDeleteModal}
+        onDealChange={(dealId) => updateCall(toDealEditPayload(callId, dealId))}
         onDetailsSave={updateCall}
       />
       <DeleteActivityModal

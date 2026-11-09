@@ -6,6 +6,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { ActivityRow } from "~community/crm/activities/types/activityTypes";
 import { toTaskRow } from "~community/crm/activities/utils/activityFeedUtil";
+import { toDealEditPayload } from "~community/crm/activities/utils/activityUtil";
 import {
   useDeleteActivityTask,
   useGetActivityTaskById,
@@ -114,6 +115,7 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId }) => {
         onDelete={openDeleteModal}
         onMarkAsDone={() => updateTask({ id: taskId, isCompleted: true })}
         onReopen={() => updateTask({ id: taskId, isCompleted: false })}
+        onDealChange={(dealId) => updateTask(toDealEditPayload(taskId, dealId))}
         onDetailsSave={updateTask}
       />
       <DeleteActivityModal

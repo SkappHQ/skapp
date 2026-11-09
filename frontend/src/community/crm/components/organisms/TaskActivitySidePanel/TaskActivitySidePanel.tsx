@@ -21,6 +21,7 @@ interface Props {
   related: ReactNode;
   onTitleSave: (title: string) => void;
   onCommentsSave: (comments: string) => void;
+  onDealChange: (dealId: number | null) => void;
   onDelete: () => void;
   onMarkAsDone: () => void;
   onReopen: () => void;
@@ -34,6 +35,7 @@ const TaskActivitySidePanel: FC<Props> = ({
   related,
   onTitleSave,
   onCommentsSave,
+  onDealChange,
   onDelete,
   onMarkAsDone,
   onReopen,
@@ -53,6 +55,7 @@ const TaskActivitySidePanel: FC<Props> = ({
       related={related}
       onTitleSave={onTitleSave}
       onCommentsSave={onCommentsSave}
+      onDealChange={onDealChange}
       icon={
         <ChecklistVerificationFilledIcon
           width={TASK_DETAIL_ICON_SIZE}

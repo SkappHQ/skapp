@@ -13,6 +13,7 @@ import {
 } from "~community/crm/constants/commonConstants";
 import { useCrmStore } from "~community/crm/store/store";
 import {
+  CrmActivityDealFormValues,
   CrmAddTaskFormValues,
   CrmLogCallFormValues,
   CrmLogEmailFormValues,
@@ -27,7 +28,8 @@ interface Props {
     | FormikProps<CrmLogCallFormValues>
     | FormikProps<CrmLogMeetingFormValues>
     | FormikProps<CrmAddTaskFormValues>
-    | FormikProps<CrmLogEmailFormValues>;
+    | FormikProps<CrmLogEmailFormValues>
+    | FormikProps<CrmActivityDealFormValues>;
   fieldAriaLabel: string;
   isClearedNoticeVisible?: boolean;
   isMismatch?: boolean;

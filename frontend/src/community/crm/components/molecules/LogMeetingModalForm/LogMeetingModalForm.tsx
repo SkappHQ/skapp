@@ -241,17 +241,19 @@ const LogMeetingModalForm: FC<Props> = ({ formik, isDetailsOnly = false }) => {
       <ActivityAssociations
         isForcedOpen={isDealClearedNoticeVisible || isDealMismatch}
       >
-        <ActivityDealField
-          id="log-meeting-deal"
-          formik={formik}
-          fieldAriaLabel={translateAria(["deal"])}
-          isClearedNoticeVisible={isDealClearedNoticeVisible}
-          isMismatch={isDealMismatch}
-          onDealChange={() => setIsDealClearedNoticeVisible(false)}
-          {...(attendeeCompanyIds.length === 1 && {
-            filterCompanyId: attendeeCompanyIds[0]
-          })}
-        />
+        {!isDetailsOnly && (
+          <ActivityDealField
+            id="log-meeting-deal"
+            formik={formik}
+            fieldAriaLabel={translateAria(["deal"])}
+            isClearedNoticeVisible={isDealClearedNoticeVisible}
+            isMismatch={isDealMismatch}
+            onDealChange={() => setIsDealClearedNoticeVisible(false)}
+            {...(attendeeCompanyIds.length === 1 && {
+              filterCompanyId: attendeeCompanyIds[0]
+            })}
+          />
+        )}
         <ActivityRelatedToField
           id="log-meeting-related-to"
           formik={formik}

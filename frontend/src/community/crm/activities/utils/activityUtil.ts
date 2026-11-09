@@ -197,3 +197,9 @@ export const toActivityTaskEditPayload = (
   ...(values.contactId &&
     values.contactId !== saved.contactId && { contactId: values.contactId })
 });
+
+export const toDealEditPayload = (
+  id: number,
+  dealId: number | null
+): ActivityLinkEditPayload & { id: number } =>
+  dealId ? { id, dealId } : { id, isDealRemoved: true };

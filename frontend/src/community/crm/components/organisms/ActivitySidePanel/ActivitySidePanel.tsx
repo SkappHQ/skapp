@@ -10,8 +10,8 @@ import { useShallow } from "zustand/react/shallow";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import SidePanelActivityComments from "~community/crm/components/molecules/SidePanelActivityComments/SidePanelActivityComments";
+import SidePanelActivityDeal from "~community/crm/components/molecules/SidePanelActivityDeal/SidePanelActivityDeal";
 import SidePanelActivityTitle from "~community/crm/components/molecules/SidePanelActivityTitle/SidePanelActivityTitle";
-import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
 import SidePanelHeaderSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
 import { useCrmStore } from "~community/crm/store/store";
@@ -38,6 +38,7 @@ interface Props {
   related?: ReactNode;
   onTitleSave: (title: string) => void;
   onCommentsSave: (comments: string) => void;
+  onDealChange: (dealId: number | null) => void;
 }
 
 const ActivitySidePanel: FC<Props> = ({
@@ -57,7 +58,8 @@ const ActivitySidePanel: FC<Props> = ({
   info,
   related,
   onTitleSave,
-  onCommentsSave
+  onCommentsSave,
+  onDealChange
 }) => {
   const translateText = useTranslator(
     "crmModule",
@@ -157,11 +159,11 @@ const ActivitySidePanel: FC<Props> = ({
             <div className="flex flex-col gap-3">
               <h2 className="h2">{translateText(["dealsTitle"])}</h2>
               <hr className="border-secondary-accent" />
-              <SidePanelDealSection
-                dealIds={deal?.id && deals[deal.id] ? [deal.id] : []}
-                showAddDealAction={false}
-                emptyHeightClassName="h-[163px]"
+              <SidePanelActivityDeal
+                id={id}
+                dealId={deal && deal.id && deals[deal.id] ? deal.id : null}
                 emptyDescription={emptyDealsDescription}
+                onDealChange={onDealChange}
               />
             </div>
 

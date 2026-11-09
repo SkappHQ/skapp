@@ -15,6 +15,7 @@ interface Props {
   related: ReactNode;
   onTitleSave: (title: string) => void;
   onCommentsSave: (comments: string) => void;
+  onDealChange: (dealId: number | null) => void;
   onDetailsSave: (payload: ActivityCallEditPayload) => void;
   onDelete: () => void;
 }
@@ -26,6 +27,7 @@ const CallSidePanel: FC<Props> = ({
   related,
   onTitleSave,
   onCommentsSave,
+  onDealChange,
   onDetailsSave,
   onDelete
 }) => {
@@ -45,6 +47,7 @@ const CallSidePanel: FC<Props> = ({
       related={related}
       onTitleSave={onTitleSave}
       onCommentsSave={onCommentsSave}
+      onDealChange={onDealChange}
       icon={
         <PhoneFilledIcon
           width={TASK_DETAIL_ICON_SIZE}

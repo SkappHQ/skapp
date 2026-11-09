@@ -236,7 +236,10 @@
       "deleteModal": {
         "confirm": "Delete activity",
         "cancel": "Cancel deleting activity"
-      }
+      },
+      "addDeal": "Add a deal to this activity",
+      "removeDeal": "Remove the deal from this activity",
+      "dealSearch": "Search deals to link"
     }
   }
 }

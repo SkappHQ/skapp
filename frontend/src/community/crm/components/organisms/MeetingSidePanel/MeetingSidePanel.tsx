@@ -15,6 +15,7 @@ interface Props {
   related: ReactNode;
   onTitleSave: (title: string) => void;
   onCommentsSave: (comments: string) => void;
+  onDealChange: (dealId: number | null) => void;
   onDelete: () => void;
   onDetailsSave: (payload: ActivityMeetingEditPayload) => void;
 }
@@ -26,6 +27,7 @@ const MeetingSidePanel: FC<Props> = ({
   related,
   onTitleSave,
   onCommentsSave,
+  onDealChange,
   onDelete,
   onDetailsSave
 }) => {
@@ -49,6 +51,7 @@ const MeetingSidePanel: FC<Props> = ({
       related={related}
       onTitleSave={onTitleSave}
       onCommentsSave={onCommentsSave}
+      onDealChange={onDealChange}
       icon={
         <MeetingFilledIcon
           width={TASK_DETAIL_ICON_SIZE}
