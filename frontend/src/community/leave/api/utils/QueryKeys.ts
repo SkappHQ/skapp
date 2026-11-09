@@ -358,6 +358,14 @@ export const policyLeaveQueryKeys = {
   LEAVE_TYPE_BREAKDOWN: (teamId: number | string) => [
     ...policyLeaveQueryKeys.ALL_LEAVE_TYPE_BREAKDOWN(),
     teamId
+  ],
+  ALL_EMPLOYEE_LEAVE_UTILIZATION: () => [
+    ...policyLeaveQueryKeys.ALL,
+    "employee-leave-utilization"
+  ],
+  EMPLOYEE_LEAVE_UTILIZATION: (employeeId: number) => [
+    ...policyLeaveQueryKeys.ALL_EMPLOYEE_LEAVE_UTILIZATION(),
+    employeeId
   ]
 };
 

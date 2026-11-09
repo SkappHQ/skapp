@@ -25,6 +25,7 @@ import {
 import {
   EmployeePolicyBalanceType,
   EmployeePolicyBalancesResponse,
+  PolicyEmployeeLeaveUtilizationResponse,
   PolicyEmployeesOnLeaveResponse,
   PolicyEmployeesOnLeaveType,
   PolicyLeaveAvailabilityPayload,
@@ -194,6 +195,28 @@ export const useGetPolicyLeaveTypeBreakdown = (
   });
 };
 
+const getPolicyEmployeeLeaveUtilization = async (
+  employeeId: number
+): Promise<PolicyEmployeeLeaveUtilizationResponse> => {
+  const response = await authFetch.get<PolicyEmployeeLeaveUtilizationResponse>(
+    policyLeaveEndPoints.GET_EMPLOYEE_LEAVE_UTILIZATION(employeeId),
+    { params: { leaveTypeIds: ALL_POLICY_LEAVE_TYPES_ID } }
+  );
+  return response.data;
+};
+
+export const useGetPolicyEmployeeLeaveUtilization = (
+  employeeId: number,
+  enabled = true
+): UseQueryResult<LeaveTypeBreakDownReturnTypes> => {
+  return useQuery({
+    queryKey: policyLeaveQueryKeys.EMPLOYEE_LEAVE_UTILIZATION(employeeId),
+    queryFn: () => getPolicyEmployeeLeaveUtilization(employeeId),
+    select: (data) => leaveTypeBreakdownPreProcessor(data?.results?.[0]),
+    enabled: enabled && !!employeeId
+  });
+};
+
 const getMyPolicyLeaveRequestsPage = async (
   queryParams: PolicyLeaveRequestQueryParams
 ): Promise<PolicyLeaveRequestPageType> => {
@@ -305,6 +328,9 @@ export const useApplyPolicyLeave = (
       });
       queryClient.invalidateQueries({
         queryKey: policyLeaveQueryKeys.ALL_LEAVE_TYPE_BREAKDOWN()
+      });
+      queryClient.invalidateQueries({
+        queryKey: policyLeaveQueryKeys.ALL_EMPLOYEE_LEAVE_UTILIZATION()
       });
       onSuccess(data);
     },

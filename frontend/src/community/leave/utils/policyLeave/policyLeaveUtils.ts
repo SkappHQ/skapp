@@ -37,6 +37,8 @@ import {
   PolicyLeaveRequestQueryParams,
   PolicyLeaveRequestStatus,
   PolicyLeaveRequestType,
+  PolicyLeaveUtilizationSource,
+  PolicyLeaveUtilizationSourceParams,
   PolicyLeaveValidationFailure,
   PolicyResourceAvailabilityDayType,
   PolicyResourceAvailabilityEmployeeType,
@@ -503,3 +505,16 @@ export const toResourceAvailabilityPayloads = (
       }
     }))
   }));
+
+export const getPolicyLeaveUtilizationSource = ({
+  isProTier,
+  isLeavePoliciesEnabled,
+  isLeavePolicyConfigLoading
+}: PolicyLeaveUtilizationSourceParams): PolicyLeaveUtilizationSource => {
+  const isConfigResolved = isProTier && !isLeavePolicyConfigLoading;
+
+  return {
+    isLegacyEnabled: isConfigResolved && !isLeavePoliciesEnabled,
+    isPolicyEnabled: isConfigResolved && isLeavePoliciesEnabled
+  };
+};
