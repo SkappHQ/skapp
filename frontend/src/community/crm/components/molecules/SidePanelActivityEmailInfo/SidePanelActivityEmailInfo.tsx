@@ -28,6 +28,8 @@ const SidePanelActivityEmailInfo: FC<Props> = ({
     "emailSidePanel"
   );
 
+  const loggedAt = DateTime.fromISO(email.loggedAt);
+
   return (
     <div className="flex flex-col gap-4">
       <SidePanelEmailRecipients
@@ -65,9 +67,9 @@ const SidePanelActivityEmailInfo: FC<Props> = ({
             </span>
           </PropertyRow>
         }
-        date={DateTime.fromISO(email.loggedAt)}
+        date={loggedAt}
         dateLabel={translateText(["activitySidePanel", "info", "date"])}
-        startTime={DateTime.fromISO(email.loggedAt)}
+        startTime={loggedAt}
         startTimeLabel={translateText(["emailSidePanel", "info", "time"])}
         owner={owner}
         companyName={email.company?.name}
