@@ -102,3 +102,6 @@ databaseChangeLog:
       file: classpath:community/db/changelog/ddl-script/crm-ddl-script-v1-alter-table-crm-activity-meeting-drop-column-calendar-provider.sql
   - include:
       file: classpath:community/db/changelog/ddl-script/crm-ddl-script-v1-alter-table-crm-activity-email-add-column-from-address.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-create-table-ppl-employee-billable-rate.sql
+
