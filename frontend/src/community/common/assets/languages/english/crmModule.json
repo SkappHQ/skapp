@@ -615,6 +615,19 @@
         "dueDate": "Due date"
       }
     },
+    "emailSidePanel": {
+      "noDealsDescription": "No deals are linked to this email",
+      "deleteEmail": "Delete email",
+      "description": "Description",
+      "noDescription": "No description added",
+      "info": {
+        "to": "To",
+        "cc": "Cc",
+        "bcc": "Bcc",
+        "from": "From",
+        "time": "Time"
+      }
+    },
     "callSidePanel": {
       "noDealsDescription": "No deals are linked to this call",
       "editCall": "Edit call",
@@ -898,10 +911,7 @@
           "location": "Location is required for in-person meetings"
         },
         "location": {
-          "suggestions": "Location suggestions",
-          "searching": "Searching...",
           "noPlaces": "No places found",
-          "missingApiKey": "Google Maps isn't set up. NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is missing.",
           "openInMaps": "Open in Google Maps"
         },
         "toastMessages": {

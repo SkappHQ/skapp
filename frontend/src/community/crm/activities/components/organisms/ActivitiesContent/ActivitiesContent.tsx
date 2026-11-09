@@ -10,6 +10,7 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import ActivityCallSidePanel from "~community/crm/activities/components/organisms/ActivityCallSidePanel/ActivityCallSidePanel";
+import ActivityEmailSidePanel from "~community/crm/activities/components/organisms/ActivityEmailSidePanel/ActivityEmailSidePanel";
 import ActivityFeed from "~community/crm/activities/components/organisms/ActivityFeed/ActivityFeed";
 import ActivityMeetingSidePanel from "~community/crm/activities/components/organisms/ActivityMeetingSidePanel/ActivityMeetingSidePanel";
 import ActivityTaskSidePanel from "~community/crm/activities/components/organisms/ActivityTaskSidePanel/ActivityTaskSidePanel";
@@ -43,6 +44,7 @@ import { useGetDealsByIds } from "~community/crm/api/DealApi";
 import AddActivityTaskModalContent from "~community/crm/components/molecules/AddActivityTaskModalContent/AddActivityTaskModalContent";
 import ConnectGoogleCalendarModal from "~community/crm/components/molecules/ConnectGoogleCalendarModal/ConnectGoogleCalendarModal";
 import LogCallModalContent from "~community/crm/components/molecules/LogCallModalContent/LogCallModalContent";
+import LogEmailModalContent from "~community/crm/components/molecules/LogEmailModalContent/LogEmailModalContent";
 import LogMeetingModalContent from "~community/crm/components/molecules/LogMeetingModalContent/LogMeetingModalContent";
 import ScheduleMeetingModalContent from "~community/crm/components/molecules/ScheduleMeetingModalContent/ScheduleMeetingModalContent";
 import ScheduleMeetingUpgradeModal from "~community/crm/components/molecules/ScheduleMeetingUpgradeModal/ScheduleMeetingUpgradeModal";
@@ -105,6 +107,7 @@ const ActivitiesContent: FC = () => {
     );
   };
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
+  const [isLogEmailModalOpen, setIsLogEmailModalOpen] = useState(false);
 
   const isAllTab = activeTab === ActivityTab.ALL;
 
@@ -114,11 +117,13 @@ const ActivitiesContent: FC = () => {
     selectedCallId,
     selectedMeetingId,
     selectedActivityTaskId,
+    selectedEmailId,
     isCrmSidePanelOpen,
     setDeals,
     setSelectedCallId,
     setSelectedMeetingId,
     setSelectedActivityTaskId,
+    setSelectedEmailId,
     openCrmSidePanel
   } = useCrmStore(
     useShallow((store) => ({
@@ -127,11 +132,13 @@ const ActivitiesContent: FC = () => {
       selectedCallId: store.selectedCallId,
       selectedMeetingId: store.selectedMeetingId,
       selectedActivityTaskId: store.selectedActivityTaskId,
+      selectedEmailId: store.selectedEmailId,
       isCrmSidePanelOpen: store.isCrmSidePanelOpen,
       setDeals: store.setDeals,
       setSelectedCallId: store.setSelectedCallId,
       setSelectedMeetingId: store.setSelectedMeetingId,
       setSelectedActivityTaskId: store.setSelectedActivityTaskId,
+      setSelectedEmailId: store.setSelectedEmailId,
       openCrmSidePanel: store.openCrmSidePanel
     }))
   );
@@ -180,7 +187,8 @@ const ActivitiesContent: FC = () => {
   }[activeTab];
 
   const pages: ActivityFeedResponse[] = useMemo(() => {
-    if (isAllTab && feed.data) return feed.data.pages;
+    if (isAllTab && feed.data)
+      return feed.data.pages.filter((page) => Boolean(page));
     if (activeTab === ActivityTab.CALLS && calls.data)
       return toSingleFeedPage(calls.data.map(toCallRow));
     if (activeTab === ActivityTab.EMAILS && emails.data)
@@ -223,7 +231,7 @@ const ActivitiesContent: FC = () => {
   }, [fetchedDeals]);
 
   const resultCount =
-    isAllTab && feed.data ? feed.data.pages[0].totalItems : rows.length;
+    isAllTab && pages.length > 0 ? pages[0].totalItems : rows.length;
   const hasActiveFilters =
     searchTerm.length > 0 || Object.keys(filters).length > 0;
   const showControls =
@@ -242,6 +250,10 @@ const ActivitiesContent: FC = () => {
       case ActivityType.TASK:
         setSelectedActivityTaskId(row.id);
         openCrmSidePanel(CrmSidePanelTypes.ACTIVITY_TASK_SIDE_PANEL);
+        break;
+      case ActivityType.EMAIL:
+        setSelectedEmailId(row.id);
+        openCrmSidePanel(CrmSidePanelTypes.EMAIL_SIDE_PANEL);
         break;
       default:
         break;
@@ -315,7 +327,10 @@ const ActivitiesContent: FC = () => {
           setIsLogMeetingModalOpen(true)
         )
     },
-    [ActivityTab.EMAILS]: null
+    [ActivityTab.EMAILS]: {
+      labelKey: "logEmailBtn",
+      onClick: () => setIsLogEmailModalOpen(true)
+    }
   };
 
   const toolbarAction = toolbarActions[activeTab];
@@ -403,6 +418,9 @@ const ActivitiesContent: FC = () => {
           onClose={() => setIsAddTaskModalOpen(false)}
         />
       )}
+      {isLogEmailModalOpen && (
+        <LogEmailModalContent onClose={() => setIsLogEmailModalOpen(false)} />
+      )}
       <ActivityFeed
         activeTab={activeTab}
         pages={pages}
@@ -431,6 +449,11 @@ const ActivitiesContent: FC = () => {
       {selectedActivityTaskId !== null && (
         <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
           <ActivityTaskSidePanel taskId={selectedActivityTaskId} />
+        </SidePanelWrapper>
+      )}
+      {selectedEmailId !== null && (
+        <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
+          <ActivityEmailSidePanel emailId={selectedEmailId} />
         </SidePanelWrapper>
       )}
     </div>

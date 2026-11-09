@@ -6,6 +6,7 @@ import {
   useQueryClient
 } from "@tanstack/react-query";
 
+import { invalidateAttendanceLeaveQueries } from "~community/attendance/api/utils/invalidateAttendanceQueries";
 import { ErrorResponse } from "~community/common/types/CommonTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { policyLeaveReviewEndPoints } from "~community/leave/api/utils/ApiEndpoints";
@@ -114,6 +115,7 @@ export const useReviewPolicyLeaveRequest = (
         queryKey: policyLeaveReviewQueryKeys.ALL
       });
       queryClient.invalidateQueries({ queryKey: policyLeaveQueryKeys.ALL });
+      invalidateAttendanceLeaveQueries(queryClient);
       onSuccess(data);
     },
     onError: (error: ErrorResponse) => {

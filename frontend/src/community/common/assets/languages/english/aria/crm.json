@@ -146,6 +146,12 @@
     "taskSidePanel": {
       "kebabMenu": "Task actions"
     },
+    "emailSidePanel": {
+      "kebabMenu": "Email actions",
+      "to": "Email to recipients",
+      "cc": "Email cc recipients",
+      "bcc": "Email bcc recipients"
+    },
     "callSidePanel": {
       "kebabMenu": "Call actions"
     },
@@ -157,7 +163,6 @@
         "to": "Email to recipients",
         "cc": "Email cc recipients",
         "bcc": "Email bcc recipients",
-        "removeRecipient": "Remove recipient {{name}}",
         "subject": "Email subject",
         "description": "Email description",
         "deal": "Email deal",
@@ -232,7 +237,8 @@
         "cancel": "Cancel schedule a meeting",
         "save": "Schedule meeting",
         "venue": "Meeting venue",
-        "location": "Meeting location"
+        "location": "Meeting location",
+        "locationSuggestions": "Location suggestions"
       }
     }
   }

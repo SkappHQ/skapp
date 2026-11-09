@@ -24,6 +24,10 @@ public class CrmActivityMeetingResponseDto {
 
 	private String location;
 
+	private String locationAddress;
+
+	private String locationUrl;
+
 	private LocalDate meetingDate;
 
 	private Instant startAt;
@@ -39,5 +43,11 @@ public class CrmActivityMeetingResponseDto {
 	private Long companyId;
 
 	private List<Long> contactIds;
+
+	private List<CrmContactLookupResponseDto> contacts;
+
+	private CrmDealResponseDto deal;
+
+	private CrmCompanyLookupResponseDto company;
 
 }

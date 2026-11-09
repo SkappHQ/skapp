@@ -31,6 +31,7 @@ import {
 import { crmActivityEndpoints } from "~community/crm/api/utils/ApiEndpoints";
 import { crmActivityQueryKeys } from "~community/crm/api/utils/QueryKeys";
 import {
+  CrmActivityEmailEntity,
   CrmActivityTaskEntity,
   CrmCallEntity,
   CrmMeetingEntity,
@@ -299,7 +300,7 @@ const checkMeetingOverlaps = async (
     crmActivityEndpoints.SCHEDULE_MEETING_OVERLAPS,
     { params }
   );
-  return response.data.results;
+  return response?.data?.results;
 };
 
 export const useCheckMeetingOverlaps = (
@@ -354,6 +355,24 @@ export const useGetActivityTaskById = (
   useQuery({
     queryKey: crmActivityQueryKeys.TASK(id),
     queryFn: () => fetchTaskById(id),
+    enabled,
+    refetchOnWindowFocus: false
+  });
+
+const fetchEmailById = async (id: number): Promise<CrmActivityEmailEntity> => {
+  const response = await authFetch.get(
+    crmActivityEndpoints.GET_EMAIL_BY_ID(id)
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useGetEmailById = (
+  id: number,
+  enabled: boolean
+): UseQueryResult<CrmActivityEmailEntity, AxiosError> =>
+  useQuery({
+    queryKey: crmActivityQueryKeys.EMAIL(id),
+    queryFn: () => fetchEmailById(id),
     enabled,
     refetchOnWindowFocus: false
   });

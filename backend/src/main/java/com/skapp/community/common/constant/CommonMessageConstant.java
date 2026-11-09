@@ -146,7 +146,8 @@ public enum CommonMessageConstant implements MessageConstant {
 	COMMON_ERROR_BUSINESS_UNIT_TRANSFER_TARGET_INVALID("api.error.common.business-unit-transfer-target-invalid"),
 	COMMON_ERROR_YAML_READ_FAILED("api.error.common.yaml-read-failed"),
 	COMMON_ERROR_ORGANIZATION_TIMEZONE_NOT_CONFIGURED("api.error.common.organization.timezone-not-configured"),
-	COMMON_ERROR_PASSWORD_RESET_NOT_ALLOWED("api.error.common.password-reset-not-allowed");
+	COMMON_ERROR_PASSWORD_RESET_NOT_ALLOWED("api.error.common.password-reset-not-allowed"),
+	COMMON_ERROR_VALIDATION_PASSWORD_LENGTH("api.error.common.validation.password-length");
 
 	private final String messageKey;
 

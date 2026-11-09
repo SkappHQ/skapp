@@ -2,11 +2,17 @@ package com.skapp.community.leaveplanner.repository.impl;
 
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.User_;
+import com.skapp.community.common.model.WorkLocation;
+import com.skapp.community.common.model.WorkLocation_;
+import com.skapp.community.common.type.CriteriaBuilderSqlFunction;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
 import com.skapp.community.leaveplanner.model.LeavePolicy_;
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequest_;
 import com.skapp.community.leaveplanner.model.PolicyLeaveType_;
+import com.skapp.community.leaveplanner.payload.PolicyLeaveDateWindowDto;
+import com.skapp.community.leaveplanner.payload.PolicyLeaveMonthlyDurationDto;
+import com.skapp.community.leaveplanner.payload.PolicyLeaveSpanDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveUsageDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.repository.PolicyLeaveRequestRepository;
@@ -27,6 +33,7 @@ import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Fetch;
 import jakarta.persistence.criteria.From;
 import jakarta.persistence.criteria.Join;
@@ -284,6 +291,188 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
+	@Override
+	public List<PolicyLeaveMonthlyDurationDto> findApprovedSingleMonthDurations(LocalDate startDate, LocalDate endDate,
+			List<Long> leaveTypeIds, List<Long> teamIds, Long supervisorEmployeeId) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<PolicyLeaveMonthlyDurationDto> criteriaQuery = criteriaBuilder
+			.createQuery(PolicyLeaveMonthlyDurationDto.class);
+		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
+		Join<PolicyLeaveRequest, Employee> employee = root.join(PolicyLeaveRequest_.employee);
+		Path<Long> leaveTypeId = root.get(PolicyLeaveRequest_.policy)
+			.get(LeavePolicy_.leaveType)
+			.get(PolicyLeaveType_.id);
+		Expression<Integer> year = criteriaBuilder.function(CriteriaBuilderSqlFunction.YEAR.getFunctionName(),
+				Integer.class, root.get(PolicyLeaveRequest_.startDate));
+		Expression<Integer> month = criteriaBuilder.function(CriteriaBuilderSqlFunction.MONTH.getFunctionName(),
+				Integer.class, root.get(PolicyLeaveRequest_.startDate));
+
+		List<Predicate> predicates = buildApprovedLeaveInWindowPredicates(criteriaBuilder, criteriaQuery, root,
+				employee, startDate, endDate, leaveTypeIds, teamIds, supervisorEmployeeId);
+		predicates.add(singleMonthWithinWindowPredicate(criteriaBuilder, root, startDate, endDate));
+
+		criteriaQuery
+			.select(criteriaBuilder.construct(PolicyLeaveMonthlyDurationDto.class, leaveTypeId, year, month,
+					criteriaBuilder.sumAsDouble(root.get(PolicyLeaveRequest_.durationDays))))
+			.where(predicates.toArray(new Predicate[0]))
+			.groupBy(leaveTypeId, year, month);
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
+	@Override
+	public List<PolicyLeaveSpanDto> findApprovedMultiMonthSpans(LocalDate startDate, LocalDate endDate,
+			List<Long> leaveTypeIds, List<Long> teamIds, Long supervisorEmployeeId) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<PolicyLeaveSpanDto> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveSpanDto.class);
+		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
+		Join<PolicyLeaveRequest, Employee> employee = root.join(PolicyLeaveRequest_.employee);
+		Join<Employee, WorkLocation> workLocation = employee.join(Employee_.workLocation, JoinType.LEFT);
+
+		List<Predicate> predicates = buildApprovedLeaveInWindowPredicates(criteriaBuilder, criteriaQuery, root,
+				employee, startDate, endDate, leaveTypeIds, teamIds, supervisorEmployeeId);
+		predicates
+			.add(criteriaBuilder.not(singleMonthWithinWindowPredicate(criteriaBuilder, root, startDate, endDate)));
+
+		criteriaQuery
+			.select(criteriaBuilder.construct(PolicyLeaveSpanDto.class,
+					root.get(PolicyLeaveRequest_.policy).get(LeavePolicy_.leaveType).get(PolicyLeaveType_.id),
+					root.get(PolicyLeaveRequest_.startDate), root.get(PolicyLeaveRequest_.endDate),
+					root.get(PolicyLeaveRequest_.durationDays), workLocation.get(WorkLocation_.workLocationId)))
+			.where(predicates.toArray(new Predicate[0]));
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
+	@Override
+	public List<PolicyLeaveRequest> findEmployeesRequestsInRange(Collection<Long> employeeIds,
+			Collection<LeaveRequestStatus> statuses, LocalDate startDate, LocalDate endDate, boolean activeUsersOnly) {
+		if (CollectionUtils.isEmpty(employeeIds)) {
+			return List.of();
+		}
+
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<PolicyLeaveRequest> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveRequest.class);
+		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
+		fetchPolicy(root);
+
+		List<Predicate> predicates = buildDateRangePredicates(criteriaBuilder, root, statuses, startDate, endDate);
+		predicates.add(root.get(PolicyLeaveRequest_.employee).get(Employee_.employeeId).in(employeeIds));
+
+		if (activeUsersOnly) {
+			predicates.add(criteriaBuilder
+				.isTrue(root.join(PolicyLeaveRequest_.employee).join(Employee_.user).get(User_.isActive)));
+		}
+
+		criteriaQuery.select(root).where(predicates.toArray(new Predicate[0]));
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
+	@Override
+	public List<PolicyLeaveRequest> findTeamRequestsInRange(Long teamId, Collection<LeaveRequestStatus> statuses,
+			LocalDate startDate, LocalDate endDate) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<PolicyLeaveRequest> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveRequest.class);
+		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
+		fetchPolicy(root);
+		Join<PolicyLeaveRequest, Employee> employee = root.join(PolicyLeaveRequest_.employee);
+
+		Subquery<Long> teamMembers = criteriaQuery.subquery(Long.class);
+		Root<EmployeeTeam> employeeTeam = teamMembers.from(EmployeeTeam.class);
+		teamMembers.select(employeeTeam.get(EmployeeTeam_.employee).get(Employee_.employeeId))
+			.where(criteriaBuilder.equal(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId), teamId));
+
+		List<Predicate> predicates = buildDateRangePredicates(criteriaBuilder, root, statuses, startDate, endDate);
+		predicates.add(criteriaBuilder.isTrue(employee.join(Employee_.user).get(User_.isActive)));
+		predicates.add(employee.get(Employee_.employeeId).in(teamMembers));
+
+		criteriaQuery.select(root).where(predicates.toArray(new Predicate[0]));
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
+	@Override
+	public List<PolicyLeaveDateWindowDto> findUpcomingRequestDateWindows(Collection<LeaveRequestStatus> statuses,
+			LocalDate fromDate) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<PolicyLeaveDateWindowDto> criteriaQuery = criteriaBuilder
+			.createQuery(PolicyLeaveDateWindowDto.class);
+		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
+		Join<PolicyLeaveRequest, Employee> employee = root.join(PolicyLeaveRequest_.employee);
+
+		criteriaQuery
+			.select(criteriaBuilder.construct(PolicyLeaveDateWindowDto.class, root.get(PolicyLeaveRequest_.startDate),
+					root.get(PolicyLeaveRequest_.endDate)))
+			.where(criteriaBuilder.isTrue(employee.join(Employee_.user).get(User_.isActive)),
+					root.get(PolicyLeaveRequest_.status).in(statuses),
+					criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), fromDate));
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
+	@Override
+	public List<PolicyLeaveRequest> findUpcomingRequests(Collection<LeaveRequestStatus> statuses, LocalDate fromDate) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<PolicyLeaveRequest> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveRequest.class);
+		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
+		fetchPolicy(root);
+		Join<PolicyLeaveRequest, Employee> employee = (Join<PolicyLeaveRequest, Employee>) root
+			.fetch(PolicyLeaveRequest_.employee, JoinType.INNER);
+		Join<Employee, User> user = (Join<Employee, User>) employee.fetch(Employee_.user, JoinType.INNER);
+
+		criteriaQuery.select(root)
+			.where(criteriaBuilder.isTrue(user.get(User_.isActive)), root.get(PolicyLeaveRequest_.status).in(statuses),
+					criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), fromDate));
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
+	private List<Predicate> buildApprovedLeaveInWindowPredicates(CriteriaBuilder criteriaBuilder,
+			CriteriaQuery<?> criteriaQuery, Root<PolicyLeaveRequest> root, Join<PolicyLeaveRequest, Employee> employee,
+			LocalDate startDate, LocalDate endDate, List<Long> leaveTypeIds, List<Long> teamIds,
+			Long supervisorEmployeeId) {
+		List<Predicate> predicates = buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee, teamIds,
+				supervisorEmployeeId);
+		predicates.add(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.status), LeaveRequestStatus.APPROVED));
+		predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get(PolicyLeaveRequest_.startDate), endDate));
+		predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), startDate));
+
+		if (!CollectionUtils.isEmpty(leaveTypeIds)) {
+			predicates.add(root.get(PolicyLeaveRequest_.policy)
+				.get(LeavePolicy_.leaveType)
+				.get(PolicyLeaveType_.id)
+				.in(leaveTypeIds));
+		}
+
+		return predicates;
+	}
+
+	private Predicate singleMonthWithinWindowPredicate(CriteriaBuilder criteriaBuilder, Root<PolicyLeaveRequest> root,
+			LocalDate startDate, LocalDate endDate) {
+		Path<LocalDate> requestStart = root.get(PolicyLeaveRequest_.startDate);
+		Path<LocalDate> requestEnd = root.get(PolicyLeaveRequest_.endDate);
+
+		return criteriaBuilder.and(criteriaBuilder.greaterThanOrEqualTo(requestStart, startDate),
+				criteriaBuilder.lessThanOrEqualTo(requestEnd, endDate),
+				criteriaBuilder.equal(
+						criteriaBuilder.function(CriteriaBuilderSqlFunction.YEAR.getFunctionName(), Integer.class,
+								requestStart),
+						criteriaBuilder.function(CriteriaBuilderSqlFunction.YEAR.getFunctionName(), Integer.class,
+								requestEnd)),
+				criteriaBuilder.equal(
+						criteriaBuilder.function(CriteriaBuilderSqlFunction.MONTH.getFunctionName(), Integer.class,
+								requestStart),
+						criteriaBuilder.function(CriteriaBuilderSqlFunction.MONTH.getFunctionName(), Integer.class,
+								requestEnd)));
+	}
+
 	private void fetchPolicy(Root<PolicyLeaveRequest> root) {
 		Fetch<PolicyLeaveRequest, LeavePolicy> policy = root.fetch(PolicyLeaveRequest_.policy, JoinType.LEFT);
 		policy.fetch(LeavePolicy_.leaveType, JoinType.LEFT);
@@ -442,6 +631,23 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 						searchString),
 				criteriaBuilder.like(criteriaBuilder.lower(user.get(User_.EMAIL)), searchString),
 				criteriaBuilder.like(criteriaBuilder.lower(employee.get(Employee_.LAST_NAME)), searchString));
+	}
+
+	private List<Predicate> buildDateRangePredicates(CriteriaBuilder criteriaBuilder, Root<PolicyLeaveRequest> root,
+			Collection<LeaveRequestStatus> statuses, LocalDate startDate, LocalDate endDate) {
+		List<Predicate> predicates = new ArrayList<>();
+
+		predicates.add(root.get(PolicyLeaveRequest_.status).in(statuses));
+
+		if (startDate != null) {
+			predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), startDate));
+		}
+
+		if (endDate != null) {
+			predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get(PolicyLeaveRequest_.startDate), endDate));
+		}
+
+		return predicates;
 	}
 
 }
