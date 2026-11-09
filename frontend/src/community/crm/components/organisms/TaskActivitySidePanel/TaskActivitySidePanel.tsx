@@ -67,8 +67,8 @@ const TaskActivitySidePanel: FC<Props> = ({
         isCompleted
           ? [
               {
-                id: "reopen",
-                label: translateText(["tasks", "sidePanel", "reopenTask"]),
+                id: "undo",
+                label: translateText(["activities", "taskSidePanel", "undo"]),
                 icon: { start: <UndoIcon width="16px" height="16px" /> },
                 onClick: onReopen
               }

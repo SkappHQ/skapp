@@ -22,9 +22,10 @@ import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 
 interface Props {
   taskId: number;
+  onAdd: () => void;
 }
 
-const ActivityTaskSidePanel: FC<Props> = ({ taskId }) => {
+const ActivityTaskSidePanel: FC<Props> = ({ taskId, onAdd }) => {
   const translateText = useTranslator("crmModule");
   const { setToastMessage } = useToast();
   const router = useRouter();
@@ -153,6 +154,11 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId }) => {
     }
   };
 
+  const handleAdd = (): void => {
+    handleClose();
+    onAdd();
+  };
+
   const handleRelatedRowClick = (row: ActivityRow): void => {
     setSelectedActivityTaskId(row.id);
   };
@@ -181,6 +187,8 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId }) => {
               "taskSidePanel",
               "noRelatedDescription"
             ])}
+            addLabel={translateText(["activities", "toolbar", "addTaskBtn"])}
+            onAdd={handleAdd}
             onRowClick={handleRelatedRowClick}
           />
         }

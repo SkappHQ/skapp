@@ -22,9 +22,10 @@ import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 
 interface Props {
   meetingId: number;
+  onAdd: () => void;
 }
 
-const ActivityMeetingSidePanel: FC<Props> = ({ meetingId }) => {
+const ActivityMeetingSidePanel: FC<Props> = ({ meetingId, onAdd }) => {
   const translateText = useTranslator("crmModule");
   const { setToastMessage } = useToast();
   const router = useRouter();
@@ -143,6 +144,11 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId }) => {
     }
   };
 
+  const handleAdd = (): void => {
+    handleClose();
+    onAdd();
+  };
+
   const handleRelatedRowClick = (row: ActivityRow): void => {
     setSelectedMeetingId(row.id);
   };
@@ -171,6 +177,8 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId }) => {
               "meetingSidePanel",
               "noRelatedDescription"
             ])}
+            addLabel={translateText(["activities", "toolbar", "logMeetingBtn"])}
+            onAdd={handleAdd}
             onRowClick={handleRelatedRowClick}
           />
         }

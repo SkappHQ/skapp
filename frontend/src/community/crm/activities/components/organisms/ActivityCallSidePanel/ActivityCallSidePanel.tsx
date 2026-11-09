@@ -22,9 +22,10 @@ import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 
 interface Props {
   callId: number;
+  onAdd: () => void;
 }
 
-const ActivityCallSidePanel: FC<Props> = ({ callId }) => {
+const ActivityCallSidePanel: FC<Props> = ({ callId, onAdd }) => {
   const translateText = useTranslator("crmModule");
   const { setToastMessage } = useToast();
   const router = useRouter();
@@ -149,6 +150,11 @@ const ActivityCallSidePanel: FC<Props> = ({ callId }) => {
     }
   };
 
+  const handleAdd = (): void => {
+    handleClose();
+    onAdd();
+  };
+
   const handleRelatedRowClick = (row: ActivityRow): void => {
     setSelectedCallId(row.id);
   };
@@ -177,6 +183,8 @@ const ActivityCallSidePanel: FC<Props> = ({ callId }) => {
               "callSidePanel",
               "noRelatedDescription"
             ])}
+            addLabel={translateText(["activities", "toolbar", "logCallBtn"])}
+            onAdd={handleAdd}
             onRowClick={handleRelatedRowClick}
           />
         }

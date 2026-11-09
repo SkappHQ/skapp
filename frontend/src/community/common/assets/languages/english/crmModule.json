@@ -616,7 +616,8 @@
       },
       "relatedTitle": "Related tasks",
       "noRelatedTitle": "No tasks",
-      "noRelatedDescription": "No related tasks yet"
+      "noRelatedDescription": "No related tasks yet",
+      "undo": "Undo"
     },
     "callSidePanel": {
       "noDealsDescription": "No deals are linked to this call",

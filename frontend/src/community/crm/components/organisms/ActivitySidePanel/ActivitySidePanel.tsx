@@ -7,6 +7,7 @@ import {
 import { FC, ReactNode, useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import SidePanelActivityComments from "~community/crm/components/molecules/SidePanelActivityComments/SidePanelActivityComments";
 import SidePanelActivityTitle from "~community/crm/components/molecules/SidePanelActivityTitle/SidePanelActivityTitle";
@@ -77,23 +78,28 @@ const ActivitySidePanel: FC<Props> = ({
     setDeals(mergeDeals(deals, [deal]));
   }, [deal]);
 
+  const { isCrmSalesManager, isCrmAdmin, isSuperAdmin } = useSessionData();
+  const isDeleteAllowed = isCrmSalesManager || isCrmAdmin || isSuperAdmin;
+
+  const deleteItem: MenuItemProps = {
+    id: "delete",
+    label: deleteLabel,
+    icon: {
+      start: (
+        <DeleteButtonIcon
+          width="12px"
+          height="14px"
+          fill="var(--color-semantic-red-text)"
+        />
+      )
+    },
+    activeBehavior: "hover:bg-semantic-red-background text-semantic-red-text",
+    onClick: onDelete
+  };
+
   const actionItems: MenuItemProps[] = [
     ...menuItems,
-    {
-      id: "delete",
-      label: deleteLabel,
-      icon: {
-        start: (
-          <DeleteButtonIcon
-            width="12px"
-            height="14px"
-            fill="var(--color-semantic-red-text)"
-          />
-        )
-      },
-      activeBehavior: "hover:bg-semantic-red-background text-semantic-red-text",
-      onClick: onDelete
-    }
+    ...(isDeleteAllowed ? [deleteItem] : [])
   ];
 
   return (
@@ -119,15 +125,17 @@ const ActivitySidePanel: FC<Props> = ({
         isLoading ? (
           <SidePanelHeaderActionsSkeleton />
         ) : (
-          <KebabMenu
-            id={`${id}-actions`}
-            menuItems={actionItems}
-            anchorButton={{ "aria-label": menuAriaLabel }}
-            className={{
-              anchorElement:
-                "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
-            }}
-          />
+          actionItems.length > 0 && (
+            <KebabMenu
+              id={`${id}-actions`}
+              menuItems={actionItems}
+              anchorButton={{ "aria-label": menuAriaLabel }}
+              className={{
+                anchorElement:
+                  "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
+              }}
+            />
+          )
         )
       }
     >

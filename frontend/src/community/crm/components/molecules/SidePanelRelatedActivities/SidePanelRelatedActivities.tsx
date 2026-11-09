@@ -1,4 +1,4 @@
-import { EmptyDataView, SearchIcon } from "@rootcodelabs/skapp-ui";
+import { EmptyDataView, PlusIcon, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import ActivityRow from "~community/crm/activities/components/molecules/ActivityRow/ActivityRow";
@@ -10,6 +10,8 @@ interface Props {
   rows: ActivityRowData[];
   emptyTitle: string;
   emptyDescription: string;
+  addLabel: string;
+  onAdd: () => void;
   onRowClick: (row: ActivityRowData) => void;
 }
 
@@ -18,6 +20,8 @@ const SidePanelRelatedActivities: FC<Props> = ({
   rows,
   emptyTitle,
   emptyDescription,
+  addLabel,
+  onAdd,
   onRowClick
 }) => {
   return (
@@ -43,6 +47,16 @@ const SidePanelRelatedActivities: FC<Props> = ({
           icon={<SearchIcon width="24" height="24" />}
           title={emptyTitle}
           description={emptyDescription}
+          button={{
+            children: addLabel,
+            variant: "tertiary",
+            icon: <PlusIcon />,
+            "aria-label": addLabel,
+            onClick: onAdd
+          }}
+          className={{
+            wrapper: "h-[14.25rem] bg-secondary-background rounded-lg"
+          }}
         />
       )}
     </div>
