@@ -21,10 +21,9 @@ import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 
 interface Props {
   callId: number;
-  onAdd: () => void;
 }
 
-const ActivityCallSidePanel: FC<Props> = ({ callId, onAdd }) => {
+const ActivityCallSidePanel: FC<Props> = ({ callId }) => {
   const translateText = useTranslator("crmModule");
   const { setToastMessage } = useToast();
 
@@ -82,11 +81,6 @@ const ActivityCallSidePanel: FC<Props> = ({ callId, onAdd }) => {
     handleDeleteError
   );
 
-  const handleAdd = (): void => {
-    handleClose();
-    onAdd();
-  };
-
   const handleRelatedRowClick = (row: ActivityRow): void => {
     setSelectedCallId(row.id);
   };
@@ -98,7 +92,8 @@ const ActivityCallSidePanel: FC<Props> = ({ callId, onAdd }) => {
         isOpen={isOpen}
         onClose={handleClose}
         related={
-          relatedCalls && (
+          relatedCalls &&
+          relatedCalls.length > 0 && (
             <SidePanelRelatedActivities
               title={translateText([
                 "activities",
@@ -106,18 +101,6 @@ const ActivityCallSidePanel: FC<Props> = ({ callId, onAdd }) => {
                 "relatedTitle"
               ])}
               rows={(relatedCalls ?? []).map(toCallRow)}
-              emptyTitle={translateText([
-                "activities",
-                "callSidePanel",
-                "noRelatedTitle"
-              ])}
-              emptyDescription={translateText([
-                "activities",
-                "callSidePanel",
-                "noRelatedDescription"
-              ])}
-              addLabel={translateText(["activities", "toolbar", "logCallBtn"])}
-              onAdd={handleAdd}
               onRowClick={handleRelatedRowClick}
             />
           )

@@ -21,10 +21,9 @@ import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 
 interface Props {
   meetingId: number;
-  onAdd: () => void;
 }
 
-const ActivityMeetingSidePanel: FC<Props> = ({ meetingId, onAdd }) => {
+const ActivityMeetingSidePanel: FC<Props> = ({ meetingId }) => {
   const translateText = useTranslator("crmModule");
   const { setToastMessage } = useToast();
 
@@ -86,11 +85,6 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId, onAdd }) => {
     handleDeleteError
   );
 
-  const handleAdd = (): void => {
-    handleClose();
-    onAdd();
-  };
-
   const handleRelatedRowClick = (row: ActivityRow): void => {
     setSelectedMeetingId(row.id);
   };
@@ -102,7 +96,8 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId, onAdd }) => {
         isOpen={isOpen}
         onClose={handleClose}
         related={
-          relatedMeetings && (
+          relatedMeetings &&
+          relatedMeetings.length > 0 && (
             <SidePanelRelatedActivities
               title={translateText([
                 "activities",
@@ -110,22 +105,6 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId, onAdd }) => {
                 "relatedTitle"
               ])}
               rows={(relatedMeetings ?? []).map(toMeetingRow)}
-              emptyTitle={translateText([
-                "activities",
-                "meetingSidePanel",
-                "noRelatedTitle"
-              ])}
-              emptyDescription={translateText([
-                "activities",
-                "meetingSidePanel",
-                "noRelatedDescription"
-              ])}
-              addLabel={translateText([
-                "activities",
-                "toolbar",
-                "logMeetingBtn"
-              ])}
-              onAdd={handleAdd}
               onRowClick={handleRelatedRowClick}
             />
           )

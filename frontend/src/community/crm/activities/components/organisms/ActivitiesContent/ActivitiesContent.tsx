@@ -341,26 +341,17 @@ const ActivitiesContent: FC = () => {
       />
       {selectedCallId !== null && (
         <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
-          <ActivityCallSidePanel
-            callId={selectedCallId}
-            onAdd={() => setIsLogCallModalOpen(true)}
-          />
+          <ActivityCallSidePanel callId={selectedCallId} />
         </SidePanelWrapper>
       )}
       {selectedMeetingId !== null && (
         <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
-          <ActivityMeetingSidePanel
-            meetingId={selectedMeetingId}
-            onAdd={() => setIsLogMeetingModalOpen(true)}
-          />
+          <ActivityMeetingSidePanel meetingId={selectedMeetingId} />
         </SidePanelWrapper>
       )}
       {selectedActivityTaskId !== null && (
         <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
-          <ActivityTaskSidePanel
-            taskId={selectedActivityTaskId}
-            onAdd={() => setIsAddTaskModalOpen(true)}
-          />
+          <ActivityTaskSidePanel taskId={selectedActivityTaskId} />
         </SidePanelWrapper>
       )}
     </div>

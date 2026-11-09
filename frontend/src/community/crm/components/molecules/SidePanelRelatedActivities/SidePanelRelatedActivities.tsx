@@ -1,4 +1,3 @@
-import { EmptyDataView, PlusIcon, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import ActivityRow from "~community/crm/activities/components/molecules/ActivityRow/ActivityRow";
@@ -8,57 +7,27 @@ import { getActivityRowKey } from "~community/crm/activities/utils/activityFeedU
 interface Props {
   title: string;
   rows: ActivityRowData[];
-  emptyTitle: string;
-  emptyDescription: string;
-  addLabel: string;
-  onAdd: () => void;
   onRowClick: (row: ActivityRowData) => void;
 }
 
-const SidePanelRelatedActivities: FC<Props> = ({
-  title,
-  rows,
-  emptyTitle,
-  emptyDescription,
-  addLabel,
-  onAdd,
-  onRowClick
-}) => {
+const SidePanelRelatedActivities: FC<Props> = ({ title, rows, onRowClick }) => {
   return (
     <div className="flex flex-col gap-3">
       <h2 className="h2">{title}</h2>
       <hr className="border-secondary-accent" />
-      {rows.length ? (
-        <ul className="flex flex-col divide-y divide-secondary-accent">
-          {rows.map((row) => (
-            <li key={getActivityRowKey(row)}>
-              <ActivityRow
-                row={row}
-                isShowCheckbox={false}
-                taskCompletions={{}}
-                onRowClick={onRowClick}
-                onToggleComplete={() => {}}
-              />
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <EmptyDataView
-          icon={<SearchIcon width="24" height="24" />}
-          title={emptyTitle}
-          description={emptyDescription}
-          button={{
-            children: addLabel,
-            variant: "tertiary",
-            icon: <PlusIcon />,
-            "aria-label": addLabel,
-            onClick: onAdd
-          }}
-          className={{
-            wrapper: "h-[14.25rem] bg-secondary-background rounded-lg"
-          }}
-        />
-      )}
+      <ul className="flex flex-col divide-y divide-secondary-accent">
+        {rows.map((row) => (
+          <li key={getActivityRowKey(row)}>
+            <ActivityRow
+              row={row}
+              isShowCheckbox={false}
+              taskCompletions={{}}
+              onRowClick={onRowClick}
+              onToggleComplete={() => {}}
+            />
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
