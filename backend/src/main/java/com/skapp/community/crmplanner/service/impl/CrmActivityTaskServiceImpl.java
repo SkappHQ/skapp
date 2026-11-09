@@ -191,7 +191,10 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 			task.setContact(contact);
 		}
 
-		if (requestDto.getDealId() != null) {
+		if (Boolean.TRUE.equals(requestDto.getIsDealRemoved())) {
+			task.setDeal(null);
+		}
+		else if (requestDto.getDealId() != null) {
 			CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 			if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, deal.getOwner().getEmployeeId())) {
@@ -200,7 +203,10 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 			task.setDeal(deal);
 		}
 
-		if (requestDto.getCompanyId() != null) {
+		if (Boolean.TRUE.equals(requestDto.getIsCompanyRemoved())) {
+			task.setCompany(null);
+		}
+		else if (requestDto.getCompanyId() != null) {
 			CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
 			task.setCompany(company);
