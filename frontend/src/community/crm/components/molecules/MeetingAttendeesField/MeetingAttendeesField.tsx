@@ -10,13 +10,18 @@ import ActivityWarningTooltip from "~community/crm/components/atoms/ActivityWarn
 import MeetingAttendeeChips from "~community/crm/components/molecules/MeetingAttendeeChips/MeetingAttendeeChips";
 import { useContactLookup } from "~community/crm/hooks/useContactLookup";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmLogMeetingFormValues } from "~community/crm/types/CrmCommonTypes";
+import {
+  CrmLogMeetingFormValues,
+  CrmScheduleMeetingFormValues
+} from "~community/crm/types/CrmCommonTypes";
 import { updateContactRecord } from "~community/crm/utils/contactUtil";
 import { isDealMatchingContacts } from "~community/crm/utils/dealUtil";
 
 interface Props {
   id: string;
-  formik: FormikProps<CrmLogMeetingFormValues>;
+  formik:
+    | FormikProps<CrmLogMeetingFormValues>
+    | FormikProps<CrmScheduleMeetingFormValues>;
   isFromDifferentCompanies: boolean;
   onDealCleared: () => void;
 }
