@@ -72,16 +72,17 @@ public class Validation {
 		if (password == null || password.length() < ValidationConstant.MIN_PASSWORD_LENGTH
 				|| ValidationConstant.PASSWORD_REQUIRED_CHARACTER_PATTERNS.stream()
 					.anyMatch(pattern -> !pattern.matcher(password).find())) {
-			throw new ValidationException(CommonMessageConstant.COMMON_ERROR_VALIDATION_PASSWORD_REQUIREMENTS);
+			throw new ValidationException(CommonMessageConstant.COMMON_ERROR_VALIDATION_PASSWORD_REQUIREMENTS,
+					new Object[] { ValidationConstant.MIN_PASSWORD_LENGTH });
 		}
 	}
 
 	public static void isValidSignUpPassword(String password) throws ValidationException {
-		isValidPassword(password);
-		if (password.length() > ValidationConstant.MAX_SIGN_UP_PASSWORD_LENGTH) {
+		if (password != null && password.length() > ValidationConstant.MAX_SIGN_UP_PASSWORD_LENGTH) {
 			throw new ValidationException(CommonMessageConstant.COMMON_ERROR_VALIDATION_PASSWORD_LENGTH,
 					new Object[] { ValidationConstant.MAX_SIGN_UP_PASSWORD_LENGTH });
 		}
+		isValidPassword(password);
 	}
 
 	public static boolean isInvalidStartAndEndDate(LocalDate startDate, LocalDate endDate) {
