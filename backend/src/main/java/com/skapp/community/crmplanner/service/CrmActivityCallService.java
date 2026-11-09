@@ -15,4 +15,6 @@ public interface CrmActivityCallService {
 
 	ResponseEntityDto editCall(Long id, CrmActivityCallEditRequestDto requestDto);
 
+	ResponseEntityDto deleteCall(Long id);
+
 }

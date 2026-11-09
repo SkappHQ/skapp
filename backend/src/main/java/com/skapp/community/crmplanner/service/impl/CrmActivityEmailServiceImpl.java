@@ -5,6 +5,7 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.StringUtils;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
@@ -65,6 +66,8 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 	private final CrmDealDao crmDealDao;
 
 	private final CrmCompanyDao crmCompanyDao;
+
+	private final MessageUtil messageUtil;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -355,6 +358,23 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 			.filter(contact -> !Boolean.TRUE.equals(contact.getIsDeleted()))
 			.map(crmMapper::crmContactToCrmContactLookupResponseDto)
 			.toList();
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto deleteEmail(Long id) {
+		log.info("deleteEmail: execution started");
+
+		CrmActivityEmail email = crmActivityEmailDao.findEmailById(id);
+		if (email == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_EMAIL_NOT_FOUND);
+		}
+
+		email.setIsDeleted(true);
+		crmActivityEmailDao.save(email);
+
+		log.info("deleteEmail: execution ended");
+		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_ACTIVITY_DELETED), false);
 	}
 
 }

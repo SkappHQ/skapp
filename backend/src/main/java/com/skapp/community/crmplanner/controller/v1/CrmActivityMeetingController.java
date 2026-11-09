@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmActivityMeetingCreateRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmActivityMeetingEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmActivityMeetingFilterDto;
 import com.skapp.community.crmplanner.service.CrmActivityMeetingService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -9,7 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -42,6 +45,21 @@ public class CrmActivityMeetingController {
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getMeetingById(@PathVariable Long id) {
 		ResponseEntityDto response = crmActivityMeetingService.getMeetingById(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PatchMapping("/{id}")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> editMeeting(@PathVariable Long id,
+			@RequestBody CrmActivityMeetingEditRequestDto requestDto) {
+		ResponseEntityDto response = crmActivityMeetingService.editMeeting(id, requestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@DeleteMapping("/{id}")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_MANAGER')")
+	public ResponseEntity<ResponseEntityDto> deleteMeeting(@PathVariable Long id) {
+		ResponseEntityDto response = crmActivityMeetingService.deleteMeeting(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

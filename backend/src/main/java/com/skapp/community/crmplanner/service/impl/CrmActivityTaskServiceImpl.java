@@ -4,6 +4,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
@@ -49,6 +50,8 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 	private final CrmCompanyDao crmCompanyDao;
 
 	private final CrmOwnerResolverService crmOwnerResolver;
+
+	private final MessageUtil messageUtil;
 
 	@Override
 	@Transactional
@@ -216,6 +219,23 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 
 		log.info("editTask: execution ended");
 		return new ResponseEntityDto(false, crmMapper.crmActivityTaskToCrmActivityTaskResponseDto(updatedTask));
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto deleteTask(Long id) {
+		log.info("deleteTask: execution started");
+
+		CrmActivityTask task = crmActivityTaskDao.findTaskById(id);
+		if (task == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND);
+		}
+
+		task.setIsDeleted(true);
+		crmActivityTaskDao.save(task);
+
+		log.info("deleteTask: execution ended");
+		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_ACTIVITY_DELETED), false);
 	}
 
 }

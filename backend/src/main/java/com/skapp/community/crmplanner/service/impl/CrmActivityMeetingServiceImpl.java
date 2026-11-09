@@ -5,6 +5,7 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.StringUtils;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
@@ -15,6 +16,7 @@ import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.payload.request.CrmActivityMeetingCreateRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmActivityMeetingEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmActivityMeetingFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityMeetingDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityMeetingResponseDto;
@@ -62,6 +64,8 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 	private final CrmCompanyDao crmCompanyDao;
 
 	private final CrmOwnerResolverService crmOwnerResolver;
+
+	private final MessageUtil messageUtil;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -207,6 +211,147 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 
 		log.info("getMeetingById: execution ended");
 		return new ResponseEntityDto(false, response);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto editMeeting(Long id, CrmActivityMeetingEditRequestDto requestDto) {
+		log.info("editMeeting: execution started");
+
+		CrmActivityMeeting meeting = crmActivityMeetingDao.findMeetingById(id);
+		if (meeting == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_MEETING_NOT_FOUND);
+		}
+
+		User currentUser = userService.getCurrentUser();
+		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, meeting.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_MEETING_EDIT_DENIED);
+		}
+
+		Employee previousOwner = meeting.getOwner();
+
+		if (requestDto.getName() != null) {
+			CrmValidations.validateMeetingSubject(requestDto.getName());
+			meeting.setName(requestDto.getName());
+		}
+
+		if (requestDto.getMeetingDate() != null) {
+			meeting.setMeetingDate(requestDto.getMeetingDate());
+		}
+
+		if (requestDto.getStartAt() != null) {
+			meeting.setStartAt(requestDto.getStartAt());
+		}
+
+		if (requestDto.getEndAt() != null) {
+			meeting.setEndAt(requestDto.getEndAt());
+		}
+
+		if (requestDto.getStartAt() != null || requestDto.getEndAt() != null) {
+			CrmValidations.validateMeetingTimes(meeting.getStartAt(), meeting.getEndAt());
+		}
+
+		if (requestDto.getComments() != null) {
+			meeting.setComments(requestDto.getComments());
+		}
+
+		if (requestDto.getOwnerId() != null) {
+			Employee owner = crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser);
+			meeting.setOwner(owner);
+		}
+
+		if (Boolean.TRUE.equals(requestDto.getIsDealRemoved())) {
+			meeting.setDeal(null);
+		}
+		else if (requestDto.getDealId() != null) {
+			CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+			if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, deal.getOwner().getEmployeeId())) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_VIEW_DENIED);
+			}
+			meeting.setDeal(deal);
+		}
+
+		if (Boolean.TRUE.equals(requestDto.getIsCompanyRemoved())) {
+			meeting.setCompany(null);
+		}
+		else if (requestDto.getCompanyId() != null) {
+			CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
+			meeting.setCompany(company);
+		}
+
+		List<CrmActivityMeetingContact> existingAttendees = meeting.getContacts();
+		List<CrmContact> attendeeContacts = existingAttendees.stream()
+			.map(CrmActivityMeetingContact::getContact)
+			.filter(contact -> !Boolean.TRUE.equals(contact.getIsDeleted()))
+			.toList();
+
+		if (requestDto.getContactIds() != null) {
+			CrmValidations.validateMeetingAttendeeIds(requestDto.getContactIds());
+
+			attendeeContacts = crmContactDao.findByIdInAndIsDeletedFalseOrderByIdAsc(requestDto.getContactIds());
+			if (attendeeContacts.size() != requestDto.getContactIds().size()) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND);
+			}
+
+			List<Long> existingContactIds = existingAttendees.stream()
+				.map(attendee -> attendee.getContact().getId())
+				.toList();
+			List<CrmActivityMeetingContact> removedAttendees = existingAttendees.stream()
+				.filter(attendee -> !requestDto.getContactIds().contains(attendee.getContact().getId()))
+				.toList();
+			List<CrmActivityMeetingContact> addedAttendees = attendeeContacts.stream()
+				.filter(contact -> !existingContactIds.contains(contact.getId()))
+				.map(contact -> {
+					CrmActivityMeetingContact attendee = new CrmActivityMeetingContact();
+					attendee.setId(new CrmActivityMeetingContactId(meeting.getId(), contact.getId()));
+					attendee.setMeeting(meeting);
+					attendee.setContact(contact);
+					return attendee;
+				})
+				.toList();
+			crmActivityMeetingContactDao.deleteAll(removedAttendees);
+			crmActivityMeetingContactDao.saveAll(addedAttendees);
+		}
+
+		if (meeting.getDeal() != null && (requestDto.getDealId() != null || requestDto.getContactIds() != null)) {
+			CrmValidations.validateMeetingDealMatchesAttendeeCompanies(meeting.getDeal(), attendeeContacts);
+		}
+
+		CrmActivityMeeting updatedMeeting = crmActivityMeetingDao.save(meeting);
+		syncEditedMeeting(updatedMeeting, previousOwner, attendeeContacts);
+
+		CrmActivityMeetingResponseDto response = crmMapper
+			.crmActivityMeetingToCrmActivityMeetingResponseDto(updatedMeeting);
+		response.setContactIds(attendeeContacts.stream().map(CrmContact::getId).sorted().toList());
+
+		log.info("editMeeting: execution ended");
+		return new ResponseEntityDto(false, response);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto deleteMeeting(Long id) {
+		log.info("deleteMeeting: execution started");
+
+		CrmActivityMeeting meeting = crmActivityMeetingDao.findMeetingById(id);
+		if (meeting == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_MEETING_NOT_FOUND);
+		}
+
+		meeting.setIsDeleted(true);
+		crmActivityMeetingDao.save(meeting);
+		syncDeletedMeeting(meeting);
+
+		log.info("deleteMeeting: execution ended");
+		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_ACTIVITY_DELETED), false);
+	}
+
+	protected void syncEditedMeeting(CrmActivityMeeting meeting, Employee previousOwner, List<CrmContact> attendees) {
+	}
+
+	protected void syncDeletedMeeting(CrmActivityMeeting meeting) {
 	}
 
 }

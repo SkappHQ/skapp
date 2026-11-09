@@ -15,4 +15,6 @@ public interface CrmActivityEmailService {
 
 	ResponseEntityDto editEmail(Long id, CrmActivityEmailEditRequestDto requestDto);
 
+	ResponseEntityDto deleteEmail(Long id);
+
 }

@@ -6,6 +6,7 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.StringUtils;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
@@ -61,6 +62,8 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 	private final CrmCompanyDao crmCompanyDao;
 
 	private final CrmOwnerResolverService crmOwnerResolver;
+
+	private final MessageUtil messageUtil;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -267,6 +270,23 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 
 		log.info("editCall: execution ended");
 		return new ResponseEntityDto(false, crmMapper.crmActivityCallToCrmActivityCallResponseDto(updatedCall));
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto deleteCall(Long id) {
+		log.info("deleteCall: execution started");
+
+		CrmActivityCall call = crmActivityCallDao.findCallById(id);
+		if (call == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_NOT_FOUND);
+		}
+
+		call.setIsDeleted(true);
+		crmActivityCallDao.save(call);
+
+		log.info("deleteCall: execution ended");
+		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_ACTIVITY_DELETED), false);
 	}
 
 }
