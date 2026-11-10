@@ -132,6 +132,7 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId }) => {
         onTitleSave={(name) => updateTask({ id: taskId, name })}
         onCommentsSave={(notes) => updateTask({ id: taskId, notes })}
         onDelete={openDeleteModal}
+        onDetailsSave={updateTask}
         onMarkAsDone={() => updateTask({ id: taskId, isCompleted: true })}
         onReopen={() => updateTask({ id: taskId, isCompleted: false })}
         onContactClick={handleContactClick}
