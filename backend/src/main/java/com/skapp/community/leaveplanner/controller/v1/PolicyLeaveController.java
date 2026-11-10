@@ -99,9 +99,6 @@ public class PolicyLeaveController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get an employee's approved policy leave per leave type per month",
-			description = "Covers the current leave cycle. A leave type id of -1 returns every policy leave type "
-					+ "the employee is assigned to or has approved leave against in the cycle")
 	@GetMapping("/employees/{employeeId}/leave-utilization")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_LEAVE_MANAGER')")
 	public ResponseEntity<ResponseEntityDto> getEmployeeLeaveUtilization(@PathVariable Long employeeId,

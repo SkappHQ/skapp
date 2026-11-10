@@ -427,10 +427,8 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 		Long currentEmployeeId = currentUser.getEmployee().getEmployeeId();
 		if (!employeeDao.existsManagerForEmployee(employee.getEmployeeId(), currentEmployeeId)
 				&& !employeeTeamDao.existsEmployeeInSupervisedTeam(employee.getEmployeeId(), currentEmployeeId)) {
-			throw new EntityNotFoundException(
-					PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_UNDER_CURRENT_EMPLOYEE_SUPERVISION,
-					new String[] { PolicyLeaveConstant.SUPERVISION_TARGET_EMPLOYEE,
-							PolicyLeaveConstant.SUPERVISION_ANALYTICS_LEAVE_UTILIZATION });
+			throw new ModuleException(
+					LeaveMessageConstant.LEAVE_ERROR_EMPLOYEE_LEAVE_UTILIZATION_NOT_UNDER_SUPERVISION);
 		}
 	}
 
