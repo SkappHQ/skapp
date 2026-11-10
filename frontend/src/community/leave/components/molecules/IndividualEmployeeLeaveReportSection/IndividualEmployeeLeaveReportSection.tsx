@@ -111,7 +111,7 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
               </>
             )}
 
-            {leaveTypesList?.length > 0 && (
+            {(isLeavePoliciesEnabled || leaveTypesList?.length > 0) && (
               <UserLeaveUtilization
                 employeeId={selectedUser}
                 leaveTypesList={leaveTypesList}

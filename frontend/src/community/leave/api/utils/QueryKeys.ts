@@ -368,6 +368,14 @@ export const policyLeaveQueryKeys = {
     ...policyLeaveQueryKeys.ALL_ABSENCE_RATE(),
     teamId
   ],
+  ALL_EMPLOYEE_LEAVE_UTILIZATION: () => [
+    ...policyLeaveQueryKeys.ALL,
+    "employee-leave-utilization"
+  ],
+  EMPLOYEE_LEAVE_UTILIZATION: (employeeId: number) => [
+    ...policyLeaveQueryKeys.ALL_EMPLOYEE_LEAVE_UTILIZATION(),
+    employeeId
+  ],
   ALL_TEAM_LEAVE_HISTORY: () => [
     ...policyLeaveQueryKeys.ALL,
     "team-leave-history"

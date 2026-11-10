@@ -7,9 +7,11 @@ import com.skapp.community.leaveplanner.payload.request.PolicyLeaveAvailabilityR
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestUpdateDto;
+import com.skapp.community.leaveplanner.payload.request.PolicyLeaveUtilizationFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyPendingLeaveCountFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyResourceAvailabilityFilterDto;
 import com.skapp.community.leaveplanner.service.PolicyAttendanceLeaveService;
+import com.skapp.community.leaveplanner.service.PolicyLeaveAnalyticsService;
 import com.skapp.community.leaveplanner.service.PolicyLeaveService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,6 +41,8 @@ public class PolicyLeaveController {
 	private final PolicyLeaveService policyLeaveService;
 
 	private final PolicyAttendanceLeaveService policyAttendanceLeaveService;
+
+	private final PolicyLeaveAnalyticsService policyLeaveAnalyticsService;
 
 	@Operation(summary = "Get the current user's leave policy balances",
 			description = "One card per assigned policy; policies sharing a leave type are never merged. "
@@ -92,6 +96,15 @@ public class PolicyLeaveController {
 	public ResponseEntity<ResponseEntityDto> getEmployeesOnLeaveToday(
 			@Valid PolicyEmployeesOnLeaveFilterDto policyEmployeesOnLeaveFilterDto) {
 		ResponseEntityDto response = policyLeaveService.getEmployeesOnLeaveToday(policyEmployeesOnLeaveFilterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@GetMapping("/employees/{employeeId}/leave-utilization")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_MANAGER')")
+	public ResponseEntity<ResponseEntityDto> getEmployeeLeaveUtilization(@PathVariable Long employeeId,
+			@Valid PolicyLeaveUtilizationFilterDto policyLeaveUtilizationFilterDto) {
+		ResponseEntityDto response = policyLeaveAnalyticsService.getEmployeeLeaveUtilization(employeeId,
+				policyLeaveUtilizationFilterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
