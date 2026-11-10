@@ -100,7 +100,7 @@ public class PolicyLeaveController {
 	}
 
 	@GetMapping("/employees/{employeeId}/leave-utilization")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_LEAVE_MANAGER')")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_MANAGER')")
 	public ResponseEntity<ResponseEntityDto> getEmployeeLeaveUtilization(@PathVariable Long employeeId,
 			@Valid PolicyLeaveUtilizationFilterDto policyLeaveUtilizationFilterDto) {
 		ResponseEntityDto response = policyLeaveAnalyticsService.getEmployeeLeaveUtilization(employeeId,
