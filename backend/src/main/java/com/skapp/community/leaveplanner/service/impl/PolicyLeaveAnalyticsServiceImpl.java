@@ -7,7 +7,6 @@ import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
-import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
 import com.skapp.community.leaveplanner.constant.PolicyLeaveConstant;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
@@ -16,6 +15,7 @@ import com.skapp.community.leaveplanner.model.PolicyLeaveRequest_;
 import com.skapp.community.leaveplanner.model.PolicyLeaveType;
 import com.skapp.community.leaveplanner.model.PolicyLeaveType_;
 import com.skapp.community.leaveplanner.payload.LeaveCycleDetailsDto;
+import com.skapp.community.leaveplanner.payload.OrganizationalAbsenceRateAnalyticsDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveDateWindowDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveMonthlyDurationDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveSpanDto;
@@ -24,7 +24,6 @@ import com.skapp.community.leaveplanner.payload.request.PolicyLeaveHistoryFilter
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveTypeBreakdownFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyTeamLeaveHistoryFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyTeamLeaveTrendFilterDto;
-import com.skapp.community.leaveplanner.payload.response.PolicyAbsenceRateResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTrendDataResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTrendResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeBreakdownDataResponseDto;
@@ -58,7 +57,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.MonthDay;
@@ -68,7 +66,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -218,74 +218,102 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 		log.info("getAbsenceRate: execution started");
 		requireLeavePoliciesEnabled();
 
-		List<Long> teamIds = filterDto.getTeamIds();
-		if (CollectionUtils.isEmpty(teamIds)) {
-			return new ResponseEntityDto(false, buildAbsenceRateResponse(0f, 0f));
+		User currentUser = userService.getCurrentUser();
+		Long supervisorEmployeeId = LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser) ? null
+				: currentUser.getEmployee().getEmployeeId();
+
+		List<Long> teamIds = resolveTeamIds(filterDto.getTeamIds());
+		if (!teamIds.isEmpty()) {
+			LeaveModuleUtil.validateTeamsForLeaveAnalytics(teamIds, currentUser, teamDao.findByTeamIdIn(teamIds));
 		}
 
-		User currentUser = userService.getCurrentUser();
-		boolean isLeaveAdmin = LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser);
-
-		if (teamIds.contains(PolicyLeaveConstant.ALL_TEAMS_ID) && !isLeaveAdmin) {
-			teamIds = teamDao.findLeadingTeamIdsByManagerId(currentUser.getEmployee().getEmployeeId());
-			if (teamIds.isEmpty()) {
-				return new ResponseEntityDto(false, buildAbsenceRateResponse(0f, 0f));
-			}
+		List<Employee> employees = policyLeaveRequestDao.findEmployeesInScope(teamIds, supervisorEmployeeId);
+		if (employees.isEmpty()) {
+			log.info("getAbsenceRate: execution ended");
+			return new ResponseEntityDto(false, buildAbsenceRateResponse(0f, 0f));
 		}
 
 		LocalDate currentDate = timeZoneService.currentOrganizationDate();
 		PolicyLeaveDateWindowDto currentWindow = new PolicyLeaveDateWindowDto(
 				currentDate.minusDays(PolicyLeaveConstant.ABSENCE_RATE_WINDOW_DAYS - 1L), currentDate);
 		PolicyLeaveDateWindowDto previousWindow = new PolicyLeaveDateWindowDto(
-				currentDate.minusDays(PolicyLeaveConstant.ABSENCE_RATE_WINDOW_DAYS * 2L - 1L),
-				currentWindow.getStartDate());
+				currentWindow.getStartDate().minusDays(PolicyLeaveConstant.ABSENCE_RATE_WINDOW_DAYS),
+				currentWindow.getStartDate().minusDays(1));
+
+		List<PolicyLeaveSpanDto> currentSpans = policyLeaveRequestDao.findApprovedSpansCrossingWindow(
+				currentWindow.getStartDate(), currentWindow.getEndDate(), teamIds, supervisorEmployeeId);
+		List<PolicyLeaveSpanDto> previousSpans = policyLeaveRequestDao.findApprovedSpansCrossingWindow(
+				previousWindow.getStartDate(), previousWindow.getEndDate(), teamIds, supervisorEmployeeId);
 
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
-		List<Holiday> holidays = holidayDao.findAllByIsActiveTrue();
-		List<LocalDate> holidayDates = holidays.stream().map(Holiday::getDate).toList();
-
-		LeaveModuleUtil.validateTeamsForLeaveAnalytics(teamIds, currentUser, teamDao.findByTeamIdIn(teamIds));
-
-		List<Employee> employees = employeeTeamDao.getEmployeesByTeamIds(teamIds, currentUser.getUserId(),
-				isLeaveAdmin);
-		List<Long> employeeIds = employees.stream().map(Employee::getEmployeeId).toList();
+		List<Holiday> holidays = findAbsenceRateHolidays(previousWindow, currentWindow,
+				Stream.concat(currentSpans.stream(), previousSpans.stream()).toList());
+		Map<Long, List<Holiday>> holidaysByWorkLocation = new HashMap<>();
+		Function<Long, List<Holiday>> holidaysForWorkLocation = workLocationId -> holidaysByWorkLocation
+			.computeIfAbsent(workLocationId, key -> PolicyLeaveAnalyticsUtil.holidaysForWorkLocation(holidays, key));
 
 		float currentAbsenceRate = calculateAbsenceRate(
-				sumApprovedLeaveDaysInWindow(employeeIds, currentWindow, timeConfigs, holidays),
-				CommonModuleUtils.addUpWorkingDaysForAllEmployee(employees, currentWindow.getStartDate(),
-						currentWindow.getEndDate(), timeConfigs, holidayDates));
+				sumApprovedLeaveDaysInWindow(currentWindow, currentSpans, teamIds, supervisorEmployeeId, timeConfigs,
+						holidaysForWorkLocation),
+				sumWorkingDaysInWindow(employees, currentWindow, timeConfigs, holidaysForWorkLocation));
 		float monthBeforeAbsenceRate = calculateAbsenceRate(
-				sumApprovedLeaveDaysInWindow(employeeIds, previousWindow, timeConfigs, holidays),
-				CommonModuleUtils.addUpWorkingDaysForAllEmployee(employees, previousWindow.getStartDate(),
-						previousWindow.getEndDate(), timeConfigs, holidayDates));
+				sumApprovedLeaveDaysInWindow(previousWindow, previousSpans, teamIds, supervisorEmployeeId, timeConfigs,
+						holidaysForWorkLocation),
+				sumWorkingDaysInWindow(employees, previousWindow, timeConfigs, holidaysForWorkLocation));
 
 		log.info("getAbsenceRate: execution ended");
 		return new ResponseEntityDto(false, buildAbsenceRateResponse(currentAbsenceRate, monthBeforeAbsenceRate));
 	}
 
-	private double sumApprovedLeaveDaysInWindow(List<Long> employeeIds, PolicyLeaveDateWindowDto window,
-			List<TimeConfig> timeConfigs, List<Holiday> holidays) {
-		double leaveDays = policyLeaveRequestDao.sumApprovedDurationWithinWindow(employeeIds, window.getStartDate(),
-				window.getEndDate());
+	private List<Holiday> findAbsenceRateHolidays(PolicyLeaveDateWindowDto previousWindow,
+			PolicyLeaveDateWindowDto currentWindow, List<PolicyLeaveSpanDto> crossingSpans) {
+		LocalDate startDate = crossingSpans.stream()
+			.map(PolicyLeaveSpanDto::getStartDate)
+			.filter(spanStart -> spanStart.isBefore(previousWindow.getStartDate()))
+			.min(LocalDate::compareTo)
+			.orElse(previousWindow.getStartDate());
+		LocalDate endDate = crossingSpans.stream()
+			.map(PolicyLeaveSpanDto::getEndDate)
+			.filter(spanEnd -> spanEnd.isAfter(currentWindow.getEndDate()))
+			.max(LocalDate::compareTo)
+			.orElse(currentWindow.getEndDate());
+		return holidayDao.findAllActiveHolidaysBetweenWithWorkLocations(startDate, endDate);
+	}
 
-		Map<Long, List<Holiday>> holidaysByWorkLocation = new HashMap<>();
-		for (PolicyLeaveSpanDto span : policyLeaveRequestDao.findApprovedSpansCrossingWindow(employeeIds,
-				window.getStartDate(), window.getEndDate())) {
-			List<Holiday> spanHolidays = holidaysByWorkLocation.computeIfAbsent(span.getWorkLocationId(),
-					workLocationId -> PolicyLeaveAnalyticsUtil.holidaysForWorkLocation(holidays, workLocationId));
-			leaveDays += PolicyLeaveAnalyticsUtil.durationWithinWindow(span, window, timeConfigs, spanHolidays);
+	private double sumApprovedLeaveDaysInWindow(PolicyLeaveDateWindowDto window, List<PolicyLeaveSpanDto> crossingSpans,
+			List<Long> teamIds, Long supervisorEmployeeId, List<TimeConfig> timeConfigs,
+			Function<Long, List<Holiday>> holidaysForWorkLocation) {
+		double leaveDays = policyLeaveRequestDao.sumApprovedDurationWithinWindow(window.getStartDate(),
+				window.getEndDate(), teamIds, supervisorEmployeeId);
+
+		for (PolicyLeaveSpanDto span : crossingSpans) {
+			leaveDays += PolicyLeaveAnalyticsUtil.durationWithinWindow(span, window, timeConfigs,
+					holidaysForWorkLocation.apply(span.getWorkLocationId()));
 		}
 
 		return leaveDays;
 	}
 
-	private float calculateAbsenceRate(double leaveDays, int workingDays) {
-		return workingDays == 0 ? 0f : (float) (leaveDays / workingDays * 100);
+	private double sumWorkingDaysInWindow(List<Employee> employees, PolicyLeaveDateWindowDto window,
+			List<TimeConfig> timeConfigs, Function<Long, List<Holiday>> holidaysForWorkLocation) {
+		double workingDays = 0;
+		for (Employee employee : employees) {
+			Long workLocationId = employee.getWorkLocation() == null ? null
+					: employee.getWorkLocation().getWorkLocationId();
+			workingDays += PolicyLeaveAnalyticsUtil.workingDaysInWindow(employee.getJoinDate(),
+					employee.getTerminationDate(), window, timeConfigs, holidaysForWorkLocation.apply(workLocationId));
+		}
+
+		return workingDays;
 	}
 
-	private PolicyAbsenceRateResponseDto buildAbsenceRateResponse(float currentAbsenceRate,
+	private float calculateAbsenceRate(double leaveDays, double workingDays) {
+		return workingDays <= 0 ? 0f : (float) (leaveDays / workingDays * 100);
+	}
+
+	private OrganizationalAbsenceRateAnalyticsDto buildAbsenceRateResponse(float currentAbsenceRate,
 			float monthBeforeAbsenceRate) {
-		PolicyAbsenceRateResponseDto responseDto = new PolicyAbsenceRateResponseDto();
+		OrganizationalAbsenceRateAnalyticsDto responseDto = new OrganizationalAbsenceRateAnalyticsDto();
 		responseDto.setType(OrganizationalLeaveAnalyticsKPIAbsenceType.CURRENT_ABSENCE_RATE);
 		responseDto.setCurrentAbsenceRate(currentAbsenceRate);
 		responseDto.setMonthBeforeAbsenceRate(monthBeforeAbsenceRate);
