@@ -709,10 +709,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 		if (loginMethod == LoginMethod.CREDENTIALS && tempPassword != null) {
 			String encodedTempPassword = passwordEncoder.encode(tempPassword);
-			CommonModuleUtils.setIfExists(() -> encodedTempPassword, user::setTempPassword);
-			CommonModuleUtils.setIfExists(() -> encodedTempPassword, user::setPassword);
-			user.setIsPasswordChangedForTheFirstTime(false);
-			user.setTempPasswordExpiresAt(AuthUtil.tempPasswordExpiryFromNow());
+			AuthUtil.issueTempPassword(user, encodedTempPassword);
 		}
 		else if (loginMethod == LoginMethod.GOOGLE) {
 			user.setIsPasswordChangedForTheFirstTime(true);
@@ -735,11 +732,7 @@ public class PeopleServiceImpl implements PeopleService {
 		LoginMethod loginMethod = userDao.findById(1L).map(User::getLoginMethod).orElse(LoginMethod.CREDENTIALS);
 		if (loginMethod == LoginMethod.CREDENTIALS) {
 			tempPassword = CommonModuleUtils.generateSecureRandomPassword();
-			String encodedTempPassword = passwordEncoder.encode(tempPassword);
-			user.setTempPassword(encodedTempPassword);
-			user.setPassword(encodedTempPassword);
-			user.setIsPasswordChangedForTheFirstTime(false);
-			user.setTempPasswordExpiresAt(AuthUtil.tempPasswordExpiryFromNow());
+			AuthUtil.issueTempPassword(user, passwordEncoder.encode(tempPassword));
 		}
 
 		peopleEmailService.sendUserInvitationEmail(user, tempPassword);
@@ -2519,10 +2512,7 @@ public class PeopleServiceImpl implements PeopleService {
 		else {
 			String encodedTempPassword = passwordEncoder.encode(tempPassword);
 
-			user.setTempPassword(encodedTempPassword);
-			user.setPassword(encodedTempPassword);
-			user.setIsPasswordChangedForTheFirstTime(false);
-			user.setTempPasswordExpiresAt(AuthUtil.tempPasswordExpiryFromNow());
+			AuthUtil.issueTempPassword(user, encodedTempPassword);
 			user.setLoginMethod(LoginMethod.CREDENTIALS);
 		}
 

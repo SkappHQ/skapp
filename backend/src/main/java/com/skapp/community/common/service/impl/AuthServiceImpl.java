@@ -178,8 +178,6 @@ public class AuthServiceImpl implements AuthService {
 			throw exception;
 		}
 
-		onSignInSuccess(signInRequestDto.getEmail());
-
 		Optional<User> optionalUser = userDao.findByEmail(signInRequestDto.getEmail());
 		if (optionalUser.isEmpty()) {
 			log.warn("performSignIn: User not found for email={}", signInRequestDto.getEmail());
@@ -187,6 +185,11 @@ public class AuthServiceImpl implements AuthService {
 		}
 		User user = optionalUser.get();
 		log.info("performSignIn: User found: userEmail={}, isActive={}", user.getEmail(), user.getIsActive());
+
+		if (isTempPasswordPending(user)) {
+			redeemTempPassword(user, signInRequestDto.getEmail());
+		}
+		onSignInSuccess(signInRequestDto.getEmail());
 
 		validateTenantStatus(user);
 		log.info("performSignIn: Tenant status validated for userEmail={}", user.getEmail());
@@ -197,10 +200,6 @@ public class AuthServiceImpl implements AuthService {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND);
 		}
 		log.info("performSignIn: Employee found for userEmail={}", user.getEmail());
-
-		if (isTempPasswordPending(user)) {
-			redeemTempPassword(user, signInRequestDto.getEmail());
-		}
 
 		EmployeeSignInResponseDto employeeSignInResponseDto = peopleMapper
 			.employeeToEmployeeSignInResponseDto(employee.get());
@@ -412,10 +411,7 @@ public class AuthServiceImpl implements AuthService {
 
 		log.info("sharePassword: Generating new temp password for userEmail={}", user.getEmail());
 		String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
-		user.setTempPassword(passwordEncoder.encode(tempPassword));
-		user.setPassword(passwordEncoder.encode(tempPassword));
-		user.setIsPasswordChangedForTheFirstTime(false);
-		user.setTempPasswordExpiresAt(AuthUtil.tempPasswordExpiryFromNow());
+		AuthUtil.issueTempPassword(user, passwordEncoder.encode(tempPassword));
 		userDao.save(user);
 
 		SharePasswordResponseDto sharePasswordResponseDto = getSharePasswordResponseDto(user, user, tempPassword);
@@ -439,10 +435,7 @@ public class AuthServiceImpl implements AuthService {
 
 		String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
 		log.info("resetAndSharePassword: Generated new temp password for userEmail={}", user.getEmail());
-		user.setTempPassword(passwordEncoder.encode(tempPassword));
-		user.setPassword(passwordEncoder.encode(tempPassword));
-		user.setIsPasswordChangedForTheFirstTime(false);
-		user.setTempPasswordExpiresAt(AuthUtil.tempPasswordExpiryFromNow());
+		AuthUtil.issueTempPassword(user, passwordEncoder.encode(tempPassword));
 		User savedUser = userDao.save(user);
 
 		log.info("resetAndSharePassword: User password reset and saved for  userEmail={}", user.getEmail());
@@ -714,10 +707,7 @@ public class AuthServiceImpl implements AuthService {
 			String tempPassword = null;
 			if (loginMethod.equals(LoginMethod.CREDENTIALS)) {
 				tempPassword = CommonModuleUtils.generateSecureRandomPassword();
-				user.setTempPassword(passwordEncoder.encode(tempPassword));
-				user.setPassword(passwordEncoder.encode(tempPassword));
-				user.setIsPasswordChangedForTheFirstTime(false);
-				user.setTempPasswordExpiresAt(AuthUtil.tempPasswordExpiryFromNow());
+				AuthUtil.issueTempPassword(user, passwordEncoder.encode(tempPassword));
 			}
 
 			userDao.save(user);
@@ -749,6 +739,7 @@ public class AuthServiceImpl implements AuthService {
 			onSignInFailed(signInEmail);
 			throw new BadCredentialsException(CommonMessageConstant.COMMON_ERROR_INVALID_CREDENTIALS.name());
 		}
+		user.setTempPasswordExpiresAt(null);
 	}
 
 	protected void onSignInFailed(String email) {
