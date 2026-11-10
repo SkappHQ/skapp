@@ -4,19 +4,19 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.User_;
 import com.skapp.community.common.repository.UserRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaUpdate;
 import jakarta.persistence.criteria.Root;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 
 @Repository
-@RequiredArgsConstructor
 public class UserRepositoryImpl implements UserRepository {
 
-	private final EntityManager entityManager;
+	@PersistenceContext
+	private EntityManager entityManager;
 
 	@Override
 	public int consumeTempPassword(Long userId, Instant now) {
