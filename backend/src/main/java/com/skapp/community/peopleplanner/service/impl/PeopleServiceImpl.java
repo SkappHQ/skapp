@@ -731,11 +731,16 @@ public class PeopleServiceImpl implements PeopleService {
 		CommonModuleUtils.setIfExists(() -> requestDto.getEmployment().getEmploymentDetails().getEmail(),
 				user::setEmail);
 
-		String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
-		String encodedTempPassword = passwordEncoder.encode(tempPassword);
-		CommonModuleUtils.setIfExists(() -> encodedTempPassword, user::setTempPassword);
-		CommonModuleUtils.setIfExists(() -> encodedTempPassword, user::setPassword);
-		user.setTempPasswordExpiresAt(AuthUtil.tempPasswordExpiryFromNow());
+		String tempPassword = null;
+		LoginMethod loginMethod = userDao.findById(1L).map(User::getLoginMethod).orElse(LoginMethod.CREDENTIALS);
+		if (loginMethod == LoginMethod.CREDENTIALS) {
+			tempPassword = CommonModuleUtils.generateSecureRandomPassword();
+			String encodedTempPassword = passwordEncoder.encode(tempPassword);
+			user.setTempPassword(encodedTempPassword);
+			user.setPassword(encodedTempPassword);
+			user.setIsPasswordChangedForTheFirstTime(false);
+			user.setTempPasswordExpiresAt(AuthUtil.tempPasswordExpiryFromNow());
+		}
 
 		peopleEmailService.sendUserInvitationEmail(user, tempPassword);
 

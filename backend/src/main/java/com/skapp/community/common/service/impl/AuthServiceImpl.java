@@ -178,6 +178,8 @@ public class AuthServiceImpl implements AuthService {
 			throw exception;
 		}
 
+		onSignInSuccess(signInRequestDto.getEmail());
+
 		Optional<User> optionalUser = userDao.findByEmail(signInRequestDto.getEmail());
 		if (optionalUser.isEmpty()) {
 			log.warn("performSignIn: User not found for email={}", signInRequestDto.getEmail());
@@ -199,7 +201,6 @@ public class AuthServiceImpl implements AuthService {
 		if (isTempPasswordPending(user)) {
 			redeemTempPassword(user, signInRequestDto.getEmail());
 		}
-		onSignInSuccess(signInRequestDto.getEmail());
 
 		EmployeeSignInResponseDto employeeSignInResponseDto = peopleMapper
 			.employeeToEmployeeSignInResponseDto(employee.get());
@@ -744,15 +745,10 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	private void redeemTempPassword(User user, String signInEmail) {
-		Instant expiresAt = user.getTempPasswordExpiresAt();
-		if (expiresAt == null || !Instant.now().isBefore(expiresAt)) {
+		if (userDao.consumeTempPassword(user.getUserId(), Instant.now()) == 0) {
 			onSignInFailed(signInEmail);
-			throw new BadCredentialsException(
-					messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_INVALID_CREDENTIALS));
+			throw new BadCredentialsException(CommonMessageConstant.COMMON_ERROR_INVALID_CREDENTIALS.name());
 		}
-
-		user.setTempPasswordExpiresAt(null);
-		userDao.save(user);
 	}
 
 	protected void onSignInFailed(String email) {

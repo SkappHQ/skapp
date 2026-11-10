@@ -6,4 +6,4 @@ SET `temp_password_expires_at` = DATE_ADD(UTC_TIMESTAMP(6), INTERVAL 24 HOUR)
 WHERE `temp_password` IS NOT NULL
   AND (`is_password_changed` = 0 OR `is_password_changed` IS NULL);
 
--- rollback UPDATE `user` SET `temp_password_expires_at` = NULL;
+-- rollback UPDATE `user` SET `temp_password_expires_at` = NULL WHERE `temp_password` IS NOT NULL AND (`is_password_changed` = 0 OR `is_password_changed` IS NULL);
