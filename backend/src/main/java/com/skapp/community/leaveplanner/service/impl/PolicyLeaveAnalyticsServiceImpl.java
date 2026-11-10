@@ -10,6 +10,8 @@ import com.skapp.community.common.service.UserService;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
 import com.skapp.community.leaveplanner.constant.PolicyLeaveConstant;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
+import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy;
+import com.skapp.community.leaveplanner.model.LeavePolicy;
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequest_;
 import com.skapp.community.leaveplanner.model.PolicyLeaveType;
@@ -20,6 +22,7 @@ import com.skapp.community.leaveplanner.payload.PolicyLeaveMonthlyDurationDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveSpanDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveHistoryFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveTypeBreakdownFilterDto;
+import com.skapp.community.leaveplanner.payload.request.PolicyLeaveUtilizationFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyTeamLeaveHistoryFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyTeamLeaveTrendFilterDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTrendDataResponseDto;
@@ -27,11 +30,14 @@ import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTrendRespons
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeBreakdownDataResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeBasicInfoResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeBreakdownResponseDto;
+import com.skapp.community.leaveplanner.repository.EmployeeLeavePolicyDao;
 import com.skapp.community.leaveplanner.repository.PolicyLeaveRequestDao;
 import com.skapp.community.leaveplanner.repository.PolicyLeaveTypeDao;
 import com.skapp.community.leaveplanner.service.LeaveCycleService;
 import com.skapp.community.leaveplanner.service.LeavePolicyService;
 import com.skapp.community.leaveplanner.service.PolicyLeaveAnalyticsService;
+import com.skapp.community.leaveplanner.type.EmployeeLeavePolicyStatus;
+import com.skapp.community.leaveplanner.type.LeavePolicyStatus;
 import com.skapp.community.leaveplanner.type.LeaveRequestSort;
 import com.skapp.community.leaveplanner.util.LeaveModuleUtil;
 import com.skapp.community.leaveplanner.util.PolicyLeaveAccrualUtil;
@@ -58,12 +64,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.MonthDay;
 import java.time.YearMonth;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -82,11 +91,13 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 
 	private final PolicyLeaveTypeDao policyLeaveTypeDao;
 
-	private final TeamDao teamDao;
+	private final EmployeeLeavePolicyDao employeeLeavePolicyDao;
 
 	private final EmployeeDao employeeDao;
 
 	private final EmployeeTeamDao employeeTeamDao;
+
+	private final TeamDao teamDao;
 
 	private final HolidayDao holidayDao;
 
@@ -109,7 +120,7 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 		PolicyLeaveDateWindowDto window = resolveTrendWindow(filterDto.getStartDate(), filterDto.getEndDate());
 
 		Map<Long, Map<YearMonth, Double>> durations = sumApprovedLeaveByTypeAndMonth(window,
-				leaveTypes.stream().map(PolicyLeaveType::getId).toList(), List.of(team.getTeamId()), null);
+				leaveTypes.stream().map(PolicyLeaveType::getId).toList(), List.of(team.getTeamId()), null, null);
 
 		PolicyLeaveTrendResponseDto responseDto = new PolicyLeaveTrendResponseDto();
 		responseDto.setTotalLeaves(
@@ -145,8 +156,45 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 		PolicyLeaveDateWindowDto window = resolveCurrentCycle();
 
 		Map<Long, Map<YearMonth, Double>> durations = sumApprovedLeaveByTypeAndMonth(window,
-				leaveTypes.stream().map(PolicyLeaveType::getId).toList(), teamIds, supervisorEmployeeId);
+				leaveTypes.stream().map(PolicyLeaveType::getId).toList(), teamIds, supervisorEmployeeId, null);
 
+		log.info("getLeaveTypeBreakdown: execution ended");
+		return new ResponseEntityDto(false, buildLeaveTypeBreakdownResponse(leaveTypes, window, durations));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getEmployeeLeaveUtilization(Long employeeId, PolicyLeaveUtilizationFilterDto filterDto) {
+		log.info("getEmployeeLeaveUtilization: execution started");
+		requireLeavePoliciesEnabled();
+
+		Employee employee = employeeDao.findByEmployeeId(employeeId)
+			.orElseThrow(() -> new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND));
+		validateEmployeeUnderCurrentUserSupervision(employee);
+
+		PolicyLeaveDateWindowDto window = resolveCurrentCycle();
+		List<PolicyLeaveType> leaveTypes;
+		Map<Long, Map<YearMonth, Double>> durations;
+
+		if (PolicyLeaveAnalyticsUtil.isAllSelected(filterDto.getLeaveTypeIds(),
+				PolicyLeaveConstant.ALL_LEAVE_TYPES_ID)) {
+			durations = sumApprovedLeaveByTypeAndMonth(window, null, List.of(), null, employeeId);
+			leaveTypes = resolveEmployeeLeaveTypes(employeeId, durations.keySet(), window);
+		}
+		else {
+			leaveTypes = resolveTrendLeaveTypes(filterDto.getLeaveTypeIds()).stream()
+				.sorted(Comparator.comparing(PolicyLeaveType::getId))
+				.toList();
+			durations = sumApprovedLeaveByTypeAndMonth(window, leaveTypes.stream().map(PolicyLeaveType::getId).toList(),
+					List.of(), null, employeeId);
+		}
+
+		log.info("getEmployeeLeaveUtilization: execution ended");
+		return new ResponseEntityDto(false, buildLeaveTypeBreakdownResponse(leaveTypes, window, durations));
+	}
+
+	private PolicyLeaveTypeBreakdownResponseDto buildLeaveTypeBreakdownResponse(List<PolicyLeaveType> leaveTypes,
+			PolicyLeaveDateWindowDto window, Map<Long, Map<YearMonth, Double>> durations) {
 		PolicyLeaveTypeBreakdownResponseDto responseDto = new PolicyLeaveTypeBreakdownResponseDto();
 		responseDto.setTotalLeaves(
 				PolicyLeaveAnalyticsUtil.toMonthNameMap(window, PolicyLeaveAnalyticsUtil.sumByMonth(durations)));
@@ -157,9 +205,7 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 				dataResponseDto.setLeaveUtilizationData(monthData);
 				return dataResponseDto;
 			}));
-
-		log.info("getLeaveTypeBreakdown: execution ended");
-		return new ResponseEntityDto(false, responseDto);
+		return responseDto;
 	}
 
 	@Override
@@ -288,22 +334,22 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 	}
 
 	private Map<Long, Map<YearMonth, Double>> sumApprovedLeaveByTypeAndMonth(PolicyLeaveDateWindowDto window,
-			List<Long> leaveTypeIds, List<Long> teamIds, Long supervisorEmployeeId) {
+			List<Long> leaveTypeIds, List<Long> teamIds, Long supervisorEmployeeId, Long employeeId) {
 		Map<Long, Map<YearMonth, Double>> durations = new HashMap<>();
-		if (leaveTypeIds.isEmpty()) {
+		if (leaveTypeIds != null && leaveTypeIds.isEmpty()) {
 			return durations;
 		}
 
 		List<PolicyLeaveMonthlyDurationDto> singleMonthDurations = policyLeaveRequestDao
 			.findApprovedSingleMonthDurations(window.getStartDate(), window.getEndDate(), leaveTypeIds, teamIds,
-					supervisorEmployeeId);
+					supervisorEmployeeId, employeeId);
 		for (PolicyLeaveMonthlyDurationDto duration : singleMonthDurations) {
 			PolicyLeaveAnalyticsUtil.addDuration(durations, duration.getLeaveTypeId(),
 					YearMonth.of(duration.getYear(), duration.getMonth()), duration.getDurationDays());
 		}
 
 		List<PolicyLeaveSpanDto> multiMonthSpans = policyLeaveRequestDao.findApprovedMultiMonthSpans(
-				window.getStartDate(), window.getEndDate(), leaveTypeIds, teamIds, supervisorEmployeeId);
+				window.getStartDate(), window.getEndDate(), leaveTypeIds, teamIds, supervisorEmployeeId, employeeId);
 		if (multiMonthSpans.isEmpty()) {
 			return durations;
 		}
@@ -347,6 +393,43 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 						? policyLeaveTypeDao.findAll(Sort.by(Sort.Direction.ASC, PolicyLeaveType_.ID))
 						: policyLeaveTypeDao.findAllById(typeIds);
 		return leaveTypes.stream().filter(leaveType -> Boolean.TRUE.equals(leaveType.getIsActive())).toList();
+	}
+
+	private List<PolicyLeaveType> resolveEmployeeLeaveTypes(Long employeeId, Collection<Long> usedLeaveTypeIds,
+			PolicyLeaveDateWindowDto window) {
+		Set<Long> leaveTypeIds = Stream
+			.concat(employeeLeavePolicyDao
+				.findByEmployeeIdAndStatusOrderByPolicyNameAsc(employeeId, EmployeeLeavePolicyStatus.ACTIVE)
+				.stream()
+				.filter(assignment -> !assignment.getEffectiveFrom().isAfter(window.getEndDate()))
+				.map(EmployeeLeavePolicy::getPolicy)
+				.filter(policy -> LeavePolicyStatus.ACTIVE.equals(policy.getStatus()))
+				.map(LeavePolicy::getLeaveType)
+				.filter(leaveType -> leaveType != null && Boolean.TRUE.equals(leaveType.getIsActive()))
+				.map(PolicyLeaveType::getId), usedLeaveTypeIds.stream())
+			.collect(Collectors.toSet());
+		if (leaveTypeIds.isEmpty()) {
+			return List.of();
+		}
+
+		return policyLeaveTypeDao.findAllById(leaveTypeIds)
+			.stream()
+			.sorted(Comparator.comparing(PolicyLeaveType::getId))
+			.toList();
+	}
+
+	private void validateEmployeeUnderCurrentUserSupervision(Employee employee) {
+		User currentUser = userService.getCurrentUser();
+		if (LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser)) {
+			return;
+		}
+
+		Long currentEmployeeId = currentUser.getEmployee().getEmployeeId();
+		if (!employeeDao.existsManagerForEmployee(employee.getEmployeeId(), currentEmployeeId)
+				&& !employeeTeamDao.existsEmployeeInSupervisedTeam(employee.getEmployeeId(), currentEmployeeId)) {
+			throw new ModuleException(
+					LeaveMessageConstant.LEAVE_ERROR_EMPLOYEE_LEAVE_UTILIZATION_NOT_UNDER_SUPERVISION);
+		}
 	}
 
 	private List<Long> resolveTeamIds(List<Long> teamIds) {
