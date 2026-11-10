@@ -20,6 +20,7 @@ import {
   useGetResourceAvailability
 } from "~community/leave/api/LeaveDashboard";
 import {
+  useGetPolicyAbsenceRate,
   useGetPolicyLeaveTypeBreakdown,
   useGetPolicyPendingLeaveCount
 } from "~community/leave/api/PolicyLeaveApi";
@@ -99,7 +100,20 @@ const LeaveDashboard = (): JSX.Element => {
     isPolicyDataEnabled
   );
 
-  const { data: absenceRate } = useGetAbsenceRate(teamId, isFetchingEnabled);
+  const { data: legacyAbsenceRate } = useGetAbsenceRate(
+    teamId,
+    isLegacyAvailabilityEnabled
+  );
+
+  const { data: policyAbsenceRate } = useGetPolicyAbsenceRate(
+    teamId,
+    isPolicyDataEnabled
+  );
+
+  const absenceRate = isLeavePoliciesEnabled
+    ? policyAbsenceRate
+    : legacyAbsenceRate?.[0];
+
   const legacyBreakdown = useGetLeaveTypeBreakdownChartData(
     teamId,
     isLegacyTeamDataEnabled
@@ -307,32 +321,32 @@ const LeaveDashboard = (): JSX.Element => {
 
         <Grid sx={{ width: { xs: "100%", md: "32.5%" } }}>
           <AnalyticCard title={translateText(["absenceRate"]) ?? ""}>
-            {absenceRate?.[0] ? (
+            {absenceRate ? (
               <div style={{ display: "flex", alignItems: "center" }}>
                 <Typography sx={classes.analytic}>
-                  {`${String(absenceRate[0]?.currentAbsenceRate?.toFixed(1))} %`}
+                  {`${String(absenceRate.currentAbsenceRate?.toFixed(1))} %`}
                 </Typography>
                 <Chip
                   icon={
                     <TrendingUp
                       style={{
                         color:
-                          absenceRate[0]?.monthBeforeAbsenceRate >= 0
+                          absenceRate.monthBeforeAbsenceRate >= 0
                             ? theme.palette.greens.deepShadows
                             : theme.palette.error.contrastText
                       }}
                     />
                   }
-                  label={`${absenceRate[0]?.monthBeforeAbsenceRate?.toFixed(
+                  label={`${absenceRate.monthBeforeAbsenceRate?.toFixed(
                     0
                   )}% ${translateText(["trend"])}`}
                   sx={{
                     color:
-                      absenceRate[0]?.monthBeforeAbsenceRate >= 0
+                      absenceRate.monthBeforeAbsenceRate >= 0
                         ? theme.palette.greens.deepShadows
                         : theme.palette.error.contrastText,
                     backgroundColor:
-                      absenceRate[0]?.monthBeforeAbsenceRate >= 0
+                      absenceRate.monthBeforeAbsenceRate >= 0
                         ? theme.palette.greens.lighter
                         : theme.palette.error.light,
                     [theme.breakpoints.down("md")]: {

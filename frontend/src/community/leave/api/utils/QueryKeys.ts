@@ -363,6 +363,11 @@ export const policyLeaveQueryKeys = {
     ...policyLeaveQueryKeys.ALL_LEAVE_TYPE_BREAKDOWN(),
     teamId
   ],
+  ALL_ABSENCE_RATE: () => [...policyLeaveQueryKeys.ALL, "absence-rate"],
+  ABSENCE_RATE: (teamId: number | string) => [
+    ...policyLeaveQueryKeys.ALL_ABSENCE_RATE(),
+    teamId
+  ],
   ALL_TEAM_LEAVE_HISTORY: () => [
     ...policyLeaveQueryKeys.ALL,
     "team-leave-history"

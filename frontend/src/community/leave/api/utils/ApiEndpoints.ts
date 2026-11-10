@@ -84,6 +84,7 @@ export const policyLeaveEndPoints = {
   GET_RESOURCE_AVAILABILITY: `${moduleAPIPath.LEAVE}/policy-leave/resource-availability`,
   GET_TEAM_LEAVE_TREND: `${moduleAPIPath.LEAVE}/policy-leave/analytics/team-leave-trend`,
   GET_LEAVE_TYPE_BREAKDOWN: `${moduleAPIPath.LEAVE}/policy-leave/analytics/leave-type-breakdown`,
+  GET_ABSENCE_RATE: `${moduleAPIPath.LEAVE}/policy-leave/analytics/absence-rate`,
   GET_TEAM_LEAVE_HISTORY: (teamId: number): string =>
     `${moduleAPIPath.LEAVE}/policy-leave/analytics/team-leave-history/${teamId}`,
   GET_EMPLOYEE_LEAVE_HISTORY: (employeeId: number): string =>
