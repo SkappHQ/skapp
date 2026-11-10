@@ -107,5 +107,3 @@ databaseChangeLog:
 
   - include:
       file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-alter-table-user-add-column-temp-password-expires-at.sql
-  - include:
-      file: classpath:community/db/changelog/ddl-script/common-dml-script-v1-update-user-set-temp-password-expires-at.sql
