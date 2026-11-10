@@ -19,7 +19,11 @@ import {
 } from "~community/leave/constants/policyLeaveTypeConstants";
 import { initialPolicyLeaveRequestParams } from "~community/leave/store/policyLeaveStore";
 import { useLeaveStore } from "~community/leave/store/store";
-import { LeaveHistoryDataTypes as EmployeeLeaveHistoryDataTypes } from "~community/leave/types/AnalyticsTypes";
+import {
+  AbsenceRateResponse,
+  AbsenceRateType,
+  LeaveHistoryDataTypes as EmployeeLeaveHistoryDataTypes
+} from "~community/leave/types/AnalyticsTypes";
 import {
   LeaveTypeBreakDownReturnTypes,
   LeaveTypeBreakdownResponseType
@@ -27,8 +31,6 @@ import {
 import {
   EmployeePolicyBalanceType,
   EmployeePolicyBalancesResponse,
-  PolicyAbsenceRateResponse,
-  PolicyAbsenceRateType,
   PolicyEmployeeLeaveHistoryQueryParams,
   PolicyEmployeeLeaveHistoryResponse,
   PolicyEmployeesOnLeaveResponse,
@@ -128,8 +130,8 @@ export const useGetPolicyEmployeesOnLeaveToday = (
 
 const getPolicyAbsenceRate = async (
   teamId: number | string
-): Promise<PolicyAbsenceRateType | undefined> => {
-  const response = await authFetch.get<PolicyAbsenceRateResponse>(
+): Promise<AbsenceRateType | undefined> => {
+  const response = await authFetch.get<AbsenceRateResponse>(
     policyLeaveEndPoints.GET_ABSENCE_RATE,
     { params: { teamIds: teamId } }
   );
@@ -139,7 +141,7 @@ const getPolicyAbsenceRate = async (
 export const useGetPolicyAbsenceRate = (
   teamId: number | string,
   enabled = true
-): UseQueryResult<PolicyAbsenceRateType | undefined> => {
+): UseQueryResult<AbsenceRateType | undefined> => {
   return useQuery({
     queryKey: policyLeaveQueryKeys.ABSENCE_RATE(teamId),
     queryFn: () => getPolicyAbsenceRate(teamId),

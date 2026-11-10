@@ -1,5 +1,4 @@
-import { TrendingUp } from "@mui/icons-material";
-import { Box, Chip, Stack, Theme, Typography, useTheme } from "@mui/material";
+import { Box, Stack, Theme, Typography, useTheme } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { DateTime } from "luxon";
 import { useRouter } from "next/router";
@@ -24,6 +23,7 @@ import {
   useGetPolicyLeaveTypeBreakdown,
   useGetPolicyPendingLeaveCount
 } from "~community/leave/api/PolicyLeaveApi";
+import AbsenceRateCard from "~community/leave/components/molecules/AbsenceRateCard/AbsenceRateCard";
 import AvailabilityCalendarWidget from "~community/leave/components/molecules/AvailabilityCalendar/AvailabilityCalendarWidget";
 import AvailableChip from "~community/leave/components/molecules/LeaveDashboardChips/AvailableChip";
 import AwayChip from "~community/leave/components/molecules/LeaveDashboardChips/AwayChip";
@@ -32,6 +32,7 @@ import LeaveTypeBreakdownChart from "~community/leave/components/molecules/Leave
 import PolicyOnLeaveTodayCard from "~community/leave/components/molecules/PolicyOnLeaveTodayCard/PolicyOnLeaveTodayCard";
 import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useLeaveStore } from "~community/leave/store/store";
+import { AbsenceRateType } from "~community/leave/types/AnalyticsTypes";
 import {
   LeaveRequest,
   ResourceAvailabilityRecord
@@ -100,19 +101,21 @@ const LeaveDashboard = (): JSX.Element => {
     isPolicyDataEnabled
   );
 
-  const { data: legacyAbsenceRate } = useGetAbsenceRate(
-    teamId,
-    isLegacyAvailabilityEnabled
-  );
+  const legacyAbsenceRate = useGetAbsenceRate(teamId, isLegacyTeamDataEnabled);
 
-  const { data: policyAbsenceRate } = useGetPolicyAbsenceRate(
+  const policyAbsenceRate = useGetPolicyAbsenceRate(
     teamId,
     isPolicyDataEnabled
   );
 
-  const absenceRate = isLeavePoliciesEnabled
+  const absenceRate: AbsenceRateType | undefined = isLeavePoliciesEnabled
+    ? policyAbsenceRate.data
+    : legacyAbsenceRate.data?.[0];
+  const absenceRateQuery = isLeavePoliciesEnabled
     ? policyAbsenceRate
-    : legacyAbsenceRate?.[0];
+    : legacyAbsenceRate;
+  const isAbsenceRateLoading =
+    isPolicyConfigLoading || absenceRateQuery.isLoading;
 
   const legacyBreakdown = useGetLeaveTypeBreakdownChartData(
     teamId,
@@ -320,48 +323,11 @@ const LeaveDashboard = (): JSX.Element => {
         </Grid>
 
         <Grid sx={{ width: { xs: "100%", md: "32.5%" } }}>
-          <AnalyticCard title={translateText(["absenceRate"]) ?? ""}>
-            {absenceRate ? (
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <Typography sx={classes.analytic}>
-                  {`${String(absenceRate.currentAbsenceRate?.toFixed(1))} %`}
-                </Typography>
-                <Chip
-                  icon={
-                    <TrendingUp
-                      style={{
-                        color:
-                          absenceRate.monthBeforeAbsenceRate >= 0
-                            ? theme.palette.greens.deepShadows
-                            : theme.palette.error.contrastText
-                      }}
-                    />
-                  }
-                  label={`${absenceRate.monthBeforeAbsenceRate?.toFixed(
-                    0
-                  )}% ${translateText(["trend"])}`}
-                  sx={{
-                    color:
-                      absenceRate.monthBeforeAbsenceRate >= 0
-                        ? theme.palette.greens.deepShadows
-                        : theme.palette.error.contrastText,
-                    backgroundColor:
-                      absenceRate.monthBeforeAbsenceRate >= 0
-                        ? theme.palette.greens.lighter
-                        : theme.palette.error.light,
-                    [theme.breakpoints.down("md")]: {
-                      fontSize: "0.625rem",
-                      lineHeight: "0.625rem"
-                    },
-                    ml: 1,
-                    fontSize: "0.75rem"
-                  }}
-                />
-              </div>
-            ) : (
-              <Typography sx={classes.analytic}>{"-"}</Typography>
-            )}
-          </AnalyticCard>
+          <AbsenceRateCard
+            absenceRate={absenceRate}
+            isLoading={isAbsenceRateLoading}
+            isError={absenceRateQuery.isError}
+          />
         </Grid>
       </Grid>
       <AvailabilityCalendarWidget teams={teamId} />

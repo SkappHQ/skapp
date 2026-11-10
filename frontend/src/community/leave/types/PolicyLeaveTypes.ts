@@ -171,16 +171,6 @@ export interface PolicyEmployeesOnLeaveResponse {
   results: PolicyEmployeesOnLeaveType[];
 }
 
-export interface PolicyAbsenceRateType {
-  type: string;
-  currentAbsenceRate: number;
-  monthBeforeAbsenceRate: number;
-}
-
-export interface PolicyAbsenceRateResponse {
-  results: PolicyAbsenceRateType[];
-}
-
 export interface PolicyLeaveUtilizationSourceParams {
   isProTier: boolean;
   isLeavePoliciesEnabled: boolean;

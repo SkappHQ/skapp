@@ -1,6 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { UseQueryResult, useQuery } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
+import {
+  AbsenceRateResponse,
+  AbsenceRateType
+} from "~community/leave/types/AnalyticsTypes";
 
 import { leaveTypeBreakdownPreProcessor } from "../actions/LeaveTypeBreakdownPreProcessor";
 import { leaveDashboardEndPoints } from "./utils/ApiEndpoints";
@@ -146,11 +150,11 @@ export const useGetPendingLeavesData = (
 export const useGetAbsenceRate = (
   teamIds: string | number,
   enabled: boolean
-) => {
+): UseQueryResult<AbsenceRateType[] | undefined> => {
   return useQuery({
     queryKey: dashboardQueryKeys.ABSENCE_RATE(teamIds),
     queryFn: async () => {
-      const { data } = await authFetch.get(
+      const { data } = await authFetch.get<AbsenceRateResponse>(
         leaveDashboardEndPoints.ABSENCE_RATE,
         {
           params: {
