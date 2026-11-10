@@ -1,6 +1,8 @@
+import { useRouter } from "next/router";
 import { FC, useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -27,6 +29,7 @@ interface Props {
 const ActivityMeetingSidePanel: FC<Props> = ({ meetingId }) => {
   const translateText = useTranslator("crmModule");
   const { setToastMessage } = useToast();
+  const router = useRouter();
 
   const {
     isCrmSidePanelOpen,
@@ -86,6 +89,13 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId }) => {
     handleDeleteError
   );
 
+  const handleCompanyClick = (): void => {
+    if (meeting?.company?.id) {
+      handleClose();
+      router.push(ROUTES.CRM.COMPANY_DETAIL(meeting.company.id));
+    }
+  };
+
   const handleRelatedRowClick = (row: ActivityRow): void => {
     setSelectedMeetingId(row.id);
   };
@@ -119,6 +129,7 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId }) => {
           updateMeeting(toDealEditPayload(meetingId, dealId))
         }
         onDetailsSave={updateMeeting}
+        onCompanyClick={handleCompanyClick}
       />
       <DeleteActivityModal
         isOpen={isDeleteModalOpen}

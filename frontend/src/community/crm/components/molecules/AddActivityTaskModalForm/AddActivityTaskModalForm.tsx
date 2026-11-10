@@ -31,13 +31,9 @@ import { isDealMatchingCompany } from "~community/crm/utils/dealUtil";
 
 interface Props {
   formik: FormikProps<CrmAddTaskFormValues>;
-  isDetailsOnly?: boolean;
 }
 
-const AddActivityTaskModalForm: FC<Props> = ({
-  formik,
-  isDetailsOnly = false
-}) => {
+const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
   const { values, status, handleChange, handleBlur, setFieldValue } = formik;
 
   const translateText = useTranslator("crmModule", "activities");
@@ -93,28 +89,26 @@ const AddActivityTaskModalForm: FC<Props> = ({
 
   return (
     <div className="flex flex-col gap-2 overflow-y-auto pr-1">
-      {!isDetailsOnly && (
-        <InputField
-          id="add-task-name-input"
-          name="name"
-          value={values.name}
-          label={translateText(["addTask", "modal", "labels", "taskName"])}
-          placeholder={translateText([
-            "addTask",
-            "modal",
-            "placeholders",
-            "taskName"
-          ])}
-          errorMessage={getFieldError("name")}
-          state={getFieldError("name") ? "error" : "default"}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          aria-label={translateAria(["taskName"])}
-          maxLength={characterLengths.TASK_NAME_LENGTH}
-          fullWidth
-          required
-        />
-      )}
+      <InputField
+        id="add-task-name-input"
+        name="name"
+        value={values.name}
+        label={translateText(["addTask", "modal", "labels", "taskName"])}
+        placeholder={translateText([
+          "addTask",
+          "modal",
+          "placeholders",
+          "taskName"
+        ])}
+        errorMessage={getFieldError("name")}
+        state={getFieldError("name") ? "error" : "default"}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        aria-label={translateAria(["taskName"])}
+        maxLength={characterLengths.TASK_NAME_LENGTH}
+        fullWidth
+        required
+      />
 
       <Dropdown
         id="add-task-priority-input"
@@ -173,41 +167,37 @@ const AddActivityTaskModalForm: FC<Props> = ({
         onDealCleared={() => setIsDealClearedNoticeVisible(true)}
       />
 
-      {!isDetailsOnly && (
-        <TextArea
-          name="notes"
-          value={values.notes}
-          label={translateText(["addTask", "modal", "labels", "notes"])}
-          placeholder={translateText([
-            "addTask",
-            "modal",
-            "placeholders",
-            "notes"
-          ])}
-          errorMessage={getFieldError("notes")}
-          state={getFieldError("notes") ? "error" : "default"}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          rows={2}
-          maxLength={characterLengths.TASK_NOTES_LENGTH}
-          aria-label={translateAria(["notes"])}
-        />
-      )}
+      <TextArea
+        name="notes"
+        value={values.notes}
+        label={translateText(["addTask", "modal", "labels", "notes"])}
+        placeholder={translateText([
+          "addTask",
+          "modal",
+          "placeholders",
+          "notes"
+        ])}
+        errorMessage={getFieldError("notes")}
+        state={getFieldError("notes") ? "error" : "default"}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        rows={2}
+        maxLength={characterLengths.TASK_NOTES_LENGTH}
+        aria-label={translateAria(["notes"])}
+      />
 
       <ActivityAssociations
         isForcedOpen={isDealClearedNoticeVisible || isDealMismatch}
       >
-        {!isDetailsOnly && (
-          <ActivityDealField
-            id="add-task-deal"
-            formik={formik}
-            fieldAriaLabel={translateAria(["deal"])}
-            isClearedNoticeVisible={isDealClearedNoticeVisible}
-            isMismatch={isDealMismatch}
-            onDealChange={() => setIsDealClearedNoticeVisible(false)}
-            {...(contactCompanyId && { filterCompanyId: contactCompanyId })}
-          />
-        )}
+        <ActivityDealField
+          id="add-task-deal"
+          formik={formik}
+          fieldAriaLabel={translateAria(["deal"])}
+          isClearedNoticeVisible={isDealClearedNoticeVisible}
+          isMismatch={isDealMismatch}
+          onDealChange={() => setIsDealClearedNoticeVisible(false)}
+          {...(contactCompanyId && { filterCompanyId: contactCompanyId })}
+        />
         <ActivityRelatedToField
           id="add-task-related-to"
           formik={formik}

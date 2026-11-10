@@ -3,7 +3,7 @@ import { FC, ReactNode } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { ActivityCallEditPayload } from "~community/crm/activities/types/activityTypes";
-import SidePanelCallEditForm from "~community/crm/components/molecules/SidePanelCallEditForm/SidePanelCallEditForm";
+import SidePanelCallInfo from "~community/crm/components/molecules/SidePanelCallInfo/SidePanelCallInfo";
 import ActivitySidePanel from "~community/crm/components/organisms/ActivitySidePanel/ActivitySidePanel";
 import { TASK_DETAIL_ICON_SIZE } from "~community/crm/constants/taskConstants";
 import { CrmCallEntity } from "~community/crm/types/CrmCommonTypes";
@@ -18,6 +18,8 @@ interface Props {
   onDealChange: (dealId: number | null) => void;
   onDetailsSave: (payload: ActivityCallEditPayload) => void;
   onDelete: () => void;
+  onContactClick: () => void;
+  onCompanyClick: () => void;
 }
 
 const CallSidePanel: FC<Props> = ({
@@ -29,7 +31,9 @@ const CallSidePanel: FC<Props> = ({
   onCommentsSave,
   onDealChange,
   onDetailsSave,
-  onDelete
+  onDelete,
+  onContactClick,
+  onCompanyClick
 }) => {
   const translateText = useTranslator(
     "crmModule",
@@ -64,10 +68,12 @@ const CallSidePanel: FC<Props> = ({
         comments: call.comments,
         deal: call.deal,
         info: (
-          <SidePanelCallEditForm
+          <SidePanelCallInfo
             key={call.id}
             call={call}
             onSave={onDetailsSave}
+            onContactClick={onContactClick}
+            onCompanyClick={onCompanyClick}
           />
         )
       })}

@@ -9,7 +9,7 @@ import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { ActivityTaskEditPayload } from "~community/crm/activities/types/activityTypes";
-import SidePanelActivityTaskEditForm from "~community/crm/components/molecules/SidePanelActivityTaskEditForm/SidePanelActivityTaskEditForm";
+import SidePanelActivityTaskInfo from "~community/crm/components/molecules/SidePanelActivityTaskInfo/SidePanelActivityTaskInfo";
 import ActivitySidePanel from "~community/crm/components/organisms/ActivitySidePanel/ActivitySidePanel";
 import { TASK_DETAIL_ICON_SIZE } from "~community/crm/constants/taskConstants";
 import { CrmActivityTaskEntity } from "~community/crm/types/CrmCommonTypes";
@@ -22,10 +22,12 @@ interface Props {
   onTitleSave: (title: string) => void;
   onCommentsSave: (comments: string) => void;
   onDealChange: (dealId: number | null) => void;
+  onDetailsSave: (payload: ActivityTaskEditPayload) => void;
   onDelete: () => void;
   onMarkAsDone: () => void;
   onReopen: () => void;
-  onDetailsSave: (payload: ActivityTaskEditPayload) => void;
+  onContactClick: () => void;
+  onCompanyClick: () => void;
 }
 
 const TaskActivitySidePanel: FC<Props> = ({
@@ -36,10 +38,12 @@ const TaskActivitySidePanel: FC<Props> = ({
   onTitleSave,
   onCommentsSave,
   onDealChange,
+  onDetailsSave,
   onDelete,
   onMarkAsDone,
   onReopen,
-  onDetailsSave
+  onContactClick,
+  onCompanyClick
 }) => {
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria", "activities", "taskSidePanel");
@@ -109,10 +113,12 @@ const TaskActivitySidePanel: FC<Props> = ({
                 ? translateText(["tasks", "sidePanel", "info", "statusDone"])
                 : translateText(["tasks", "sidePanel", "info", "markAsDone"])}
             </ButtonV2>
-            <SidePanelActivityTaskEditForm
+            <SidePanelActivityTaskInfo
               key={task.id}
               task={task}
               onSave={onDetailsSave}
+              onContactClick={onContactClick}
+              onCompanyClick={onCompanyClick}
             />
           </div>
         )

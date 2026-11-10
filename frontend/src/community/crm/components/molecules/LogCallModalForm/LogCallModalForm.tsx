@@ -24,10 +24,9 @@ import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
 
 interface Props {
   formik: FormikProps<CrmLogCallFormValues>;
-  isDetailsOnly?: boolean;
 }
 
-const LogCallModalForm: FC<Props> = ({ formik, isDetailsOnly = false }) => {
+const LogCallModalForm: FC<Props> = ({ formik }) => {
   const {
     values,
     errors,
@@ -68,26 +67,20 @@ const LogCallModalForm: FC<Props> = ({ formik, isDetailsOnly = false }) => {
 
   return (
     <div className="flex flex-col gap-2 overflow-y-auto pr-1">
-      {!isDetailsOnly && (
-        <InputField
-          id="log-call-subject-input"
-          name="subject"
-          value={values.subject}
-          label={translateText(["logActivity", "labels", "subject"])}
-          placeholder={translateText([
-            "logActivity",
-            "placeholders",
-            "subject"
-          ])}
-          errorMessage={touched.subject ? errors.subject : ""}
-          state={touched.subject && errors.subject ? "error" : "default"}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          aria-label={translateAria(["subject"])}
-          fullWidth
-          required
-        />
-      )}
+      <InputField
+        id="log-call-subject-input"
+        name="subject"
+        value={values.subject}
+        label={translateText(["logActivity", "labels", "subject"])}
+        placeholder={translateText(["logActivity", "placeholders", "subject"])}
+        errorMessage={touched.subject ? errors.subject : ""}
+        state={touched.subject && errors.subject ? "error" : "default"}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        aria-label={translateAria(["subject"])}
+        fullWidth
+        required
+      />
 
       <div className="flex flex-row items-start gap-[0.625rem]">
         <div className="flex-1">
@@ -167,36 +160,28 @@ const LogCallModalForm: FC<Props> = ({ formik, isDetailsOnly = false }) => {
         </div>
       </div>
 
-      {!isDetailsOnly && (
-        <TextArea
-          name="comments"
-          value={values.comments}
-          label={translateText(["logActivity", "labels", "comments"])}
-          placeholder={translateText([
-            "logActivity",
-            "placeholders",
-            "comments"
-          ])}
-          onChange={handleChange}
-          rows={2}
-          aria-label={translateAria(["comments"])}
-        />
-      )}
+      <TextArea
+        name="comments"
+        value={values.comments}
+        label={translateText(["logActivity", "labels", "comments"])}
+        placeholder={translateText(["logActivity", "placeholders", "comments"])}
+        onChange={handleChange}
+        rows={2}
+        aria-label={translateAria(["comments"])}
+      />
 
       <ActivityAssociations
         isForcedOpen={isDealClearedNoticeVisible || isDealMismatch}
       >
-        {!isDetailsOnly && (
-          <ActivityDealField
-            id="log-call-deal"
-            formik={formik}
-            fieldAriaLabel={translateAria(["deal"])}
-            isClearedNoticeVisible={isDealClearedNoticeVisible}
-            isMismatch={isDealMismatch}
-            onDealChange={() => setIsDealClearedNoticeVisible(false)}
-            {...(contactCompanyId && { filterCompanyId: contactCompanyId })}
-          />
-        )}
+        <ActivityDealField
+          id="log-call-deal"
+          formik={formik}
+          fieldAriaLabel={translateAria(["deal"])}
+          isClearedNoticeVisible={isDealClearedNoticeVisible}
+          isMismatch={isDealMismatch}
+          onDealChange={() => setIsDealClearedNoticeVisible(false)}
+          {...(contactCompanyId && { filterCompanyId: contactCompanyId })}
+        />
         <ActivityRelatedToField
           id="log-call-related-to"
           formik={formik}

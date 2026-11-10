@@ -3,7 +3,7 @@ import { FC, ReactNode } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { ActivityMeetingEditPayload } from "~community/crm/activities/types/activityTypes";
-import SidePanelMeetingEditForm from "~community/crm/components/molecules/SidePanelMeetingEditForm/SidePanelMeetingEditForm";
+import SidePanelMeetingInfo from "~community/crm/components/molecules/SidePanelMeetingInfo/SidePanelMeetingInfo";
 import ActivitySidePanel from "~community/crm/components/organisms/ActivitySidePanel/ActivitySidePanel";
 import { TASK_DETAIL_ICON_SIZE } from "~community/crm/constants/taskConstants";
 import { CrmMeetingEntity } from "~community/crm/types/CrmCommonTypes";
@@ -16,8 +16,9 @@ interface Props {
   onTitleSave: (title: string) => void;
   onCommentsSave: (comments: string) => void;
   onDealChange: (dealId: number | null) => void;
-  onDelete: () => void;
   onDetailsSave: (payload: ActivityMeetingEditPayload) => void;
+  onDelete: () => void;
+  onCompanyClick: () => void;
 }
 
 const MeetingSidePanel: FC<Props> = ({
@@ -28,8 +29,9 @@ const MeetingSidePanel: FC<Props> = ({
   onTitleSave,
   onCommentsSave,
   onDealChange,
+  onDetailsSave,
   onDelete,
-  onDetailsSave
+  onCompanyClick
 }) => {
   const translateText = useTranslator(
     "crmModule",
@@ -68,10 +70,11 @@ const MeetingSidePanel: FC<Props> = ({
         comments: meeting.comments,
         deal: meeting.deal,
         info: (
-          <SidePanelMeetingEditForm
+          <SidePanelMeetingInfo
             key={meeting.id}
             meeting={meeting}
             onSave={onDetailsSave}
+            onCompanyClick={onCompanyClick}
           />
         )
       })}

@@ -33,10 +33,9 @@ import { isDealMatchingContacts } from "~community/crm/utils/dealUtil";
 
 interface Props {
   formik: FormikProps<CrmLogMeetingFormValues>;
-  isDetailsOnly?: boolean;
 }
 
-const LogMeetingModalForm: FC<Props> = ({ formik, isDetailsOnly = false }) => {
+const LogMeetingModalForm: FC<Props> = ({ formik }) => {
   const { values, errors, touched, handleChange, handleBlur, setFieldValue } =
     formik;
 
@@ -101,26 +100,20 @@ const LogMeetingModalForm: FC<Props> = ({ formik, isDetailsOnly = false }) => {
 
   return (
     <div className="flex flex-col gap-2 overflow-y-auto pr-1">
-      {!isDetailsOnly && (
-        <InputField
-          id="log-meeting-subject-input"
-          name="subject"
-          value={values.subject}
-          label={translateText(["logActivity", "labels", "subject"])}
-          placeholder={translateText([
-            "logActivity",
-            "placeholders",
-            "subject"
-          ])}
-          {...(touched.subject && { errorMessage: errors.subject })}
-          state={touched.subject && errors.subject ? "error" : "default"}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          aria-label={translateAria(["subject"])}
-          fullWidth
-          required
-        />
-      )}
+      <InputField
+        id="log-meeting-subject-input"
+        name="subject"
+        value={values.subject}
+        label={translateText(["logActivity", "labels", "subject"])}
+        placeholder={translateText(["logActivity", "placeholders", "subject"])}
+        {...(touched.subject && { errorMessage: errors.subject })}
+        state={touched.subject && errors.subject ? "error" : "default"}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        aria-label={translateAria(["subject"])}
+        fullWidth
+        required
+      />
 
       <DatePicker
         mode="single"
@@ -222,38 +215,30 @@ const LogMeetingModalForm: FC<Props> = ({ formik, isDetailsOnly = false }) => {
         </div>
       </div>
 
-      {!isDetailsOnly && (
-        <TextArea
-          name="comments"
-          value={values.comments}
-          label={translateText(["logActivity", "labels", "comments"])}
-          placeholder={translateText([
-            "logActivity",
-            "placeholders",
-            "comments"
-          ])}
-          onChange={handleChange}
-          rows={2}
-          aria-label={translateAria(["comments"])}
-        />
-      )}
+      <TextArea
+        name="comments"
+        value={values.comments}
+        label={translateText(["logActivity", "labels", "comments"])}
+        placeholder={translateText(["logActivity", "placeholders", "comments"])}
+        onChange={handleChange}
+        rows={2}
+        aria-label={translateAria(["comments"])}
+      />
 
       <ActivityAssociations
         isForcedOpen={isDealClearedNoticeVisible || isDealMismatch}
       >
-        {!isDetailsOnly && (
-          <ActivityDealField
-            id="log-meeting-deal"
-            formik={formik}
-            fieldAriaLabel={translateAria(["deal"])}
-            isClearedNoticeVisible={isDealClearedNoticeVisible}
-            isMismatch={isDealMismatch}
-            onDealChange={() => setIsDealClearedNoticeVisible(false)}
-            {...(attendeeCompanyIds.length === 1 && {
-              filterCompanyId: attendeeCompanyIds[0]
-            })}
-          />
-        )}
+        <ActivityDealField
+          id="log-meeting-deal"
+          formik={formik}
+          fieldAriaLabel={translateAria(["deal"])}
+          isClearedNoticeVisible={isDealClearedNoticeVisible}
+          isMismatch={isDealMismatch}
+          onDealChange={() => setIsDealClearedNoticeVisible(false)}
+          {...(attendeeCompanyIds.length === 1 && {
+            filterCompanyId: attendeeCompanyIds[0]
+          })}
+        />
         <ActivityRelatedToField
           id="log-meeting-related-to"
           formik={formik}

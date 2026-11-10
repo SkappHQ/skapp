@@ -1,6 +1,8 @@
+import { useRouter } from "next/router";
 import { FC, useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -27,6 +29,7 @@ interface Props {
 const ActivityCallSidePanel: FC<Props> = ({ callId }) => {
   const translateText = useTranslator("crmModule");
   const { setToastMessage } = useToast();
+  const router = useRouter();
 
   const {
     isCrmSidePanelOpen,
@@ -82,6 +85,23 @@ const ActivityCallSidePanel: FC<Props> = ({ callId }) => {
     handleDeleteError
   );
 
+  const openRecord = (url: string): void => {
+    handleClose();
+    router.push(url);
+  };
+
+  const handleContactClick = (): void => {
+    if (call?.contact?.id) {
+      openRecord(ROUTES.CRM.CONTACT_DETAIL(call.contact.id));
+    }
+  };
+
+  const handleCompanyClick = (): void => {
+    if (call?.company?.id) {
+      openRecord(ROUTES.CRM.COMPANY_DETAIL(call.company.id));
+    }
+  };
+
   const handleRelatedRowClick = (row: ActivityRow): void => {
     setSelectedCallId(row.id);
   };
@@ -111,6 +131,8 @@ const ActivityCallSidePanel: FC<Props> = ({ callId }) => {
         onDelete={openDeleteModal}
         onDealChange={(dealId) => updateCall(toDealEditPayload(callId, dealId))}
         onDetailsSave={updateCall}
+        onContactClick={handleContactClick}
+        onCompanyClick={handleCompanyClick}
       />
       <DeleteActivityModal
         isOpen={isDeleteModalOpen}

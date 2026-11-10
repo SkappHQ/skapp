@@ -1,12 +1,9 @@
-import { ButtonV2, PlusIcon } from "@rootcodelabs/skapp-ui";
-import { useFormik } from "formik";
+import { ButtonV2, EmptyDataView, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { FC, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import ActivityDealField from "~community/crm/components/molecules/ActivityDealField/ActivityDealField";
+import AddActivityDealModal from "~community/crm/components/molecules/AddActivityDealModal/AddActivityDealModal";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
-import { useActivityAutoSave } from "~community/crm/hooks/useActivityAutoSave";
-import { CrmActivityDealFormValues } from "~community/crm/types/CrmCommonTypes";
 
 interface Props {
   id: string;
@@ -28,18 +25,12 @@ const SidePanelActivityDeal: FC<Props> = ({
     "activitySidePanel"
   );
 
-  const [isAddingDeal, setIsAddingDeal] = useState(false);
+  const [isAddDealModalOpen, setIsAddDealModalOpen] = useState(false);
 
-  const formik = useFormik<CrmActivityDealFormValues>({
-    initialValues: { dealId },
-    enableReinitialize: true,
-    onSubmit: (values) => {
-      onDealChange(values.dealId);
-      setIsAddingDeal(false);
-    }
-  });
-
-  const autoSaveFormik = useActivityAutoSave(formik, []);
+  const handleSave = (selectedDealId: number | null): void => {
+    setIsAddDealModalOpen(false);
+    onDealChange(selectedDealId);
+  };
 
   if (dealId) {
     return (
@@ -69,30 +60,30 @@ const SidePanelActivityDeal: FC<Props> = ({
     );
   }
 
-  if (isAddingDeal) {
-    return (
-      <ActivityDealField
-        id={`${id}-deal`}
-        formik={autoSaveFormik}
-        fieldAriaLabel={translateAria(["dealSearch"])}
-      />
-    );
-  }
-
   return (
-    <div className="flex flex-col items-start gap-2">
-      <p className="body2">{emptyDescription}</p>
-      <ButtonV2
-        variant="line"
-        size="sm"
-        icon={<PlusIcon />}
-        iconPosition="end"
-        aria-label={translateAria(["addDeal"])}
-        onClick={() => setIsAddingDeal(true)}
-      >
-        {translateText(["deals", "common", "buttons", "addDeal"])}
-      </ButtonV2>
-    </div>
+    <>
+      <EmptyDataView
+        icon={<SearchIcon />}
+        title={translateText(["deals", "linkedSection", "emptyTitle"])}
+        description={emptyDescription}
+        button={{
+          children: translateText(["deals", "common", "buttons", "addDeal"]),
+          variant: "tertiary",
+          "aria-label": translateAria(["addDeal"]),
+          onClick: () => setIsAddDealModalOpen(true)
+        }}
+        className={{
+          wrapper: "h-[163px] bg-secondary-background rounded-lg"
+        }}
+      />
+      {isAddDealModalOpen && (
+        <AddActivityDealModal
+          id={id}
+          onSave={handleSave}
+          onClose={() => setIsAddDealModalOpen(false)}
+        />
+      )}
+    </>
   );
 };
 
