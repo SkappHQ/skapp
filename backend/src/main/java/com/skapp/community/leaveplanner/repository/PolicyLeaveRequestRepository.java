@@ -56,6 +56,11 @@ public interface PolicyLeaveRequestRepository {
 	List<PolicyLeaveSpanDto> findApprovedMultiMonthSpans(LocalDate startDate, LocalDate endDate,
 			List<Long> leaveTypeIds, List<Long> teamIds, Long supervisorEmployeeId);
 
+	double sumApprovedDurationWithinWindow(Collection<Long> employeeIds, LocalDate startDate, LocalDate endDate);
+
+	List<PolicyLeaveSpanDto> findApprovedSpansCrossingWindow(Collection<Long> employeeIds, LocalDate startDate,
+			LocalDate endDate);
+
 	List<PolicyLeaveRequest> findEmployeesRequestsInRange(Collection<Long> employeeIds,
 			Collection<LeaveRequestStatus> statuses, LocalDate startDate, LocalDate endDate, boolean activeUsersOnly);
 

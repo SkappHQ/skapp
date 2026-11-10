@@ -50,6 +50,24 @@ public class PolicyLeaveAnalyticsUtil {
 		}
 	}
 
+	public static double durationWithinWindow(PolicyLeaveSpanDto span, PolicyLeaveDateWindowDto window,
+			List<TimeConfig> timeConfigs, List<Holiday> holidays) {
+		if (span.getDurationDays() == null) {
+			return 0;
+		}
+
+		double requestDays = LeaveModuleUtil.getWorkingDaysBetweenTwoDates(span.getStartDate(), span.getEndDate(),
+				timeConfigs, holidays);
+		LocalDate from = DateTimeUtils.getLaterDate(span.getStartDate(), window.getStartDate());
+		LocalDate to = DateTimeUtils.getEarlierDate(span.getEndDate(), window.getEndDate());
+		if (requestDays <= 0 || from.isAfter(to)) {
+			return 0;
+		}
+
+		double windowDays = LeaveModuleUtil.getWorkingDaysBetweenTwoDates(from, to, timeConfigs, holidays);
+		return windowDays * span.getDurationDays() / requestDays;
+	}
+
 	public static List<Holiday> holidaysForWorkLocation(List<Holiday> holidays, Long workLocationId) {
 		return holidays.stream()
 			.filter(holiday -> holiday.getWorkLocations().isEmpty()

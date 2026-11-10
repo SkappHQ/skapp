@@ -386,6 +386,57 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 	}
 
 	@Override
+	public double sumApprovedDurationWithinWindow(Collection<Long> employeeIds, LocalDate startDate,
+			LocalDate endDate) {
+		if (CollectionUtils.isEmpty(employeeIds)) {
+			return 0;
+		}
+
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<Double> criteriaQuery = criteriaBuilder.createQuery(Double.class);
+		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
+
+		List<Predicate> predicates = buildApprovedEmployeesLeavePredicates(criteriaBuilder, root, employeeIds,
+				startDate, endDate);
+		predicates.add(withinWindowPredicate(criteriaBuilder, root, startDate, endDate));
+
+		criteriaQuery.select(criteriaBuilder.sumAsDouble(root.get(PolicyLeaveRequest_.durationDays)))
+			.where(predicates.toArray(new Predicate[0]));
+
+		Double durationDays = entityManager.createQuery(criteriaQuery).getSingleResult();
+		return durationDays == null ? 0 : durationDays;
+	}
+
+	@Override
+	public List<PolicyLeaveSpanDto> findApprovedSpansCrossingWindow(Collection<Long> employeeIds, LocalDate startDate,
+			LocalDate endDate) {
+		if (CollectionUtils.isEmpty(employeeIds)) {
+			return List.of();
+		}
+
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<PolicyLeaveSpanDto> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveSpanDto.class);
+		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
+		Join<Employee, WorkLocation> workLocation = root.join(PolicyLeaveRequest_.employee)
+			.join(Employee_.workLocation, JoinType.LEFT);
+
+		List<Predicate> predicates = buildApprovedEmployeesLeavePredicates(criteriaBuilder, root, employeeIds,
+				startDate, endDate);
+		predicates.add(criteriaBuilder.not(withinWindowPredicate(criteriaBuilder, root, startDate, endDate)));
+
+		criteriaQuery
+			.select(criteriaBuilder.construct(PolicyLeaveSpanDto.class,
+					root.get(PolicyLeaveRequest_.policy).get(LeavePolicy_.leaveType).get(PolicyLeaveType_.id),
+					root.get(PolicyLeaveRequest_.startDate), root.get(PolicyLeaveRequest_.endDate),
+					root.get(PolicyLeaveRequest_.durationDays), workLocation.get(WorkLocation_.workLocationId)))
+			.where(predicates.toArray(new Predicate[0]));
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
+	@Override
 	public List<PolicyLeaveRequest> findEmployeesRequestsInRange(Collection<Long> employeeIds,
 			Collection<LeaveRequestStatus> statuses, LocalDate startDate, LocalDate endDate, boolean activeUsersOnly) {
 		if (CollectionUtils.isEmpty(employeeIds)) {
@@ -491,6 +542,23 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		}
 
 		return predicates;
+	}
+
+	private List<Predicate> buildApprovedEmployeesLeavePredicates(CriteriaBuilder criteriaBuilder,
+			Root<PolicyLeaveRequest> root, Collection<Long> employeeIds, LocalDate startDate, LocalDate endDate) {
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(root.get(PolicyLeaveRequest_.employee).get(Employee_.employeeId).in(employeeIds));
+		predicates.add(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.status), LeaveRequestStatus.APPROVED));
+		predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get(PolicyLeaveRequest_.startDate), endDate));
+		predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), startDate));
+		return predicates;
+	}
+
+	private Predicate withinWindowPredicate(CriteriaBuilder criteriaBuilder, Root<PolicyLeaveRequest> root,
+			LocalDate startDate, LocalDate endDate) {
+		return criteriaBuilder.and(
+				criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.startDate), startDate),
+				criteriaBuilder.lessThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), endDate));
 	}
 
 	private Predicate singleMonthWithinWindowPredicate(CriteriaBuilder criteriaBuilder, Root<PolicyLeaveRequest> root,
