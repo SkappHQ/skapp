@@ -8,6 +8,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { ActivityRow } from "~community/crm/activities/types/activityTypes";
 import { toMeetingRow } from "~community/crm/activities/utils/activityFeedUtil";
+import { toDealEditPayload } from "~community/crm/activities/utils/activityUtil";
 import {
   useDeleteMeeting,
   useGetMeetingById,
@@ -124,6 +125,10 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId }) => {
           updateMeeting({ id: meetingId, comments })
         }
         onDelete={openDeleteModal}
+        onDealChange={(dealId) =>
+          updateMeeting(toDealEditPayload(meetingId, dealId))
+        }
+        onDetailsSave={updateMeeting}
         onCompanyClick={handleCompanyClick}
       />
       <DeleteActivityModal

@@ -203,6 +203,10 @@ export interface CrmLogMeetingFormValues {
   companyId: number | null;
 }
 
+export interface CrmActivityDealFormValues {
+  dealId: number | null;
+}
+
 export interface CrmAddTaskFormValues {
   name: string;
   priority: CrmPriorityEnum;

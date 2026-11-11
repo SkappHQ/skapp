@@ -2,10 +2,10 @@ import { MeetingFilledIcon } from "@rootcodelabs/skapp-ui";
 import { FC, ReactNode } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { ActivityMeetingEditPayload } from "~community/crm/activities/types/activityTypes";
 import SidePanelMeetingInfo from "~community/crm/components/molecules/SidePanelMeetingInfo/SidePanelMeetingInfo";
 import ActivitySidePanel from "~community/crm/components/organisms/ActivitySidePanel/ActivitySidePanel";
 import { TASK_DETAIL_ICON_SIZE } from "~community/crm/constants/taskConstants";
-import { useCrmStore } from "~community/crm/store/store";
 import { CrmMeetingEntity } from "~community/crm/types/CrmCommonTypes";
 
 interface Props {
@@ -15,6 +15,8 @@ interface Props {
   related: ReactNode;
   onTitleSave: (title: string) => void;
   onCommentsSave: (comments: string) => void;
+  onDealChange: (dealId: number | null) => void;
+  onDetailsSave: (payload: ActivityMeetingEditPayload) => void;
   onDelete: () => void;
   onCompanyClick: () => void;
 }
@@ -26,6 +28,8 @@ const MeetingSidePanel: FC<Props> = ({
   related,
   onTitleSave,
   onCommentsSave,
+  onDealChange,
+  onDetailsSave,
   onDelete,
   onCompanyClick
 }) => {
@@ -40,8 +44,6 @@ const MeetingSidePanel: FC<Props> = ({
     "meetingSidePanel"
   );
 
-  const owners = useCrmStore((state) => state.owners);
-
   return (
     <ActivitySidePanel
       id="meeting"
@@ -51,6 +53,7 @@ const MeetingSidePanel: FC<Props> = ({
       related={related}
       onTitleSave={onTitleSave}
       onCommentsSave={onCommentsSave}
+      onDealChange={onDealChange}
       icon={
         <MeetingFilledIcon
           width={TASK_DETAIL_ICON_SIZE}
@@ -68,8 +71,9 @@ const MeetingSidePanel: FC<Props> = ({
         deal: meeting.deal,
         info: (
           <SidePanelMeetingInfo
+            key={meeting.id}
             meeting={meeting}
-            owner={owners[meeting.ownerId]}
+            onSave={onDetailsSave}
             onCompanyClick={onCompanyClick}
           />
         )

@@ -132,7 +132,7 @@ const OwnerPopupSearch: FC<Props> = ({
       searchable
       clearable
       ariaInvalid={ariaInvalid}
-      width="100%"
+      width="w-full"
       renderTrigger={(option, _a, _b, triggerProps) =>
         handleRenderTrigger(option as DropdownOption, triggerProps)
       }
