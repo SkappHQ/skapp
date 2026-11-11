@@ -615,7 +615,7 @@
         "dueDate": "Due date"
       },
       "relatedTitle": "Related tasks",
-      "reopen": "Reopen"
+      "reopen": "Reopen Task"
     },
     "emailSidePanel": {
       "noDealsDescription": "No deals are linked to this email",

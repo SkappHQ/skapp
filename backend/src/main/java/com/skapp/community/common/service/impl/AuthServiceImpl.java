@@ -264,7 +264,7 @@ public class AuthServiceImpl implements AuthService {
 		Validation.isValidFirstName(superAdminSignUpRequestDto.getFirstName());
 		Validation.isValidLastName(superAdminSignUpRequestDto.getLastName());
 		Validation.validateEmail(superAdminSignUpRequestDto.getEmail());
-		Validation.isValidPassword(superAdminSignUpRequestDto.getPassword());
+		Validation.isValidSignUpPassword(superAdminSignUpRequestDto.getPassword());
 
 		User user = commonMapper.createSuperAdminRequestDtoToUser(superAdminSignUpRequestDto);
 		user.setPassword(passwordEncoder.encode(superAdminSignUpRequestDto.getPassword()));
@@ -646,6 +646,7 @@ public class AuthServiceImpl implements AuthService {
 
 	protected void createNewPassword(String newPassword, User user) {
 		log.info("createNewPassword: execution started={}", user.getEmail());
+		Validation.isValidPassword(newPassword);
 		String tempPasswordHash = user.getTempPassword();
 		if (tempPasswordHash != null && passwordEncoder.matches(newPassword, tempPasswordHash)) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_CANNOT_USE_PREVIOUS_PASSWORDS);

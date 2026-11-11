@@ -10,6 +10,7 @@ import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
 import com.skapp.community.leaveplanner.repository.LeaveRequestDao;
+import com.skapp.community.leaveplanner.service.PolicyAttendanceLeaveService;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
@@ -95,6 +96,9 @@ class TimeAnalyticsServiceImplUnitTest {
 
 	@Mock
 	private TimeZoneService timeZoneService;
+
+	@Mock
+	private PolicyAttendanceLeaveService policyAttendanceLeaveService;
 
 	@Mock
 	private MessageUtil messageUtil;

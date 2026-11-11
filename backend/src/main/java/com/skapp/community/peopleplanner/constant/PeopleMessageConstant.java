@@ -245,7 +245,8 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_ERROR_CONTACT_NUMBER_REQUIRED("api.error.people.contact-number-required"),
 	PEOPLE_ERROR_CONTACT_NUMBER_ALREADY_SET("api.error.people.contact-number-already-set"),
 	PEOPLE_ERROR_JOINED_DATE_ALREADY_SET("api.error.people.joined-date-already-set"),
-	PEOPLE_ERROR_CONTACT_NUMBER_TARGET_NOT_ACTIVE("api.error.people.contact-number-target-not-active");
+	PEOPLE_ERROR_CONTACT_NUMBER_TARGET_NOT_ACTIVE("api.error.people.contact-number-target-not-active"),
+	PEOPLE_ERROR_INVALID_BILLABLE_RATE("api.error.people.invalid-billable-rate");
 
 	private final String messageKey;
 
