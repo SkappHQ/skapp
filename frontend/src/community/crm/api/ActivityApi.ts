@@ -21,10 +21,7 @@ import {
   ActivityFeedResponse,
   ActivityListFilters,
   ActivityMeetingCreatePayload,
-  ActivityMeetingOverlapParams,
-  ActivityMeetingOverlapResponse,
   ActivityMeetingResponse,
-  ActivityMeetingSchedulePayload,
   ActivityTaskCreatePayload,
   ActivityTaskResponse
 } from "~community/crm/activities/types/activityTypes";
@@ -254,53 +251,6 @@ export const useCreateMeeting = (
       queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
       onSuccess();
     },
-    onError
-  });
-};
-
-const scheduleMeeting = async (
-  payload: ActivityMeetingSchedulePayload
-): Promise<void> => {
-  await authFetch.post(crmActivityEndpoints.SCHEDULE_MEETING, payload);
-};
-
-export const useScheduleMeeting = (
-  onSuccess: () => void,
-  onError: (error: ErrorResponse) => void
-): UseMutationResult<void, ErrorResponse, ActivityMeetingSchedulePayload> => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: scheduleMeeting,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
-      onSuccess();
-    },
-    onError
-  });
-};
-
-const checkMeetingOverlaps = async (
-  params: ActivityMeetingOverlapParams
-): Promise<ActivityMeetingOverlapResponse[]> => {
-  const response = await authFetch.get(
-    crmActivityEndpoints.SCHEDULE_MEETING_OVERLAPS,
-    { params }
-  );
-  return response?.data?.results;
-};
-
-export const useCheckMeetingOverlaps = (
-  onSuccess: (overlaps: ActivityMeetingOverlapResponse[]) => void,
-  onError: (error: ErrorResponse) => void
-): UseMutationResult<
-  ActivityMeetingOverlapResponse[],
-  ErrorResponse,
-  ActivityMeetingOverlapParams
-> => {
-  return useMutation({
-    mutationFn: checkMeetingOverlaps,
-    onSuccess,
     onError
   });
 };

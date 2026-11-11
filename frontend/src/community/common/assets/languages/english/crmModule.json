@@ -890,35 +890,6 @@
         "attendees": "Attendees",
         "endTime": "End time"
       }
-    },
-    "scheduleMeeting": {
-      "modal": {
-        "title": "Schedule a meeting",
-        "labels": {
-          "venue": "Meeting venue",
-          "location": "Location"
-        },
-        "placeholders": {
-          "venue": "Select venue",
-          "location": "Search Google Maps or type a location"
-        },
-        "venues": {
-          "ONLINE": "Online",
-          "IN_PERSON": "In-person"
-        },
-        "validations": {
-          "location": "Location is required for in-person meetings"
-        },
-        "location": {
-          "noPlaces": "No places found",
-          "openInMaps": "Open in Google Maps"
-        },
-        "toastMessages": {
-          "addSuccessTitle": "Meeting scheduled",
-          "addSuccessDescription": "It's being added to your Google Calendar.",
-          "errorDescription": "Failed to save meeting"
-        }
-      }
     }
   }
 }

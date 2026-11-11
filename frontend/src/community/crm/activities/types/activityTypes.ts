@@ -1,7 +1,4 @@
-import {
-  CrmMeetingVenueEnum,
-  CrmPriorityEnum
-} from "~community/crm/enums/common";
+import { CrmPriorityEnum } from "~community/crm/enums/common";
 
 export enum ActivityType {
   TASK = "TASK",
@@ -169,24 +166,4 @@ export interface ActivityTaskCreatePayload {
   dealId: number | null;
   companyId: number | null;
   notes: string;
-}
-
-export interface ActivityMeetingSchedulePayload extends ActivityMeetingCreatePayload {
-  meetingVenue: CrmMeetingVenueEnum;
-  location: string | null;
-  locationAddress: string | null;
-  locationUrl: string | null;
-}
-
-export interface ActivityMeetingOverlapParams {
-  startAt: string | null;
-  endAt: string | null;
-  ownerId: number | null;
-}
-
-export interface ActivityMeetingOverlapResponse {
-  name: string;
-  startAt: string;
-  endAt: string;
-  organizerName: string;
 }
