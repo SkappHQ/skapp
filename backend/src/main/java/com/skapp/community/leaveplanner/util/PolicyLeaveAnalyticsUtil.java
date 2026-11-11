@@ -122,6 +122,10 @@ public class PolicyLeaveAnalyticsUtil {
 		return monthNameMap;
 	}
 
+	public static float calculateAbsenceRate(double leaveDays, double workingDays) {
+		return workingDays <= 0 ? 0f : (float) (leaveDays / workingDays * 100);
+	}
+
 	public static boolean isAllSelected(List<Long> ids, long allSelectionId) {
 		return CollectionUtils.isEmpty(ids) || ids.contains(allSelectionId);
 	}

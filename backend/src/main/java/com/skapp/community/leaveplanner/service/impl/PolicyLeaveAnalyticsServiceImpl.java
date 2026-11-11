@@ -272,7 +272,7 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 			LeaveModuleUtil.validateTeamsForLeaveAnalytics(teamIds, currentUser, teamDao.findByTeamIdIn(teamIds));
 		}
 
-		List<Employee> employees = policyLeaveRequestDao.findEmployeesInScope(teamIds, supervisorEmployeeId);
+		List<Employee> employees = employeeDao.findEmployeesInScope(teamIds, supervisorEmployeeId);
 		if (employees.isEmpty()) {
 			log.info("getAbsenceRate: execution ended");
 			return new ResponseEntityDto(false, buildAbsenceRateResponse(0f, 0f));
@@ -297,11 +297,11 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 		Function<Long, List<Holiday>> holidaysForWorkLocation = workLocationId -> holidaysByWorkLocation
 			.computeIfAbsent(workLocationId, key -> PolicyLeaveAnalyticsUtil.holidaysForWorkLocation(holidays, key));
 
-		float currentAbsenceRate = calculateAbsenceRate(
+		float currentAbsenceRate = PolicyLeaveAnalyticsUtil.calculateAbsenceRate(
 				sumApprovedLeaveDaysInWindow(currentWindow, currentSpans, teamIds, supervisorEmployeeId, timeConfigs,
 						holidaysForWorkLocation),
 				sumWorkingDaysInWindow(employees, currentWindow, timeConfigs, holidaysForWorkLocation));
-		float monthBeforeAbsenceRate = calculateAbsenceRate(
+		float monthBeforeAbsenceRate = PolicyLeaveAnalyticsUtil.calculateAbsenceRate(
 				sumApprovedLeaveDaysInWindow(previousWindow, previousSpans, teamIds, supervisorEmployeeId, timeConfigs,
 						holidaysForWorkLocation),
 				sumWorkingDaysInWindow(employees, previousWindow, timeConfigs, holidaysForWorkLocation));
@@ -350,10 +350,6 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 		}
 
 		return workingDays;
-	}
-
-	private float calculateAbsenceRate(double leaveDays, double workingDays) {
-		return workingDays <= 0 ? 0f : (float) (leaveDays / workingDays * 100);
 	}
 
 	private OrganizationalAbsenceRateAnalyticsDto buildAbsenceRateResponse(float currentAbsenceRate,

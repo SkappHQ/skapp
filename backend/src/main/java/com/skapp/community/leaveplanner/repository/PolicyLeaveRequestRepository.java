@@ -63,8 +63,6 @@ public interface PolicyLeaveRequestRepository {
 	List<PolicyLeaveSpanDto> findApprovedSpansCrossingWindow(LocalDate startDate, LocalDate endDate, List<Long> teamIds,
 			Long supervisorEmployeeId);
 
-	List<Employee> findEmployeesInScope(List<Long> teamIds, Long supervisorEmployeeId);
-
 	List<PolicyLeaveRequest> findEmployeesRequestsInRange(Collection<Long> employeeIds,
 			Collection<LeaveRequestStatus> statuses, LocalDate startDate, LocalDate endDate, boolean activeUsersOnly);
 

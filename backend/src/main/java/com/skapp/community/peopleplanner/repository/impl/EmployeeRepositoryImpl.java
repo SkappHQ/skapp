@@ -1809,4 +1809,20 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			.collect(Collectors.toMap(EmployeeEmailIdDto::getEmail, EmployeeEmailIdDto::getEmployeeId));
 	}
 
+	@Override
+	public List<Employee> findEmployeesInScope(List<Long> teamIds, Long supervisorEmployeeId) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<Employee> criteriaQuery = criteriaBuilder.createQuery(Employee.class);
+		Root<Employee> root = criteriaQuery.from(Employee.class);
+		root.fetch(Employee_.workLocation, JoinType.LEFT);
+
+		criteriaQuery.select(root)
+			.where(PeopleUtil
+				.buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, root, teamIds, supervisorEmployeeId)
+				.toArray(new Predicate[0]));
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
 }

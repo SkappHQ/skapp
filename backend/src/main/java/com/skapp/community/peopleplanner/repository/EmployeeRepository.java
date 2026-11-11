@@ -118,4 +118,6 @@ public interface EmployeeRepository {
 
 	Map<String, Long> findEmployeeIdsByEmailIgnoreCase(List<String> lowerCaseEmails);
 
+	List<Employee> findEmployeesInScope(List<Long> teamIds, Long supervisorEmployeeId);
+
 }
