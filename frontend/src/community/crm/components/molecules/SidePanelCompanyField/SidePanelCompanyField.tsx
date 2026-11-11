@@ -17,9 +17,8 @@ interface Props {
   companyId: number | null;
   emptyLabel: string;
   editAriaLabel: string;
-  clearAriaLabel: string;
   onCompanyClick: (companyId: number) => void;
-  onChange: (companyId: number | null) => void;
+  onChange: (companyId: number) => void;
 }
 
 const SidePanelCompanyField: FC<Props> = ({
@@ -27,7 +26,6 @@ const SidePanelCompanyField: FC<Props> = ({
   companyId,
   emptyLabel,
   editAriaLabel,
-  clearAriaLabel,
   onCompanyClick,
   onChange
 }) => {
@@ -93,8 +91,6 @@ const SidePanelCompanyField: FC<Props> = ({
       onLinkClick={handleLinkClick}
       onSearch={setSearchTerm}
       onSelect={handleSelect}
-      clearAriaLabel={clearAriaLabel}
-      onClear={() => onChange(null)}
     />
   );
 };

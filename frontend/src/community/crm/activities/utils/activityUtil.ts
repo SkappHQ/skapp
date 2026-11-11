@@ -194,10 +194,8 @@ export const toActivityTaskEditPayload = (
   ...toLinkEditPayload(values, saved),
   ...(values.priority !== saved.priority && { priority: values.priority }),
   ...(values.dueAt !== saved.dueAt && { dueAt: values.dueAt }),
-  ...(values.contactId !== saved.contactId &&
-    (values.contactId
-      ? { contactId: values.contactId }
-      : { isContactRemoved: true }))
+  ...(values.contactId &&
+    values.contactId !== saved.contactId && { contactId: values.contactId })
 });
 
 export const toDealEditPayload = (

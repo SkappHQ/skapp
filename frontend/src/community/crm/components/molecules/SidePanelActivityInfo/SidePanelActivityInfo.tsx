@@ -33,7 +33,7 @@ interface Props {
   onDateChange?: (date: Date) => void;
   onStartTimeChange?: (time: string) => void;
   onOwnerChange?: (ownerId: number) => void;
-  onCompanyChange?: (companyId: number | null) => void;
+  onCompanyChange?: (companyId: number) => void;
 }
 
 const SidePanelActivityInfo: FC<Props> = ({
@@ -111,7 +111,6 @@ const SidePanelActivityInfo: FC<Props> = ({
           companyId={companyId ?? null}
           emptyLabel={noValue}
           editAriaLabel={translateAria(["editRelatedTo"])}
-          clearAriaLabel={translateAria(["clearRelatedTo"])}
           onCompanyClick={onCompanyClick}
           onChange={onCompanyChange}
         />

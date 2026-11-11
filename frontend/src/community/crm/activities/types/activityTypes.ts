@@ -203,5 +203,4 @@ export interface ActivityTaskEditPayload extends ActivityLinkEditPayload {
   priority?: CrmPriorityEnum;
   dueAt?: string | null;
   contactId?: number;
-  isContactRemoved?: boolean;
 }
