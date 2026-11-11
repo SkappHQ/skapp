@@ -129,8 +129,8 @@ export const useGetPolicyEmployeesOnLeaveToday = (
 };
 
 const getPolicyAbsenceRate = async (
-  teamId: number | string
-): Promise<AbsenceRateType | undefined> => {
+  teamId: number
+): Promise<AbsenceRateType> => {
   const response = await authFetch.get<AbsenceRateResponse>(
     policyLeaveEndPoints.GET_ABSENCE_RATE,
     { params: { teamIds: teamId } }
@@ -139,13 +139,13 @@ const getPolicyAbsenceRate = async (
 };
 
 export const useGetPolicyAbsenceRate = (
-  teamId: number | string,
+  teamId: number,
   enabled = true
-): UseQueryResult<AbsenceRateType | undefined> => {
+): UseQueryResult<AbsenceRateType> => {
   return useQuery({
     queryKey: policyLeaveQueryKeys.ABSENCE_RATE(teamId),
     queryFn: () => getPolicyAbsenceRate(teamId),
-    enabled: enabled && teamId !== ""
+    enabled
   });
 };
 

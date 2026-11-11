@@ -104,8 +104,8 @@ const LeaveDashboard = (): JSX.Element => {
   const legacyAbsenceRate = useGetAbsenceRate(teamId, isLegacyTeamDataEnabled);
 
   const policyAbsenceRate = useGetPolicyAbsenceRate(
-    teamId,
-    isPolicyDataEnabled
+    Number(teamId),
+    isPolicyDataEnabled && teamId !== ""
   );
 
   const absenceRate: AbsenceRateType | undefined = isLeavePoliciesEnabled

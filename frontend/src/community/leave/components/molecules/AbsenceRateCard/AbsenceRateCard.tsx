@@ -65,7 +65,7 @@ const AbsenceRateCard: FC<Props> = ({ absenceRate, isLoading, isError }) => {
   };
 
   return (
-    <AnalyticCard title={translateText(["absenceRate"]) ?? ""}>
+    <AnalyticCard title={translateText(["absenceRate"])}>
       {renderContent()}
     </AnalyticCard>
   );
