@@ -34,6 +34,7 @@ import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.common.type.NotificationSettingsType;
 import com.skapp.community.common.type.OrganizationConfigType;
 import com.skapp.community.common.type.Role;
+import com.skapp.community.common.util.AuthUtil;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.CookieUtil;
 import com.skapp.community.common.util.DateTimeUtils;
@@ -69,6 +70,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -176,8 +178,6 @@ public class AuthServiceImpl implements AuthService {
 			throw exception;
 		}
 
-		onSignInSuccess(signInRequestDto.getEmail());
-
 		Optional<User> optionalUser = userDao.findByEmail(signInRequestDto.getEmail());
 		if (optionalUser.isEmpty()) {
 			log.warn("performSignIn: User not found for email={}", signInRequestDto.getEmail());
@@ -185,6 +185,11 @@ public class AuthServiceImpl implements AuthService {
 		}
 		User user = optionalUser.get();
 		log.info("performSignIn: User found: userEmail={}, isActive={}", user.getEmail(), user.getIsActive());
+
+		if (isTempPasswordPending(user)) {
+			redeemTempPassword(user, signInRequestDto.getEmail());
+		}
+		onSignInSuccess(signInRequestDto.getEmail());
 
 		validateTenantStatus(user);
 		log.info("performSignIn: Tenant status validated for userEmail={}", user.getEmail());
@@ -406,9 +411,7 @@ public class AuthServiceImpl implements AuthService {
 
 		log.info("sharePassword: Generating new temp password for userEmail={}", user.getEmail());
 		String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
-		user.setTempPassword(passwordEncoder.encode(tempPassword));
-		user.setPassword(passwordEncoder.encode(tempPassword));
-		user.setIsPasswordChangedForTheFirstTime(false);
+		AuthUtil.issueTempPassword(user, passwordEncoder.encode(tempPassword));
 		userDao.save(user);
 
 		SharePasswordResponseDto sharePasswordResponseDto = getSharePasswordResponseDto(user, user, tempPassword);
@@ -432,9 +435,7 @@ public class AuthServiceImpl implements AuthService {
 
 		String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
 		log.info("resetAndSharePassword: Generated new temp password for userEmail={}", user.getEmail());
-		user.setTempPassword(passwordEncoder.encode(tempPassword));
-		user.setPassword(passwordEncoder.encode(tempPassword));
-		user.setIsPasswordChangedForTheFirstTime(false);
+		AuthUtil.issueTempPassword(user, passwordEncoder.encode(tempPassword));
 		User savedUser = userDao.save(user);
 
 		log.info("resetAndSharePassword: User password reset and saved for  userEmail={}", user.getEmail());
@@ -667,6 +668,7 @@ public class AuthServiceImpl implements AuthService {
 		user.setPassword(encodedNewPassword);
 		user.setIsPasswordChangedForTheFirstTime(true);
 		user.setTempPassword(null);
+		user.setTempPasswordExpiresAt(null);
 		log.info("createNewPassword: execution ended={}", user.getEmail());
 
 		userDao.save(user);
@@ -705,9 +707,7 @@ public class AuthServiceImpl implements AuthService {
 			String tempPassword = null;
 			if (loginMethod.equals(LoginMethod.CREDENTIALS)) {
 				tempPassword = CommonModuleUtils.generateSecureRandomPassword();
-				user.setTempPassword(passwordEncoder.encode(tempPassword));
-				user.setPassword(passwordEncoder.encode(tempPassword));
-				user.setIsPasswordChangedForTheFirstTime(false);
+				AuthUtil.issueTempPassword(user, passwordEncoder.encode(tempPassword));
 			}
 
 			userDao.save(user);
@@ -728,6 +728,18 @@ public class AuthServiceImpl implements AuthService {
 		errorLog.setStatus(BulkItemStatus.ERROR);
 		errorLog.setMessage(String.join("; ", errors));
 		return errorLog;
+	}
+
+	private boolean isTempPasswordPending(User user) {
+		return !Boolean.TRUE.equals(user.getIsPasswordChangedForTheFirstTime()) && user.getTempPassword() != null;
+	}
+
+	private void redeemTempPassword(User user, String signInEmail) {
+		if (userDao.consumeTempPassword(user.getUserId(), Instant.now()) == 0) {
+			onSignInFailed(signInEmail);
+			throw new BadCredentialsException(CommonMessageConstant.COMMON_ERROR_INVALID_CREDENTIALS.name());
+		}
+		user.setTempPasswordExpiresAt(null);
 	}
 
 	protected void onSignInFailed(String email) {

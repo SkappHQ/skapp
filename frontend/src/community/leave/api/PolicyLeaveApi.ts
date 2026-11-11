@@ -205,6 +205,29 @@ export const useGetPolicyLeaveTypeBreakdown = (
   });
 };
 
+const getPolicyEmployeeLeaveUtilization = async (
+  employeeId: number
+): Promise<APIResponseDataType<LeaveTypeBreakdownResponseType>> => {
+  const response = await authFetch.get<
+    APIResponseDataType<LeaveTypeBreakdownResponseType>
+  >(policyLeaveEndPoints.GET_EMPLOYEE_LEAVE_UTILIZATION(employeeId), {
+    params: { leaveTypeIds: ALL_POLICY_LEAVE_TYPES_ID }
+  });
+  return response.data;
+};
+
+export const useGetPolicyEmployeeLeaveUtilization = (
+  employeeId: number,
+  enabled = true
+): UseQueryResult<LeaveTypeBreakDownReturnTypes> => {
+  return useQuery({
+    queryKey: policyLeaveQueryKeys.EMPLOYEE_LEAVE_UTILIZATION(employeeId),
+    queryFn: () => getPolicyEmployeeLeaveUtilization(employeeId),
+    select: (data) => leaveTypeBreakdownPreProcessor(data?.results?.[0]),
+    enabled: enabled && !!employeeId
+  });
+};
+
 const getPolicyTeamLeaveHistory = async (
   teamId: number,
   params: PolicyTeamLeaveHistoryQueryParams
@@ -377,6 +400,9 @@ export const useApplyPolicyLeave = (
       });
       queryClient.invalidateQueries({
         queryKey: policyLeaveQueryKeys.ALL_LEAVE_TYPE_BREAKDOWN()
+      });
+      queryClient.invalidateQueries({
+        queryKey: policyLeaveQueryKeys.ALL_EMPLOYEE_LEAVE_UTILIZATION()
       });
       queryClient.invalidateQueries({
         queryKey: policyLeaveQueryKeys.ALL_TEAM_LEAVE_HISTORY()

@@ -52,10 +52,10 @@ public interface PolicyLeaveRequestRepository {
 			Long supervisorEmployeeId);
 
 	List<PolicyLeaveMonthlyDurationDto> findApprovedSingleMonthDurations(LocalDate startDate, LocalDate endDate,
-			List<Long> leaveTypeIds, List<Long> teamIds, Long supervisorEmployeeId);
+			List<Long> leaveTypeIds, List<Long> teamIds, Long supervisorEmployeeId, Long employeeId);
 
 	List<PolicyLeaveSpanDto> findApprovedMultiMonthSpans(LocalDate startDate, LocalDate endDate,
-			List<Long> leaveTypeIds, List<Long> teamIds, Long supervisorEmployeeId);
+			List<Long> leaveTypeIds, List<Long> teamIds, Long supervisorEmployeeId, Long employeeId);
 
 	double sumApprovedDurationWithinWindow(LocalDate startDate, LocalDate endDate, List<Long> teamIds,
 			Long supervisorEmployeeId);

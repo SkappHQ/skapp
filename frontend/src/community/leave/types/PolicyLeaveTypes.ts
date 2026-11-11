@@ -171,6 +171,17 @@ export interface PolicyEmployeesOnLeaveResponse {
   results: PolicyEmployeesOnLeaveType[];
 }
 
+export interface PolicyLeaveUtilizationSourceParams {
+  isProTier: boolean;
+  isLeavePoliciesEnabled: boolean;
+  isLeavePolicyConfigLoading: boolean;
+}
+
+export interface PolicyLeaveUtilizationSource {
+  isLegacyEnabled: boolean;
+  isPolicyEnabled: boolean;
+}
+
 export interface PolicyResourceAvailabilityParams {
   teamIds: number | string | null;
   startDate: string;
