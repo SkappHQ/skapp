@@ -61,8 +61,7 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
       : row.meetingVenue &&
         translateText([
           "activities",
-          "scheduleMeeting",
-          "modal",
+          "meetingVenue",
           "venues",
           row.meetingVenue
         ]);

@@ -85,31 +85,16 @@ const SidePanelMeetingInfo: FC<Props> = ({
       {meeting.meetingVenue && (
         <div className="flex flex-col gap-2 border border-secondary-accent rounded-xl p-3">
           <PropertyRow
-            label={translateText([
-              "scheduleMeeting",
-              "modal",
-              "labels",
-              "venue"
-            ])}
+            label={translateText(["meetingVenue", "labels", "venue"])}
           >
             <span className="body2">
-              {translateText([
-                "scheduleMeeting",
-                "modal",
-                "venues",
-                meeting.meetingVenue
-              ])}
+              {translateText(["meetingVenue", "venues", meeting.meetingVenue])}
             </span>
           </PropertyRow>
           {meeting.meetingVenue === CrmMeetingVenueEnum.IN_PERSON &&
             meeting.location && (
               <PropertyRow
-                label={translateText([
-                  "scheduleMeeting",
-                  "modal",
-                  "labels",
-                  "location"
-                ])}
+                label={translateText(["meetingVenue", "labels", "location"])}
               >
                 <span className="flex flex-col gap-1">
                   <span className="body2">{meeting.location}</span>
@@ -126,8 +111,7 @@ const SidePanelMeetingInfo: FC<Props> = ({
                       className="body3 underline"
                     >
                       {translateText([
-                        "scheduleMeeting",
-                        "modal",
+                        "meetingVenue",
                         "location",
                         "openInMaps"
                       ])}

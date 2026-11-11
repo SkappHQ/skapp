@@ -2,8 +2,6 @@ import { ButtonV2, ButtonV2Props } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
-import { appModes } from "~community/common/constants/configs";
-import { GlobalLoginMethod } from "~community/common/enums/CommonEnums";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import useSessionData from "~community/common/hooks/useSessionData";
@@ -42,22 +40,16 @@ import {
 } from "~community/crm/api/ActivityApi";
 import { useGetDealsByIds } from "~community/crm/api/DealApi";
 import AddActivityTaskModalContent from "~community/crm/components/molecules/AddActivityTaskModalContent/AddActivityTaskModalContent";
-import ConnectGoogleCalendarModal from "~community/crm/components/molecules/ConnectGoogleCalendarModal/ConnectGoogleCalendarModal";
 import LogCallModalContent from "~community/crm/components/molecules/LogCallModalContent/LogCallModalContent";
 import LogEmailModalContent from "~community/crm/components/molecules/LogEmailModalContent/LogEmailModalContent";
 import LogMeetingModalContent from "~community/crm/components/molecules/LogMeetingModalContent/LogMeetingModalContent";
-import ScheduleMeetingModalContent from "~community/crm/components/molecules/ScheduleMeetingModalContent/ScheduleMeetingModalContent";
-import ScheduleMeetingUpgradeModal from "~community/crm/components/molecules/ScheduleMeetingUpgradeModal/ScheduleMeetingUpgradeModal";
 import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmTaskCompletionPayload } from "~community/crm/types/CrmCommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 import { getMissingDealIds, mergeDeals } from "~community/crm/utils/dealUtil";
-import { useIsGoogleCalendarConnected } from "~enterprise/common/api/CalendarApi";
-import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
-import useTier from "~enterprise/common/hooks/useTier";
-import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
+import ScheduleMeetingAction from "~enterprise/crm/components/organisms/ScheduleMeetingAction/ScheduleMeetingAction";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
@@ -78,34 +70,7 @@ const ActivitiesContent: FC = () => {
   >({});
   const [isLogCallModalOpen, setIsLogCallModalOpen] = useState(false);
   const [isLogMeetingModalOpen, setIsLogMeetingModalOpen] = useState(false);
-  const [isScheduleMeetingModalOpen, setIsScheduleMeetingModalOpen] =
-    useState(false);
-  const [isConnectCalendarModalOpen, setIsConnectCalendarModalOpen] =
-    useState(false);
-  const [isScheduleUpgradeModalOpen, setIsScheduleUpgradeModalOpen] =
-    useState(false);
-
-  const { isFreeTier } = useTier();
   const { guardCrmCreate } = useCrmLimitGuard();
-  const isEnterpriseMode = useGetEnvironment() === appModes.ENTERPRISE;
-  const { globalLoginMethod } = useCommonEnterpriseStore(
-    useShallow((state) => ({
-      globalLoginMethod: state.globalLoginMethod
-    }))
-  );
-  const { data: isGoogleCalendarConnected } = useIsGoogleCalendarConnected();
-
-  const handleScheduleMeetingClick = (): void => {
-    if (isFreeTier) {
-      setIsScheduleUpgradeModalOpen(true);
-      return;
-    }
-    guardCrmCreate(CrmLimitResource.ACTIVITIES, () =>
-      isGoogleCalendarConnected
-        ? setIsScheduleMeetingModalOpen(true)
-        : setIsConnectCalendarModalOpen(true)
-    );
-  };
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [isLogEmailModalOpen, setIsLogEmailModalOpen] = useState(false);
 
@@ -347,22 +312,6 @@ const ActivitiesContent: FC = () => {
       }
     : null;
 
-  const scheduleMeetingButton: ButtonV2Props | null =
-    activeTab === ActivityTab.MEETINGS &&
-    isEnterpriseMode &&
-    globalLoginMethod !== GlobalLoginMethod.MICROSOFT
-      ? {
-          variant: "tertiary",
-          type: "button",
-          onClick: handleScheduleMeetingClick,
-          children: translateText([
-            "activities",
-            "toolbar",
-            "scheduleMeetingBtn"
-          ])
-        }
-      : null;
-
   return (
     <div className="flex flex-col w-full gap-4 pt-5.5 lg:pt-1">
       <ActivityToolbar
@@ -383,7 +332,7 @@ const ActivitiesContent: FC = () => {
           showControls &&
           actionButton && (
             <div className="flex items-center gap-2">
-              {scheduleMeetingButton && <ButtonV2 {...scheduleMeetingButton} />}
+              {activeTab === ActivityTab.MEETINGS && <ScheduleMeetingAction />}
               <ButtonV2 {...actionButton} />
             </div>
           )
@@ -395,21 +344,6 @@ const ActivitiesContent: FC = () => {
       {isLogMeetingModalOpen && (
         <LogMeetingModalContent
           onClose={() => setIsLogMeetingModalOpen(false)}
-        />
-      )}
-      {isScheduleMeetingModalOpen && (
-        <ScheduleMeetingModalContent
-          onClose={() => setIsScheduleMeetingModalOpen(false)}
-        />
-      )}
-      {isConnectCalendarModalOpen && (
-        <ConnectGoogleCalendarModal
-          onClose={() => setIsConnectCalendarModalOpen(false)}
-        />
-      )}
-      {isScheduleUpgradeModalOpen && (
-        <ScheduleMeetingUpgradeModal
-          onClose={() => setIsScheduleUpgradeModalOpen(false)}
         />
       )}
       {isAddTaskModalOpen && (

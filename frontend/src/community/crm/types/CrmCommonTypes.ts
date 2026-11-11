@@ -255,9 +255,3 @@ export interface CrmScheduleMeetingFormValues extends CrmLogMeetingFormValues {
   locationAddress: string;
   locationUrl: string;
 }
-
-export interface CrmMeetingLocation {
-  location: string;
-  locationAddress: string;
-  locationUrl: string;
-}
