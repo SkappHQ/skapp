@@ -75,7 +75,7 @@ const SidePanelActivityComments: FC<Props> = ({ id, comments, onSave }) => {
           aria-label={translateAria(["editComments"])}
           onClick={startEditing}
         >
-          {comments ? comments : translateText(["noComments"])}
+          {comments || translateText(["noComments"])}
         </button>
       )}
     </div>
