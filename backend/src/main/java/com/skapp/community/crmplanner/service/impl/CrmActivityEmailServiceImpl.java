@@ -27,11 +27,13 @@ import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.service.CrmActivityEmailService;
+import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
 import com.skapp.community.crmplanner.type.CrmActivityEmailContactRole;
 import com.skapp.community.crmplanner.type.CrmActivityEmailFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityEmailSort;
 import com.skapp.community.crmplanner.util.CrmUtil;
 import com.skapp.community.crmplanner.util.CrmValidations;
+import com.skapp.community.peopleplanner.model.Employee;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
@@ -68,6 +70,8 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 	private final CrmCompanyDao crmCompanyDao;
 
 	private final MessageUtil messageUtil;
+
+	private final CrmOwnerResolverService crmOwnerResolver;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -233,6 +237,11 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 
 		if (requestDto.getDescription() != null) {
 			email.setDescription(requestDto.getDescription());
+		}
+
+		if (requestDto.getOwnerId() != null) {
+			Employee owner = crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser);
+			email.setOwner(owner);
 		}
 
 		if (Boolean.TRUE.equals(requestDto.getIsDealRemoved())) {

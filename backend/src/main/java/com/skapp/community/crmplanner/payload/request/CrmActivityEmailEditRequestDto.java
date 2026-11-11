@@ -30,4 +30,6 @@ public class CrmActivityEmailEditRequestDto {
 
 	private String description;
 
+	private Long ownerId;
+
 }
