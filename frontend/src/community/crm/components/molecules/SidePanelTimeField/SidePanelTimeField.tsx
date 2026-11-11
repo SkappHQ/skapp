@@ -42,24 +42,31 @@ const SidePanelTimeField: FC<Props> = ({
         ]
       : timeOptions;
 
+  const displayOptions = options.map((option) => ({
+    ...option,
+    label: <span className="body2">{option.label}</span>
+  }));
+
   return (
-    <Dropdown
-      id={id}
-      value={value}
-      options={options}
-      onChange={(selectedValue) => onChange(String(selectedValue))}
-      placeholder={placeholder}
-      variant="jsx-content"
-      menuWidth="match"
-      height="min-h-8"
-      width="100%"
-      hideArrowIcon
-      padding="py-2 px-1"
-      className="w-full bg-transparent border-none rounded-lg"
-      ariaLabel={ariaLabel}
-      scrollToSelected
-      {...(errorMessage && { errorMessage })}
-    />
+    <div className="w-full">
+      <Dropdown
+        id={id}
+        value={value}
+        options={displayOptions}
+        onChange={(selectedValue) => onChange(String(selectedValue))}
+        placeholder={placeholder}
+        variant="jsx-content"
+        menuWidth="match"
+        height="min-h-8"
+        width="100%"
+        hideArrowIcon
+        padding="py-2 px-1"
+        className="w-full bg-transparent border-none rounded-lg"
+        ariaLabel={ariaLabel}
+        scrollToSelected
+        {...(errorMessage && { errorMessage })}
+      />
+    </div>
   );
 };
 

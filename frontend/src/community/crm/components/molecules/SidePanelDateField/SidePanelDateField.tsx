@@ -18,21 +18,27 @@ const SidePanelDateField: FC<Props> = ({ id, date, ariaLabel, onChange }) => {
   };
 
   return (
-    <DatePicker
-      mode="single"
-      selected={date.toJSDate()}
-      onSelect={handleSelect}
-      popperProps={{ position: "bottom-start", isFlip: true }}
-    >
-      <button
-        id={id}
-        type="button"
-        aria-label={ariaLabel}
-        className="body2 w-full min-h-8 px-1 rounded-lg text-left cursor-pointer hover:bg-secondary-background"
+    <div className="w-full">
+      <DatePicker
+        mode="single"
+        selected={date.toJSDate()}
+        onSelect={handleSelect}
+        popperProps={{
+          position: "bottom-end",
+          isFlip: true,
+          positionStrategy: "fixed"
+        }}
       >
-        {`${formatDayWithOrdinalIndicator(date)} ${date.toFormat(SHORT_MONTH_YEAR_FORMAT)}`}
-      </button>
-    </DatePicker>
+        <button
+          id={id}
+          type="button"
+          aria-label={ariaLabel}
+          className="body2 w-full min-h-8 px-1 rounded-lg text-left cursor-pointer hover:bg-secondary-background"
+        >
+          {`${formatDayWithOrdinalIndicator(date)} ${date.toFormat(SHORT_MONTH_YEAR_FORMAT)}`}
+        </button>
+      </DatePicker>
+    </div>
   );
 };
 

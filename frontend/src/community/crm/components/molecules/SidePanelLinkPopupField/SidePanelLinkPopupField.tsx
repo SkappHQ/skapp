@@ -62,23 +62,25 @@ const SidePanelLinkPopupField: FC<Props> = ({
   );
 
   return (
-    <DropdownWithSearchablePopup
-      options={options}
-      value={selectedValue}
-      onChange={handleChange}
-      onSearch={onSearch}
-      searchPlaceholder={searchPlaceholder}
-      searchable
-      width="100%"
-      renderTrigger={(_value, _isOpen, _disabled, triggerProps) =>
-        handleRenderTrigger(triggerProps)
-      }
-      renderNoResults={() => (
-        <div className="px-4 py-2 body2 text-tertiary-text">
-          {noResultsText}
-        </div>
-      )}
-    />
+    <div className="-m-1 flex-1 min-w-0">
+      <DropdownWithSearchablePopup
+        options={options}
+        value={selectedValue}
+        onChange={handleChange}
+        onSearch={onSearch}
+        searchPlaceholder={searchPlaceholder}
+        searchable
+        width="w-full"
+        renderTrigger={(_value, _isOpen, _disabled, triggerProps) =>
+          handleRenderTrigger(triggerProps)
+        }
+        renderNoResults={() => (
+          <div className="px-4 py-2 body2 text-tertiary-text">
+            {noResultsText}
+          </div>
+        )}
+      />
+    </div>
   );
 };
 
