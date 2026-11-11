@@ -248,28 +248,7 @@
       "editStartTime": "Change the start time",
       "editEndTime": "Change the end time",
       "editDuration": "Change the duration",
-      "editRelatedTo": "Change the related company",
-      "editAttendees": "Change the attendees",
-      "contactsDropdown": {
-        "accessibilityTexts": {
-          "dropdownClosedText": "Contact dropdown closed",
-          "focusReturnedText": "Focus returned to contact search",
-          "itemText": "contact",
-          "noMoreItemsText": "All contacts have been selected",
-          "noResultsFoundText": "No contacts found",
-          "removedText": "Removed contact",
-          "resultAvailableText": "contact available",
-          "resultsAvailableText": "contacts available",
-          "selectedText": "Selected contact"
-        },
-        "ariaLabels": {
-          "availableOptionsAriaLabel": "Available contacts",
-          "searchResultsAriaLabel": "Contact search results",
-          "selectedItemsAriaLabel": "Selected contacts",
-          "selectedItemsRemoveAriaLabel": "Remove selected contacts",
-          "removeItemAriaLabel": "Remove contact"
-        }
-      }
+      "editRelatedTo": "Change the related company"
     }
   }
 }
