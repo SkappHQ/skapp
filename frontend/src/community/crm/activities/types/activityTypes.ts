@@ -1,7 +1,7 @@
-import {
-  CrmMeetingVenueEnum,
-  CrmPriorityEnum
-} from "~community/crm/enums/common";
+import { ReactNode } from "react";
+
+import { CrmPriorityEnum } from "~community/crm/enums/common";
+import { CrmMeetingVenueDetails } from "~enterprise/crm/types/ScheduleMeetingTypes";
 
 export enum ActivityType {
   TASK = "TASK",
@@ -32,7 +32,7 @@ export enum ActivityDatePreset {
   LAST_30_DAYS = "LAST_30_DAYS"
 }
 
-export interface ActivityRow {
+export interface ActivityRow extends CrmMeetingVenueDetails {
   id: number;
   type: ActivityType;
   title: string;
@@ -47,8 +47,12 @@ export interface ActivityRow {
   companyId: number | null;
   contactIds: number[];
   canComplete: boolean;
-  meetingVenue?: CrmMeetingVenueEnum | null;
-  location?: string | null;
+}
+
+export interface ActivityRowSubtitlePart {
+  key: string;
+  isVisible: boolean;
+  content: ReactNode;
 }
 
 export interface ActivityFeedResponse {
@@ -123,15 +127,12 @@ export interface ActivityEmailResponse extends ActivityListItemBase {
   contactIds: number[];
 }
 
-export interface ActivityMeetingResponse extends ActivityListItemBase {
+export interface ActivityMeetingResponse
+  extends ActivityListItemBase, CrmMeetingVenueDetails {
   name: string;
   meetingDate: string | null;
   startAt: string | null;
   contactIds: number[];
-  meetingVenue: CrmMeetingVenueEnum | null;
-  location: string | null;
-  locationAddress: string | null;
-  locationUrl: string | null;
 }
 
 export interface ActivityTaskResponse extends ActivityListItemBase {

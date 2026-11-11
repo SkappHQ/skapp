@@ -6,12 +6,12 @@ import { TIME_FORMAT_12_HOUR } from "~community/common/constants/timeConstants";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import PropertyRow from "~community/crm/components/molecules/PropertyRow/PropertyRow";
 import SidePanelActivityInfo from "~community/crm/components/molecules/SidePanelActivityInfo/SidePanelActivityInfo";
-import { CrmMeetingVenueEnum } from "~community/crm/enums/common";
 import {
   CrmMeetingEntity,
   CrmOwnerEntity
 } from "~community/crm/types/CrmCommonTypes";
 import { getContactDisplayName } from "~community/crm/utils/contactUtil";
+import { getMeetingVenueInfo } from "~enterprise/crm/utils/meetingVenueUtil";
 
 interface Props {
   meeting: CrmMeetingEntity;
@@ -82,46 +82,7 @@ const SidePanelMeetingInfo: FC<Props> = ({
         onCompanyClick={onCompanyClick}
       />
 
-      {meeting.meetingVenue && (
-        <div className="flex flex-col gap-2 border border-secondary-accent rounded-xl p-3">
-          <PropertyRow
-            label={translateText(["meetingVenue", "labels", "venue"])}
-          >
-            <span className="body2">
-              {translateText(["meetingVenue", "venues", meeting.meetingVenue])}
-            </span>
-          </PropertyRow>
-          {meeting.meetingVenue === CrmMeetingVenueEnum.IN_PERSON &&
-            meeting.location && (
-              <PropertyRow
-                label={translateText(["meetingVenue", "labels", "location"])}
-              >
-                <span className="flex flex-col gap-1">
-                  <span className="body2">{meeting.location}</span>
-                  {meeting.locationAddress && (
-                    <span className="body3 text-secondary-text">
-                      {meeting.locationAddress}
-                    </span>
-                  )}
-                  {meeting.locationUrl && (
-                    <a
-                      href={meeting.locationUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="body3 underline"
-                    >
-                      {translateText([
-                        "meetingVenue",
-                        "location",
-                        "openInMaps"
-                      ])}
-                    </a>
-                  )}
-                </span>
-              </PropertyRow>
-            )}
-        </div>
-      )}
+      {getMeetingVenueInfo(meeting)}
     </div>
   );
 };

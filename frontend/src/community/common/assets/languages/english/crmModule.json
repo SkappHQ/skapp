@@ -890,19 +890,6 @@
         "attendees": "Attendees",
         "endTime": "End time"
       }
-    },
-    "meetingVenue": {
-      "labels": {
-        "venue": "Meeting venue",
-        "location": "Location"
-      },
-      "venues": {
-        "ONLINE": "Online",
-        "IN_PERSON": "In-person"
-      },
-      "location": {
-        "openInMaps": "Open in Google Maps"
-      }
     }
   }
 }

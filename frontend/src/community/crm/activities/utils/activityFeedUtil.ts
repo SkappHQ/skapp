@@ -24,6 +24,7 @@ import {
   ActivityType
 } from "~community/crm/activities/types/activityTypes";
 import { isDueToday, isOverdue } from "~community/crm/utils/taskValidations";
+import { getMeetingVenueRowFields } from "~enterprise/crm/utils/meetingVenueUtil";
 
 export const getActivityRowKey = (row: ActivityRow): string =>
   `${row.type}-${row.id}`;
@@ -213,8 +214,7 @@ export const toMeetingRow = (
   companyId: meeting.companyId,
   contactIds: meeting.contactIds,
   canComplete: false,
-  meetingVenue: meeting.meetingVenue,
-  location: meeting.location
+  ...getMeetingVenueRowFields(meeting)
 });
 
 export const toTaskRow = (task: ActivityTaskResponse): ActivityRow => ({

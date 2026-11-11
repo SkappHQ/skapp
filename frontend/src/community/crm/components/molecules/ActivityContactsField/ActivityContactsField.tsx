@@ -10,13 +10,13 @@ import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactEntity,
   CrmLogEmailFormValues,
-  CrmLogMeetingFormValues,
-  CrmScheduleMeetingFormValues
+  CrmLogMeetingFormValues
 } from "~community/crm/types/CrmCommonTypes";
 import {
   getContactDisplayName,
   updateContactRecord
 } from "~community/crm/utils/contactUtil";
+import { CrmScheduleMeetingFormValues } from "~enterprise/crm/types/ScheduleMeetingTypes";
 
 interface Props {
   id: string;

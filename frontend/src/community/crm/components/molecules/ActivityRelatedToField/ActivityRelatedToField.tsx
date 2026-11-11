@@ -20,14 +20,14 @@ import {
   CrmAddTaskFormValues,
   CrmLogCallFormValues,
   CrmLogEmailFormValues,
-  CrmLogMeetingFormValues,
-  CrmScheduleMeetingFormValues
+  CrmLogMeetingFormValues
 } from "~community/crm/types/CrmCommonTypes";
 import { CrmCompanyFilterRequest } from "~community/crm/types/CrmTypes";
 import {
   getMissingCompanyIds,
   updateCompanyRecord
 } from "~community/crm/utils/companyUtil";
+import { CrmScheduleMeetingFormValues } from "~enterprise/crm/types/ScheduleMeetingTypes";
 
 interface Props {
   id: string;

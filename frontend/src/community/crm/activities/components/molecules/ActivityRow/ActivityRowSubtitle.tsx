@@ -1,22 +1,17 @@
-import { FC, Fragment, ReactNode } from "react";
+import { FC, Fragment } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   ActivityRow,
+  ActivityRowSubtitlePart,
   ActivityType
 } from "~community/crm/activities/types/activityTypes";
 import { getRowSubtitle } from "~community/crm/activities/utils/activityFeedUtil";
-import { CrmMeetingVenueEnum } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
 import { getContactDisplayName } from "~community/crm/utils/contactUtil";
 import { isOverdue } from "~community/crm/utils/taskValidations";
-
-interface SubtitlePart {
-  key: string;
-  isVisible: boolean;
-  content: ReactNode;
-}
+import { getMeetingVenueSubtitleParts } from "~enterprise/crm/utils/meetingVenueUtil";
 
 interface ActivityRowSubtitleProps {
   id: string;
@@ -55,16 +50,6 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
     isOverdue(row.dueAt, timeZone);
 
   const status = getRowSubtitle(row, translateText, timeZone);
-  const venue =
-    row.meetingVenue === CrmMeetingVenueEnum.IN_PERSON
-      ? row.location
-      : row.meetingVenue &&
-        translateText([
-          "activities",
-          "meetingVenue",
-          "venues",
-          row.meetingVenue
-        ]);
   const strikeClass = isStrikethroughApplied ? "line-through" : "";
   const nameColor = isCompletedStyleApplied
     ? "text-secondary-icon"
@@ -80,7 +65,7 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
     </span>
   );
 
-  const parts: SubtitlePart[] = [
+  const parts: ActivityRowSubtitlePart[] = [
     {
       key: "status",
       isVisible: Boolean(status),
@@ -93,18 +78,11 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
         </span>
       )
     },
-    {
-      key: "venue",
-      isVisible: Boolean(venue),
-      content: (
-        <span
-          id={`${id}-venue`}
-          className={`min-w-0 truncate ${nameColor} ${strikeClass}`}
-        >
-          {venue}
-        </span>
-      )
-    },
+    ...getMeetingVenueSubtitleParts({
+      id,
+      row,
+      className: `min-w-0 truncate ${nameColor} ${strikeClass}`
+    }),
     {
       key: "contacts",
       isVisible: contactLinks.length > 0,

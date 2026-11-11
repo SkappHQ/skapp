@@ -16,11 +16,11 @@ import {
   CrmAddTaskFormValues,
   CrmLogCallFormValues,
   CrmLogEmailFormValues,
-  CrmLogMeetingFormValues,
-  CrmScheduleMeetingFormValues
+  CrmLogMeetingFormValues
 } from "~community/crm/types/CrmCommonTypes";
 import { CrmDealFilterRequest } from "~community/crm/types/CrmTypes";
 import { mergeDeals } from "~community/crm/utils/dealUtil";
+import { CrmScheduleMeetingFormValues } from "~enterprise/crm/types/ScheduleMeetingTypes";
 
 interface Props {
   id: string;

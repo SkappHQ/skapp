@@ -19,10 +19,10 @@ import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmAddTaskFormValues,
   CrmLogCallFormValues,
-  CrmLogMeetingFormValues,
-  CrmScheduleMeetingFormValues
+  CrmLogMeetingFormValues
 } from "~community/crm/types/CrmCommonTypes";
 import { updateOwnerRecord } from "~community/crm/utils/commonUtil";
+import { CrmScheduleMeetingFormValues } from "~enterprise/crm/types/ScheduleMeetingTypes";
 
 interface Props {
   id: string;

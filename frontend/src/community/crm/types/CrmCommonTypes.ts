@@ -1,7 +1,8 @@
+import { CrmMeetingVenueDetails } from "~enterprise/crm/types/ScheduleMeetingTypes";
+
 import {
   CrmDealStageColorsEnum,
   CrmDealStageEnum,
-  CrmMeetingVenueEnum,
   CrmPriorityEnum
 } from "../enums/common";
 
@@ -174,7 +175,7 @@ export interface CrmLogCallFormValues {
   companyId: number | null;
 }
 
-export interface CrmMeetingEntity {
+export interface CrmMeetingEntity extends CrmMeetingVenueDetails {
   id: number;
   name: string;
   meetingDate: string;
@@ -185,10 +186,6 @@ export interface CrmMeetingEntity {
   contacts: CrmContactEntity[];
   deal?: CrmDealEntity;
   company?: CrmCompanyEntity;
-  meetingVenue?: CrmMeetingVenueEnum;
-  location?: string;
-  locationAddress?: string;
-  locationUrl?: string;
 }
 
 export interface CrmTaskCompletionPayload {
@@ -247,11 +244,4 @@ export interface CrmActivityEmailEntity {
   bcc: CrmContactEntity[];
   deal?: CrmDealEntity;
   company?: CrmCompanyEntity;
-}
-
-export interface CrmScheduleMeetingFormValues extends CrmLogMeetingFormValues {
-  meetingVenue: CrmMeetingVenueEnum;
-  location: string;
-  locationAddress: string;
-  locationUrl: string;
 }
