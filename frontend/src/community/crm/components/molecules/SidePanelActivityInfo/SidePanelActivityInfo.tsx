@@ -11,6 +11,7 @@ import { formatDayWithOrdinalIndicator } from "~community/common/utils/dateTimeU
 import OwnerAvatarChip from "~community/crm/components/atoms/OwnerAvatarChip/OwnerAvatarChip";
 import OwnerPopupSearch from "~community/crm/components/molecules/OwnerPopupSearch/OwnerPopupSearch";
 import PropertyRow from "~community/crm/components/molecules/PropertyRow/PropertyRow";
+import SidePanelCompanyField from "~community/crm/components/molecules/SidePanelCompanyField/SidePanelCompanyField";
 import SidePanelDateField from "~community/crm/components/molecules/SidePanelDateField/SidePanelDateField";
 import SidePanelLinkButton from "~community/crm/components/molecules/SidePanelLinkButton/SidePanelLinkButton";
 import SidePanelTimeField from "~community/crm/components/molecules/SidePanelTimeField/SidePanelTimeField";
@@ -26,11 +27,13 @@ interface Props {
   hideStartTime?: boolean;
   secondaryRow?: ReactNode;
   owner?: CrmOwnerEntity;
+  companyId?: number | null;
   companyName?: string;
   onCompanyClick: () => void;
   onDateChange?: (date: Date) => void;
   onStartTimeChange?: (time: string) => void;
   onOwnerChange?: (ownerId: number) => void;
+  onCompanyChange?: (companyId: number) => void;
 }
 
 const SidePanelActivityInfo: FC<Props> = ({
@@ -43,11 +46,13 @@ const SidePanelActivityInfo: FC<Props> = ({
   hideStartTime,
   secondaryRow,
   owner,
+  companyId,
   companyName,
   onCompanyClick,
   onDateChange,
   onStartTimeChange,
-  onOwnerChange
+  onOwnerChange,
+  onCompanyChange
 }) => {
   const translateText = useTranslator(
     "crmModule",
@@ -99,6 +104,19 @@ const SidePanelActivityInfo: FC<Props> = ({
   };
 
   const renderCompany = (): ReactNode => {
+    if (onCompanyChange) {
+      return (
+        <SidePanelCompanyField
+          id={`${id}-related-to`}
+          companyId={companyId ? companyId : null}
+          emptyLabel={noValue}
+          editAriaLabel={translateAria(["editRelatedTo"])}
+          onCompanyClick={onCompanyClick}
+          onChange={onCompanyChange}
+        />
+      );
+    }
+
     return companyName ? (
       <SidePanelLinkButton label={companyName} onClick={onCompanyClick} />
     ) : (

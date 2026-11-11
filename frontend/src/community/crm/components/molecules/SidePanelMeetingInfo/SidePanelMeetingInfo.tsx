@@ -138,11 +138,12 @@ const SidePanelMeetingInfo: FC<Props> = ({
           </PropertyRow>
         }
         {...(values.ownerId && { owner: owners[values.ownerId] })}
-        companyName={meeting.company?.name}
+        companyId={values.companyId}
         onCompanyClick={onCompanyClick}
         onDateChange={handleDateChange}
         onStartTimeChange={(time) => setFieldValue("startTime", time)}
         onOwnerChange={(ownerId) => setFieldValue("ownerId", ownerId)}
+        onCompanyChange={(companyId) => setFieldValue("companyId", companyId)}
       />
     </div>
   );
