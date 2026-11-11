@@ -2,6 +2,7 @@ import { EmailFilledIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { ActivityEmailEditPayload } from "~community/crm/activities/types/activityTypes";
 import SidePanelActivityEmailInfo from "~community/crm/components/molecules/SidePanelActivityEmailInfo/SidePanelActivityEmailInfo";
 import ActivitySidePanel from "~community/crm/components/organisms/ActivitySidePanel/ActivitySidePanel";
 import { TASK_DETAIL_ICON_SIZE } from "~community/crm/constants/taskConstants";
@@ -14,6 +15,8 @@ interface Props {
   onClose: () => void;
   onTitleSave: (title: string) => void;
   onCommentsSave: (comments: string) => void;
+  onDealChange: (dealId: number | null) => void;
+  onDetailsSave: (payload: ActivityEmailEditPayload) => void;
   onDelete: () => void;
   onCompanyClick: () => void;
 }
@@ -24,6 +27,8 @@ const EmailActivitySidePanel: FC<Props> = ({
   onClose,
   onTitleSave,
   onCommentsSave,
+  onDealChange,
+  onDetailsSave,
   onDelete,
   onCompanyClick
 }) => {
@@ -48,6 +53,7 @@ const EmailActivitySidePanel: FC<Props> = ({
       onClose={onClose}
       onTitleSave={onTitleSave}
       onCommentsSave={onCommentsSave}
+      onDealChange={onDealChange}
       icon={
         <EmailFilledIcon
           width={TASK_DETAIL_ICON_SIZE}
@@ -67,7 +73,9 @@ const EmailActivitySidePanel: FC<Props> = ({
         deal: email.deal,
         info: (
           <SidePanelActivityEmailInfo
+            key={email.id}
             email={email}
+            onSave={onDetailsSave}
             owner={owners[email.ownerId]}
             onCompanyClick={onCompanyClick}
           />

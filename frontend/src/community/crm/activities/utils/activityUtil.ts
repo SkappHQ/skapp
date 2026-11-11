@@ -7,15 +7,19 @@ import {
 import { ACTIVITY_TIME_SLOT_MINUTES } from "~community/crm/activities/constants/activityConstants";
 import {
   ActivityCallEditPayload,
+  ActivityEmailEditPayload,
   ActivityLinkEditPayload,
   ActivityMeetingEditPayload,
   ActivityTaskEditPayload
 } from "~community/crm/activities/types/activityTypes";
 import {
+  CrmActivityEmailEntity,
   CrmActivityTaskEntity,
   CrmAddTaskFormValues,
   CrmCallEntity,
+  CrmContactEntity,
   CrmLogCallFormValues,
+  CrmLogEmailFormValues,
   CrmLogMeetingFormValues,
   CrmMeetingEntity
 } from "~community/crm/types/CrmCommonTypes";
@@ -196,6 +200,55 @@ export const toActivityTaskEditPayload = (
   ...(values.dueAt !== saved.dueAt && { dueAt: values.dueAt }),
   ...(values.contactId &&
     values.contactId !== saved.contactId && { contactId: values.contactId })
+});
+
+const toContactIds = (contacts: CrmContactEntity[]): number[] =>
+  contacts.flatMap((contact) => (contact.id ? [contact.id] : []));
+
+const isSameIds = (ids: number[], savedIds: number[]): boolean =>
+  ids.join(",") === savedIds.join(",");
+
+export const toEmailFormValues = (
+  email: CrmActivityEmailEntity
+): CrmLogEmailFormValues => ({
+  fromAddress: email.fromAddress ? email.fromAddress : "",
+  date: DateTime.fromISO(email.loggedAt).startOf("day").toUTC().toISO(),
+  time: toTimeFieldValue(email.loggedAt),
+  toContactIds: toContactIds(email.to),
+  ccContactIds: toContactIds(email.cc),
+  bccContactIds: toContactIds(email.bcc),
+  subject: email.subject,
+  dealId: email.deal && email.deal.id ? email.deal.id : null,
+  companyId: email.company && email.company.id ? email.company.id : null,
+  description: email.description ? email.description : ""
+});
+
+export const toEmailEditPayload = (
+  id: number,
+  values: CrmLogEmailFormValues,
+  saved: CrmLogEmailFormValues
+): ActivityEmailEditPayload => ({
+  id,
+  ...(values.fromAddress !== saved.fromAddress && {
+    fromAddress: values.fromAddress
+  }),
+  ...((values.date !== saved.date || values.time !== saved.time) &&
+    values.date && {
+      loggedAt: toActivityInstant(values.date, values.time)
+    }),
+  ...(!isSameIds(values.toContactIds, saved.toContactIds) && {
+    toContactIds: values.toContactIds
+  }),
+  ...(!isSameIds(values.ccContactIds, saved.ccContactIds) && {
+    ccContactIds: values.ccContactIds
+  }),
+  ...(!isSameIds(values.bccContactIds, saved.bccContactIds) && {
+    bccContactIds: values.bccContactIds
+  }),
+  ...(values.companyId !== saved.companyId &&
+    (values.companyId
+      ? { companyId: values.companyId }
+      : { isCompanyRemoved: true }))
 });
 
 export const toDealEditPayload = (

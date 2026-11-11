@@ -6,6 +6,7 @@ import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { toDealEditPayload } from "~community/crm/activities/utils/activityUtil";
 import {
   useDeleteEmail,
   useGetEmailById,
@@ -96,6 +97,10 @@ const ActivityEmailSidePanel: FC<Props> = ({ emailId }) => {
         onCommentsSave={(description) =>
           updateEmail({ id: emailId, description })
         }
+        onDealChange={(dealId) =>
+          updateEmail(toDealEditPayload(emailId, dealId))
+        }
+        onDetailsSave={updateEmail}
         onDelete={openDeleteModal}
         onCompanyClick={handleCompanyClick}
       />

@@ -150,7 +150,11 @@
       "kebabMenu": "Email actions",
       "to": "Email to recipients",
       "cc": "Email cc recipients",
-      "bcc": "Email bcc recipients"
+      "bcc": "Email bcc recipients",
+      "editTo": "Change the To recipients",
+      "editCc": "Change the Cc recipients",
+      "editBcc": "Change the Bcc recipients",
+      "editFrom": "Change the from address"
     },
     "callSidePanel": {
       "kebabMenu": "Call actions"

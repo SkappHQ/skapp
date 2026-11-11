@@ -205,8 +205,13 @@ export interface ActivityTaskEditPayload extends ActivityLinkEditPayload {
   contactId?: number;
 }
 
-export interface ActivityEmailEditPayload {
+export interface ActivityEmailEditPayload extends ActivityLinkEditPayload {
   id: number;
   subject?: string;
   description?: string;
+  fromAddress?: string;
+  loggedAt?: string | null;
+  toContactIds?: number[];
+  ccContactIds?: number[];
+  bccContactIds?: number[];
 }

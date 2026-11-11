@@ -627,7 +627,9 @@
         "cc": "Cc",
         "bcc": "Bcc",
         "from": "From",
-        "time": "Time"
+        "time": "Time",
+        "selectedRecipients": "Selected recipients",
+        "searchContacts": "Search contacts"
       }
     },
     "callSidePanel": {
