@@ -615,7 +615,7 @@
         "dueDate": "Due date"
       },
       "relatedTitle": "Related tasks",
-      "undo": "Undo"
+      "reopen": "Reopen"
     },
     "callSidePanel": {
       "noDealsDescription": "No deals are linked to this call",
