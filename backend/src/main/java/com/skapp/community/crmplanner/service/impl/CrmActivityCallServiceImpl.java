@@ -214,6 +214,9 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_EDIT_DENIED);
 		}
 
+		CrmValidations.validateActivityLinkRemoval(requestDto.getIsDealRemoved(), requestDto.getDealId(),
+				requestDto.getIsCompanyRemoved(), requestDto.getCompanyId());
+
 		if (requestDto.getSubject() != null) {
 			CrmValidations.validateCallSubject(requestDto.getSubject());
 			call.setSubject(requestDto.getSubject());

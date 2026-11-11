@@ -256,6 +256,11 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 			CrmValidations.validateMeetingTimes(meeting.getStartAt(), meeting.getEndAt());
 		}
 
+		if (requestDto.getMeetingDate() != null || requestDto.getStartAt() != null || requestDto.getEndAt() != null) {
+			CrmValidations.validateMeetingTimesOnDate(meeting.getMeetingDate(), meeting.getStartAt(),
+					meeting.getEndAt(), timeZoneService.requestTimezone());
+		}
+
 		if (requestDto.getComments() != null) {
 			meeting.setComments(requestDto.getComments());
 		}

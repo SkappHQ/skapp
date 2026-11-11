@@ -229,6 +229,9 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_EMAIL_EDIT_DENIED);
 		}
 
+		CrmValidations.validateActivityLinkRemoval(requestDto.getIsDealRemoved(), requestDto.getDealId(),
+				requestDto.getIsCompanyRemoved(), requestDto.getCompanyId());
+
 		if (requestDto.getSubject() != null) {
 			CrmValidations.validateEmailSubject(requestDto.getSubject());
 			email.setSubject(requestDto.getSubject());
