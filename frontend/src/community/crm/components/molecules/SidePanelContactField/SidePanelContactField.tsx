@@ -21,8 +21,8 @@ interface Props {
   contactId: number | null;
   emptyLabel: string;
   editAriaLabel: string;
-  onContactClick: () => void;
-  onChange: (contactId: number) => void;
+  onContactClick: (contactId: number) => void;
+  onChange: (contactId: number, contactCompanyId?: number | null) => void;
 }
 
 const SidePanelContactField: FC<Props> = ({
@@ -46,10 +46,10 @@ const SidePanelContactField: FC<Props> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm.trim(), SEARCH_DEBOUNCE_DELAY);
 
-  const { data: lookupData } = useGetContactLookup({
-    searchKeyword: debouncedSearch,
-    size: DEFAULT_LOOKUP_PAGE_SIZE
-  });
+  const { data: lookupData } = useGetContactLookup(
+    { searchKeyword: debouncedSearch, size: DEFAULT_LOOKUP_PAGE_SIZE },
+    debouncedSearch.length > 0
+  );
 
   const lookupItems = useMemo(
     () => (lookupData ? lookupData.items : []),
@@ -65,7 +65,11 @@ const SidePanelContactField: FC<Props> = ({
     if (!contact) return;
 
     setContacts(updateContactRecord(contacts, [contact]));
-    onChange(selectedId);
+    onChange(selectedId, contact.companyId);
+  };
+
+  const handleLinkClick = (): void => {
+    if (contactId) onContactClick(contactId);
   };
 
   return (
@@ -78,7 +82,7 @@ const SidePanelContactField: FC<Props> = ({
       editAriaLabel={editAriaLabel}
       searchPlaceholder={translateText(["placeholders", "contact"])}
       noResultsText={translateText(["emptyStates", "noContacts"])}
-      onLinkClick={onContactClick}
+      onLinkClick={handleLinkClick}
       onSearch={setSearchTerm}
       onSelect={handleSelect}
     />

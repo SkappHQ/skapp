@@ -37,6 +37,7 @@ interface Props {
   title?: string;
   comments?: string;
   deal?: CrmDealEntity;
+  dealFilterCompanyId?: number | null;
   info?: ReactNode;
   related?: ReactNode;
   onTitleSave?: (title: string) => void;
@@ -60,6 +61,7 @@ const ActivitySidePanel: FC<Props> = ({
   title,
   comments,
   deal,
+  dealFilterCompanyId,
   info,
   related,
   onTitleSave,
@@ -84,6 +86,8 @@ const ActivitySidePanel: FC<Props> = ({
 
     setDeals(mergeDeals(deals, [deal]));
   }, [deal]);
+
+  const linkedDealId = deal?.id && deals[deal.id] ? deal.id : null;
 
   const { isCrmSalesManager, isCrmAdmin, isSuperAdmin } = useSessionData();
   const isDeleteAllowed = isCrmSalesManager || isCrmAdmin || isSuperAdmin;
@@ -183,13 +187,14 @@ const ActivitySidePanel: FC<Props> = ({
               {onDealChange ? (
                 <SidePanelActivityDeal
                   id={id}
-                  dealId={deal && deal.id && deals[deal.id] ? deal.id : null}
+                  dealId={linkedDealId}
+                  filterCompanyId={dealFilterCompanyId}
                   emptyDescription={emptyDealsDescription}
                   onDealChange={onDealChange}
                 />
               ) : (
                 <SidePanelDealSection
-                  dealIds={deal && deal.id && deals[deal.id] ? [deal.id] : []}
+                  dealIds={linkedDealId ? [linkedDealId] : []}
                   showAddDealAction={false}
                   emptyHeightClassName="h-[163px]"
                   emptyDescription={emptyDealsDescription}

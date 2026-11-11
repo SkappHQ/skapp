@@ -31,7 +31,7 @@ import { getMeetingValidationSchema } from "~community/crm/utils/meetingValidati
 interface Props {
   meeting: CrmMeetingEntity;
   onSave: (payload: ActivityMeetingEditPayload) => void;
-  onCompanyClick: () => void;
+  onCompanyClick: (companyId: number) => void;
 }
 
 const SidePanelMeetingInfo: FC<Props> = ({

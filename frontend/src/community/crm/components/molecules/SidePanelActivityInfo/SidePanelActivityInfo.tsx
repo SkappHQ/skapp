@@ -29,7 +29,7 @@ interface Props {
   owner?: CrmOwnerEntity;
   companyId?: number | null;
   companyName?: string;
-  onCompanyClick: () => void;
+  onCompanyClick: (companyId: number) => void;
   onDateChange?: (date: Date) => void;
   onStartTimeChange?: (time: string) => void;
   onOwnerChange?: (ownerId: number) => void;
@@ -108,7 +108,7 @@ const SidePanelActivityInfo: FC<Props> = ({
       return (
         <SidePanelCompanyField
           id={`${id}-related-to`}
-          companyId={companyId ? companyId : null}
+          companyId={companyId ?? null}
           emptyLabel={noValue}
           editAriaLabel={translateAria(["editRelatedTo"])}
           onCompanyClick={onCompanyClick}
@@ -117,8 +117,11 @@ const SidePanelActivityInfo: FC<Props> = ({
       );
     }
 
-    return companyName ? (
-      <SidePanelLinkButton label={companyName} onClick={onCompanyClick} />
+    return companyId && companyName ? (
+      <SidePanelLinkButton
+        label={companyName}
+        onClick={() => onCompanyClick(companyId)}
+      />
     ) : (
       <span className="body2">{noValue}</span>
     );

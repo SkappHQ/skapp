@@ -22,15 +22,20 @@ import {
   CrmCallEntity,
   CrmLogCallFormValues
 } from "~community/crm/types/CrmCommonTypes";
-import { getCallValidationSchema } from "~community/crm/utils/callValidations";
+import { formatCallDuration } from "~community/crm/utils/callUtil";
+import {
+  getCallValidationSchema,
+  parseCallDurationToMinutes
+} from "~community/crm/utils/callValidations";
 import { updateCompanyRecord } from "~community/crm/utils/companyUtil";
 import { updateContactRecord } from "~community/crm/utils/contactUtil";
+import { isDealMatchingCompany } from "~community/crm/utils/dealUtil";
 
 interface Props {
   call: CrmCallEntity;
   onSave: (payload: ActivityCallEditPayload) => void;
-  onContactClick: () => void;
-  onCompanyClick: () => void;
+  onContactClick: (contactId: number) => void;
+  onCompanyClick: (companyId: number) => void;
 }
 
 const SidePanelCallInfo: FC<Props> = ({
@@ -80,12 +85,30 @@ const SidePanelCallInfo: FC<Props> = ({
 
   useActivityAutoSave(formik);
 
-  const { values, setFieldValue } = formik;
+  const { values, setFieldValue, resetForm } = formik;
 
   const validateDuration = (duration: string): string =>
-    duration && !callDurationPattern().test(duration)
+    duration.trim() && !callDurationPattern().test(duration.trim())
       ? translateInfo(["logCall", "modal", "validations", "duration"])
       : "";
+
+  const handleDurationSave = (duration: string): void => {
+    const minutes = parseCallDurationToMinutes(duration);
+    setFieldValue("duration", minutes ? formatCallDuration(minutes) : duration);
+  };
+
+  const handleContactChange = (
+    contactId: number,
+    contactCompanyId?: number | null
+  ): void => {
+    if (call.deal && !isDealMatchingCompany(call.deal, contactCompanyId)) {
+      onSave({ id: call.id, contactId, isDealRemoved: true });
+      resetForm({ values: { ...values, contactId, dealId: null } });
+      return;
+    }
+
+    setFieldValue("contactId", contactId);
+  };
 
   const handleDateChange = (date: Date): void => {
     setFieldValue("date", toDateFieldValue(date));
@@ -108,7 +131,7 @@ const SidePanelCallInfo: FC<Props> = ({
             ])}
             editAriaLabel={translateAria(["editContact"])}
             onContactClick={onContactClick}
-            onChange={(contactId) => setFieldValue("contactId", contactId)}
+            onChange={handleContactChange}
           />
         </PropertyRow>
       }
@@ -133,7 +156,7 @@ const SidePanelCallInfo: FC<Props> = ({
             ])}
             ariaLabel={translateAria(["editDuration"])}
             validate={validateDuration}
-            onSave={(duration) => setFieldValue("duration", duration)}
+            onSave={handleDurationSave}
           />
         </PropertyRow>
       }

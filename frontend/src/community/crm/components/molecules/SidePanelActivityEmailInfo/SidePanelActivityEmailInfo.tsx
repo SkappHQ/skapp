@@ -70,6 +70,7 @@ const SidePanelActivityEmailInfo: FC<Props> = ({
         startTime={DateTime.fromISO(email.loggedAt)}
         startTimeLabel={translateText(["emailSidePanel", "info", "time"])}
         owner={owner}
+        companyId={email.company?.id}
         companyName={email.company?.name}
         onCompanyClick={onCompanyClick}
       />

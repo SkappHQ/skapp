@@ -90,16 +90,12 @@ const ActivityCallSidePanel: FC<Props> = ({ callId }) => {
     router.push(url);
   };
 
-  const handleContactClick = (): void => {
-    if (call?.contact?.id) {
-      openRecord(ROUTES.CRM.CONTACT_DETAIL(call.contact.id));
-    }
+  const handleContactClick = (contactId: number): void => {
+    openRecord(ROUTES.CRM.CONTACT_DETAIL(contactId));
   };
 
-  const handleCompanyClick = (): void => {
-    if (call?.company?.id) {
-      openRecord(ROUTES.CRM.COMPANY_DETAIL(call.company.id));
-    }
+  const handleCompanyClick = (companyId: number): void => {
+    openRecord(ROUTES.CRM.COMPANY_DETAIL(companyId));
   };
 
   const handleRelatedRowClick = (row: ActivityRow): void => {
