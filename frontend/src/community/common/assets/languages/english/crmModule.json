@@ -615,7 +615,7 @@
         "dueDate": "Due date"
       },
       "relatedTitle": "Related tasks",
-      "undo": "Undo"
+      "reopen": "Reopen"
     },
     "callSidePanel": {
       "noDealsDescription": "No deals are linked to this call",
@@ -895,7 +895,9 @@
       "deleteMeeting": "Delete meeting",
       "info": {
         "attendees": "Attendees",
-        "endTime": "End time"
+        "endTime": "End time",
+        "selectedAttendees": "Selected attendees",
+        "searchAttendees": "Search contacts"
       },
       "relatedTitle": "Related meetings"
     }

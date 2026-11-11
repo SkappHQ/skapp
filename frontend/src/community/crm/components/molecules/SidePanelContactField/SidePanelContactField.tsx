@@ -46,10 +46,10 @@ const SidePanelContactField: FC<Props> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm.trim(), SEARCH_DEBOUNCE_DELAY);
 
-  const { data: lookupData } = useGetContactLookup(
-    { searchKeyword: debouncedSearch, size: DEFAULT_LOOKUP_PAGE_SIZE },
-    debouncedSearch.length > 0
-  );
+  const { data: lookupData } = useGetContactLookup({
+    searchKeyword: debouncedSearch,
+    size: DEFAULT_LOOKUP_PAGE_SIZE
+  });
 
   const lookupItems = useMemo(
     () => (lookupData ? lookupData.items : []),

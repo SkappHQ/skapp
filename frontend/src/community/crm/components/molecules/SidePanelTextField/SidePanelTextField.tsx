@@ -49,6 +49,7 @@ const SidePanelTextField: FC<Props> = ({
         state={error ? "error" : "default"}
         errorMessage={error}
         aria-label={ariaLabel}
+        fullWidth
         autoFocus
       />
     );
@@ -59,10 +60,12 @@ const SidePanelTextField: FC<Props> = ({
       id={id}
       type="button"
       aria-label={ariaLabel}
-      className="body2 w-full min-h-8 px-1 rounded-lg text-left cursor-pointer hover:bg-secondary-background"
+      className="body2 w-full min-w-0 min-h-8 px-1 rounded-lg text-left cursor-pointer hover:bg-secondary-background"
       onClick={startEditing}
     >
-      {value ? value : placeholder}
+      <span className="block truncate" title={value}>
+        {value ? value : placeholder}
+      </span>
     </button>
   );
 };

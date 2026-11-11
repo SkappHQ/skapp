@@ -46,10 +46,7 @@ const SidePanelCompanyField: FC<Props> = ({
     [debouncedSearch]
   );
 
-  const { data: lookupData } = useGetCompanyLookup(
-    lookupFilter,
-    debouncedSearch.length > 0
-  );
+  const { data: lookupData } = useGetCompanyLookup(lookupFilter);
 
   const lookupItems = useMemo(
     () => (lookupData ? lookupData.items : []),
