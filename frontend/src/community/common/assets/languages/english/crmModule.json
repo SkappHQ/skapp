@@ -910,7 +910,9 @@
       "deleteMeeting": "Delete meeting",
       "info": {
         "attendees": "Attendees",
-        "endTime": "End time"
+        "endTime": "End time",
+        "selectedAttendees": "Selected attendees",
+        "searchAttendees": "Search contacts"
       },
       "relatedTitle": "Related meetings"
     }
