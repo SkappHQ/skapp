@@ -14,6 +14,7 @@ import com.skapp.community.leaveplanner.payload.PolicyLeaveDateWindowDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveMonthlyDurationDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveSpanDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveUsageDto;
+import com.skapp.community.leaveplanner.payload.request.PolicyLeaveHistoryFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.repository.PolicyLeaveRequestRepository;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
@@ -122,6 +123,44 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 			.distinct(true)
 			.where(buildSupervisorPredicates(criteriaBuilder, root, root.join(PolicyLeaveRequest_.employee),
 					supervisorEmployeeId, filterDto)
+				.toArray(new Predicate[0]));
+		criteriaQuery.orderBy(QueryUtils.toOrders(pageable.getSort(), root, criteriaBuilder));
+
+		TypedQuery<PolicyLeaveRequest> query = entityManager.createQuery(criteriaQuery);
+		if (pageable.isPaged()) {
+			query.setFirstResult((int) pageable.getOffset());
+			query.setMaxResults(pageable.getPageSize());
+		}
+
+		return new PageImpl<>(query.getResultList(), pageable, totalRows);
+	}
+
+	@Override
+	public Page<PolicyLeaveRequest> findLeaveHistory(Long teamId, Collection<Long> employeeIds, LocalDate startDate,
+			LocalDate endDate, PolicyLeaveHistoryFilterDto filterDto, Pageable pageable) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
+		Root<PolicyLeaveRequest> countRoot = countQuery.from(PolicyLeaveRequest.class);
+		countQuery.select(criteriaBuilder.count(countRoot))
+			.where(buildLeaveHistoryPredicates(criteriaBuilder, countQuery, countRoot,
+					countRoot.join(PolicyLeaveRequest_.employee), teamId, employeeIds, startDate, endDate, filterDto)
+				.toArray(new Predicate[0]));
+		long totalRows = entityManager.createQuery(countQuery).getSingleResult();
+
+		if (totalRows == 0) {
+			return new PageImpl<>(List.of(), pageable, 0);
+		}
+
+		CriteriaQuery<PolicyLeaveRequest> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveRequest.class);
+		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
+		fetchPolicy(root);
+		Join<PolicyLeaveRequest, Employee> employee = (Join<PolicyLeaveRequest, Employee>) root
+			.fetch(PolicyLeaveRequest_.employee, JoinType.INNER);
+
+		criteriaQuery.select(root)
+			.where(buildLeaveHistoryPredicates(criteriaBuilder, criteriaQuery, root, employee, teamId, employeeIds,
+					startDate, endDate, filterDto)
 				.toArray(new Predicate[0]));
 		criteriaQuery.orderBy(QueryUtils.toOrders(pageable.getSort(), root, criteriaBuilder));
 
@@ -293,7 +332,7 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 
 	@Override
 	public List<PolicyLeaveMonthlyDurationDto> findApprovedSingleMonthDurations(LocalDate startDate, LocalDate endDate,
-			List<Long> leaveTypeIds, List<Long> teamIds, Long supervisorEmployeeId) {
+			List<Long> leaveTypeIds, List<Long> teamIds, Long supervisorEmployeeId, Long employeeId) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<PolicyLeaveMonthlyDurationDto> criteriaQuery = criteriaBuilder
@@ -309,7 +348,7 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 				Integer.class, root.get(PolicyLeaveRequest_.startDate));
 
 		List<Predicate> predicates = buildApprovedLeaveInWindowPredicates(criteriaBuilder, criteriaQuery, root,
-				employee, startDate, endDate, leaveTypeIds, teamIds, supervisorEmployeeId);
+				employee, startDate, endDate, leaveTypeIds, teamIds, supervisorEmployeeId, employeeId);
 		predicates.add(singleMonthWithinWindowPredicate(criteriaBuilder, root, startDate, endDate));
 
 		criteriaQuery
@@ -323,7 +362,7 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 
 	@Override
 	public List<PolicyLeaveSpanDto> findApprovedMultiMonthSpans(LocalDate startDate, LocalDate endDate,
-			List<Long> leaveTypeIds, List<Long> teamIds, Long supervisorEmployeeId) {
+			List<Long> leaveTypeIds, List<Long> teamIds, Long supervisorEmployeeId, Long employeeId) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<PolicyLeaveSpanDto> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveSpanDto.class);
@@ -332,7 +371,7 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		Join<Employee, WorkLocation> workLocation = employee.join(Employee_.workLocation, JoinType.LEFT);
 
 		List<Predicate> predicates = buildApprovedLeaveInWindowPredicates(criteriaBuilder, criteriaQuery, root,
-				employee, startDate, endDate, leaveTypeIds, teamIds, supervisorEmployeeId);
+				employee, startDate, endDate, leaveTypeIds, teamIds, supervisorEmployeeId, employeeId);
 		predicates
 			.add(criteriaBuilder.not(singleMonthWithinWindowPredicate(criteriaBuilder, root, startDate, endDate)));
 
@@ -437,9 +476,10 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 	private List<Predicate> buildApprovedLeaveInWindowPredicates(CriteriaBuilder criteriaBuilder,
 			CriteriaQuery<?> criteriaQuery, Root<PolicyLeaveRequest> root, Join<PolicyLeaveRequest, Employee> employee,
 			LocalDate startDate, LocalDate endDate, List<Long> leaveTypeIds, List<Long> teamIds,
-			Long supervisorEmployeeId) {
-		List<Predicate> predicates = buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee, teamIds,
-				supervisorEmployeeId);
+			Long supervisorEmployeeId, Long employeeId) {
+		List<Predicate> predicates = employeeId == null
+				? buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee, teamIds, supervisorEmployeeId)
+				: new ArrayList<>(List.of(criteriaBuilder.equal(employee.get(Employee_.employeeId), employeeId)));
 		predicates.add(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.status), LeaveRequestStatus.APPROVED));
 		predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get(PolicyLeaveRequest_.startDate), endDate));
 		predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), startDate));
@@ -526,6 +566,34 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 
 		if (filterDto.getSearchKeyword() != null && !filterDto.getSearchKeyword().trim().isEmpty()) {
 			predicates.add(findByEmailName(filterDto.getSearchKeyword().trim(), criteriaBuilder, employee, user));
+		}
+
+		return predicates;
+	}
+
+	private List<Predicate> buildLeaveHistoryPredicates(CriteriaBuilder criteriaBuilder, CriteriaQuery<?> criteriaQuery,
+			Root<PolicyLeaveRequest> root, Join<PolicyLeaveRequest, Employee> employee, Long teamId,
+			Collection<Long> employeeIds, LocalDate startDate, LocalDate endDate,
+			PolicyLeaveHistoryFilterDto filterDto) {
+		List<Predicate> predicates = buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee,
+				teamId == null ? null : List.of(teamId), null);
+
+		if (!CollectionUtils.isEmpty(employeeIds)) {
+			predicates.add(employee.get(Employee_.employeeId).in(employeeIds));
+		}
+
+		predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get(PolicyLeaveRequest_.startDate), endDate));
+		predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), startDate));
+
+		if (!CollectionUtils.isEmpty(filterDto.getStatus())) {
+			predicates.add(root.get(PolicyLeaveRequest_.status).in(filterDto.getStatus()));
+		}
+
+		if (!CollectionUtils.isEmpty(filterDto.getLeaveType())) {
+			predicates.add(root.get(PolicyLeaveRequest_.policy)
+				.get(LeavePolicy_.leaveType)
+				.get(PolicyLeaveType_.id)
+				.in(filterDto.getLeaveType()));
 		}
 
 		return predicates;

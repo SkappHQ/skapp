@@ -2,7 +2,11 @@ import { DateTime } from "luxon";
 
 import { LeaveEntitlementParamsType } from "~community/leave/types/LeaveEntitlementTypes";
 import { PolicyManagerLeaveRequestQueryParams } from "~community/leave/types/PolicyLeaveReviewTypes";
-import { PolicyLeaveRequestQueryParams } from "~community/leave/types/PolicyLeaveTypes";
+import {
+  PolicyEmployeeLeaveHistoryQueryParams,
+  PolicyLeaveRequestQueryParams,
+  PolicyTeamLeaveHistoryQueryParams
+} from "~community/leave/types/PolicyLeaveTypes";
 
 export const leaveQueryKeys = {
   ALL: ["all-leaves"],
@@ -358,6 +362,34 @@ export const policyLeaveQueryKeys = {
   LEAVE_TYPE_BREAKDOWN: (teamId: number | string) => [
     ...policyLeaveQueryKeys.ALL_LEAVE_TYPE_BREAKDOWN(),
     teamId
+  ],
+  ALL_EMPLOYEE_LEAVE_UTILIZATION: () => [
+    ...policyLeaveQueryKeys.ALL,
+    "employee-leave-utilization"
+  ],
+  EMPLOYEE_LEAVE_UTILIZATION: (employeeId: number) => [
+    ...policyLeaveQueryKeys.ALL_EMPLOYEE_LEAVE_UTILIZATION(),
+    employeeId
+  ],
+  ALL_TEAM_LEAVE_HISTORY: () => [
+    ...policyLeaveQueryKeys.ALL,
+    "team-leave-history"
+  ],
+  TEAM_LEAVE_HISTORY: (
+    teamId: number,
+    params: PolicyTeamLeaveHistoryQueryParams
+  ) => [...policyLeaveQueryKeys.ALL_TEAM_LEAVE_HISTORY(), teamId, params],
+  ALL_EMPLOYEE_LEAVE_HISTORY: () => [
+    ...policyLeaveQueryKeys.ALL,
+    "employee-leave-history"
+  ],
+  EMPLOYEE_LEAVE_HISTORY: (
+    employeeId: number,
+    params: PolicyEmployeeLeaveHistoryQueryParams
+  ) => [
+    ...policyLeaveQueryKeys.ALL_EMPLOYEE_LEAVE_HISTORY(),
+    employeeId,
+    params
   ]
 };
 

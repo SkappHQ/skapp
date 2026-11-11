@@ -5,6 +5,7 @@ import com.skapp.community.leaveplanner.payload.PolicyLeaveDateWindowDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveMonthlyDurationDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveSpanDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveUsageDto;
+import com.skapp.community.leaveplanner.payload.request.PolicyLeaveHistoryFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import org.springframework.data.domain.Page;
@@ -23,6 +24,9 @@ public interface PolicyLeaveRequestRepository {
 
 	Page<PolicyLeaveRequest> findSupervisedRequests(Long supervisorEmployeeId, PolicyLeaveRequestFilterDto filterDto,
 			Pageable pageable);
+
+	Page<PolicyLeaveRequest> findLeaveHistory(Long teamId, Collection<Long> employeeIds, LocalDate startDate,
+			LocalDate endDate, PolicyLeaveHistoryFilterDto filterDto, Pageable pageable);
 
 	Optional<PolicyLeaveRequest> findByIdForUpdate(Long id);
 
@@ -47,10 +51,10 @@ public interface PolicyLeaveRequestRepository {
 			Long supervisorEmployeeId);
 
 	List<PolicyLeaveMonthlyDurationDto> findApprovedSingleMonthDurations(LocalDate startDate, LocalDate endDate,
-			List<Long> leaveTypeIds, List<Long> teamIds, Long supervisorEmployeeId);
+			List<Long> leaveTypeIds, List<Long> teamIds, Long supervisorEmployeeId, Long employeeId);
 
 	List<PolicyLeaveSpanDto> findApprovedMultiMonthSpans(LocalDate startDate, LocalDate endDate,
-			List<Long> leaveTypeIds, List<Long> teamIds, Long supervisorEmployeeId);
+			List<Long> leaveTypeIds, List<Long> teamIds, Long supervisorEmployeeId, Long employeeId);
 
 	List<PolicyLeaveRequest> findEmployeesRequestsInRange(Collection<Long> employeeIds,
 			Collection<LeaveRequestStatus> statuses, LocalDate startDate, LocalDate endDate, boolean activeUsersOnly);
