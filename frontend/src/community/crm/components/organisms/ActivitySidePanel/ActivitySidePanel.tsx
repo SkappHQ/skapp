@@ -12,6 +12,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import SidePanelActivityComments from "~community/crm/components/molecules/SidePanelActivityComments/SidePanelActivityComments";
 import SidePanelActivityDeal from "~community/crm/components/molecules/SidePanelActivityDeal/SidePanelActivityDeal";
 import SidePanelActivityTitle from "~community/crm/components/molecules/SidePanelActivityTitle/SidePanelActivityTitle";
+import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
 import SidePanelHeaderSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
 import { useCrmStore } from "~community/crm/store/store";
@@ -31,14 +32,16 @@ interface Props {
   onDelete: () => void;
   menuAriaLabel: string;
   emptyDealsDescription: string;
+  commentsTitle?: string;
+  emptyCommentsText?: string;
   title?: string;
   comments?: string;
   deal?: CrmDealEntity;
   info?: ReactNode;
   related?: ReactNode;
-  onTitleSave: (title: string) => void;
-  onCommentsSave: (comments: string) => void;
-  onDealChange: (dealId: number | null) => void;
+  onTitleSave?: (title: string) => void;
+  onCommentsSave?: (comments: string) => void;
+  onDealChange?: (dealId: number | null) => void;
 }
 
 const ActivitySidePanel: FC<Props> = ({
@@ -52,6 +55,8 @@ const ActivitySidePanel: FC<Props> = ({
   onDelete,
   menuAriaLabel,
   emptyDealsDescription,
+  commentsTitle,
+  emptyCommentsText,
   title,
   comments,
   deal,
@@ -115,13 +120,16 @@ const ActivitySidePanel: FC<Props> = ({
         ) : (
           <div className="flex items-center gap-4 pl-2">
             {icon}
-            {title && (
-              <SidePanelActivityTitle
-                id={id}
-                title={title}
-                onSave={onTitleSave}
-              />
-            )}
+            {title &&
+              (onTitleSave ? (
+                <SidePanelActivityTitle
+                  id={id}
+                  title={title}
+                  onSave={onTitleSave}
+                />
+              ) : (
+                <h2 className="h2 text-black">{title}</h2>
+              ))}
           </div>
         )
       }
@@ -150,21 +158,43 @@ const ActivitySidePanel: FC<Props> = ({
       ) : (
         <div className="flex gap-6 pb-4">
           <div className="flex flex-col flex-1 gap-6 min-w-0">
-            <SidePanelActivityComments
-              id={id}
-              comments={comments}
-              onSave={onCommentsSave}
-            />
+            {onCommentsSave ? (
+              <SidePanelActivityComments
+                id={id}
+                comments={comments}
+                onSave={onCommentsSave}
+              />
+            ) : (
+              <div className="flex flex-col gap-1">
+                <p className="subtitle1">
+                  {commentsTitle ?? translateText(["comments"])}
+                </p>
+                <p className="subtitle3 max-h-24 overflow-y-auto break-words">
+                  {comments ??
+                    emptyCommentsText ??
+                    translateText(["noComments"])}
+                </p>
+              </div>
+            )}
 
             <div className="flex flex-col gap-3">
               <h2 className="h2">{translateText(["dealsTitle"])}</h2>
               <hr className="border-secondary-accent" />
-              <SidePanelActivityDeal
-                id={id}
-                dealId={deal && deal.id && deals[deal.id] ? deal.id : null}
-                emptyDescription={emptyDealsDescription}
-                onDealChange={onDealChange}
-              />
+              {onDealChange ? (
+                <SidePanelActivityDeal
+                  id={id}
+                  dealId={deal && deal.id && deals[deal.id] ? deal.id : null}
+                  emptyDescription={emptyDealsDescription}
+                  onDealChange={onDealChange}
+                />
+              ) : (
+                <SidePanelDealSection
+                  dealIds={deal && deal.id && deals[deal.id] ? [deal.id] : []}
+                  showAddDealAction={false}
+                  emptyHeightClassName="h-[163px]"
+                  emptyDescription={emptyDealsDescription}
+                />
+              )}
             </div>
 
             {related}

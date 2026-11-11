@@ -2,6 +2,7 @@ package com.skapp.community.common.constant;
 
 import lombok.experimental.UtilityClass;
 
+import java.util.List;
 import java.util.regex.Pattern;
 
 @UtilityClass
@@ -33,5 +34,13 @@ public class ValidationConstant {
 	public static final Pattern STORED_FILE_NAME_PATTERN = Pattern.compile("^[A-Za-z0-9_-][A-Za-z0-9._-]{0,254}$");
 
 	public static final Pattern STORED_FILE_EXTENSION_PATTERN = Pattern.compile("^[A-Za-z0-9]{1,10}$");
+
+	public static final int MIN_PASSWORD_LENGTH = 8;
+
+	public static final int MAX_SIGN_UP_PASSWORD_LENGTH = 50;
+
+	public static final List<Pattern> PASSWORD_REQUIRED_CHARACTER_PATTERNS = List.of(Pattern.compile("[a-z]"),
+			Pattern.compile("[A-Z]"), Pattern.compile("[0-9]"),
+			Pattern.compile("[!@#$%^&*(),.?\":{}|<>~'`\\-_=+\\\\\\[\\];]"));
 
 }
