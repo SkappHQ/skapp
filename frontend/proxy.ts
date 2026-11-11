@@ -420,12 +420,17 @@ const resolveIntegrationsAccess: AccessGuard = ({
 const resolveInvoiceIntegrationsAccess: AccessGuard = ({
   request,
   currentPath,
-  claims
-}) =>
-  currentPath.startsWith(ROUTES.INVOICE.INTEGRATIONS.BASE) &&
-  !getClaimTiers(claims).includes(TierEnum.PRO)
-    ? redirectToUnauthorized(request)
-    : null;
+  claims,
+  roles
+}) => {
+  if (!currentPath.startsWith(ROUTES.INVOICE.INTEGRATIONS.BASE)) return null;
+
+  const canAccessInvoiceIntegrations =
+    roles.includes(AdminTypes.INVOICE_ADMIN) &&
+    getClaimTiers(claims).includes(TierEnum.PRO);
+
+  return canAccessInvoiceIntegrations ? null : redirectToUnauthorized(request);
+};
 
 const resolveReportAccess: AccessGuard = ({ request, currentPath, claims }) =>
   currentPath.startsWith(ROUTES.REPORT.BASE) &&

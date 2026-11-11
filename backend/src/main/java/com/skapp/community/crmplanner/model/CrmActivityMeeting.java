@@ -1,14 +1,9 @@
 package com.skapp.community.crmplanner.model;
 
 import com.skapp.community.common.model.Auditable;
-import com.skapp.community.crmplanner.type.CrmActivityCalendarProvider;
-import com.skapp.community.crmplanner.type.CrmActivityMeetingVenue;
-import com.skapp.community.crmplanner.type.CrmActivitySyncStatus;
 import com.skapp.community.peopleplanner.model.Employee;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,6 +11,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -43,13 +40,6 @@ public class CrmActivityMeeting extends Auditable<String> {
 	@Column(name = "is_scheduled")
 	private Boolean isScheduled = false;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "meeting_venue")
-	private CrmActivityMeetingVenue meetingVenue;
-
-	@Column(name = "location")
-	private String location;
-
 	@Column(name = "meeting_date")
 	private LocalDate meetingDate;
 
@@ -58,14 +48,6 @@ public class CrmActivityMeeting extends Auditable<String> {
 
 	@Column(name = "end_at")
 	private Instant endAt;
-
-	@Enumerated(EnumType.STRING)
-	@Column(name = "sync_status")
-	private CrmActivitySyncStatus syncStatus;
-
-	@Enumerated(EnumType.STRING)
-	@Column(name = "calendar_provider")
-	private CrmActivityCalendarProvider calendarProvider;
 
 	@Column(name = "comments")
 	private String comments;
@@ -87,5 +69,9 @@ public class CrmActivityMeeting extends Auditable<String> {
 
 	@OneToMany(mappedBy = "meeting")
 	private List<CrmActivityMeetingContact> contacts;
+
+	@OneToOne(fetch = FetchType.LAZY)
+	@PrimaryKeyJoinColumn
+	private CrmActivityScheduledMeeting scheduledMeeting;
 
 }

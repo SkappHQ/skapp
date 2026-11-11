@@ -8,6 +8,7 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import ActivityCallSidePanel from "~community/crm/activities/components/organisms/ActivityCallSidePanel/ActivityCallSidePanel";
+import ActivityEmailSidePanel from "~community/crm/activities/components/organisms/ActivityEmailSidePanel/ActivityEmailSidePanel";
 import ActivityFeed from "~community/crm/activities/components/organisms/ActivityFeed/ActivityFeed";
 import ActivityMeetingSidePanel from "~community/crm/activities/components/organisms/ActivityMeetingSidePanel/ActivityMeetingSidePanel";
 import ActivityTaskSidePanel from "~community/crm/activities/components/organisms/ActivityTaskSidePanel/ActivityTaskSidePanel";
@@ -77,11 +78,13 @@ const ActivitiesContent: FC = () => {
     selectedCallId,
     selectedMeetingId,
     selectedActivityTaskId,
+    selectedEmailId,
     isCrmSidePanelOpen,
     setDeals,
     setSelectedCallId,
     setSelectedMeetingId,
     setSelectedActivityTaskId,
+    setSelectedEmailId,
     openCrmSidePanel
   } = useCrmStore(
     useShallow((store) => ({
@@ -90,11 +93,13 @@ const ActivitiesContent: FC = () => {
       selectedCallId: store.selectedCallId,
       selectedMeetingId: store.selectedMeetingId,
       selectedActivityTaskId: store.selectedActivityTaskId,
+      selectedEmailId: store.selectedEmailId,
       isCrmSidePanelOpen: store.isCrmSidePanelOpen,
       setDeals: store.setDeals,
       setSelectedCallId: store.setSelectedCallId,
       setSelectedMeetingId: store.setSelectedMeetingId,
       setSelectedActivityTaskId: store.setSelectedActivityTaskId,
+      setSelectedEmailId: store.setSelectedEmailId,
       openCrmSidePanel: store.openCrmSidePanel
     }))
   );
@@ -205,6 +210,10 @@ const ActivitiesContent: FC = () => {
       case ActivityType.TASK:
         setSelectedActivityTaskId(row.id);
         openCrmSidePanel(CrmSidePanelTypes.ACTIVITY_TASK_SIDE_PANEL);
+        break;
+      case ActivityType.EMAIL:
+        setSelectedEmailId(row.id);
+        openCrmSidePanel(CrmSidePanelTypes.EMAIL_SIDE_PANEL);
         break;
       default:
         break;
@@ -352,6 +361,11 @@ const ActivitiesContent: FC = () => {
       {selectedActivityTaskId !== null && (
         <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
           <ActivityTaskSidePanel taskId={selectedActivityTaskId} />
+        </SidePanelWrapper>
+      )}
+      {selectedEmailId !== null && (
+        <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
+          <ActivityEmailSidePanel emailId={selectedEmailId} />
         </SidePanelWrapper>
       )}
     </div>

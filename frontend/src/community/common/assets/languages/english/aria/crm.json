@@ -146,6 +146,12 @@
     "taskSidePanel": {
       "kebabMenu": "Task actions"
     },
+    "emailSidePanel": {
+      "kebabMenu": "Email actions",
+      "to": "Email to recipients",
+      "cc": "Email cc recipients",
+      "bcc": "Email bcc recipients"
+    },
     "callSidePanel": {
       "kebabMenu": "Call actions"
     },

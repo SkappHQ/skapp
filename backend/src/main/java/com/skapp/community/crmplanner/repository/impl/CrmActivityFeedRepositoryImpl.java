@@ -218,7 +218,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 				meetingOwnerId.alias(CrmActivityTask_.OWNER), meetingDeal.get(CrmDeal_.id).alias(CrmActivityTask_.DEAL),
 				meetingCompany.get(CrmCompany_.id).alias(CrmActivityTask_.COMPANY),
 				meetingContactIds.alias(CrmActivityTask_.CONTACT), meetingStartAt.alias(CrmActivityMeeting_.START_AT),
-				meetingStartAt.alias(CrmActivityCall_.LOGGED_AT))
+				cb.nullLiteral(Instant.class).alias(CrmActivityCall_.LOGGED_AT))
 			.where(meetingPredicates.toArray(new Predicate[0]));
 
 		JpaSubQuery<Tuple> emailRows = query.subquery(Tuple.class);

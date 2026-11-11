@@ -147,6 +147,11 @@ export const getContactDisplayName = (
   return [contact.firstName, contact.lastName].filter(Boolean).join(" ");
 };
 
+export const getContactNameParts = (contact: CrmContactEntity) => {
+  const [firstName, lastName] = getContactDisplayName(contact).split(" ");
+  return { firstName, lastName };
+};
+
 export const getContactCompanyName = (
   contact: CrmContactEntity,
   companies: CrmCompanyRecord

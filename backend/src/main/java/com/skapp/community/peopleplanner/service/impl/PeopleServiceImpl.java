@@ -40,6 +40,7 @@ import com.skapp.community.peopleplanner.constant.PeopleConstants;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
+import com.skapp.community.peopleplanner.model.EmployeeBillableRate;
 import com.skapp.community.peopleplanner.model.EmployeeEducation;
 import com.skapp.community.peopleplanner.model.EmployeeEmergency;
 import com.skapp.community.peopleplanner.model.EmployeeFamily;
@@ -83,6 +84,7 @@ import com.skapp.community.peopleplanner.payload.request.employee.EmployeePerson
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeSystemPermissionsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.emergency.EmployeeEmergencyContactDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBasicDetailsDto;
+import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBillableRateDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentIdentificationAndDiversityDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBasicDetailsManagerDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentCareerProgressionDetailsDto;
@@ -117,6 +119,7 @@ import com.skapp.community.peopleplanner.payload.response.SupervisorRolesRespons
 import com.skapp.community.peopleplanner.payload.response.TeamBasicDetailsResponseDto;
 import com.skapp.community.peopleplanner.payload.response.TeamEmployeeResponseDto;
 import com.skapp.community.peopleplanner.payload.response.export.EmployeeDataExportDto;
+import com.skapp.community.peopleplanner.repository.EmployeeBillableRateDao;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeManagerDao;
 import com.skapp.community.peopleplanner.repository.EmployeePeriodDao;
@@ -135,6 +138,7 @@ import com.skapp.community.peopleplanner.type.BulkItemStatus;
 import com.skapp.community.peopleplanner.type.EmployeePeriodSort;
 import com.skapp.community.peopleplanner.type.EmployeeSkillType;
 import com.skapp.community.peopleplanner.type.EmploymentType;
+import com.skapp.community.peopleplanner.util.PeopleUtil;
 import com.skapp.community.peopleplanner.util.Validations;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -236,6 +240,8 @@ public class PeopleServiceImpl implements PeopleService {
 	private final EmployeeSkillService employeeSkillService;
 
 	private final SpecialNotificationService specialNotificationService;
+
+	private final EmployeeBillableRateDao employeeBillableRateDao;
 
 	@Override
 	@Transactional
@@ -348,6 +354,16 @@ public class PeopleServiceImpl implements PeopleService {
 		return applyEmployeeUpdate(user, requestDto);
 	}
 
+	private void updateEmployeeBillableRate(Employee employee,
+			EmployeeEmploymentBillableRateDetailsDto billableRateDetailsDto) {
+		EmployeeBillableRate employeeBillableRate = employeeBillableRateDao.findById(employee.getEmployeeId())
+			.orElse(new EmployeeBillableRate());
+		employeeBillableRate.setEmployee(employee);
+		employeeBillableRate.setBillableRate(billableRateDetailsDto.getBillableRate());
+		employeeBillableRate.setCurrency(billableRateDetailsDto.getBillableRateCurrency());
+		employeeBillableRateDao.save(employeeBillableRate);
+	}
+
 	@Override
 	@Transactional
 	public ResponseEntityDto updateEmployeeJoinedDate(Long employeeId,
@@ -425,10 +441,21 @@ public class PeopleServiceImpl implements PeopleService {
 		employeeValidationService.validateCreateEmployeeRequestPersonalDetails(requestDto.getPersonal(), user);
 		rolesService.validateRoles(requestDto.getSystemPermissions(), user);
 
+		EmployeeEmploymentBillableRateDetailsDto billableRateDetailsDto = requestDto.getEmployment() != null
+				? requestDto.getEmployment().getBillingDetails() : null;
+		if (billableRateDetailsDto != null) {
+			PeopleUtil.validateBillableRate(billableRateDetailsDto.getBillableRate());
+			validateBillableRateCurrency(billableRateDetailsDto.getBillableRateCurrency());
+		}
+
 		employee.setUser(createUserEntity(user, requestDto));
 		user.setEmployee(createEmployeeEntity(employee, requestDto));
 
 		userDao.save(user);
+
+		if (billableRateDetailsDto != null) {
+			updateEmployeeBillableRate(employee, billableRateDetailsDto);
+		}
 
 		addUpdatedEmployeeTimeLineRecords(currentEmployeeDto, requestDto);
 		invalidateUserCache();
@@ -446,6 +473,9 @@ public class PeopleServiceImpl implements PeopleService {
 
 	protected void enterpriseValidations(String email) {
 		// This method is a placeholder for any enterprise-specific validations
+	}
+
+	protected void validateBillableRateCurrency(String billableRateCurrency) {
 	}
 
 	private Optional<User> findGuestUserByEmail(CreateEmployeeRequestDto requestDto) {

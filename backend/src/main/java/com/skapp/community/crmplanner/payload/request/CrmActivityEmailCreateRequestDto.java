@@ -10,6 +10,8 @@ import java.util.List;
 @Setter
 public class CrmActivityEmailCreateRequestDto {
 
+	private String fromAddress;
+
 	private Instant loggedAt;
 
 	private List<Long> toContactIds;

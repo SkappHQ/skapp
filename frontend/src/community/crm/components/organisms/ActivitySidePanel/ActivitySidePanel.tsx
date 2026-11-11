@@ -31,13 +31,15 @@ interface Props {
   onDelete: () => void;
   menuAriaLabel: string;
   emptyDealsDescription: string;
+  commentsTitle?: string;
+  emptyCommentsText?: string;
   title?: string;
   comments?: string;
   deal?: CrmDealEntity;
   info?: ReactNode;
   related?: ReactNode;
-  onTitleSave: (title: string) => void;
-  onCommentsSave: (comments: string) => void;
+  onTitleSave?: (title: string) => void;
+  onCommentsSave?: (comments: string) => void;
 }
 
 const ActivitySidePanel: FC<Props> = ({
@@ -51,6 +53,8 @@ const ActivitySidePanel: FC<Props> = ({
   onDelete,
   menuAriaLabel,
   emptyDealsDescription,
+  commentsTitle,
+  emptyCommentsText,
   title,
   comments,
   deal,
@@ -113,13 +117,16 @@ const ActivitySidePanel: FC<Props> = ({
         ) : (
           <div className="flex items-center gap-4 pl-2">
             {icon}
-            {title && (
-              <SidePanelActivityTitle
-                id={id}
-                title={title}
-                onSave={onTitleSave}
-              />
-            )}
+            {title &&
+              (onTitleSave ? (
+                <SidePanelActivityTitle
+                  id={id}
+                  title={title}
+                  onSave={onTitleSave}
+                />
+              ) : (
+                <h2 className="h2 text-black">{title}</h2>
+              ))}
           </div>
         )
       }
@@ -148,11 +155,24 @@ const ActivitySidePanel: FC<Props> = ({
       ) : (
         <div className="flex gap-6 pb-4">
           <div className="flex flex-col flex-1 gap-6 min-w-0">
-            <SidePanelActivityComments
-              id={id}
-              comments={comments}
-              onSave={onCommentsSave}
-            />
+            {onCommentsSave ? (
+              <SidePanelActivityComments
+                id={id}
+                comments={comments}
+                onSave={onCommentsSave}
+              />
+            ) : (
+              <div className="flex flex-col gap-1">
+                <p className="subtitle1">
+                  {commentsTitle ?? translateText(["comments"])}
+                </p>
+                <p className="subtitle3 max-h-24 overflow-y-auto break-words">
+                  {comments ??
+                    emptyCommentsText ??
+                    translateText(["noComments"])}
+                </p>
+              </div>
+            )}
 
             <div className="flex flex-col gap-3">
               <h2 className="h2">{translateText(["dealsTitle"])}</h2>

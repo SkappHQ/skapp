@@ -24,6 +24,7 @@ import com.skapp.community.leaveplanner.payload.response.LeaveRequestResponseDto
 import com.skapp.community.leaveplanner.repository.LeaveEntitlementDao;
 import com.skapp.community.leaveplanner.repository.LeaveRequestDao;
 import com.skapp.community.leaveplanner.repository.LeaveRequestEntitlementDao;
+import com.skapp.community.leaveplanner.service.PolicyAttendanceLeaveService;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.leaveplanner.type.LeaveState;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
@@ -191,6 +192,8 @@ public class TimeServiceImpl implements TimeService {
 	private final LeaveEntitlementDao leaveEntitlementDao;
 
 	protected final TimeZoneService timeZoneService;
+
+	private final PolicyAttendanceLeaveService policyAttendanceLeaveService;
 
 	private JsonNode createTimeConfigJsonNode(Map<String, Float> hoursMap) {
 		ArrayNode timeBlocksNode = mapper.createArrayNode();
@@ -395,8 +398,9 @@ public class TimeServiceImpl implements TimeService {
 		leaveRequestFilterDto.setStartDate(timeRecordFilterDto.getStartDate());
 		leaveRequestFilterDto.setEndDate(timeRecordFilterDto.getEndDate());
 
-		List<LeaveRequestResponseDto> leaveRequestResponseDtos = findLeaveRequestsByDateRange(leaveRequestFilterDto,
-				employeeId);
+		List<LeaveRequestResponseDto> leaveRequestResponseDtos = policyAttendanceLeaveService.isLeavePoliciesEnabled()
+				? policyAttendanceLeaveService.getEmployeeLeaveRequests(employeeId, startDate, endDate, true)
+				: findLeaveRequestsByDateRange(leaveRequestFilterDto, employeeId);
 		List<Holiday> holidays = holidayDao.findAllByIsActiveTrueAndDateBetween(startDate, endDate);
 		List<HolidayResponseDto> holidayResponseDtos = peopleMapper.holidaysToHolidayResponseDtoList(holidays);
 
@@ -477,9 +481,15 @@ public class TimeServiceImpl implements TimeService {
 		TimeRequestAvailabilityResponseDto response = new TimeRequestAvailabilityResponseDto();
 		response.setDate(requestDto.getDate());
 
-		List<LeaveRequest> leaveRequests = leaveRequestDao
-			.findLeaveRequestAvailabilityForGivenDate(requestDto.getDate(), currentUser.getEmployee().getEmployeeId());
-		response.setLeaveRequest(leaveMapper.leaveRequestListToLeaveRequestResponseDtoList(leaveRequests));
+		if (policyAttendanceLeaveService.isLeavePoliciesEnabled()) {
+			response.setLeaveRequest(policyAttendanceLeaveService.getEmployeeLeaveRequests(
+					currentUser.getEmployee().getEmployeeId(), requestDto.getDate(), requestDto.getDate(), false));
+		}
+		else {
+			List<LeaveRequest> leaveRequests = leaveRequestDao.findLeaveRequestAvailabilityForGivenDate(
+					requestDto.getDate(), currentUser.getEmployee().getEmployeeId());
+			response.setLeaveRequest(leaveMapper.leaveRequestListToLeaveRequestResponseDtoList(leaveRequests));
+		}
 
 		List<Holiday> holidays = holidayDao.findAllByIsActiveTrueAndDateBetween(requestDto.getDate(),
 				requestDto.getDate());
@@ -617,10 +627,14 @@ public class TimeServiceImpl implements TimeService {
 	public ResponseEntityDto getIfTimeConfigRemovable(GetTimeConfigDeleteAvailabilityRequestDto requestDto) {
 
 		ArrayNode arrayNode = mapper.createArrayNode();
+		boolean leavePoliciesEnabled = policyAttendanceLeaveService.isLeavePoliciesEnabled();
+		Set<DayOfWeek> policyLeaveDays = leavePoliciesEnabled
+				? policyAttendanceLeaveService.getDaysWithUpcomingLeaveRequests() : Set.of();
 		requestDto.getDays().forEach(day -> {
 			ObjectNode objectNode = mapper.createObjectNode();
 
-			objectNode.put(day.name(), leaveRequestDao.findAllFutureLeaveRequestsForTheDay(day).isEmpty());
+			objectNode.put(day.name(), leavePoliciesEnabled ? !policyLeaveDays.contains(day)
+					: leaveRequestDao.findAllFutureLeaveRequestsForTheDay(day).isEmpty());
 			arrayNode.add(objectNode);
 		});
 		return new ResponseEntityDto(false, arrayNode);
@@ -1015,7 +1029,12 @@ public class TimeServiceImpl implements TimeService {
 				teamIdsToFilter.contains(-1L) ? null : teamIdsToFilter, startDate, endDate,
 				timeRecordsPageable.getPageSize(), timeRecordsPageable.getOffset());
 
-		List<LeaveRequest> leaveRequests = getLeaveRequests(startDate, endDate, employeeIds);
+		boolean leavePoliciesEnabled = policyAttendanceLeaveService.isLeavePoliciesEnabled();
+		List<LeaveRequest> leaveRequests = leavePoliciesEnabled ? List.of()
+				: getLeaveRequests(startDate, endDate, employeeIds);
+		Map<Long, List<LeaveRequestResponseDto>> policyLeaveRequests = leavePoliciesEnabled
+				? policyAttendanceLeaveService.getEmployeesLeaveRequests(employeeIds, startDate, endDate, true)
+				: Map.of();
 		boolean geoFencingEnabled = isGeoFencingEnabled();
 
 		List<TimeRecordsResponseDto> response = new ArrayList<>();
@@ -1033,7 +1052,10 @@ public class TimeServiceImpl implements TimeService {
 				timeRecordChip.setTimeRecordId(timeRecord.getTimeRecordId());
 				timeRecordChip.setDate(timeRecord.getDate());
 				timeRecordChip.setWorkedHours(timeRecord.getWorkedHours());
-				timeRecordChip.setLeaveRequest(getLeaveRequestResponse(timeRecord.getDate(), leaveRequests, employee));
+				timeRecordChip.setLeaveRequest(leavePoliciesEnabled
+						? policyAttendanceLeaveService.findLeaveRequestOnDate(policyLeaveRequests,
+								employee.getEmployeeId(), timeRecord.getDate())
+						: getLeaveRequestResponse(timeRecord.getDate(), leaveRequests, employee));
 				timeRecordChip.setIsOngoingTimeRequest(Boolean.TRUE.equals(timeRecord.getIsOngoingTimeRequest()));
 				populateEnterpriseChipFields(timeRecordChip, timeRecord, geoFencingEnabled);
 				timeRecordRow.add(timeRecordChip);
@@ -1235,13 +1257,23 @@ public class TimeServiceImpl implements TimeService {
 			float morningHours = hoursMap.get(CommonConstants.DEFAULT_TIME_CONFIG_VALUE_MORNING);
 			float eveningHours = hoursMap.get(CommonConstants.DEFAULT_TIME_CONFIG_VALUE_EVENING);
 
-			List<LeaveRequest> leaveRequestsList = leaveRequestDao.findPendingAndApprovedLeaveRequestsForTodayByUser(
-					currentDate, currentUser.getEmployee().getEmployeeId());
+			if (policyAttendanceLeaveService.isLeavePoliciesEnabled()) {
+				ResponseEntityDto policyLeaveDaySlot = getPolicyLeaveDaySlot(currentDayConfig, morningHours,
+						eveningHours, policyAttendanceLeaveService.getEmployeeLeaveRequests(
+								currentUser.getEmployee().getEmployeeId(), currentDate, currentDate, false));
+				if (policyLeaveDaySlot != null)
+					return policyLeaveDaySlot;
+			}
+			else {
+				List<LeaveRequest> leaveRequestsList = leaveRequestDao
+					.findPendingAndApprovedLeaveRequestsForTodayByUser(currentDate,
+							currentUser.getEmployee().getEmployeeId());
 
-			ResponseEntityDto activeTimeSlotResponseDto1 = getAllActiveSlotsNoLeaveDay(currentDayConfig, morningHours,
-					eveningHours, leaveRequestsList);
-			if (activeTimeSlotResponseDto1 != null)
-				return activeTimeSlotResponseDto1;
+				ResponseEntityDto activeTimeSlotResponseDto1 = getAllActiveSlotsNoLeaveDay(currentDayConfig,
+						morningHours, eveningHours, leaveRequestsList);
+				if (activeTimeSlotResponseDto1 != null)
+					return activeTimeSlotResponseDto1;
+			}
 
 			Long employeeWorkLocationId = currentUser.getEmployee().getWorkLocation() != null
 					? currentUser.getEmployee().getWorkLocation().getWorkLocationId() : null;
@@ -1305,6 +1337,33 @@ public class TimeServiceImpl implements TimeService {
 					activeTimeSlotResponseDto.setIsLeavePending(leaveRequest.getStatus() == LeaveRequestStatus.PENDING);
 					return new ResponseEntityDto(false, activeTimeSlotResponseDto);
 				}
+			}
+		}
+		return null;
+	}
+
+	private ResponseEntityDto getPolicyLeaveDaySlot(TimeConfig currentDayConfig, float morningHours, float eveningHours,
+			List<LeaveRequestResponseDto> policyLeaveRequests) {
+		boolean attendanceConfigForLeaveRequests = attendanceConfigService
+			.getAttendanceConfigByType(AttendanceConfigType.CLOCK_IN_ON_LEAVE_DAYS);
+		if (attendanceConfigForLeaveRequests || policyLeaveRequests.isEmpty()) {
+			return null;
+		}
+
+		ZoneId organizationZone = timeZoneService.organizationTimezone();
+		for (LeaveRequestResponseDto policyLeaveRequest : policyLeaveRequests) {
+			boolean isEveningLeave = policyLeaveRequest.getLeaveState() == LeaveState.HALFDAY_EVENING
+					&& TimeUtil.isCurrentTimeInEvening(currentDayConfig, morningHours, eveningHours, organizationZone);
+			boolean isMorningLeave = policyLeaveRequest.getLeaveState() == LeaveState.HALFDAY_MORNING
+					&& TimeUtil.isCurrentTimeInMorning(currentDayConfig, morningHours, organizationZone);
+			boolean isFullDayLeave = policyLeaveRequest.getLeaveState() == LeaveState.FULLDAY;
+
+			if (isEveningLeave || isMorningLeave || isFullDayLeave) {
+				ActiveTimeSlotResponseDto activeTimeSlotResponseDto = new ActiveTimeSlotResponseDto();
+				activeTimeSlotResponseDto.setPeriodType(TimeRecordActionTypes.LEAVE_DAY);
+				activeTimeSlotResponseDto
+					.setIsLeavePending(policyLeaveRequest.getStatus() == LeaveRequestStatus.PENDING);
+				return new ResponseEntityDto(false, activeTimeSlotResponseDto);
 			}
 		}
 		return null;
@@ -1617,7 +1676,13 @@ public class TimeServiceImpl implements TimeService {
 
 		List<Holiday> holidays = holidayDao.findAllByIsActiveTrueAndDateBetween(timeRecordSummaryDto.getStartDate(),
 				timeRecordSummaryDto.getEndDate());
-		List<LeaveRequest> leaveRequests = leaveRequestDao.getLeaveRequestsByTeamId(employeesOnLeavePeriodFilterDto);
+		boolean leavePoliciesEnabled = policyAttendanceLeaveService.isLeavePoliciesEnabled();
+		List<LeaveRequest> leaveRequests = leavePoliciesEnabled ? List.of()
+				: leaveRequestDao.getLeaveRequestsByTeamId(employeesOnLeavePeriodFilterDto);
+		Map<Long, List<LeaveRequestResponseDto>> policyLeaveRequests = leavePoliciesEnabled
+				? policyAttendanceLeaveService.getTeamLeaveRequests(timeRecordSummaryDto.getTeamId(),
+						timeRecordSummaryDto.getStartDate(), timeRecordSummaryDto.getEndDate())
+				: Map.of();
 
 		LocalDate startDate = timeRecordSummaryDto.getStartDate();
 		LocalDate endDate = timeRecordSummaryDto.getEndDate();
@@ -1649,6 +1714,11 @@ public class TimeServiceImpl implements TimeService {
 				leaveRequestExist.ifPresent(leaveRequest -> employeePeriodTimeRecords
 					.setLeaveRequest(leaveMapper.leaveRequestToLeaveRequestResponseDto(leaveRequest)));
 
+				if (leavePoliciesEnabled) {
+					employeePeriodTimeRecords.setLeaveRequest(policyAttendanceLeaveService.findLeaveRequestOnDate(
+							policyLeaveRequests, employee.getEmployeeId(), timeRecordsByEmployee.getDate()));
+				}
+
 				timeRecords.add(employeePeriodTimeRecords);
 			}
 
@@ -1660,6 +1730,10 @@ public class TimeServiceImpl implements TimeService {
 		teamTimeRecordSummaryResponseDto.setEmployeeTimeRecordSummaries(employeeTimeRecordSummaries);
 		handleTimeSheetSummary(teamTimeRecordSummaryResponseDto, timeRecordSummaryDto.getStartDate(),
 				timeRecordSummaryDto.getEndDate(), leaveRequests, holidays, employeeIds, timeRecordSummaryDto);
+		if (leavePoliciesEnabled && teamTimeRecordSummaryResponseDto.getTimeRecordsSummary() != null) {
+			teamTimeRecordSummaryResponseDto.getTimeRecordsSummary()
+				.setLeaves(policyLeaveRequests.values().stream().mapToInt(List::size).sum());
+		}
 
 		PageDto pageDto = new PageDto();
 		pageDto.setItems(teamTimeRecordSummaryResponseDto);
@@ -2113,6 +2187,14 @@ public class TimeServiceImpl implements TimeService {
 			.filter(timeConfig -> dayCapacities.stream()
 				.noneMatch(dayCapacity -> timeConfig.getDay().name().equals(dayCapacity.day().name())))
 			.toList();
+
+		if (policyAttendanceLeaveService.isLeavePoliciesEnabled()) {
+			policyAttendanceLeaveService.voidLeaveRequestsOnRemovedDays(removingConfigs);
+			timeConfigDao.deleteAll(removingConfigs);
+			currentTimeConfigs.removeAll(removingConfigs);
+			return;
+		}
+
 		List<DayOfWeek> removingDays = removingConfigs.stream().map(TimeConfig::getDay).toList();
 		List<LeaveRequest> futureLeaves = new ArrayList<>(
 				leaveRequestDao.findAllFutureLeaveRequestsForDays(removingDays));
