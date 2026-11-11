@@ -247,6 +247,8 @@
       "removeDeal": "Remove the deal from this activity",
       "dealSearch": "Search deals to link",
       "editContact": "Change the contact",
+      "clearContact": "Clear selected contact",
+      "clearRelatedTo": "Clear selected company",
       "editDate": "Change the date",
       "editStartTime": "Change the start time",
       "editEndTime": "Change the end time",

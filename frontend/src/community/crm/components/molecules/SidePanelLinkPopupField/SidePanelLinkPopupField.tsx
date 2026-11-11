@@ -1,4 +1,6 @@
 import {
+  ButtonV2,
+  CloseIcon,
   DropdownOption,
   DropdownValue,
   DropdownWithSearchablePopup,
@@ -17,9 +19,11 @@ interface Props {
   editAriaLabel: string;
   searchPlaceholder: string;
   noResultsText: string;
+  clearAriaLabel?: string;
   onLinkClick: () => void;
   onSearch: (searchTerm: string) => void;
   onSelect: (id: number) => void;
+  onClear?: () => void;
 }
 
 const SidePanelLinkPopupField: FC<Props> = ({
@@ -31,9 +35,11 @@ const SidePanelLinkPopupField: FC<Props> = ({
   editAriaLabel,
   searchPlaceholder,
   noResultsText,
+  clearAriaLabel,
   onLinkClick,
   onSearch,
-  onSelect
+  onSelect,
+  onClear
 }) => {
   const selectedValue: DropdownOption | null = selectedId
     ? { id: selectedId, value: selectedId, label: linkLabel }
@@ -58,6 +64,16 @@ const SidePanelLinkPopupField: FC<Props> = ({
       >
         {!selectedId && emptyLabel}
       </button>
+      {selectedId && onClear && (
+        <ButtonV2
+          variant="tertiary"
+          type="button"
+          size="sm"
+          onClick={onClear}
+          aria-label={clearAriaLabel}
+          icon={<CloseIcon />}
+        />
+      )}
     </div>
   );
 

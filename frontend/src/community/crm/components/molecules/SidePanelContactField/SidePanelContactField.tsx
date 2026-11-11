@@ -21,8 +21,10 @@ interface Props {
   contactId: number | null;
   emptyLabel: string;
   editAriaLabel: string;
+  clearAriaLabel?: string;
   onContactClick: (contactId: number) => void;
   onChange: (contactId: number, contactCompanyId?: number | null) => void;
+  onClear?: () => void;
 }
 
 const SidePanelContactField: FC<Props> = ({
@@ -30,8 +32,10 @@ const SidePanelContactField: FC<Props> = ({
   contactId,
   emptyLabel,
   editAriaLabel,
+  clearAriaLabel,
   onContactClick,
-  onChange
+  onChange,
+  onClear
 }) => {
   const translateText = useTranslator("crmModule", "activities", "logActivity");
 
@@ -85,6 +89,7 @@ const SidePanelContactField: FC<Props> = ({
       onLinkClick={handleLinkClick}
       onSearch={setSearchTerm}
       onSelect={handleSelect}
+      {...(onClear && { clearAriaLabel, onClear })}
     />
   );
 };

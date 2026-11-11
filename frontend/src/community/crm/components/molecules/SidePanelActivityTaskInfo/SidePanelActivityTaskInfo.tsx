@@ -120,8 +120,10 @@ const SidePanelActivityTaskInfo: FC<Props> = ({
                 "noValue"
               ])}
               editAriaLabel={translateAria(["editContact"])}
+              clearAriaLabel={translateAria(["clearContact"])}
               onContactClick={onContactClick}
               onChange={handleContactChange}
+              onClear={() => setFieldValue("contactId", null)}
             />
           </PropertyRow>
 

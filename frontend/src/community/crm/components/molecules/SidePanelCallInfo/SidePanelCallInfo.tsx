@@ -94,7 +94,7 @@ const SidePanelCallInfo: FC<Props> = ({
 
   const handleDurationSave = (duration: string): void => {
     const minutes = parseCallDurationToMinutes(duration);
-    setFieldValue("duration", minutes ? formatCallDuration(minutes) : duration);
+    if (minutes) setFieldValue("duration", formatCallDuration(minutes));
   };
 
   const handleContactChange = (
