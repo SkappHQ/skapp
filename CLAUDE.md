@@ -1,54 +1,27 @@
 # Skapp
 
-Open-source people management / HR platform (people, leave, attendance). Monorepo:
-
-- `backend/` — Spring Boot 4 / Java 21 / JPA / Liquibase. See `backend/CLAUDE.md`.
-- `frontend/` — Next.js 16 (pages router) / React 19 / TypeScript / React Query / Tailwind. See `frontend/CLAUDE.md`.
-
-Note: the README's tech-stack table is out of date (it says NestJS). The backend is Spring Boot.
+HR platform monorepo. `backend/` is Spring Boot (see `backend/CLAUDE.md`), `frontend/` is Next.js pages router (see `frontend/CLAUDE.md`). The README's stack table is wrong; the backend is not NestJS.
 
 ## Community vs enterprise
 
-- Community code lives under `community` packages/folders and is what this repo ships.
-- Every `enterprise` folder (`backend/src/main/java/com/skapp/enterprise`, `backend/src/main/resources/{enterprise,config}`, `backend/src/test/java/com/skapp/enterprise`, `frontend/src/enterprise`, `frontend/pages/enterprise`, `frontend/pages/api/enterprise`) is a private git submodule (see `.gitmodules`). It may be empty in a fresh clone.
-- Don't put enterprise logic in community code. Community code must build and run without the submodules.
-- Changes inside a submodule are committed in that submodule's own repo. Don't stage submodule pointer changes in this repo unless the task is explicitly to bump them.
+- Every `enterprise` folder is a private submodule (see `.gitmodules`) and may be empty. Community code must build without it.
+- Don't put enterprise logic in community code, and don't stage submodule pointer changes unless asked.
 
-## Commands (what CI runs)
-
-Backend (run in `backend/`, Java 21):
+## Commands
 
 ```bash
-mvn clean install -DskipTests          # build
-mvn -B test                            # all tests
-mvn -B test -Dtest=LeaveControllerIntegrationTest   # one test class
-mvn -B spring-javaformat:validate      # format check (CI)
-mvn spring-javaformat:apply            # fix formatting
-mvn -B checkstyle:check -Dcheckstyle.skip=false     # checkstyle (CI)
+# backend/ (Java 21)
+mvn -B test                          # -Dtest=<Class> for one class
+mvn spring-javaformat:apply          # CI fails on formatting
+mvn -B checkstyle:check -Dcheckstyle.skip=false
+
+# frontend/ (Node 22; .npmrc needs a GitHub Packages token)
+npm test                             # npx jest <path> for one file
+npm run lint-fix && npm run format
 ```
 
-Frontend (run in `frontend/`, Node 22):
+## Conventions
 
-```bash
-npm install                 # needs a GitHub Packages token in .npmrc for @rootcodelabs/skapp-ui
-npm run dev
-npm run build
-npm test                    # jest; one file: npx jest path/to/File.test.tsx
-npm run check-lint          # eslint; npm run lint-fix to fix
-npm run check-format        # prettier; npm run format to fix
-```
-
-Run the formatter for the side you touched before finishing. CI fails on formatting.
-
-## Git conventions
-
-- Base branch is `develop`.
-- Branches: `<type>/<issue-number>-<short-kebab-desc>`, e.g. `feat/123-signup-page`. Types: `feat`, `fix`, `hotfix`, `chore`, `experiment`. Backend and frontend work for one ticket often go on separate branches suffixed `-be` / `-fe`.
-- Commits follow Conventional Commits: `<type>(<scope>): <description>`, e.g. `feat(leave): add policy history endpoint`.
-- PRs use `.github/pull_request_template.md`.
-
-## Cross-cutting rules
-
-- Leave policies vs legacy leave: entitlement-based leave (`LeaveRequest`, entitlement mappers) is the legacy flow and will be removed. When leave policies are enabled (`leavePolicyService.isLeavePoliciesEnabled()`), features work only on policy data (`PolicyLeaveRequest` etc.). Branch on the flag, put the policy logic in policy-side classes, and leave the legacy path unchanged. Never merge or display legacy and policy leave together.
-- Client-side validation thresholds must match the backend constants exactly.
-- Every field the frontend sends must exist in the backend DTO, and the frontend must handle every error status the backend can return (e.g. 409 on edit as well as create).
+- Base branch `develop`. Branches `<type>/<issue>-<kebab-desc>` (`-be` / `-fe` suffix when split). Commits use Conventional Commits.
+- Leave policies: when `leavePolicyService.isLeavePoliciesEnabled()`, work only on policy data (`PolicyLeaveRequest` etc.). Branch on the flag and leave the legacy entitlement path untouched. Never mix the two.
+- Frontend validation limits must match backend constants, every field sent must exist in the backend DTO, and every backend error status (e.g. 409 on edit) must be handled.
