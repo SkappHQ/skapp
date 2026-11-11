@@ -49,6 +49,9 @@ import { useCrmStore } from "~community/crm/store/store";
 import { CrmTaskCompletionPayload } from "~community/crm/types/CrmCommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 import { getMissingDealIds, mergeDeals } from "~community/crm/utils/dealUtil";
+import ScheduleMeetingAction from "~enterprise/crm/components/organisms/ScheduleMeetingAction/ScheduleMeetingAction";
+import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
+import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 const ActivitiesContent: FC = () => {
   const translateText = useTranslator("crmModule");
@@ -67,6 +70,7 @@ const ActivitiesContent: FC = () => {
   >({});
   const [isLogCallModalOpen, setIsLogCallModalOpen] = useState(false);
   const [isLogMeetingModalOpen, setIsLogMeetingModalOpen] = useState(false);
+  const { guardCrmCreate } = useCrmLimitGuard();
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [isLogEmailModalOpen, setIsLogEmailModalOpen] = useState(false);
 
@@ -268,15 +272,24 @@ const ActivitiesContent: FC = () => {
     [ActivityTab.ALL]: null,
     [ActivityTab.TASKS]: {
       labelKey: "addTaskBtn",
-      onClick: () => setIsAddTaskModalOpen(true)
+      onClick: () =>
+        guardCrmCreate(CrmLimitResource.ACTIVITIES, () =>
+          setIsAddTaskModalOpen(true)
+        )
     },
     [ActivityTab.CALLS]: {
       labelKey: "logCallBtn",
-      onClick: () => setIsLogCallModalOpen(true)
+      onClick: () =>
+        guardCrmCreate(CrmLimitResource.ACTIVITIES, () =>
+          setIsLogCallModalOpen(true)
+        )
     },
     [ActivityTab.MEETINGS]: {
       labelKey: "logMeetingBtn",
-      onClick: () => setIsLogMeetingModalOpen(true)
+      onClick: () =>
+        guardCrmCreate(CrmLimitResource.ACTIVITIES, () =>
+          setIsLogMeetingModalOpen(true)
+        )
     },
     [ActivityTab.EMAILS]: {
       labelKey: "logEmailBtn",
@@ -315,7 +328,15 @@ const ActivitiesContent: FC = () => {
         isTeamMembersError={isCrmInitialDataError}
         timeZone={displayZone}
         showControls={showControls}
-        action={showControls && actionButton && <ButtonV2 {...actionButton} />}
+        action={
+          showControls &&
+          actionButton && (
+            <div className="flex items-center gap-2">
+              {activeTab === ActivityTab.MEETINGS && <ScheduleMeetingAction />}
+              <ButtonV2 {...actionButton} />
+            </div>
+          )
+        }
       />
       {isLogCallModalOpen && (
         <LogCallModalContent onClose={() => setIsLogCallModalOpen(false)} />

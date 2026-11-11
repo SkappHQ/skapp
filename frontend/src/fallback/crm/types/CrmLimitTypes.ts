@@ -3,7 +3,8 @@ export enum CrmLimitResource {
   COMPANIES = "companies",
   DEALS = "deals",
   DEAL_STAGES = "dealStages",
-  TASKS = "tasks"
+  TASKS = "tasks",
+  ACTIVITIES = "activities"
 }
 
 export interface CrmLimitItem {

@@ -11,6 +11,7 @@ import {
   CrmOwnerEntity
 } from "~community/crm/types/CrmCommonTypes";
 import { getContactDisplayName } from "~community/crm/utils/contactUtil";
+import { getMeetingVenueInfo } from "~enterprise/crm/utils/meetingVenueUtil";
 
 interface Props {
   meeting: CrmMeetingEntity;
@@ -80,6 +81,8 @@ const SidePanelMeetingInfo: FC<Props> = ({
         companyName={meeting.company?.name}
         onCompanyClick={onCompanyClick}
       />
+
+      {getMeetingVenueInfo(meeting)}
     </div>
   );
 };
