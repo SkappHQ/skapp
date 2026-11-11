@@ -193,7 +193,10 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 			task.setOwner(owner);
 		}
 
-		if (requestDto.getContactId() != null) {
+		if (Boolean.TRUE.equals(requestDto.getIsContactRemoved())) {
+			task.setContact(null);
+		}
+		else if (requestDto.getContactId() != null) {
 			CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
 			task.setContact(contact);
