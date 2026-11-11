@@ -47,23 +47,23 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService {
 
-	private final CrmActivityMeetingDao crmActivityMeetingDao;
+	protected final CrmActivityMeetingDao crmActivityMeetingDao;
 
-	private final CrmActivityMeetingContactDao crmActivityMeetingContactDao;
+	protected final CrmActivityMeetingContactDao crmActivityMeetingContactDao;
 
-	private final UserService userService;
+	protected final UserService userService;
 
 	private final TimeZoneService timeZoneService;
 
-	private final CrmMapper crmMapper;
+	protected final CrmMapper crmMapper;
 
-	private final CrmContactDao crmContactDao;
+	protected final CrmContactDao crmContactDao;
 
-	private final CrmDealDao crmDealDao;
+	protected final CrmDealDao crmDealDao;
 
-	private final CrmCompanyDao crmCompanyDao;
+	protected final CrmCompanyDao crmCompanyDao;
 
-	private final CrmOwnerResolverService crmOwnerResolver;
+	protected final CrmOwnerResolverService crmOwnerResolver;
 
 	private final MessageUtil messageUtil;
 
@@ -331,7 +331,7 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 		}
 
 		CrmActivityMeeting updatedMeeting = crmActivityMeetingDao.save(meeting);
-		syncEditedMeeting(updatedMeeting, previousOwner, attendeeContacts);
+		syncMeetingEdit(updatedMeeting, previousOwner, attendeeContacts);
 
 		CrmActivityMeetingResponseDto response = crmMapper
 			.crmActivityMeetingToCrmActivityMeetingResponseDto(updatedMeeting);
@@ -353,16 +353,16 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 
 		meeting.setIsDeleted(true);
 		crmActivityMeetingDao.save(meeting);
-		syncDeletedMeeting(meeting);
+		syncMeetingDelete(meeting);
 
 		log.info("deleteMeeting: execution ended");
 		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_ACTIVITY_DELETED), false);
 	}
 
-	protected void syncEditedMeeting(CrmActivityMeeting meeting, Employee previousOwner, List<CrmContact> attendees) {
+	protected void syncMeetingEdit(CrmActivityMeeting meeting, Employee previousOwner, List<CrmContact> attendees) {
 	}
 
-	protected void syncDeletedMeeting(CrmActivityMeeting meeting) {
+	protected void syncMeetingDelete(CrmActivityMeeting meeting) {
 	}
 
 	@Override
