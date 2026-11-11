@@ -243,12 +243,9 @@
         "confirm": "Delete activity",
         "cancel": "Cancel deleting activity"
       },
-      "editContact": "Change the contact",
       "editDate": "Change the date",
       "editStartTime": "Change the start time",
-      "editEndTime": "Change the end time",
-      "editDuration": "Change the duration",
-      "editRelatedTo": "Change the related company"
+      "editEndTime": "Change the end time"
     }
   }
 }
