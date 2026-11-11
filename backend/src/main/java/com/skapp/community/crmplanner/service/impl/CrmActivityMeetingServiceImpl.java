@@ -7,6 +7,7 @@ import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.StringUtils;
+import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmActivityMeeting;
@@ -354,6 +355,53 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 	}
 
 	protected void syncDeletedMeeting(CrmActivityMeeting meeting) {
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getRelatedMeetings(Long id) {
+		log.info("getRelatedMeetings: execution started");
+
+		CrmActivityMeeting meeting = crmActivityMeetingDao.findMeetingById(id);
+		if (meeting == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_MEETING_NOT_FOUND);
+		}
+
+		User currentUser = userService.getCurrentUser();
+		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, meeting.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_MEETING_VIEW_DENIED);
+		}
+
+		List<Long> relatedContactIds = meeting.getContacts()
+			.stream()
+			.map(CrmActivityMeetingContact::getContact)
+			.filter(contact -> !Boolean.TRUE.equals(contact.getIsDeleted()))
+			.map(CrmContact::getId)
+			.toList();
+
+		if (relatedContactIds.isEmpty() && meeting.getDeal() == null) {
+			log.info("getRelatedMeetings: execution ended");
+			return new ResponseEntityDto(false, List.of());
+		}
+
+		CrmActivityMeetingFilterParams params = new CrmActivityMeetingFilterParams();
+		params.setSortKey(CrmActivityMeetingSort.START_AT);
+		params.setSortOrder(Sort.Direction.DESC);
+		params.setCurrentEmployeeId(currentUser.getEmployee().getEmployeeId());
+		params.setIsRestrictedToOwner(CrmUtil.isCrmSalesRepresentative(currentUser));
+		if (!relatedContactIds.isEmpty()) {
+			params.setRelatedContactIds(relatedContactIds);
+		}
+		if (meeting.getDeal() != null) {
+			params.setRelatedDealId(meeting.getDeal().getId());
+		}
+		params.setExcludedId(id);
+		params.setMaxResults(CrmConstants.RELATED_ACTIVITY_LIMIT);
+
+		List<CrmActivityMeetingResponseDto> meetings = crmActivityMeetingDao.findMeetings(params);
+
+		log.info("getRelatedMeetings: execution ended");
+		return new ResponseEntityDto(false, meetings);
 	}
 
 	protected void validateActivityCreationLimit() {

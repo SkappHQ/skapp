@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.repository.impl;
 
 import com.skapp.community.crmplanner.model.CrmActivityMeeting;
 import com.skapp.community.crmplanner.model.CrmActivityMeetingContact;
+import com.skapp.community.crmplanner.model.CrmActivityMeetingContactId;
 import com.skapp.community.crmplanner.model.CrmActivityMeetingContactId_;
 import com.skapp.community.crmplanner.model.CrmActivityMeetingContact_;
 import com.skapp.community.crmplanner.model.CrmActivityMeeting_;
@@ -22,6 +23,7 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
+import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
@@ -66,6 +68,23 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.isFalse(meeting.get(CrmActivityMeeting_.isDeleted)));
+
+		if (params.getRelatedContactIds() != null) {
+			Subquery<Long> attendeeMatch = query.subquery(Long.class);
+			Root<CrmActivityMeetingContact> attendee = attendeeMatch.from(CrmActivityMeetingContact.class);
+			Path<CrmActivityMeetingContactId> attendeeId = attendee.get(CrmActivityMeetingContact_.id);
+			attendeeMatch.select(attendeeId.get(CrmActivityMeetingContactId_.meetingId))
+				.where(cb.equal(attendeeId.get(CrmActivityMeetingContactId_.meetingId),
+						meeting.get(CrmActivityMeeting_.id)),
+						attendeeId.get(CrmActivityMeetingContactId_.contactId).in(params.getRelatedContactIds()));
+			predicates.add(cb.exists(attendeeMatch));
+		}
+		if (params.getRelatedDealId() != null) {
+			predicates.add(cb.equal(meeting.get(CrmActivityMeeting_.deal).get(CrmDeal_.id), params.getRelatedDealId()));
+		}
+		if (params.getExcludedId() != null) {
+			predicates.add(cb.notEqual(meeting.get(CrmActivityMeeting_.id), params.getExcludedId()));
+		}
 
 		if (Boolean.TRUE.equals(params.getIsRestrictedToOwner())) {
 			predicates.add(cb.equal(ownerId, params.getCurrentEmployeeId()));
@@ -123,28 +142,28 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 			.where(predicates.toArray(new Predicate[0]))
 			.orderBy(orders);
 
-		List<CrmActivityMeetingResponseDto> meetings = entityManager.createQuery(query)
-			.getResultList()
-			.stream()
-			.map(row -> {
-				CrmActivityMeetingResponseDto dto = new CrmActivityMeetingResponseDto();
-				dto.setId(row.get(0, Long.class));
-				dto.setName(row.get(1, String.class));
-				dto.setIsScheduled(row.get(2, Boolean.class));
-				dto.setStartAt(row.get(3, Instant.class));
-				dto.setEndAt(row.get(4, Instant.class));
-				dto.setOwnerId(row.get(5, Long.class));
-				dto.setDealId(row.get(6, Long.class));
-				dto.setCompanyId(row.get(7, Long.class));
-				dto.setMeetingDate(row.get(8, LocalDate.class));
-				dto.setComments(row.get(9, String.class));
-				dto.setMeetingVenue(row.get(10, CrmActivityMeetingVenue.class));
-				dto.setLocation(row.get(11, String.class));
-				dto.setLocationAddress(row.get(12, String.class));
-				dto.setLocationUrl(row.get(13, String.class));
-				return dto;
-			})
-			.toList();
+		TypedQuery<Tuple> typedQuery = entityManager.createQuery(query);
+		if (params.getMaxResults() != null) {
+			typedQuery.setMaxResults(params.getMaxResults());
+		}
+		List<CrmActivityMeetingResponseDto> meetings = typedQuery.getResultList().stream().map(row -> {
+			CrmActivityMeetingResponseDto dto = new CrmActivityMeetingResponseDto();
+			dto.setId(row.get(0, Long.class));
+			dto.setName(row.get(1, String.class));
+			dto.setIsScheduled(row.get(2, Boolean.class));
+			dto.setStartAt(row.get(3, Instant.class));
+			dto.setEndAt(row.get(4, Instant.class));
+			dto.setOwnerId(row.get(5, Long.class));
+			dto.setDealId(row.get(6, Long.class));
+			dto.setCompanyId(row.get(7, Long.class));
+			dto.setMeetingDate(row.get(8, LocalDate.class));
+			dto.setComments(row.get(9, String.class));
+			dto.setMeetingVenue(row.get(10, CrmActivityMeetingVenue.class));
+			dto.setLocation(row.get(11, String.class));
+			dto.setLocationAddress(row.get(12, String.class));
+			dto.setLocationUrl(row.get(13, String.class));
+			return dto;
+		}).toList();
 
 		CriteriaQuery<Tuple> contactQuery = cb.createTupleQuery();
 		Root<CrmActivityMeetingContact> contactLink = contactQuery.from(CrmActivityMeetingContact.class);

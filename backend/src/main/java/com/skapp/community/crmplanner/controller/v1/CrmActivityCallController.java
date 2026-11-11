@@ -63,4 +63,11 @@ public class CrmActivityCallController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@GetMapping("/{id}/related")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> getRelatedCalls(@PathVariable Long id) {
+		ResponseEntityDto response = crmActivityCallService.getRelatedCalls(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 }

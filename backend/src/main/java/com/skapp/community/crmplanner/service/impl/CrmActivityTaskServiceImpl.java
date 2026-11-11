@@ -22,15 +22,19 @@ import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.service.CrmActivityTaskService;
 import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
+import com.skapp.community.crmplanner.type.CrmActivityTaskFilterParams;
+import com.skapp.community.crmplanner.type.CrmActivityTaskSort;
 import com.skapp.community.crmplanner.util.CrmUtil;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -243,6 +247,46 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 
 		log.info("deleteTask: execution ended");
 		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_ACTIVITY_DELETED), false);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getRelatedTasks(Long id) {
+		log.info("getRelatedTasks: execution started");
+
+		CrmActivityTask task = crmActivityTaskDao.findTaskById(id);
+		if (task == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND);
+		}
+
+		User currentUser = userService.getCurrentUser();
+		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, task.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_VIEW_DENIED);
+		}
+
+		if (task.getContact() == null && task.getDeal() == null) {
+			log.info("getRelatedTasks: execution ended");
+			return new ResponseEntityDto(false, List.of());
+		}
+
+		CrmActivityTaskFilterParams params = new CrmActivityTaskFilterParams();
+		params.setSortKey(CrmActivityTaskSort.DUE_AT);
+		params.setSortOrder(Sort.Direction.DESC);
+		params.setCurrentEmployeeId(currentUser.getEmployee().getEmployeeId());
+		params.setIsRestrictedToOwner(CrmUtil.isCrmSalesRepresentative(currentUser));
+		if (task.getContact() != null) {
+			params.setRelatedContactIds(List.of(task.getContact().getId()));
+		}
+		if (task.getDeal() != null) {
+			params.setRelatedDealId(task.getDeal().getId());
+		}
+		params.setExcludedId(id);
+		params.setMaxResults(CrmConstants.RELATED_ACTIVITY_LIMIT);
+
+		List<CrmActivityTaskResponseDto> tasks = crmActivityTaskDao.findTasks(params);
+
+		log.info("getRelatedTasks: execution ended");
+		return new ResponseEntityDto(false, tasks);
 	}
 
 	protected void validateActivityCreationLimit() {
