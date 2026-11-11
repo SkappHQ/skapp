@@ -418,6 +418,16 @@ public class CrmValidations {
 		}
 	}
 
+	public static void validateActivityLinkRemoval(Boolean isDealRemoved, Long dealId, Boolean isCompanyRemoved,
+			Long companyId) {
+		if (Boolean.TRUE.equals(isDealRemoved) && dealId != null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_DEAL_REMOVAL_CONFLICT);
+		}
+		if (Boolean.TRUE.equals(isCompanyRemoved) && companyId != null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_COMPANY_REMOVAL_CONFLICT);
+		}
+	}
+
 	public static void validateMeetingAttendeeIds(List<Long> contactIds) {
 		if (contactIds == null || contactIds.isEmpty()) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_MEETING_ATTENDEES_REQUIRED);

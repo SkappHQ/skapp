@@ -230,6 +230,9 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_MEETING_EDIT_DENIED);
 		}
 
+		CrmValidations.validateActivityLinkRemoval(requestDto.getIsDealRemoved(), requestDto.getDealId(),
+				requestDto.getIsCompanyRemoved(), requestDto.getCompanyId());
+
 		Employee previousOwner = meeting.getOwner();
 
 		if (requestDto.getName() != null) {

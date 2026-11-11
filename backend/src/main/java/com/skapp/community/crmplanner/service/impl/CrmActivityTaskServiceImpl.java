@@ -167,6 +167,9 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_EDIT_DENIED);
 		}
 
+		CrmValidations.validateActivityLinkRemoval(requestDto.getIsDealRemoved(), requestDto.getDealId(),
+				requestDto.getIsCompanyRemoved(), requestDto.getCompanyId());
+
 		if (requestDto.getName() != null) {
 			CrmValidations.validateTaskName(requestDto.getName());
 			task.setName(requestDto.getName());

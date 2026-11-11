@@ -116,6 +116,8 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_ACTIVITY_EMAIL_RECIPIENTS_DUPLICATE("api.error.crm.activity.email-recipients-duplicate"),
 	CRM_ERROR_ACTIVITY_EMAIL_DEAL_COMPANY_MISMATCH("api.error.crm.activity.email-deal-company-mismatch"),
 	CRM_ERROR_ACTIVITY_MEETING_EDIT_DENIED("api.error.crm.activity.meeting-edit-denied"),
+	CRM_ERROR_ACTIVITY_DEAL_REMOVAL_CONFLICT("api.error.crm.activity.deal-removal-conflict"),
+	CRM_ERROR_ACTIVITY_COMPANY_REMOVAL_CONFLICT("api.error.crm.activity.company-removal-conflict"),
 	CRM_SUCCESS_ACTIVITY_DELETED("api.success.crm.activity-deleted");
 
 	private final String messageKey;
