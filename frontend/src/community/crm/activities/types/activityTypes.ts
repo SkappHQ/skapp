@@ -170,10 +170,6 @@ export interface ActivityTaskCreatePayload {
 
 export interface ActivityLinkEditPayload {
   ownerId?: number;
-  dealId?: number;
-  isDealRemoved?: boolean;
-  companyId?: number;
-  isCompanyRemoved?: boolean;
 }
 
 export interface ActivityCallEditPayload extends ActivityLinkEditPayload {
@@ -181,8 +177,6 @@ export interface ActivityCallEditPayload extends ActivityLinkEditPayload {
   subject?: string;
   comments?: string;
   loggedAt?: string | null;
-  durationMinutes?: number | null;
-  contactId?: number;
 }
 
 export interface ActivityMeetingEditPayload extends ActivityLinkEditPayload {
@@ -192,7 +186,6 @@ export interface ActivityMeetingEditPayload extends ActivityLinkEditPayload {
   meetingDate?: string | null;
   startAt?: string | null;
   endAt?: string | null;
-  contactIds?: number[];
 }
 
 export interface ActivityTaskEditPayload extends ActivityLinkEditPayload {
@@ -202,5 +195,4 @@ export interface ActivityTaskEditPayload extends ActivityLinkEditPayload {
   isCompleted?: boolean;
   priority?: CrmPriorityEnum;
   dueAt?: string | null;
-  contactId?: number;
 }

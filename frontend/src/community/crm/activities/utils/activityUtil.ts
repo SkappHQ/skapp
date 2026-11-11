@@ -20,7 +20,6 @@ import {
   CrmMeetingEntity
 } from "~community/crm/types/CrmCommonTypes";
 import { formatCallDuration } from "~community/crm/utils/callUtil";
-import { parseCallDurationToMinutes } from "~community/crm/utils/callValidations";
 
 export const getTimeSlotStart = (dateTime: DateTime): DateTime =>
   dateTime.set({
@@ -70,8 +69,6 @@ export const toActivityInstant = (
 
 interface ActivityLinkFormValues {
   ownerId: number | null;
-  dealId: number | null;
-  companyId: number | null;
 }
 
 const toLinkEditPayload = (
@@ -79,13 +76,7 @@ const toLinkEditPayload = (
   saved: ActivityLinkFormValues
 ): ActivityLinkEditPayload => ({
   ...(values.ownerId &&
-    values.ownerId !== saved.ownerId && { ownerId: values.ownerId }),
-  ...(values.dealId !== saved.dealId &&
-    (values.dealId ? { dealId: values.dealId } : { isDealRemoved: true })),
-  ...(values.companyId !== saved.companyId &&
-    (values.companyId
-      ? { companyId: values.companyId }
-      : { isCompanyRemoved: true }))
+    values.ownerId !== saved.ownerId && { ownerId: values.ownerId })
 });
 
 const toTimeFieldValue = (isoDateTime: string): string =>
@@ -101,11 +92,11 @@ export const toCallFormValues = (
     call.durationMinutes != null
       ? formatCallDuration(call.durationMinutes)
       : "",
-  contactId: call.contact && call.contact.id ? call.contact.id : null,
+  contactId: call.contact?.id ?? null,
   ownerId: call.ownerId,
-  comments: call.comments ? call.comments : "",
-  dealId: call.deal && call.deal.id ? call.deal.id : null,
-  companyId: call.company && call.company.id ? call.company.id : null
+  comments: call.comments ?? "",
+  dealId: call.deal?.id ?? null,
+  companyId: call.company?.id ?? null
 });
 
 export const toCallEditPayload = (
@@ -118,12 +109,7 @@ export const toCallEditPayload = (
   ...((values.date !== saved.date || values.time !== saved.time) &&
     values.date && {
       loggedAt: toActivityInstant(values.date, values.time)
-    }),
-  ...(values.duration !== saved.duration && {
-    durationMinutes: parseCallDurationToMinutes(values.duration)
-  }),
-  ...(values.contactId &&
-    values.contactId !== saved.contactId && { contactId: values.contactId })
+    })
 });
 
 export const toMeetingFormValues = (
@@ -137,9 +123,9 @@ export const toMeetingFormValues = (
     contact.id ? [contact.id] : []
   ),
   ownerId: meeting.ownerId,
-  comments: meeting.comments ? meeting.comments : "",
-  dealId: meeting.deal && meeting.deal.id ? meeting.deal.id : null,
-  companyId: meeting.company && meeting.company.id ? meeting.company.id : null
+  comments: meeting.comments ?? "",
+  dealId: meeting.deal?.id ?? null,
+  companyId: meeting.company?.id ?? null
 });
 
 export const toMeetingEditPayload = (
@@ -148,8 +134,6 @@ export const toMeetingEditPayload = (
   saved: CrmLogMeetingFormValues
 ): ActivityMeetingEditPayload => {
   const isDateChanged = values.date !== saved.date;
-  const isContactsChanged =
-    values.contactIds.join(",") !== saved.contactIds.join(",");
 
   return {
     id,
@@ -167,8 +151,7 @@ export const toMeetingEditPayload = (
       values.date &&
       values.endTime && {
         endAt: toActivityInstant(values.date, values.endTime)
-      }),
-    ...(isContactsChanged && { contactIds: values.contactIds })
+      })
   };
 };
 
@@ -179,10 +162,10 @@ export const toActivityTaskFormValues = (
   priority: task.priority,
   dueAt: task.dueAt,
   ownerId: task.ownerId,
-  contactId: task.contact && task.contact.id ? task.contact.id : null,
-  dealId: task.deal && task.deal.id ? task.deal.id : null,
-  companyId: task.company && task.company.id ? task.company.id : null,
-  notes: task.notes ? task.notes : ""
+  contactId: task.contact?.id ?? null,
+  dealId: task.deal?.id ?? null,
+  companyId: task.company?.id ?? null,
+  notes: task.notes ?? ""
 });
 
 export const toActivityTaskEditPayload = (
@@ -193,7 +176,5 @@ export const toActivityTaskEditPayload = (
   id,
   ...toLinkEditPayload(values, saved),
   ...(values.priority !== saved.priority && { priority: values.priority }),
-  ...(values.dueAt !== saved.dueAt && { dueAt: values.dueAt }),
-  ...(values.contactId &&
-    values.contactId !== saved.contactId && { contactId: values.contactId })
+  ...(values.dueAt !== saved.dueAt && { dueAt: values.dueAt })
 });

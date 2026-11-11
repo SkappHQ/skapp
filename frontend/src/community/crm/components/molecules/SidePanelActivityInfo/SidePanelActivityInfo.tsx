@@ -63,9 +63,7 @@ const SidePanelActivityInfo: FC<Props> = ({
   );
 
   const noValue = translateText(["noValue"]);
-  const resolvedStartTimeLabel = startTimeLabel
-    ? startTimeLabel
-    : translateText(["startTime"]);
+  const resolvedStartTimeLabel = startTimeLabel ?? translateText(["startTime"]);
 
   const handleOwnerChange = (user: CrmOwnerEntity | null): void => {
     if (onOwnerChange && user && user.employeeId !== owner?.employeeId) {
@@ -78,7 +76,7 @@ const SidePanelActivityInfo: FC<Props> = ({
       return (
         <div className="flex flex-col w-full">
           <OwnerPopupSearch
-            selectedUser={owner ? owner : null}
+            selectedUser={owner ?? null}
             onChange={handleOwnerChange}
             placeholder={noValue}
             searchPlaceholder={translatePlaceholder([
