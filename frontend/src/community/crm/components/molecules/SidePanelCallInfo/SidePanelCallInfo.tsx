@@ -5,7 +5,6 @@ import { useShallow } from "zustand/react/shallow";
 
 import { TIME_FORMAT_24_HOUR } from "~community/common/constants/timeConstants";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { callDurationPattern } from "~community/common/regex/regexPatterns";
 import { ActivityCallEditPayload } from "~community/crm/activities/types/activityTypes";
 import {
   toCallEditPayload,
@@ -14,8 +13,7 @@ import {
 } from "~community/crm/activities/utils/activityUtil";
 import PropertyRow from "~community/crm/components/molecules/PropertyRow/PropertyRow";
 import SidePanelActivityInfo from "~community/crm/components/molecules/SidePanelActivityInfo/SidePanelActivityInfo";
-import SidePanelContactField from "~community/crm/components/molecules/SidePanelContactField/SidePanelContactField";
-import SidePanelTextField from "~community/crm/components/molecules/SidePanelTextField/SidePanelTextField";
+import SidePanelLinkButton from "~community/crm/components/molecules/SidePanelLinkButton/SidePanelLinkButton";
 import { useActivityAutoSave } from "~community/crm/hooks/useActivityAutoSave";
 import { useCrmStore } from "~community/crm/store/store";
 import {
@@ -24,7 +22,10 @@ import {
 } from "~community/crm/types/CrmCommonTypes";
 import { getCallValidationSchema } from "~community/crm/utils/callValidations";
 import { updateCompanyRecord } from "~community/crm/utils/companyUtil";
-import { updateContactRecord } from "~community/crm/utils/contactUtil";
+import {
+  getContactDisplayName,
+  updateContactRecord
+} from "~community/crm/utils/contactUtil";
 
 interface Props {
   call: CrmCallEntity;
@@ -41,11 +42,6 @@ const SidePanelCallInfo: FC<Props> = ({
 }) => {
   const translateText = useTranslator("crmModule");
   const translateInfo = useTranslator("crmModule", "activities");
-  const translateAria = useTranslator(
-    "crmAria",
-    "activities",
-    "activitySidePanel"
-  );
 
   const { owners, contacts, setContacts, companies, setCompanies } =
     useCrmStore(
@@ -82,11 +78,6 @@ const SidePanelCallInfo: FC<Props> = ({
 
   const { values, setFieldValue } = formik;
 
-  const validateDuration = (duration: string): string =>
-    duration && !callDurationPattern().test(duration)
-      ? translateInfo(["logCall", "modal", "validations", "duration"])
-      : "";
-
   const handleDateChange = (date: Date): void => {
     setFieldValue("date", toDateFieldValue(date));
   };
@@ -98,18 +89,20 @@ const SidePanelCallInfo: FC<Props> = ({
         <PropertyRow
           label={translateInfo(["callSidePanel", "info", "contact"])}
         >
-          <SidePanelContactField
-            id="call-contact"
-            contactId={values.contactId}
-            emptyLabel={translateInfo([
-              "activitySidePanel",
-              "info",
-              "noLongerAvailable"
-            ])}
-            editAriaLabel={translateAria(["editContact"])}
-            onContactClick={onContactClick}
-            onChange={(contactId) => setFieldValue("contactId", contactId)}
-          />
+          {call.contact ? (
+            <SidePanelLinkButton
+              label={getContactDisplayName(call.contact)}
+              onClick={onContactClick}
+            />
+          ) : (
+            <span className="body2">
+              {translateInfo([
+                "activitySidePanel",
+                "info",
+                "noLongerAvailable"
+              ])}
+            </span>
+          )}
         </PropertyRow>
       }
       date={
@@ -123,27 +116,19 @@ const SidePanelCallInfo: FC<Props> = ({
         <PropertyRow
           label={translateInfo(["callSidePanel", "info", "duration"])}
         >
-          <SidePanelTextField
-            id="call-duration"
-            value={values.duration}
-            placeholder={translateInfo([
-              "activitySidePanel",
-              "info",
-              "noValue"
-            ])}
-            ariaLabel={translateAria(["editDuration"])}
-            validate={validateDuration}
-            onSave={(duration) => setFieldValue("duration", duration)}
-          />
+          <span className="body2">
+            {values.duration
+              ? values.duration
+              : translateInfo(["activitySidePanel", "info", "noValue"])}
+          </span>
         </PropertyRow>
       }
       {...(values.ownerId && { owner: owners[values.ownerId] })}
-      companyId={values.companyId}
+      companyName={call.company?.name}
       onCompanyClick={onCompanyClick}
       onDateChange={handleDateChange}
       onStartTimeChange={(time) => setFieldValue("time", time)}
       onOwnerChange={(ownerId) => setFieldValue("ownerId", ownerId)}
-      onCompanyChange={(companyId) => setFieldValue("companyId", companyId)}
     />
   );
 };

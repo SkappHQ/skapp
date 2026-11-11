@@ -14,7 +14,7 @@ import {
 import PriorityDropdown from "~community/crm/components/molecules/PriorityDropdown/PriorityDropdown";
 import PropertyRow from "~community/crm/components/molecules/PropertyRow/PropertyRow";
 import SidePanelActivityInfo from "~community/crm/components/molecules/SidePanelActivityInfo/SidePanelActivityInfo";
-import SidePanelContactField from "~community/crm/components/molecules/SidePanelContactField/SidePanelContactField";
+import SidePanelLinkButton from "~community/crm/components/molecules/SidePanelLinkButton/SidePanelLinkButton";
 import { useActivityAutoSave } from "~community/crm/hooks/useActivityAutoSave";
 import { useCrmStore } from "~community/crm/store/store";
 import {
@@ -23,7 +23,10 @@ import {
 } from "~community/crm/types/CrmCommonTypes";
 import { getActivityTaskValidationSchema } from "~community/crm/utils/activityTaskValidations";
 import { updateCompanyRecord } from "~community/crm/utils/companyUtil";
-import { updateContactRecord } from "~community/crm/utils/contactUtil";
+import {
+  getContactDisplayName,
+  updateContactRecord
+} from "~community/crm/utils/contactUtil";
 
 interface Props {
   task: CrmActivityTaskEntity;
@@ -39,11 +42,6 @@ const SidePanelActivityTaskInfo: FC<Props> = ({
   onCompanyClick
 }) => {
   const translateText = useTranslator("crmModule");
-  const translateAria = useTranslator(
-    "crmAria",
-    "activities",
-    "activitySidePanel"
-  );
   const displayZone = useDisplayZone();
 
   const { owners, contacts, setContacts, companies, setCompanies } =
@@ -96,19 +94,21 @@ const SidePanelActivityTaskInfo: FC<Props> = ({
           <PropertyRow
             label={translateText(["tasks", "sidePanel", "info", "contactName"])}
           >
-            <SidePanelContactField
-              id="activity-task-contact"
-              contactId={values.contactId}
-              emptyLabel={translateText([
-                "activities",
-                "activitySidePanel",
-                "info",
-                "noValue"
-              ])}
-              editAriaLabel={translateAria(["editContact"])}
-              onContactClick={onContactClick}
-              onChange={(contactId) => setFieldValue("contactId", contactId)}
-            />
+            {task.contact ? (
+              <SidePanelLinkButton
+                label={getContactDisplayName(task.contact)}
+                onClick={onContactClick}
+              />
+            ) : (
+              <span className="body2">
+                {translateText([
+                  "activities",
+                  "activitySidePanel",
+                  "info",
+                  "noValue"
+                ])}
+              </span>
+            )}
           </PropertyRow>
 
           <PropertyRow
@@ -134,11 +134,10 @@ const SidePanelActivityTaskInfo: FC<Props> = ({
       ])}
       hideStartTime
       {...(values.ownerId && { owner: owners[values.ownerId] })}
-      companyId={values.companyId}
+      companyName={task.company?.name}
       onCompanyClick={onCompanyClick}
       onDateChange={handleDueDateChange}
       onOwnerChange={(ownerId) => setFieldValue("ownerId", ownerId)}
-      onCompanyChange={(companyId) => setFieldValue("companyId", companyId)}
     />
   );
 };
