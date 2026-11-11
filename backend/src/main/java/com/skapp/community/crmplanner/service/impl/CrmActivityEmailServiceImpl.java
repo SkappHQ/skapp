@@ -31,6 +31,7 @@ import com.skapp.community.crmplanner.type.CrmActivityEmailFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityEmailSort;
 import com.skapp.community.crmplanner.util.CrmUtil;
 import com.skapp.community.crmplanner.util.CrmValidations;
+import com.skapp.community.peopleplanner.util.Validations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
@@ -108,6 +109,7 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 	@Transactional
 	public ResponseEntityDto createEmail(CrmActivityEmailCreateRequestDto requestDto) {
 		log.info("createEmail: execution started");
+		validateActivityCreationLimit();
 
 		List<Long> toIds = requestDto.getToContactIds();
 		List<Long> ccIds = requestDto.getCcContactIds() != null ? requestDto.getCcContactIds() : List.of();
@@ -116,11 +118,13 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 		CrmValidations.validateEmailSubject(requestDto.getSubject());
 		CrmValidations.validateEmailLoggedAt(requestDto.getLoggedAt());
 		CrmValidations.validateEmailRecipientIds(toIds, ccIds, bccIds);
+		Validations.validateEmail(requestDto.getFromAddress());
 
 		User currentUser = userService.getCurrentUser();
 
 		CrmActivityEmail email = new CrmActivityEmail();
 		email.setSubject(requestDto.getSubject());
+		email.setFromAddress(requestDto.getFromAddress());
 		email.setLoggedAt(requestDto.getLoggedAt());
 		email.setDescription(requestDto.getDescription());
 		email.setOwner(currentUser.getEmployee());
@@ -221,6 +225,11 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 		if (requestDto.getSubject() != null) {
 			CrmValidations.validateEmailSubject(requestDto.getSubject());
 			email.setSubject(requestDto.getSubject());
+		}
+
+		if (requestDto.getFromAddress() != null) {
+			Validations.validateEmail(requestDto.getFromAddress());
+			email.setFromAddress(requestDto.getFromAddress());
 		}
 
 		if (requestDto.getLoggedAt() != null) {
@@ -355,6 +364,9 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 			.filter(contact -> !Boolean.TRUE.equals(contact.getIsDeleted()))
 			.map(crmMapper::crmContactToCrmContactLookupResponseDto)
 			.toList();
+	}
+
+	protected void validateActivityCreationLimit() {
 	}
 
 }

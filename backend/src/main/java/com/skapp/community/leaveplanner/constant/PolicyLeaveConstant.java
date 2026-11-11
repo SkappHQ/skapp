@@ -13,6 +13,9 @@ public class PolicyLeaveConstant {
 	public static final List<LeaveRequestStatus> BALANCE_HOLDING_STATUSES = List.of(LeaveRequestStatus.PENDING,
 			LeaveRequestStatus.APPROVED);
 
+	public static final List<LeaveRequestStatus> ATTENDANCE_LEAVE_STATUSES = List.of(LeaveRequestStatus.PENDING,
+			LeaveRequestStatus.APPROVED);
+
 	public static final Map<LeaveRequestStatus, Set<LeaveRequestStatus>> REVIEWER_STATUS_TRANSITIONS = Map.of(
 			LeaveRequestStatus.PENDING, Set.of(LeaveRequestStatus.APPROVED, LeaveRequestStatus.DENIED),
 			LeaveRequestStatus.APPROVED, Set.of(LeaveRequestStatus.REVOKED));

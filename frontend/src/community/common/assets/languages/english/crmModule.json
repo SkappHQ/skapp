@@ -615,7 +615,20 @@
         "dueDate": "Due date"
       },
       "relatedTitle": "Related tasks",
-      "reopen": "Reopen"
+      "reopen": "Reopen Task"
+    },
+    "emailSidePanel": {
+      "noDealsDescription": "No deals are linked to this email",
+      "deleteEmail": "Delete email",
+      "description": "Description",
+      "noDescription": "No description added",
+      "info": {
+        "to": "To",
+        "cc": "Cc",
+        "bcc": "Bcc",
+        "from": "From",
+        "time": "Time"
+      }
     },
     "callSidePanel": {
       "noDealsDescription": "No deals are linked to this call",

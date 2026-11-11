@@ -78,7 +78,8 @@ export const crmActivityEndpoints = {
   EDIT_MEETING: (id: number) => `${moduleAPIPath.CRM}/activity/meeting/${id}`,
   DELETE_MEETING: (id: number) => `${moduleAPIPath.CRM}/activity/meeting/${id}`,
   GET_RELATED_MEETINGS: (id: number) =>
-    `${moduleAPIPath.CRM}/activity/meeting/${id}/related`
+    `${moduleAPIPath.CRM}/activity/meeting/${id}/related`,
+  GET_EMAIL_BY_ID: (id: number) => `${moduleAPIPath.CRM}/activity/email/${id}`
 };
 
 export const crmBoardEndpoints = {

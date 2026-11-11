@@ -16,7 +16,6 @@ import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.payload.request.CrmActivityMeetingCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmActivityMeetingFilterDto;
-import com.skapp.community.crmplanner.payload.response.CrmActivityMeetingDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityMeetingResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityMeetingContactDao;
@@ -105,6 +104,7 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 	@Transactional
 	public ResponseEntityDto createMeeting(CrmActivityMeetingCreateRequestDto requestDto) {
 		log.info("createMeeting: execution started");
+		validateActivityCreationLimit();
 
 		CrmValidations.validateMeetingSubject(requestDto.getName());
 		CrmValidations.validateMeetingDate(requestDto.getMeetingDate());
@@ -179,8 +179,7 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_MEETING_VIEW_DENIED);
 		}
 
-		CrmActivityMeetingDetailResponseDto response = crmMapper
-			.crmActivityMeetingToCrmActivityMeetingDetailResponseDto(meeting);
+		CrmActivityMeetingResponseDto response = crmMapper.crmActivityMeetingToCrmActivityMeetingResponseDto(meeting);
 		response.setContacts(meeting.getContacts()
 			.stream()
 			.map(CrmActivityMeetingContact::getContact)
@@ -188,12 +187,14 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 			.map(crmMapper::crmContactToCrmContactLookupResponseDto)
 			.toList());
 		if (meeting.getDeal() != null && Boolean.TRUE.equals(meeting.getDeal().getIsDeleted())) {
+			response.setDealId(null);
 			response.setDeal(null);
 		}
 		else if (meeting.getDeal() != null) {
 			response.setDeal(CrmUtil.toDealResponseDto(crmMapper, meeting.getDeal()));
 		}
 		if (meeting.getCompany() != null && Boolean.TRUE.equals(meeting.getCompany().getIsDeleted())) {
+			response.setCompanyId(null);
 			response.setCompany(null);
 		}
 
@@ -207,6 +208,9 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 
 		log.info("getMeetingById: execution ended");
 		return new ResponseEntityDto(false, response);
+	}
+
+	protected void validateActivityCreationLimit() {
 	}
 
 }
