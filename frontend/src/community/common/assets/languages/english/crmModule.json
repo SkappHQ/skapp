@@ -915,8 +915,6 @@
           "openInMaps": "Open in Google Maps"
         },
         "toastMessages": {
-          "syncingTitle": "Syncing with Google Calendar",
-          "syncingDescription": "Your meeting is being added to your Google Calendar.",
           "addSuccessTitle": "Meeting scheduled",
           "addSuccessDescription": "It's been added to your Google Calendar and invites were sent to the attendees.",
           "errorDescription": "Failed to save meeting"

@@ -241,24 +241,6 @@ const ScheduleMeetingModalContent: FC<Props> = ({ onClose }) => {
     if (isPending || !pendingMeeting) return;
     scheduleMeeting(pendingMeeting);
     onClose();
-    setToastMessage({
-      open: true,
-      toastType: ToastType.INFO,
-      title: translateText([
-        "activities",
-        "scheduleMeeting",
-        "modal",
-        "toastMessages",
-        "syncingTitle"
-      ]),
-      description: translateText([
-        "activities",
-        "scheduleMeeting",
-        "modal",
-        "toastMessages",
-        "syncingDescription"
-      ])
-    });
   };
 
   if (pendingMeeting && isOverlapCheckDone) {
