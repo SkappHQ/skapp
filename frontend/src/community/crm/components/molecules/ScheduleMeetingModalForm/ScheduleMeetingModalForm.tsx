@@ -283,21 +283,6 @@ const ScheduleMeetingModalForm: FC<Props> = ({ formik }) => {
           <APIProvider apiKey={googleMapsApiKey}>{locationField}</APIProvider>
         )}
         {isInPerson && !googleMapsApiKey && locationField}
-        {isInPerson && values.locationUrl && (
-          <a
-            href={values.locationUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-1 block text-sm underline"
-          >
-            {translateText([
-              "scheduleMeeting",
-              "modal",
-              "location",
-              "openInMaps"
-            ])}
-          </a>
-        )}
       </div>
 
       <ActivityContactsField
