@@ -25,6 +25,7 @@ import com.skapp.community.peopleplanner.model.EmployeeTeam;
 import com.skapp.community.peopleplanner.model.EmployeeTeam_;
 import com.skapp.community.peopleplanner.model.Employee_;
 import com.skapp.community.peopleplanner.model.Team_;
+import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.util.PeopleUtil;
 import jakarta.persistence.EntityManager;
@@ -63,6 +64,8 @@ import java.util.Optional;
 public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepository {
 
 	private final EntityManager entityManager;
+
+	private final EmployeeDao employeeDao;
 
 	@Override
 	public Page<PolicyLeaveRequest> findMyRequests(Long employeeId, LocalDate cycleStart, LocalDate cycleEnd,
@@ -271,7 +274,7 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
 		Join<PolicyLeaveRequest, Employee> employee = root.join(PolicyLeaveRequest_.employee);
 
-		List<Predicate> predicates = PeopleUtil.buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee,
+		List<Predicate> predicates = employeeDao.buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee,
 				teamIds, supervisorEmployeeId);
 		predicates.add(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.status), LeaveRequestStatus.APPROVED));
 		predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get(PolicyLeaveRequest_.startDate), date));
@@ -296,7 +299,7 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		Root<Employee> root = criteriaQuery.from(Employee.class);
 
 		criteriaQuery.select(criteriaBuilder.countDistinct(root))
-			.where(PeopleUtil
+			.where(employeeDao
 				.buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, root, teamIds, supervisorEmployeeId,
 						includeOwnTeams)
 				.toArray(new Predicate[0]));
@@ -316,7 +319,7 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		root.fetch(PolicyLeaveRequest_.reviewer, JoinType.LEFT);
 		Join<PolicyLeaveRequest, Employee> employee = root.join(PolicyLeaveRequest_.employee);
 
-		List<Predicate> predicates = PeopleUtil.buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee,
+		List<Predicate> predicates = employeeDao.buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee,
 				teamIds, supervisorEmployeeId, true);
 		predicates.add(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.status), LeaveRequestStatus.APPROVED));
 		predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get(PolicyLeaveRequest_.startDate), endDate));
@@ -518,7 +521,7 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 			LocalDate startDate, LocalDate endDate, List<Long> leaveTypeIds, List<Long> teamIds,
 			Long supervisorEmployeeId, Long employeeId) {
 		List<Predicate> predicates = employeeId == null
-				? PeopleUtil.buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee, teamIds,
+				? employeeDao.buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee, teamIds,
 						supervisorEmployeeId)
 				: new ArrayList<>(List.of(criteriaBuilder.equal(employee.get(Employee_.employeeId), employeeId)));
 		predicates.add(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.status), LeaveRequestStatus.APPROVED));
@@ -630,7 +633,7 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 			Root<PolicyLeaveRequest> root, Join<PolicyLeaveRequest, Employee> employee, Long teamId,
 			Collection<Long> employeeIds, LocalDate startDate, LocalDate endDate,
 			PolicyLeaveHistoryFilterDto filterDto) {
-		List<Predicate> predicates = PeopleUtil.buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee,
+		List<Predicate> predicates = employeeDao.buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee,
 				teamId == null ? null : List.of(teamId), null);
 
 		if (!CollectionUtils.isEmpty(employeeIds)) {

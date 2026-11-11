@@ -62,8 +62,7 @@ public class PolicyLeaveAnalyticsController {
 
 	@PreAuthorize("hasRole('ROLE_LEAVE_MANAGER')")
 	@GetMapping("/absence-rate")
-	public ResponseEntity<ResponseEntityDto> getAbsenceRate(
-			@Valid PolicyAbsenceRateFilterDto policyAbsenceRateFilterDto) {
+	public ResponseEntity<ResponseEntityDto> getAbsenceRate(PolicyAbsenceRateFilterDto policyAbsenceRateFilterDto) {
 		ResponseEntityDto response = policyLeaveAnalyticsService.getAbsenceRate(policyAbsenceRateFilterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

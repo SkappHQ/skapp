@@ -19,6 +19,10 @@ import com.skapp.community.peopleplanner.type.BirthdayNotificationScope;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.community.peopleplanner.type.EmploymentType;
 import com.skapp.community.peopleplanner.type.Gender;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.From;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -119,5 +123,11 @@ public interface EmployeeRepository {
 	Map<String, Long> findEmployeeIdsByEmailIgnoreCase(List<String> lowerCaseEmails);
 
 	List<Employee> findEmployeesInScope(List<Long> teamIds, Long supervisorEmployeeId);
+
+	List<Predicate> buildEmployeeScopePredicates(CriteriaBuilder criteriaBuilder, CriteriaQuery<?> criteriaQuery,
+			From<?, Employee> employee, List<Long> teamIds, Long supervisorEmployeeId);
+
+	List<Predicate> buildEmployeeScopePredicates(CriteriaBuilder criteriaBuilder, CriteriaQuery<?> criteriaQuery,
+			From<?, Employee> employee, List<Long> teamIds, Long supervisorEmployeeId, boolean includeOwnTeams);
 
 }
