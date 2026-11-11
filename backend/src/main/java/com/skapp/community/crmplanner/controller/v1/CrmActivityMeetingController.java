@@ -45,4 +45,11 @@ public class CrmActivityMeetingController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@GetMapping("/{id}/related")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> getRelatedMeetings(@PathVariable Long id) {
+		ResponseEntityDto response = crmActivityMeetingService.getRelatedMeetings(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 }

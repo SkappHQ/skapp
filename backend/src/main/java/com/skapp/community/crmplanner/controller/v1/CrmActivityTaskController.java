@@ -58,4 +58,11 @@ public class CrmActivityTaskController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@GetMapping("/{id}/related")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> getRelatedTasks(@PathVariable Long id) {
+		ResponseEntityDto response = crmActivityTaskService.getRelatedTasks(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 }
