@@ -20,8 +20,6 @@ public class CrmActivityTaskEditRequestDto {
 
 	private Long contactId;
 
-	private Boolean isContactRemoved;
-
 	private Long dealId;
 
 	private Boolean isDealRemoved;
