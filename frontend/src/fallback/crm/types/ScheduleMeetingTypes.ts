@@ -1,9 +1,6 @@
 import { CrmLogMeetingFormValues } from "~community/crm/types/CrmCommonTypes";
 
-enum CrmMeetingVenueEnum {
-  ONLINE = "ONLINE",
-  IN_PERSON = "IN_PERSON"
-}
+enum CrmMeetingVenueEnum {}
 
 export interface CrmMeetingVenueDetails {
   meetingVenue?: CrmMeetingVenueEnum | null;
@@ -12,9 +9,4 @@ export interface CrmMeetingVenueDetails {
   locationUrl?: string | null;
 }
 
-export interface CrmScheduleMeetingFormValues extends CrmLogMeetingFormValues {
-  meetingVenue: CrmMeetingVenueEnum;
-  location: string;
-  locationAddress: string;
-  locationUrl: string;
-}
+export type CrmScheduleMeetingFormValues = CrmLogMeetingFormValues;
