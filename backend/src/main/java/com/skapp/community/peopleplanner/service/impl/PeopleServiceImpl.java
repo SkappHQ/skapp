@@ -448,7 +448,7 @@ public class PeopleServiceImpl implements PeopleService {
 			validateBillableRateCurrency(billableRateDetailsDto.getBillableRateCurrency());
 		}
 
-		employee.setUser(createUserEntity(user, requestDto));
+		employee.setUser(createUserEntity(user, requestDto, CommonModuleUtils.generateSecureRandomPassword()));
 		user.setEmployee(createEmployeeEntity(employee, requestDto));
 
 		userDao.save(user);
@@ -676,10 +676,6 @@ public class PeopleServiceImpl implements PeopleService {
 		}
 	}
 
-	private User createUserEntity(User user, CreateEmployeeRequestDto requestDto) {
-		return createUserEntity(user, requestDto, null);
-	}
-
 	private User createUserEntity(User user, CreateEmployeeRequestDto requestDto, String tempPassword) {
 		if (requestDto.getEmployment() != null && requestDto.getEmployment().getEmploymentDetails() != null) {
 			String email = requestDto.getEmployment().getEmploymentDetails().getEmail();
@@ -696,7 +692,7 @@ public class PeopleServiceImpl implements PeopleService {
 					&& requestDto.getEmployment().getEmploymentDetails() != null
 					&& requestDto.getEmployment().getEmploymentDetails().getEmail() != null
 					&& !requestDto.getEmployment().getEmploymentDetails().getEmail().isEmpty()) {
-				resendInvitationEmail(requestDto, user);
+				resendInvitationEmail(requestDto, user, tempPassword);
 			}
 
 			return user;
@@ -707,7 +703,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 		LoginMethod loginMethod = userDao.findById(1L).map(User::getLoginMethod).orElse(LoginMethod.CREDENTIALS);
 
-		if (loginMethod == LoginMethod.CREDENTIALS && tempPassword != null) {
+		if (loginMethod == LoginMethod.CREDENTIALS) {
 			String encodedTempPassword = passwordEncoder.encode(tempPassword);
 			AuthUtil.issueTempPassword(user, encodedTempPassword);
 		}
@@ -724,18 +720,18 @@ public class PeopleServiceImpl implements PeopleService {
 		return user;
 	}
 
-	private void resendInvitationEmail(CreateEmployeeRequestDto requestDto, User user) {
+	private void resendInvitationEmail(CreateEmployeeRequestDto requestDto, User user, String tempPassword) {
 		CommonModuleUtils.setIfExists(() -> requestDto.getEmployment().getEmploymentDetails().getEmail(),
 				user::setEmail);
 
-		String tempPassword = null;
+		String issuedPassword = null;
 		LoginMethod loginMethod = userDao.findById(1L).map(User::getLoginMethod).orElse(LoginMethod.CREDENTIALS);
 		if (loginMethod == LoginMethod.CREDENTIALS) {
-			tempPassword = CommonModuleUtils.generateSecureRandomPassword();
+			issuedPassword = tempPassword;
 			AuthUtil.issueTempPassword(user, passwordEncoder.encode(tempPassword));
 		}
 
-		peopleEmailService.sendUserInvitationEmail(user, tempPassword);
+		peopleEmailService.sendUserInvitationEmail(user, issuedPassword);
 
 	}
 
@@ -1336,7 +1332,7 @@ public class PeopleServiceImpl implements PeopleService {
 		Employee employee = user.getEmployee();
 		CreateEmployeeResponseDto responseDto = peopleMapper.employeeToCreateEmployeeResponseDto(employee);
 
-		if (user.getLoginMethod() == LoginMethod.CREDENTIALS) {
+		if (user.getLoginMethod() == LoginMethod.CREDENTIALS && isCredentialSharingOnCreateEnabled()) {
 			EmployeeCredentialsResponseDto credentials = new EmployeeCredentialsResponseDto();
 			credentials.setEmail(employee.getUser() != null ? employee.getUser().getEmail() : null);
 			credentials.setTempPassword(tempPassword);
@@ -2370,6 +2366,10 @@ public class PeopleServiceImpl implements PeopleService {
 	 */
 	protected boolean checkUserCountExceeded() {
 		return false;
+	}
+
+	protected boolean isCredentialSharingOnCreateEnabled() {
+		return true;
 	}
 
 	/**

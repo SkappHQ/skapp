@@ -463,6 +463,10 @@ const nextConfig = {
           "/enterprise/invoice/customers/customer-details/projects/:id"
       },
       {
+        source: "/invoice/time-approvals/:id",
+        destination: "/enterprise/invoice/time-approvals/:id"
+      },
+      {
         source: "/app-link",
         destination: "/enterprise/app-link"
       },
