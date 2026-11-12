@@ -7,6 +7,7 @@ import {
 import { ACTIVITY_TIME_SLOT_MINUTES } from "~community/crm/activities/constants/activityConstants";
 import {
   ActivityCallEditPayload,
+  ActivityDealEditPayload,
   ActivityLinkEditPayload,
   ActivityMeetingEditPayload,
   ActivityTaskEditPayload
@@ -201,5 +202,5 @@ export const toActivityTaskEditPayload = (
 export const toDealEditPayload = (
   id: number,
   dealId: number | null
-): ActivityLinkEditPayload & { id: number } =>
+): ActivityDealEditPayload =>
   dealId ? { id, dealId } : { id, isDealRemoved: true };

@@ -186,6 +186,12 @@ export interface ActivityLinkEditPayload {
   isCompanyRemoved?: boolean;
 }
 
+export interface ActivityDealEditPayload {
+  id: number;
+  dealId?: number;
+  isDealRemoved?: boolean;
+}
+
 export interface ActivityCallEditPayload extends ActivityLinkEditPayload {
   id: number;
   subject?: string;

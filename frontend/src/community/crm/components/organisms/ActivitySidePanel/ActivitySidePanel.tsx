@@ -89,9 +89,32 @@ const ActivitySidePanel: FC<Props> = ({
     setDeals(mergeDeals(deals, [deal]));
   }, [deal]);
 
-  const linkedDealId = deal?.id && deals[deal.id] ? deal.id : null;
-
   const { isCrmSalesManager } = useSessionData();
+
+  const renderDeal = (): ReactNode => {
+    const linkedDealId = deal?.id && deals[deal.id] ? deal.id : null;
+
+    if (onDealChange) {
+      return (
+        <SidePanelActivityDeal
+          id={id}
+          dealId={linkedDealId}
+          filterCompanyId={dealFilterCompanyId}
+          emptyDescription={emptyDealsDescription}
+          onDealChange={onDealChange}
+        />
+      );
+    }
+
+    return (
+      <SidePanelDealSection
+        dealIds={linkedDealId ? [linkedDealId] : []}
+        showAddDealAction={false}
+        emptyHeightClassName="h-[163px]"
+        emptyDescription={emptyDealsDescription}
+      />
+    );
+  };
 
   const deleteItem: MenuItemProps = {
     id: "delete",
@@ -187,22 +210,7 @@ const ActivitySidePanel: FC<Props> = ({
             <div className="flex flex-col gap-3">
               <h2 className="h2">{translateText(["dealsTitle"])}</h2>
               <hr className="border-secondary-accent" />
-              {onDealChange ? (
-                <SidePanelActivityDeal
-                  id={id}
-                  dealId={linkedDealId}
-                  filterCompanyId={dealFilterCompanyId}
-                  emptyDescription={emptyDealsDescription}
-                  onDealChange={onDealChange}
-                />
-              ) : (
-                <SidePanelDealSection
-                  dealIds={linkedDealId ? [linkedDealId] : []}
-                  showAddDealAction={false}
-                  emptyHeightClassName="h-[163px]"
-                  emptyDescription={emptyDealsDescription}
-                />
-              )}
+              {renderDeal()}
             </div>
 
             {related}
