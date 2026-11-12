@@ -109,6 +109,21 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
   return (
     <div className="flex flex-col gap-2 overflow-y-auto pr-1">
       <InputField
+        id="log-email-subject-input"
+        name="subject"
+        value={values.subject}
+        label={translateText(["logActivity", "labels", "subject"])}
+        placeholder={translateText(["logActivity", "placeholders", "subject"])}
+        errorMessage={touched.subject ? errors.subject : ""}
+        state={touched.subject && errors.subject ? "error" : "default"}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        aria-label={translateAria(["subject"])}
+        fullWidth
+        required
+      />
+
+      <InputField
         id="log-email-from-input"
         name="fromAddress"
         value={values.fromAddress}
@@ -281,21 +296,6 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
           )}
         </div>
       )}
-
-      <InputField
-        id="log-email-subject-input"
-        name="subject"
-        value={values.subject}
-        label={translateText(["logActivity", "labels", "subject"])}
-        placeholder={translateText(["logActivity", "placeholders", "subject"])}
-        errorMessage={touched.subject ? errors.subject : ""}
-        state={touched.subject && errors.subject ? "error" : "default"}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        aria-label={translateAria(["subject"])}
-        fullWidth
-        required
-      />
 
       <TextArea
         name="description"

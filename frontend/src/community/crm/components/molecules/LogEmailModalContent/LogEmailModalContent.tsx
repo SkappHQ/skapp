@@ -18,6 +18,7 @@ import LogEmailModalForm from "~community/crm/components/molecules/LogEmailModal
 import { CrmErrorMessageKeyEnum } from "~community/crm/enums/common";
 import { CrmLogEmailFormValues } from "~community/crm/types/CrmCommonTypes";
 import { getEmailValidationSchema } from "~community/crm/utils/emailValidations";
+import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 interface Props {
   onClose: () => void;
@@ -33,11 +34,13 @@ const LogEmailModalContent: FC<Props> = ({ onClose }) => {
   );
   const { setToastMessage } = useToast();
 
+  const { data: currentUser } = useGetUserPersonalDetails();
+
   const initialValues: CrmLogEmailFormValues = useMemo(() => {
     const now = DateTime.now();
 
     return {
-      fromAddress: "",
+      fromAddress: currentUser ? currentUser.email : "",
       date: now.startOf("day").toUTC().toISO(),
       time: getTimeSlotStart(now).toFormat(TIME_FORMAT_24_HOUR),
       toContactIds: [],
@@ -49,7 +52,7 @@ const LogEmailModalContent: FC<Props> = ({ onClose }) => {
       companyId: null,
       description: ""
     };
-  }, []);
+  }, [currentUser]);
 
   const toPayload = (
     values: CrmLogEmailFormValues
@@ -86,7 +89,8 @@ const LogEmailModalContent: FC<Props> = ({ onClose }) => {
     validationSchema,
     onSubmit: handleSubmit,
     validateOnChange: false,
-    validateOnBlur: true
+    validateOnBlur: true,
+    enableReinitialize: true
   });
 
   const { dirty, isSubmitting, setSubmitting, submitForm } = formik;
