@@ -432,6 +432,18 @@ const resolveInvoiceIntegrationsAccess: AccessGuard = ({
   return canAccessInvoiceIntegrations ? null : redirectToUnauthorized(request);
 };
 
+const resolveTimeApprovalsAccess: AccessGuard = ({
+  request,
+  currentPath,
+  claims,
+  roles
+}) =>
+  currentPath.startsWith(ROUTES.INVOICE.TIME_APPROVALS.BASE) &&
+  (!roles.includes(AdminTypes.INVOICE_ADMIN) ||
+    !isCoreOrProTier(getClaimTiers(claims)))
+    ? redirectToUnauthorized(request)
+    : null;
+
 const resolveReportAccess: AccessGuard = ({ request, currentPath, claims }) =>
   currentPath.startsWith(ROUTES.REPORT.BASE) &&
   !isCoreOrProTier(getClaimTiers(claims))
@@ -476,7 +488,8 @@ const ALLOWED_ROUTE_GUARDS: AccessGuard[] = [
   resolveLeaveBalanceReportAccess,
   resolveCrmAccess,
   resolveRestrictedRouteAccess,
-  resolveInvoiceIntegrationsAccess
+  resolveInvoiceIntegrationsAccess,
+  resolveTimeApprovalsAccess
 ];
 
 const runAccessGuards = (
