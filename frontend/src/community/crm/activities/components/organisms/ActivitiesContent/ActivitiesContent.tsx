@@ -208,6 +208,11 @@ const ActivitiesContent: FC = () => {
         openCrmSidePanel(CrmSidePanelTypes.MEETING_SIDE_PANEL);
         break;
       case ActivityType.TASK:
+        setTaskCompletions((current) => {
+          const next = { ...current };
+          delete next[row.id];
+          return next;
+        });
         setSelectedActivityTaskId(row.id);
         openCrmSidePanel(CrmSidePanelTypes.ACTIVITY_TASK_SIDE_PANEL);
         break;

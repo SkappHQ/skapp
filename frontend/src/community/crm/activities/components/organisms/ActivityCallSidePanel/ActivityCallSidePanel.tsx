@@ -120,7 +120,7 @@ const ActivityCallSidePanel: FC<Props> = ({ callId }) => {
                 "callSidePanel",
                 "relatedTitle"
               ])}
-              rows={(relatedCalls ?? []).map(toCallRow)}
+              rows={relatedCalls.map(toCallRow)}
               onRowClick={handleRelatedRowClick}
             />
           )

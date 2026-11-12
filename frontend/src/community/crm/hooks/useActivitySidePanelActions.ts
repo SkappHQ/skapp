@@ -21,10 +21,12 @@ export const useActivitySidePanelActions = (
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const showWarningToast = (descriptionKey: string): void => {
+  const showErrorToast = (
+    descriptionKey: "saveErrorDescription" | "deleteErrorDescription"
+  ): void => {
     setToastMessage({
       open: true,
-      toastType: ToastType.WARN,
+      toastType: ToastType.ERROR,
       title: translateText(["logActivity", "toastMessages", "errorTitle"]),
       description: translateText([
         "activitySidePanel",
@@ -50,15 +52,14 @@ export const useActivitySidePanelActions = (
   };
 
   const handleDeleteError = (): void => {
-    setIsDeleteModalOpen(false);
-    showWarningToast("deleteErrorDescription");
+    showErrorToast("deleteErrorDescription");
   };
 
   return {
     isDeleteModalOpen,
     openDeleteModal: () => setIsDeleteModalOpen(true),
     closeDeleteModal: () => setIsDeleteModalOpen(false),
-    handleSaveError: () => showWarningToast("saveErrorDescription"),
+    handleSaveError: () => showErrorToast("saveErrorDescription"),
     handleDeleteSuccess,
     handleDeleteError
   };

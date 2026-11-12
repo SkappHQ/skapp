@@ -124,7 +124,7 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId }) => {
                 "taskSidePanel",
                 "relatedTitle"
               ])}
-              rows={(relatedTasks ?? []).map(toTaskRow)}
+              rows={relatedTasks.map(toTaskRow)}
               onRowClick={handleRelatedRowClick}
             />
           )
