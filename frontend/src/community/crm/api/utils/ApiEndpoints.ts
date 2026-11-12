@@ -58,6 +58,10 @@ export const crmActivityEndpoints = {
   GET_CALLS: `${moduleAPIPath.CRM}/activity/call`,
   CREATE_CALL: `${moduleAPIPath.CRM}/activity/call`,
   GET_CALL_BY_ID: (id: number) => `${moduleAPIPath.CRM}/activity/call/${id}`,
+  EDIT_CALL: (id: number) => `${moduleAPIPath.CRM}/activity/call/${id}`,
+  DELETE_CALL: (id: number) => `${moduleAPIPath.CRM}/activity/call/${id}`,
+  GET_RELATED_CALLS: (id: number) =>
+    `${moduleAPIPath.CRM}/activity/call/${id}/related`,
   GET_EMAILS: `${moduleAPIPath.CRM}/activity/email`,
   CREATE_EMAIL: `${moduleAPIPath.CRM}/activity/email`,
   GET_MEETINGS: `${moduleAPIPath.CRM}/activity/meeting`,
@@ -68,6 +72,13 @@ export const crmActivityEndpoints = {
     `${moduleAPIPath.CRM}/activity/meeting/${id}`,
   CREATE_TASK: `${moduleAPIPath.CRM}/activity/task`,
   GET_TASK_BY_ID: (id: number) => `${moduleAPIPath.CRM}/activity/task/${id}`,
+  DELETE_TASK: (id: number) => `${moduleAPIPath.CRM}/activity/task/${id}`,
+  GET_RELATED_TASKS: (id: number) =>
+    `${moduleAPIPath.CRM}/activity/task/${id}/related`,
+  EDIT_MEETING: (id: number) => `${moduleAPIPath.CRM}/activity/meeting/${id}`,
+  DELETE_MEETING: (id: number) => `${moduleAPIPath.CRM}/activity/meeting/${id}`,
+  GET_RELATED_MEETINGS: (id: number) =>
+    `${moduleAPIPath.CRM}/activity/meeting/${id}/related`,
   GET_EMAIL_BY_ID: (id: number) => `${moduleAPIPath.CRM}/activity/email/${id}`
 };
 

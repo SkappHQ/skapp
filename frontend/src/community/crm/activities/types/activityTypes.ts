@@ -177,3 +177,22 @@ export interface ActivityTaskCreatePayload {
   companyId: number | null;
   notes: string;
 }
+
+export interface ActivityCallEditPayload {
+  id: number;
+  subject?: string;
+  comments?: string;
+}
+
+export interface ActivityMeetingEditPayload {
+  id: number;
+  name?: string;
+  comments?: string;
+}
+
+export interface ActivityTaskEditPayload {
+  id: number;
+  name?: string;
+  notes?: string;
+  isCompleted?: boolean;
+}
