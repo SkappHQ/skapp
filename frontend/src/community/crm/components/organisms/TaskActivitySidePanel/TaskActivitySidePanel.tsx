@@ -1,7 +1,13 @@
-import { ChecklistVerificationFilledIcon } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
+import {
+  ButtonV2,
+  ChecklistVerificationFilledIcon,
+  UndoIcon
+} from "@rootcodelabs/skapp-ui";
+import { FC, ReactNode } from "react";
 
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { IconName } from "~community/common/types/IconTypes";
 import SidePanelActivityTaskInfo from "~community/crm/components/molecules/SidePanelActivityTaskInfo/SidePanelActivityTaskInfo";
 import ActivitySidePanel from "~community/crm/components/organisms/ActivitySidePanel/ActivitySidePanel";
 import { TASK_DETAIL_ICON_SIZE } from "~community/crm/constants/taskConstants";
@@ -12,7 +18,12 @@ interface Props {
   task?: CrmActivityTaskEntity;
   isOpen: boolean;
   onClose: () => void;
+  related?: ReactNode;
+  onTitleSave: (title: string) => void;
+  onCommentsSave: (comments: string) => void;
   onDelete: () => void;
+  onMarkAsDone: () => void;
+  onReopen: () => void;
   onContactClick: () => void;
   onCompanyClick: () => void;
 }
@@ -21,18 +32,21 @@ const TaskActivitySidePanel: FC<Props> = ({
   task,
   isOpen,
   onClose,
+  related,
+  onTitleSave,
+  onCommentsSave,
   onDelete,
+  onMarkAsDone,
+  onReopen,
   onContactClick,
   onCompanyClick
 }) => {
-  const translateText = useTranslator(
-    "crmModule",
-    "activities",
-    "taskSidePanel"
-  );
+  const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria", "activities", "taskSidePanel");
 
   const owners = useCrmStore((state) => state.owners);
+
+  const isCompleted = task?.isCompleted === true;
 
   return (
     <ActivitySidePanel
@@ -40,28 +54,70 @@ const TaskActivitySidePanel: FC<Props> = ({
       isOpen={isOpen}
       isLoading={!task}
       onClose={onClose}
+      related={related}
+      onTitleSave={onTitleSave}
+      onCommentsSave={onCommentsSave}
       icon={
         <ChecklistVerificationFilledIcon
           width={TASK_DETAIL_ICON_SIZE}
           height={TASK_DETAIL_ICON_SIZE}
         />
       }
-      menuItems={[]}
-      deleteLabel={translateText(["deleteTask"])}
+      menuItems={
+        isCompleted
+          ? [
+              {
+                id: "reopen",
+                label: translateText(["activities", "taskSidePanel", "reopen"]),
+                icon: { start: <UndoIcon width="16px" height="16px" /> },
+                onClick: onReopen
+              }
+            ]
+          : []
+      }
+      deleteLabel={translateText(["activities", "taskSidePanel", "deleteTask"])}
       onDelete={onDelete}
       menuAriaLabel={translateAria(["kebabMenu"])}
-      emptyDealsDescription={translateText(["noDealsDescription"])}
+      emptyDealsDescription={translateText([
+        "activities",
+        "taskSidePanel",
+        "noDealsDescription"
+      ])}
       {...(task && {
+        activityId: task.id,
         title: task.name,
         comments: task.notes,
         deal: task.deal,
         info: (
-          <SidePanelActivityTaskInfo
-            task={task}
-            owner={owners[task.ownerId]}
-            onContactClick={onContactClick}
-            onCompanyClick={onCompanyClick}
-          />
+          <div className="flex flex-col gap-4">
+            <ButtonV2
+              type="button"
+              variant="primary"
+              size="md"
+              onClick={onMarkAsDone}
+              disabled={isCompleted}
+              {...(isCompleted && {
+                icon: (
+                  <Icon
+                    name={IconName.TICK_ICON}
+                    fill="var(--color-secondary-icon)"
+                    width="16"
+                    height="16"
+                  />
+                )
+              })}
+            >
+              {isCompleted
+                ? translateText(["tasks", "sidePanel", "info", "statusDone"])
+                : translateText(["tasks", "sidePanel", "info", "markAsDone"])}
+            </ButtonV2>
+            <SidePanelActivityTaskInfo
+              task={task}
+              owner={owners[task.ownerId]}
+              onContactClick={onContactClick}
+              onCompanyClick={onCompanyClick}
+            />
+          </div>
         )
       })}
     />

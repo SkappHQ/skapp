@@ -6,8 +6,18 @@ import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useGetCallById } from "~community/crm/api/ActivityApi";
+import { ActivityRow } from "~community/crm/activities/types/activityTypes";
+import { toCallRow } from "~community/crm/activities/utils/activityFeedUtil";
+import {
+  useDeleteCall,
+  useGetCallById,
+  useGetRelatedCalls,
+  useUpdateCall
+} from "~community/crm/api/ActivityApi";
+import DeleteActivityModal from "~community/crm/components/molecules/DeleteActivityModal/DeleteActivityModal";
+import SidePanelRelatedActivities from "~community/crm/components/molecules/SidePanelRelatedActivities/SidePanelRelatedActivities";
 import CallSidePanel from "~community/crm/components/organisms/CallSidePanel/CallSidePanel";
+import { useActivitySidePanelActions } from "~community/crm/hooks/useActivitySidePanelActions";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 
@@ -39,11 +49,21 @@ const ActivityCallSidePanel: FC<Props> = ({ callId }) => {
     crmSidePanelType === CrmSidePanelTypes.CALL_SIDE_PANEL;
 
   const { data: call, isError } = useGetCallById(callId, isOpen);
+  const { data: relatedCalls } = useGetRelatedCalls(callId, isOpen);
 
   const handleClose = () => {
     setSelectedCallId(null);
     closeCrmSidePanel();
   };
+
+  const {
+    isDeleteModalOpen,
+    openDeleteModal,
+    closeDeleteModal,
+    handleSaveError,
+    handleDeleteSuccess,
+    handleDeleteError
+  } = useActivitySidePanelActions(handleClose);
 
   useEffect(() => {
     if (!isError) return;
@@ -58,7 +78,11 @@ const ActivityCallSidePanel: FC<Props> = ({ callId }) => {
     handleClose();
   }, [isError]);
 
-  const handleActionNotAvailable = (): void => {};
+  const { mutate: updateCall } = useUpdateCall(handleSaveError);
+  const { mutate: deleteCall, isPending: isDeleting } = useDeleteCall(
+    handleDeleteSuccess,
+    handleDeleteError
+  );
 
   const openRecord = (url: string): void => {
     handleClose();
@@ -77,16 +101,43 @@ const ActivityCallSidePanel: FC<Props> = ({ callId }) => {
     }
   };
 
+  const handleRelatedRowClick = (row: ActivityRow): void => {
+    setSelectedCallId(row.id);
+  };
+
   return (
-    <CallSidePanel
-      call={call}
-      isOpen={isOpen}
-      onClose={handleClose}
-      onEdit={handleActionNotAvailable}
-      onDelete={handleActionNotAvailable}
-      onContactClick={handleContactClick}
-      onCompanyClick={handleCompanyClick}
-    />
+    <>
+      <CallSidePanel
+        call={call}
+        isOpen={isOpen}
+        onClose={handleClose}
+        related={
+          relatedCalls &&
+          relatedCalls.length > 0 && (
+            <SidePanelRelatedActivities
+              title={translateText([
+                "activities",
+                "callSidePanel",
+                "relatedTitle"
+              ])}
+              rows={relatedCalls.map(toCallRow)}
+              onRowClick={handleRelatedRowClick}
+            />
+          )
+        }
+        onTitleSave={(subject) => updateCall({ id: callId, subject })}
+        onCommentsSave={(comments) => updateCall({ id: callId, comments })}
+        onDelete={openDeleteModal}
+        onContactClick={handleContactClick}
+        onCompanyClick={handleCompanyClick}
+      />
+      <DeleteActivityModal
+        isOpen={isDeleteModalOpen}
+        isPending={isDeleting}
+        onConfirm={() => deleteCall(callId)}
+        onClose={closeDeleteModal}
+      />
+    </>
   );
 };
 

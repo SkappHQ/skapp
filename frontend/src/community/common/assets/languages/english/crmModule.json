@@ -613,7 +613,9 @@
       "deleteTask": "Delete task",
       "info": {
         "dueDate": "Due date"
-      }
+      },
+      "relatedTitle": "Related tasks",
+      "reopen": "Reopen Task"
     },
     "emailSidePanel": {
       "noDealsDescription": "No deals are linked to this email",
@@ -630,12 +632,12 @@
     },
     "callSidePanel": {
       "noDealsDescription": "No deals are linked to this call",
-      "editCall": "Edit call",
       "deleteCall": "Delete call",
       "info": {
         "contact": "Contact",
         "duration": "Duration"
-      }
+      },
+      "relatedTitle": "Related calls"
     },
     "logEmail": {
       "modal": {
@@ -881,6 +883,23 @@
         "relatedTo": "Related to",
         "noValue": "-",
         "noLongerAvailable": "No longer available"
+      },
+      "buttons": {
+        "save": "Save",
+        "discard": "Discard"
+      },
+      "deleteModal": {
+        "title": "Are you sure?",
+        "description": "This activity will be deleted and this can't be undone.",
+        "buttons": {
+          "confirm": "Delete",
+          "cancel": "Cancel"
+        }
+      },
+      "toastMessages": {
+        "deleteSuccessTitle": "Activity deleted successfully",
+        "saveErrorDescription": "Failed to save activity",
+        "deleteErrorDescription": "Failed to delete activity"
       }
     },
     "meetingSidePanel": {
@@ -889,7 +908,8 @@
       "info": {
         "attendees": "Attendees",
         "endTime": "End time"
-      }
+      },
+      "relatedTitle": "Related meetings"
     }
   }
 }

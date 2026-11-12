@@ -1,5 +1,5 @@
 import { MeetingFilledIcon } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
+import { FC, ReactNode } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import SidePanelMeetingInfo from "~community/crm/components/molecules/SidePanelMeetingInfo/SidePanelMeetingInfo";
@@ -12,6 +12,9 @@ interface Props {
   meeting?: CrmMeetingEntity;
   isOpen: boolean;
   onClose: () => void;
+  related?: ReactNode;
+  onTitleSave: (title: string) => void;
+  onCommentsSave: (comments: string) => void;
   onDelete: () => void;
   onCompanyClick: () => void;
 }
@@ -20,6 +23,9 @@ const MeetingSidePanel: FC<Props> = ({
   meeting,
   isOpen,
   onClose,
+  related,
+  onTitleSave,
+  onCommentsSave,
   onDelete,
   onCompanyClick
 }) => {
@@ -42,6 +48,9 @@ const MeetingSidePanel: FC<Props> = ({
       isOpen={isOpen}
       isLoading={!meeting}
       onClose={onClose}
+      related={related}
+      onTitleSave={onTitleSave}
+      onCommentsSave={onCommentsSave}
       icon={
         <MeetingFilledIcon
           width={TASK_DETAIL_ICON_SIZE}
@@ -54,6 +63,7 @@ const MeetingSidePanel: FC<Props> = ({
       menuAriaLabel={translateAria(["kebabMenu"])}
       emptyDealsDescription={translateText(["noDealsDescription"])}
       {...(meeting && {
+        activityId: meeting.id,
         title: meeting.name,
         comments: meeting.comments,
         deal: meeting.deal,

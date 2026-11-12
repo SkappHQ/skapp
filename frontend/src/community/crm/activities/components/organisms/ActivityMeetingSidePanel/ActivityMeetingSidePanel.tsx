@@ -6,8 +6,18 @@ import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useGetMeetingById } from "~community/crm/api/ActivityApi";
+import { ActivityRow } from "~community/crm/activities/types/activityTypes";
+import { toMeetingRow } from "~community/crm/activities/utils/activityFeedUtil";
+import {
+  useDeleteMeeting,
+  useGetMeetingById,
+  useGetRelatedMeetings,
+  useUpdateMeeting
+} from "~community/crm/api/ActivityApi";
+import DeleteActivityModal from "~community/crm/components/molecules/DeleteActivityModal/DeleteActivityModal";
+import SidePanelRelatedActivities from "~community/crm/components/molecules/SidePanelRelatedActivities/SidePanelRelatedActivities";
 import MeetingSidePanel from "~community/crm/components/organisms/MeetingSidePanel/MeetingSidePanel";
+import { useActivitySidePanelActions } from "~community/crm/hooks/useActivitySidePanelActions";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 
@@ -43,11 +53,21 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId }) => {
     isError,
     isFetching
   } = useGetMeetingById(meetingId, isOpen);
+  const { data: relatedMeetings } = useGetRelatedMeetings(meetingId, isOpen);
 
   const handleClose = (): void => {
     setSelectedMeetingId(null);
     closeCrmSidePanel();
   };
+
+  const {
+    isDeleteModalOpen,
+    openDeleteModal,
+    closeDeleteModal,
+    handleSaveError,
+    handleDeleteSuccess,
+    handleDeleteError
+  } = useActivitySidePanelActions(handleClose);
 
   useEffect(() => {
     if (!isError || isFetching) return;
@@ -62,7 +82,11 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId }) => {
     handleClose();
   }, [isError, isFetching]);
 
-  const handleActionNotAvailable = (): void => {};
+  const { mutate: updateMeeting } = useUpdateMeeting(handleSaveError);
+  const { mutate: deleteMeeting, isPending: isDeleting } = useDeleteMeeting(
+    handleDeleteSuccess,
+    handleDeleteError
+  );
 
   const handleCompanyClick = (): void => {
     if (meeting?.company?.id) {
@@ -71,14 +95,44 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId }) => {
     }
   };
 
+  const handleRelatedRowClick = (row: ActivityRow): void => {
+    setSelectedMeetingId(row.id);
+  };
+
   return (
-    <MeetingSidePanel
-      {...(meeting && { meeting })}
-      isOpen={isOpen}
-      onClose={handleClose}
-      onDelete={handleActionNotAvailable}
-      onCompanyClick={handleCompanyClick}
-    />
+    <>
+      <MeetingSidePanel
+        {...(meeting && { meeting })}
+        isOpen={isOpen}
+        onClose={handleClose}
+        related={
+          relatedMeetings &&
+          relatedMeetings.length > 0 && (
+            <SidePanelRelatedActivities
+              title={translateText([
+                "activities",
+                "meetingSidePanel",
+                "relatedTitle"
+              ])}
+              rows={relatedMeetings.map(toMeetingRow)}
+              onRowClick={handleRelatedRowClick}
+            />
+          )
+        }
+        onTitleSave={(name) => updateMeeting({ id: meetingId, name })}
+        onCommentsSave={(comments) =>
+          updateMeeting({ id: meetingId, comments })
+        }
+        onDelete={openDeleteModal}
+        onCompanyClick={handleCompanyClick}
+      />
+      <DeleteActivityModal
+        isOpen={isDeleteModalOpen}
+        isPending={isDeleting}
+        onConfirm={() => deleteMeeting(meetingId)}
+        onClose={closeDeleteModal}
+      />
+    </>
   );
 };
 

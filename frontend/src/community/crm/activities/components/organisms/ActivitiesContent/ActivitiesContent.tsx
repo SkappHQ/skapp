@@ -224,6 +224,14 @@ const ActivitiesContent: FC = () => {
     }
   };
 
+  const handlePanelCompletionChange = (taskId: number): void => {
+    setTaskCompletions((current) => {
+      const next = { ...current };
+      delete next[taskId];
+      return next;
+    });
+  };
+
   const applyCompletion = (taskId: number, isCompleted: boolean): void => {
     setTaskCompletions((current) => ({ ...current, [taskId]: isCompleted }));
   };
@@ -381,7 +389,10 @@ const ActivitiesContent: FC = () => {
       )}
       {selectedActivityTaskId !== null && (
         <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
-          <ActivityTaskSidePanel taskId={selectedActivityTaskId} />
+          <ActivityTaskSidePanel
+            taskId={selectedActivityTaskId}
+            onCompletionChange={handlePanelCompletionChange}
+          />
         </SidePanelWrapper>
       )}
       {selectedEmailId !== null && (

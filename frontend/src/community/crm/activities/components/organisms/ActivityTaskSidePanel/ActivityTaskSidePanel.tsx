@@ -6,16 +6,27 @@ import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useGetActivityTaskById } from "~community/crm/api/ActivityApi";
+import { ActivityRow } from "~community/crm/activities/types/activityTypes";
+import { toTaskRow } from "~community/crm/activities/utils/activityFeedUtil";
+import {
+  useDeleteActivityTask,
+  useGetActivityTaskById,
+  useGetRelatedActivityTasks,
+  useUpdateActivityTask
+} from "~community/crm/api/ActivityApi";
+import DeleteActivityModal from "~community/crm/components/molecules/DeleteActivityModal/DeleteActivityModal";
+import SidePanelRelatedActivities from "~community/crm/components/molecules/SidePanelRelatedActivities/SidePanelRelatedActivities";
 import TaskActivitySidePanel from "~community/crm/components/organisms/TaskActivitySidePanel/TaskActivitySidePanel";
+import { useActivitySidePanelActions } from "~community/crm/hooks/useActivitySidePanelActions";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 
 interface Props {
   taskId: number;
+  onCompletionChange: (taskId: number) => void;
 }
 
-const ActivityTaskSidePanel: FC<Props> = ({ taskId }) => {
+const ActivityTaskSidePanel: FC<Props> = ({ taskId, onCompletionChange }) => {
   const translateText = useTranslator("crmModule");
   const { setToastMessage } = useToast();
   const router = useRouter();
@@ -43,11 +54,21 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId }) => {
     isError,
     isFetching
   } = useGetActivityTaskById(taskId, isOpen);
+  const { data: relatedTasks } = useGetRelatedActivityTasks(taskId, isOpen);
 
   const handleClose = (): void => {
     setSelectedActivityTaskId(null);
     closeCrmSidePanel();
   };
+
+  const {
+    isDeleteModalOpen,
+    openDeleteModal,
+    closeDeleteModal,
+    handleSaveError,
+    handleDeleteSuccess,
+    handleDeleteError
+  } = useActivitySidePanelActions(handleClose);
 
   useEffect(() => {
     if (!isError || isFetching) return;
@@ -62,7 +83,11 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId }) => {
     handleClose();
   }, [isError, isFetching]);
 
-  const handleActionNotAvailable = (): void => {};
+  const { mutate: updateTask } = useUpdateActivityTask(handleSaveError);
+  const { mutate: deleteTask, isPending: isDeleting } = useDeleteActivityTask(
+    handleDeleteSuccess,
+    handleDeleteError
+  );
 
   const openRecord = (url: string): void => {
     handleClose();
@@ -81,15 +106,50 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId }) => {
     }
   };
 
+  const handleCompletionChange = (isCompleted: boolean): void => {
+    onCompletionChange(taskId);
+    updateTask({ id: taskId, isCompleted });
+  };
+
+  const handleRelatedRowClick = (row: ActivityRow): void => {
+    setSelectedActivityTaskId(row.id);
+  };
+
   return (
-    <TaskActivitySidePanel
-      {...(task && { task })}
-      isOpen={isOpen}
-      onClose={handleClose}
-      onDelete={handleActionNotAvailable}
-      onContactClick={handleContactClick}
-      onCompanyClick={handleCompanyClick}
-    />
+    <>
+      <TaskActivitySidePanel
+        {...(task && { task })}
+        isOpen={isOpen}
+        onClose={handleClose}
+        related={
+          relatedTasks &&
+          relatedTasks.length > 0 && (
+            <SidePanelRelatedActivities
+              title={translateText([
+                "activities",
+                "taskSidePanel",
+                "relatedTitle"
+              ])}
+              rows={relatedTasks.map(toTaskRow)}
+              onRowClick={handleRelatedRowClick}
+            />
+          )
+        }
+        onTitleSave={(name) => updateTask({ id: taskId, name })}
+        onCommentsSave={(notes) => updateTask({ id: taskId, notes })}
+        onDelete={openDeleteModal}
+        onMarkAsDone={() => handleCompletionChange(true)}
+        onReopen={() => handleCompletionChange(false)}
+        onContactClick={handleContactClick}
+        onCompanyClick={handleCompanyClick}
+      />
+      <DeleteActivityModal
+        isOpen={isDeleteModalOpen}
+        isPending={isDeleting}
+        onConfirm={() => deleteTask(taskId)}
+        onClose={closeDeleteModal}
+      />
+    </>
   );
 };
 
