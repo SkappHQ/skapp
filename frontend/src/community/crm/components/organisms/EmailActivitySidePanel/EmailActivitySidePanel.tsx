@@ -42,6 +42,16 @@ const EmailActivitySidePanel: FC<Props> = ({
     "emailSidePanel"
   );
 
+  const recipientCompanyIds = email
+    ? Array.from(
+        new Set(
+          [...email.to, ...email.cc, ...email.bcc].flatMap((contact) =>
+            contact.companyId ? [contact.companyId] : []
+          )
+        )
+      )
+    : [];
+
   return (
     <ActivitySidePanel
       id="activity-email"
@@ -70,6 +80,8 @@ const EmailActivitySidePanel: FC<Props> = ({
         title: email.subject,
         comments: email.description,
         deal: email.deal,
+        dealFilterCompanyId:
+          recipientCompanyIds.length === 1 ? recipientCompanyIds[0] : null,
         info: (
           <SidePanelActivityEmailInfo
             key={email.id}
