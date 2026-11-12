@@ -5,6 +5,7 @@ import com.skapp.community.common.model.WorkLocation;
 import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.util.CommonModuleUtils;
+import com.skapp.community.leaveplanner.constant.LeaveModuleConstant;
 import com.skapp.community.leaveplanner.constant.PolicyLeaveConstant;
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
 import com.skapp.community.leaveplanner.repository.PolicyLeaveRequestDao;
@@ -40,8 +41,6 @@ import java.util.function.Consumer;
 @Slf4j
 @RequiredArgsConstructor
 public class PolicyHolidayLeaveServiceImpl implements PolicyHolidayLeaveService {
-
-	private static final float HALF_DAY = 0.5f;
 
 	private final PolicyLeaveRequestDao policyLeaveRequestDao;
 
@@ -132,11 +131,11 @@ public class PolicyHolidayLeaveServiceImpl implements PolicyHolidayLeaveService 
 			if (request.getPolicy().getLeaveType().getMinDuration() != LeaveDuration.FULL_DAY) {
 				request.setLeaveState(remainingHalves.iterator().next());
 			}
-			request.setDurationDays(HALF_DAY);
+			request.setDurationDays(LeaveModuleConstant.HALF_DAY);
 			return Adjustment.SHORTENED;
 		}
 
-		float revisedDuration = request.getDurationDays() - addedHalves.size() * HALF_DAY;
+		float revisedDuration = request.getDurationDays() - addedHalves.size() * LeaveModuleConstant.HALF_DAY;
 		if (revisedDuration <= 0f) {
 			voidLeaveRequest(request);
 			return Adjustment.VOIDED;
