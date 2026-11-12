@@ -178,19 +178,17 @@ export interface ActivityTaskCreatePayload {
   notes: string;
 }
 
-export interface ActivityLinkEditPayload {
-  ownerId?: number;
-}
-
-export interface ActivityCallEditPayload extends ActivityLinkEditPayload {
+export interface ActivityCallEditPayload {
   id: number;
+  ownerId?: number;
   subject?: string;
   comments?: string;
   loggedAt?: string | null;
 }
 
-export interface ActivityMeetingEditPayload extends ActivityLinkEditPayload {
+export interface ActivityMeetingEditPayload {
   id: number;
+  ownerId?: number;
   name?: string;
   comments?: string;
   meetingDate?: string | null;
@@ -198,8 +196,9 @@ export interface ActivityMeetingEditPayload extends ActivityLinkEditPayload {
   endAt?: string | null;
 }
 
-export interface ActivityTaskEditPayload extends ActivityLinkEditPayload {
+export interface ActivityTaskEditPayload {
   id: number;
+  ownerId?: number;
   name?: string;
   notes?: string;
   isCompleted?: boolean;

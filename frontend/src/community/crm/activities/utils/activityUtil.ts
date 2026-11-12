@@ -7,7 +7,6 @@ import {
 import { ACTIVITY_TIME_SLOT_MINUTES } from "~community/crm/activities/constants/activityConstants";
 import {
   ActivityCallEditPayload,
-  ActivityLinkEditPayload,
   ActivityMeetingEditPayload,
   ActivityTaskEditPayload
 } from "~community/crm/activities/types/activityTypes";
@@ -67,18 +66,6 @@ export const toActivityInstant = (
     .toISO();
 };
 
-interface ActivityLinkFormValues {
-  ownerId: number | null;
-}
-
-const toLinkEditPayload = (
-  values: ActivityLinkFormValues,
-  saved: ActivityLinkFormValues
-): ActivityLinkEditPayload => ({
-  ...(values.ownerId &&
-    values.ownerId !== saved.ownerId && { ownerId: values.ownerId })
-});
-
 const toTimeFieldValue = (isoDateTime: string): string =>
   DateTime.fromISO(isoDateTime).toFormat(TIME_FORMAT_24_HOUR);
 
@@ -105,7 +92,8 @@ export const toCallEditPayload = (
   saved: CrmLogCallFormValues
 ): ActivityCallEditPayload => ({
   id,
-  ...toLinkEditPayload(values, saved),
+  ...(values.ownerId &&
+    values.ownerId !== saved.ownerId && { ownerId: values.ownerId }),
   ...((values.date !== saved.date || values.time !== saved.time) &&
     values.date && {
       loggedAt: toActivityInstant(values.date, values.time)
@@ -137,7 +125,8 @@ export const toMeetingEditPayload = (
 
   return {
     id,
-    ...toLinkEditPayload(values, saved),
+    ...(values.ownerId &&
+      values.ownerId !== saved.ownerId && { ownerId: values.ownerId }),
     ...(isDateChanged &&
       values.date && {
         meetingDate: DateTime.fromISO(values.date).toISODate()
@@ -174,7 +163,8 @@ export const toActivityTaskEditPayload = (
   saved: CrmAddTaskFormValues
 ): ActivityTaskEditPayload => ({
   id,
-  ...toLinkEditPayload(values, saved),
+  ...(values.ownerId &&
+    values.ownerId !== saved.ownerId && { ownerId: values.ownerId }),
   ...(values.priority !== saved.priority && { priority: values.priority }),
   ...(values.dueAt !== saved.dueAt && { dueAt: values.dueAt })
 });
