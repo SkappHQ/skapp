@@ -205,6 +205,13 @@ export interface ActivityTaskEditPayload extends ActivityLinkEditPayload {
   contactId?: number;
 }
 
+export type EmailRecipientField =
+  "toContactIds" | "ccContactIds" | "bccContactIds";
+
+export type EmailRecipientLabelKey = "to" | "cc" | "bcc";
+
+export type EmailRecipientAriaKey = "editTo" | "editCc" | "editBcc";
+
 export interface ActivityEmailEditPayload extends ActivityLinkEditPayload {
   id: number;
   subject?: string;

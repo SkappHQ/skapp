@@ -6,7 +6,12 @@ import { useShallow } from "zustand/react/shallow";
 import { TIME_FORMAT_24_HOUR } from "~community/common/constants/timeConstants";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { isValidEmail } from "~community/common/regex/regexPatterns";
-import { ActivityEmailEditPayload } from "~community/crm/activities/types/activityTypes";
+import {
+  ActivityEmailEditPayload,
+  EmailRecipientAriaKey,
+  EmailRecipientField,
+  EmailRecipientLabelKey
+} from "~community/crm/activities/types/activityTypes";
 import {
   toDateFieldValue,
   toEmailEditPayload,
@@ -31,8 +36,6 @@ interface Props {
   onSave: (payload: ActivityEmailEditPayload) => void;
   onCompanyClick: (companyId: number) => void;
 }
-
-type RecipientField = "toContactIds" | "ccContactIds" | "bccContactIds";
 
 const SidePanelActivityEmailInfo: FC<Props> = ({
   email,
@@ -93,9 +96,9 @@ const SidePanelActivityEmailInfo: FC<Props> = ({
   };
 
   const renderRecipients = (
-    field: RecipientField,
-    titleKey: "to" | "cc" | "bcc",
-    ariaKey: "editTo" | "editCc" | "editBcc"
+    field: EmailRecipientField,
+    titleKey: EmailRecipientLabelKey,
+    ariaKey: EmailRecipientAriaKey
   ): ReactNode => (
     <SidePanelContactsField
       id={`activity-email-${titleKey}`}

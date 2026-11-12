@@ -23,7 +23,7 @@ interface Props {
   hideStartTime?: boolean;
   secondaryRow?: ReactNode;
   owner?: CrmOwnerEntity;
-  companyId?: number | null;
+  companyId: number | null;
   onCompanyClick: (companyId: number) => void;
   onDateChange: (date: Date) => void;
   onStartTimeChange?: (time: string) => void;
@@ -62,9 +62,7 @@ const SidePanelActivityInfo: FC<Props> = ({
   );
 
   const noValue = translateText(["noValue"]);
-  const resolvedStartTimeLabel = startTimeLabel
-    ? startTimeLabel
-    : translateText(["startTime"]);
+  const resolvedStartTimeLabel = startTimeLabel || translateText(["startTime"]);
 
   const handleOwnerChange = (user: CrmOwnerEntity | null): void => {
     if (user && user.employeeId !== owner?.employeeId) {
@@ -108,7 +106,7 @@ const SidePanelActivityInfo: FC<Props> = ({
       <PropertyRow label={translateText(["activityOwner"])}>
         <div className="flex flex-col w-full">
           <OwnerPopupSearch
-            selectedUser={owner ? owner : null}
+            selectedUser={owner || null}
             onChange={handleOwnerChange}
             placeholder={noValue}
             searchPlaceholder={translatePlaceholder([
@@ -123,7 +121,7 @@ const SidePanelActivityInfo: FC<Props> = ({
       <PropertyRow label={translateText(["relatedTo"])}>
         <SidePanelCompanyField
           id={`${id}-related-to`}
-          companyId={companyId ? companyId : null}
+          companyId={companyId}
           emptyLabel={noValue}
           editAriaLabel={translateAria(["editRelatedTo"])}
           onCompanyClick={onCompanyClick}

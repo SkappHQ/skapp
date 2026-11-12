@@ -46,11 +46,11 @@ const SidePanelActivityComments: FC<Props> = ({
     onSave
   });
 
-  const emptyLabel = emptyText ? emptyText : translateText(["noComments"]);
+  const emptyLabel = emptyText || translateText(["noComments"]);
 
   return (
     <div className="flex flex-col gap-1">
-      <p className="subtitle1">{title ? title : translateText(["comments"])}</p>
+      <p className="subtitle1">{title || translateText(["comments"])}</p>
       {isEditing ? (
         <div className="flex flex-col gap-3">
           <TextArea
@@ -59,7 +59,7 @@ const SidePanelActivityComments: FC<Props> = ({
             onChange={(e) => changeValue(e.target.value)}
             className="w-full body2"
             rows={4}
-            aria-label={ariaLabel ? ariaLabel : translateAria(["comments"])}
+            aria-label={ariaLabel || translateAria(["comments"])}
             autoFocus
           />
           <div className="flex gap-2 justify-end">
@@ -86,12 +86,10 @@ const SidePanelActivityComments: FC<Props> = ({
           id={`${id}-comments`}
           type="button"
           className="subtitle3 max-h-24 overflow-y-auto break-words cursor-pointer hover:bg-secondary-background rounded text-left w-full bg-transparent border-none"
-          aria-label={
-            editAriaLabel ? editAriaLabel : translateAria(["editComments"])
-          }
+          aria-label={editAriaLabel || translateAria(["editComments"])}
           onClick={startEditing}
         >
-          {comments ? comments : emptyLabel}
+          {comments || emptyLabel}
         </button>
       )}
     </div>
