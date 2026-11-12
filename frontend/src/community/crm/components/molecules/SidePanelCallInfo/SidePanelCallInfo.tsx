@@ -41,7 +41,6 @@ const SidePanelCallInfo: FC<Props> = ({
   onCompanyClick
 }) => {
   const translateText = useTranslator("crmModule");
-  const translateInfo = useTranslator("crmModule", "activities");
 
   const { owners, contacts, setContacts, companies, setCompanies } =
     useCrmStore(
@@ -87,7 +86,12 @@ const SidePanelCallInfo: FC<Props> = ({
       id="call"
       primaryRow={
         <PropertyRow
-          label={translateInfo(["callSidePanel", "info", "contact"])}
+          label={translateText([
+            "activities",
+            "callSidePanel",
+            "info",
+            "contact"
+          ])}
         >
           {call.contact ? (
             <SidePanelLinkButton
@@ -96,7 +100,8 @@ const SidePanelCallInfo: FC<Props> = ({
             />
           ) : (
             <span className="body2">
-              {translateInfo([
+              {translateText([
+                "activities",
                 "activitySidePanel",
                 "info",
                 "noLongerAvailable"
@@ -110,16 +115,31 @@ const SidePanelCallInfo: FC<Props> = ({
           ? DateTime.fromISO(values.date)
           : DateTime.fromISO(call.loggedAt)
       }
-      dateLabel={translateInfo(["activitySidePanel", "info", "date"])}
+      dateLabel={translateText([
+        "activities",
+        "activitySidePanel",
+        "info",
+        "date"
+      ])}
       startTime={DateTime.fromFormat(values.time, TIME_FORMAT_24_HOUR)}
       secondaryRow={
         <PropertyRow
-          label={translateInfo(["callSidePanel", "info", "duration"])}
+          label={translateText([
+            "activities",
+            "callSidePanel",
+            "info",
+            "duration"
+          ])}
         >
           <span className="body2">
             {values.duration
               ? values.duration
-              : translateInfo(["activitySidePanel", "info", "noValue"])}
+              : translateText([
+                  "activities",
+                  "activitySidePanel",
+                  "info",
+                  "noValue"
+                ])}
           </span>
         </PropertyRow>
       }
