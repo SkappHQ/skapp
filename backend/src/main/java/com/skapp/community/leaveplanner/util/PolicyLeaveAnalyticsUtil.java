@@ -50,6 +50,38 @@ public class PolicyLeaveAnalyticsUtil {
 		}
 	}
 
+	public static double durationWithinWindow(PolicyLeaveSpanDto span, PolicyLeaveDateWindowDto window,
+			List<TimeConfig> timeConfigs, List<Holiday> holidays) {
+		LocalDate from = DateTimeUtils.getLaterDate(span.getStartDate(), window.getStartDate());
+		LocalDate to = DateTimeUtils.getEarlierDate(span.getEndDate(), window.getEndDate());
+		if (span.getDurationDays() == null || from.isAfter(to)) {
+			return 0;
+		}
+
+		BiFunction<LocalDate, LocalDate, Double> dayCounter = (start,
+				end) -> (double) LeaveModuleUtil.getWorkingDaysBetweenTwoDates(start, end, timeConfigs, holidays);
+		double requestDays = dayCounter.apply(span.getStartDate(), span.getEndDate());
+		if (requestDays <= 0) {
+			dayCounter = (start, end) -> (double) (ChronoUnit.DAYS.between(start, end) + 1);
+			requestDays = dayCounter.apply(span.getStartDate(), span.getEndDate());
+		}
+
+		return dayCounter.apply(from, to) * span.getDurationDays() / requestDays;
+	}
+
+	public static double workingDaysInWindow(LocalDate joinDate, LocalDate terminationDate,
+			PolicyLeaveDateWindowDto window, List<TimeConfig> timeConfigs, List<Holiday> holidays) {
+		LocalDate from = joinDate == null ? window.getStartDate()
+				: DateTimeUtils.getLaterDate(joinDate, window.getStartDate());
+		LocalDate to = terminationDate == null ? window.getEndDate()
+				: DateTimeUtils.getEarlierDate(terminationDate, window.getEndDate());
+		if (from.isAfter(to)) {
+			return 0;
+		}
+
+		return LeaveModuleUtil.getWorkingDaysBetweenTwoDates(from, to, timeConfigs, holidays);
+	}
+
 	public static List<Holiday> holidaysForWorkLocation(List<Holiday> holidays, Long workLocationId) {
 		return holidays.stream()
 			.filter(holiday -> holiday.getWorkLocations().isEmpty()
@@ -88,6 +120,10 @@ public class PolicyLeaveAnalyticsUtil {
 		}
 
 		return monthNameMap;
+	}
+
+	public static float calculateAbsenceRate(double leaveDays, double workingDays) {
+		return workingDays <= 0 ? 0f : (float) (leaveDays / workingDays * 100);
 	}
 
 	public static boolean isAllSelected(List<Long> ids, long allSelectionId) {

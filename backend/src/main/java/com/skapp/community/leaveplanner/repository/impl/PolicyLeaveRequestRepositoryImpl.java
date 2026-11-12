@@ -21,11 +21,11 @@ import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.EmployeeManager_;
-import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.EmployeeTeam;
 import com.skapp.community.peopleplanner.model.EmployeeTeam_;
 import com.skapp.community.peopleplanner.model.Employee_;
 import com.skapp.community.peopleplanner.model.Team_;
+import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.util.PeopleUtil;
 import jakarta.persistence.EntityManager;
@@ -33,10 +33,10 @@ import jakarta.persistence.LockModeType;
 import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CompoundSelection;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Fetch;
-import jakarta.persistence.criteria.From;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Path;
@@ -64,6 +64,8 @@ import java.util.Optional;
 public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepository {
 
 	private final EntityManager entityManager;
+
+	private final EmployeeDao employeeDao;
 
 	@Override
 	public Page<PolicyLeaveRequest> findMyRequests(Long employeeId, LocalDate cycleStart, LocalDate cycleEnd,
@@ -272,8 +274,8 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
 		Join<PolicyLeaveRequest, Employee> employee = root.join(PolicyLeaveRequest_.employee);
 
-		List<Predicate> predicates = buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee, teamIds,
-				supervisorEmployeeId);
+		List<Predicate> predicates = employeeDao.buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee,
+				teamIds, supervisorEmployeeId);
 		predicates.add(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.status), LeaveRequestStatus.APPROVED));
 		predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get(PolicyLeaveRequest_.startDate), date));
 		predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), date));
@@ -297,8 +299,9 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		Root<Employee> root = criteriaQuery.from(Employee.class);
 
 		criteriaQuery.select(criteriaBuilder.countDistinct(root))
-			.where(buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, root, teamIds, supervisorEmployeeId,
-					includeOwnTeams)
+			.where(employeeDao
+				.buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, root, teamIds, supervisorEmployeeId,
+						includeOwnTeams)
 				.toArray(new Predicate[0]));
 
 		return entityManager.createQuery(criteriaQuery).getSingleResult();
@@ -316,8 +319,8 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		root.fetch(PolicyLeaveRequest_.reviewer, JoinType.LEFT);
 		Join<PolicyLeaveRequest, Employee> employee = root.join(PolicyLeaveRequest_.employee);
 
-		List<Predicate> predicates = buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee, teamIds,
-				supervisorEmployeeId, true);
+		List<Predicate> predicates = employeeDao.buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee,
+				teamIds, supervisorEmployeeId, true);
 		predicates.add(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.status), LeaveRequestStatus.APPROVED));
 		predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get(PolicyLeaveRequest_.startDate), endDate));
 		predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), startDate));
@@ -376,10 +379,50 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 			.add(criteriaBuilder.not(singleMonthWithinWindowPredicate(criteriaBuilder, root, startDate, endDate)));
 
 		criteriaQuery
-			.select(criteriaBuilder.construct(PolicyLeaveSpanDto.class,
+			.select(spanProjection(criteriaBuilder, root,
 					root.get(PolicyLeaveRequest_.policy).get(LeavePolicy_.leaveType).get(PolicyLeaveType_.id),
-					root.get(PolicyLeaveRequest_.startDate), root.get(PolicyLeaveRequest_.endDate),
-					root.get(PolicyLeaveRequest_.durationDays), workLocation.get(WorkLocation_.workLocationId)))
+					workLocation))
+			.where(predicates.toArray(new Predicate[0]));
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
+	@Override
+	public double sumApprovedDurationWithinWindow(LocalDate startDate, LocalDate endDate, List<Long> teamIds,
+			Long supervisorEmployeeId) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<Double> criteriaQuery = criteriaBuilder.createQuery(Double.class);
+		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
+		Join<PolicyLeaveRequest, Employee> employee = root.join(PolicyLeaveRequest_.employee);
+
+		List<Predicate> predicates = buildApprovedLeaveInWindowPredicates(criteriaBuilder, criteriaQuery, root,
+				employee, startDate, endDate, null, teamIds, supervisorEmployeeId, null);
+		predicates.add(withinWindowPredicate(criteriaBuilder, root, startDate, endDate));
+
+		criteriaQuery.select(criteriaBuilder.sumAsDouble(root.get(PolicyLeaveRequest_.durationDays)))
+			.where(predicates.toArray(new Predicate[0]));
+
+		Double durationDays = entityManager.createQuery(criteriaQuery).getSingleResult();
+		return durationDays == null ? 0 : durationDays;
+	}
+
+	@Override
+	public List<PolicyLeaveSpanDto> findApprovedSpansCrossingWindow(LocalDate startDate, LocalDate endDate,
+			List<Long> teamIds, Long supervisorEmployeeId) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<PolicyLeaveSpanDto> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveSpanDto.class);
+		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
+		Join<PolicyLeaveRequest, Employee> employee = root.join(PolicyLeaveRequest_.employee);
+		Join<Employee, WorkLocation> workLocation = employee.join(Employee_.workLocation, JoinType.LEFT);
+
+		List<Predicate> predicates = buildApprovedLeaveInWindowPredicates(criteriaBuilder, criteriaQuery, root,
+				employee, startDate, endDate, null, teamIds, supervisorEmployeeId, null);
+		predicates.add(criteriaBuilder.not(withinWindowPredicate(criteriaBuilder, root, startDate, endDate)));
+
+		criteriaQuery
+			.select(spanProjection(criteriaBuilder, root, criteriaBuilder.nullLiteral(Long.class), workLocation))
 			.where(predicates.toArray(new Predicate[0]));
 
 		return entityManager.createQuery(criteriaQuery).getResultList();
@@ -478,7 +521,8 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 			LocalDate startDate, LocalDate endDate, List<Long> leaveTypeIds, List<Long> teamIds,
 			Long supervisorEmployeeId, Long employeeId) {
 		List<Predicate> predicates = employeeId == null
-				? buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee, teamIds, supervisorEmployeeId)
+				? employeeDao.buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee, teamIds,
+						supervisorEmployeeId)
 				: new ArrayList<>(List.of(criteriaBuilder.equal(employee.get(Employee_.employeeId), employeeId)));
 		predicates.add(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.status), LeaveRequestStatus.APPROVED));
 		predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get(PolicyLeaveRequest_.startDate), endDate));
@@ -492,6 +536,20 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		}
 
 		return predicates;
+	}
+
+	private Predicate withinWindowPredicate(CriteriaBuilder criteriaBuilder, Root<PolicyLeaveRequest> root,
+			LocalDate startDate, LocalDate endDate) {
+		return criteriaBuilder.and(
+				criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.startDate), startDate),
+				criteriaBuilder.lessThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), endDate));
+	}
+
+	private CompoundSelection<PolicyLeaveSpanDto> spanProjection(CriteriaBuilder criteriaBuilder,
+			Root<PolicyLeaveRequest> root, Expression<Long> leaveTypeId, Join<Employee, WorkLocation> workLocation) {
+		return criteriaBuilder.construct(PolicyLeaveSpanDto.class, leaveTypeId, root.get(PolicyLeaveRequest_.startDate),
+				root.get(PolicyLeaveRequest_.endDate), root.get(PolicyLeaveRequest_.durationDays),
+				workLocation.get(WorkLocation_.workLocationId));
 	}
 
 	private Predicate singleMonthWithinWindowPredicate(CriteriaBuilder criteriaBuilder, Root<PolicyLeaveRequest> root,
@@ -575,7 +633,7 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 			Root<PolicyLeaveRequest> root, Join<PolicyLeaveRequest, Employee> employee, Long teamId,
 			Collection<Long> employeeIds, LocalDate startDate, LocalDate endDate,
 			PolicyLeaveHistoryFilterDto filterDto) {
-		List<Predicate> predicates = buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee,
+		List<Predicate> predicates = employeeDao.buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee,
 				teamId == null ? null : List.of(teamId), null);
 
 		if (!CollectionUtils.isEmpty(employeeIds)) {
@@ -610,81 +668,6 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		predicates.add(criteriaBuilder
 			.not(employee.get(Employee_.ACCOUNT_STATUS).in(AccountStatus.TERMINATED, AccountStatus.DELETED)));
 		predicates.add(criteriaBuilder.equal(supervisor.get(Employee_.employeeId), supervisorEmployeeId));
-
-		return predicates;
-	}
-
-	private List<Predicate> buildEmployeeScopePredicates(CriteriaBuilder criteriaBuilder,
-			CriteriaQuery<?> criteriaQuery, From<?, Employee> employee, List<Long> teamIds, Long supervisorEmployeeId) {
-		return buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee, teamIds, supervisorEmployeeId,
-				false);
-	}
-
-	private List<Predicate> buildEmployeeScopePredicates(CriteriaBuilder criteriaBuilder,
-			CriteriaQuery<?> criteriaQuery, From<?, Employee> employee, List<Long> teamIds, Long supervisorEmployeeId,
-			boolean includeOwnTeams) {
-		List<Predicate> predicates = new ArrayList<>();
-
-		Join<Employee, User> user = employee.join(Employee_.user);
-		Join<Employee, EmployeeRole> employeeRole = employee.join(Employee_.employeeRole, JoinType.LEFT);
-
-		predicates.add(criteriaBuilder.equal(user.get(User_.isActive), true));
-		predicates.add(criteriaBuilder
-			.not(employee.get(Employee_.ACCOUNT_STATUS).in(AccountStatus.TERMINATED, AccountStatus.DELETED)));
-		predicates.add(PeopleUtil.notGuestEmployeePredicate(criteriaBuilder, employeeRole));
-
-		if (!CollectionUtils.isEmpty(teamIds)) {
-			Subquery<Long> teamMembers = criteriaQuery.subquery(Long.class);
-			Root<EmployeeTeam> employeeTeam = teamMembers.from(EmployeeTeam.class);
-			teamMembers.select(employeeTeam.get(EmployeeTeam_.employee).get(Employee_.employeeId))
-				.where(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teamIds));
-
-			predicates.add(employee.get(Employee_.employeeId).in(teamMembers));
-		}
-
-		if (supervisorEmployeeId != null) {
-			Subquery<Long> managedEmployees = criteriaQuery.subquery(Long.class);
-			Root<EmployeeManager> employeeManager = managedEmployees.from(EmployeeManager.class);
-			managedEmployees.select(employeeManager.get(EmployeeManager_.employee).get(Employee_.employeeId))
-				.where(criteriaBuilder.equal(employeeManager.get(EmployeeManager_.manager).get(Employee_.employeeId),
-						supervisorEmployeeId));
-
-			List<Predicate> scopePredicates = new ArrayList<>();
-			scopePredicates.add(employee.get(Employee_.employeeId).in(managedEmployees));
-
-			if (includeOwnTeams) {
-				Subquery<Long> ownTeams = criteriaQuery.subquery(Long.class);
-				Root<EmployeeTeam> memberTeam = ownTeams.from(EmployeeTeam.class);
-				ownTeams.select(memberTeam.get(EmployeeTeam_.team).get(Team_.teamId))
-					.where(criteriaBuilder.equal(memberTeam.get(EmployeeTeam_.employee).get(Employee_.employeeId),
-							supervisorEmployeeId));
-
-				Subquery<Long> ownTeamMembers = criteriaQuery.subquery(Long.class);
-				Root<EmployeeTeam> ownTeamMember = ownTeamMembers.from(EmployeeTeam.class);
-				ownTeamMembers.select(ownTeamMember.get(EmployeeTeam_.employee).get(Employee_.employeeId))
-					.where(ownTeamMember.get(EmployeeTeam_.team).get(Team_.teamId).in(ownTeams));
-
-				scopePredicates.add(employee.get(Employee_.employeeId).in(ownTeamMembers));
-				scopePredicates.add(criteriaBuilder.equal(employee.get(Employee_.employeeId), supervisorEmployeeId));
-			}
-			else {
-				Subquery<Long> supervisedTeams = criteriaQuery.subquery(Long.class);
-				Root<EmployeeTeam> supervisorTeam = supervisedTeams.from(EmployeeTeam.class);
-				supervisedTeams.select(supervisorTeam.get(EmployeeTeam_.team).get(Team_.teamId))
-					.where(criteriaBuilder.equal(supervisorTeam.get(EmployeeTeam_.employee).get(Employee_.employeeId),
-							supervisorEmployeeId),
-							criteriaBuilder.isTrue(supervisorTeam.get(EmployeeTeam_.isSupervisor)));
-
-				Subquery<Long> supervisedTeamMembers = criteriaQuery.subquery(Long.class);
-				Root<EmployeeTeam> teamMember = supervisedTeamMembers.from(EmployeeTeam.class);
-				supervisedTeamMembers.select(teamMember.get(EmployeeTeam_.employee).get(Employee_.employeeId))
-					.where(teamMember.get(EmployeeTeam_.team).get(Team_.teamId).in(supervisedTeams));
-
-				scopePredicates.add(employee.get(Employee_.employeeId).in(supervisedTeamMembers));
-			}
-
-			predicates.add(criteriaBuilder.or(scopePredicates.toArray(new Predicate[0])));
-		}
 
 		return predicates;
 	}

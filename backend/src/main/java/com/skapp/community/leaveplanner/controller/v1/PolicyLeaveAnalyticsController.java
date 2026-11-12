@@ -1,6 +1,7 @@
 package com.skapp.community.leaveplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.leaveplanner.payload.request.PolicyAbsenceRateFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveHistoryFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveTypeBreakdownFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyTeamLeaveHistoryFilterDto;
@@ -56,6 +57,13 @@ public class PolicyLeaveAnalyticsController {
 			PolicyLeaveHistoryFilterDto policyLeaveHistoryFilterDto) {
 		ResponseEntityDto response = policyLeaveAnalyticsService.getEmployeeLeaveHistory(id,
 				policyLeaveHistoryFilterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PreAuthorize("hasRole('ROLE_LEAVE_MANAGER')")
+	@GetMapping("/absence-rate")
+	public ResponseEntity<ResponseEntityDto> getAbsenceRate(PolicyAbsenceRateFilterDto policyAbsenceRateFilterDto) {
+		ResponseEntityDto response = policyLeaveAnalyticsService.getAbsenceRate(policyAbsenceRateFilterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
