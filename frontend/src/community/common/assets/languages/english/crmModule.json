@@ -705,6 +705,10 @@
       "meetings": "Meetings",
       "emails": "Emails"
     },
+    "addActivity": {
+      "button": "Add activity",
+      "pickerTitle": "Add activity"
+    },
     "buckets": {
       "overdue": "Overdue",
       "today": "Today",
