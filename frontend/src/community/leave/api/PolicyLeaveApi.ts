@@ -19,7 +19,11 @@ import {
 } from "~community/leave/constants/policyLeaveTypeConstants";
 import { initialPolicyLeaveRequestParams } from "~community/leave/store/policyLeaveStore";
 import { useLeaveStore } from "~community/leave/store/store";
-import { LeaveHistoryDataTypes as EmployeeLeaveHistoryDataTypes } from "~community/leave/types/AnalyticsTypes";
+import {
+  AbsenceRateResponse,
+  AbsenceRateType,
+  LeaveHistoryDataTypes as EmployeeLeaveHistoryDataTypes
+} from "~community/leave/types/AnalyticsTypes";
 import {
   LeaveTypeBreakDownReturnTypes,
   LeaveTypeBreakdownResponseType
@@ -121,6 +125,27 @@ export const useGetPolicyEmployeesOnLeaveToday = (
     queryFn: () => getPolicyEmployeesOnLeaveToday(teamId),
     enabled: enabled && teamId !== "",
     refetchOnWindowFocus: false
+  });
+};
+
+const getPolicyAbsenceRate = async (
+  teamId: number
+): Promise<AbsenceRateType> => {
+  const response = await authFetch.get<AbsenceRateResponse>(
+    policyLeaveEndPoints.GET_ABSENCE_RATE,
+    { params: { teamIds: teamId } }
+  );
+  return response.data.results[0];
+};
+
+export const useGetPolicyAbsenceRate = (
+  teamId: number,
+  enabled = true
+): UseQueryResult<AbsenceRateType> => {
+  return useQuery({
+    queryKey: policyLeaveQueryKeys.ABSENCE_RATE(teamId),
+    queryFn: () => getPolicyAbsenceRate(teamId),
+    enabled
   });
 };
 
@@ -400,6 +425,9 @@ export const useApplyPolicyLeave = (
       });
       queryClient.invalidateQueries({
         queryKey: policyLeaveQueryKeys.ALL_LEAVE_TYPE_BREAKDOWN()
+      });
+      queryClient.invalidateQueries({
+        queryKey: policyLeaveQueryKeys.ALL_ABSENCE_RATE()
       });
       queryClient.invalidateQueries({
         queryKey: policyLeaveQueryKeys.ALL_EMPLOYEE_LEAVE_UTILIZATION()
