@@ -1,21 +1,17 @@
-import { FC, Fragment, ReactNode } from "react";
+import { FC, Fragment } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   ActivityRow,
+  ActivityRowSubtitlePart,
   ActivityType
 } from "~community/crm/activities/types/activityTypes";
 import { getRowSubtitle } from "~community/crm/activities/utils/activityFeedUtil";
 import { useCrmStore } from "~community/crm/store/store";
 import { getContactDisplayName } from "~community/crm/utils/contactUtil";
 import { isOverdue } from "~community/crm/utils/taskValidations";
-
-interface SubtitlePart {
-  key: string;
-  isVisible: boolean;
-  content: ReactNode;
-}
+import { getMeetingVenueSubtitleParts } from "~enterprise/crm/utils/meetingVenueUtil";
 
 interface ActivityRowSubtitleProps {
   id: string;
@@ -69,7 +65,7 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
     </span>
   );
 
-  const parts: SubtitlePart[] = [
+  const parts: ActivityRowSubtitlePart[] = [
     {
       key: "status",
       isVisible: Boolean(status),
@@ -82,6 +78,11 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
         </span>
       )
     },
+    ...getMeetingVenueSubtitleParts({
+      id,
+      row,
+      className: `min-w-0 truncate ${nameColor} ${strikeClass}`
+    }),
     {
       key: "contacts",
       isVisible: contactLinks.length > 0,

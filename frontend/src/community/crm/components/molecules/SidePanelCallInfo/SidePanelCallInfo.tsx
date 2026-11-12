@@ -45,7 +45,6 @@ const SidePanelCallInfo: FC<Props> = ({
   onCompanyClick
 }) => {
   const translateText = useTranslator("crmModule");
-  const translateInfo = useTranslator("crmModule", "activities");
   const translateAria = useTranslator(
     "crmAria",
     "activities",
@@ -89,7 +88,13 @@ const SidePanelCallInfo: FC<Props> = ({
 
   const validateDuration = (duration: string): string =>
     duration.trim() && !callDurationPattern().test(duration.trim())
-      ? translateInfo(["logCall", "modal", "validations", "duration"])
+      ? translateText([
+          "activities",
+          "logCall",
+          "modal",
+          "validations",
+          "duration"
+        ])
       : "";
 
   const handleDurationSave = (duration: string): void => {
@@ -119,12 +124,18 @@ const SidePanelCallInfo: FC<Props> = ({
       id="call"
       primaryRow={
         <PropertyRow
-          label={translateInfo(["callSidePanel", "info", "contact"])}
+          label={translateText([
+            "activities",
+            "callSidePanel",
+            "info",
+            "contact"
+          ])}
         >
           <SidePanelContactField
             id="call-contact"
             contactId={values.contactId}
-            emptyLabel={translateInfo([
+            emptyLabel={translateText([
+              "activities",
               "activitySidePanel",
               "info",
               "noLongerAvailable"
@@ -140,16 +151,27 @@ const SidePanelCallInfo: FC<Props> = ({
           ? DateTime.fromISO(values.date)
           : DateTime.fromISO(call.loggedAt)
       }
-      dateLabel={translateInfo(["activitySidePanel", "info", "date"])}
+      dateLabel={translateText([
+        "activities",
+        "activitySidePanel",
+        "info",
+        "date"
+      ])}
       startTime={DateTime.fromFormat(values.time, TIME_FORMAT_24_HOUR)}
       secondaryRow={
         <PropertyRow
-          label={translateInfo(["callSidePanel", "info", "duration"])}
+          label={translateText([
+            "activities",
+            "callSidePanel",
+            "info",
+            "duration"
+          ])}
         >
           <SidePanelTextField
             id="call-duration"
             value={values.duration}
-            placeholder={translateInfo([
+            placeholder={translateText([
+              "activities",
               "activitySidePanel",
               "info",
               "noValue"

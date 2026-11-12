@@ -24,9 +24,10 @@ import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 
 interface Props {
   taskId: number;
+  onCompletionChange: (taskId: number) => void;
 }
 
-const ActivityTaskSidePanel: FC<Props> = ({ taskId }) => {
+const ActivityTaskSidePanel: FC<Props> = ({ taskId, onCompletionChange }) => {
   const translateText = useTranslator("crmModule");
   const { setToastMessage } = useToast();
   const router = useRouter();
@@ -102,6 +103,11 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId }) => {
     openRecord(ROUTES.CRM.COMPANY_DETAIL(companyId));
   };
 
+  const handleCompletionChange = (isCompleted: boolean): void => {
+    onCompletionChange(taskId);
+    updateTask({ id: taskId, isCompleted });
+  };
+
   const handleRelatedRowClick = (row: ActivityRow): void => {
     setSelectedActivityTaskId(row.id);
   };
@@ -121,7 +127,7 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId }) => {
                 "taskSidePanel",
                 "relatedTitle"
               ])}
-              rows={(relatedTasks ?? []).map(toTaskRow)}
+              rows={relatedTasks.map(toTaskRow)}
               onRowClick={handleRelatedRowClick}
             />
           )
@@ -131,8 +137,8 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId }) => {
         onDelete={openDeleteModal}
         onDealChange={(dealId) => updateTask(toDealEditPayload(taskId, dealId))}
         onDetailsSave={updateTask}
-        onMarkAsDone={() => updateTask({ id: taskId, isCompleted: true })}
-        onReopen={() => updateTask({ id: taskId, isCompleted: false })}
+        onMarkAsDone={() => handleCompletionChange(true)}
+        onReopen={() => handleCompletionChange(false)}
         onContactClick={handleContactClick}
         onCompanyClick={handleCompanyClick}
       />

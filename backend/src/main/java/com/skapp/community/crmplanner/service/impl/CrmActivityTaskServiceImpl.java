@@ -4,6 +4,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
@@ -21,15 +22,19 @@ import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.service.CrmActivityTaskService;
 import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
+import com.skapp.community.crmplanner.type.CrmActivityTaskFilterParams;
+import com.skapp.community.crmplanner.type.CrmActivityTaskSort;
 import com.skapp.community.crmplanner.util.CrmUtil;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -49,6 +54,8 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 	private final CrmCompanyDao crmCompanyDao;
 
 	private final CrmOwnerResolverService crmOwnerResolver;
+
+	private final MessageUtil messageUtil;
 
 	@Override
 	@Transactional
@@ -160,6 +167,9 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_EDIT_DENIED);
 		}
 
+		CrmValidations.validateActivityLinkRemoval(requestDto.getIsDealRemoved(), requestDto.getDealId(),
+				requestDto.getIsCompanyRemoved(), requestDto.getCompanyId());
+
 		if (requestDto.getName() != null) {
 			CrmValidations.validateTaskName(requestDto.getName());
 			task.setName(requestDto.getName());
@@ -189,7 +199,10 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 			task.setContact(contact);
 		}
 
-		if (requestDto.getDealId() != null) {
+		if (Boolean.TRUE.equals(requestDto.getIsDealRemoved())) {
+			task.setDeal(null);
+		}
+		else if (requestDto.getDealId() != null) {
 			CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 			if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, deal.getOwner().getEmployeeId())) {
@@ -198,7 +211,10 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 			task.setDeal(deal);
 		}
 
-		if (requestDto.getCompanyId() != null) {
+		if (Boolean.TRUE.equals(requestDto.getIsCompanyRemoved())) {
+			task.setCompany(null);
+		}
+		else if (requestDto.getCompanyId() != null) {
 			CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
 			task.setCompany(company);
@@ -217,6 +233,63 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 
 		log.info("editTask: execution ended");
 		return new ResponseEntityDto(false, crmMapper.crmActivityTaskToCrmActivityTaskResponseDto(updatedTask));
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto deleteTask(Long id) {
+		log.info("deleteTask: execution started");
+
+		CrmActivityTask task = crmActivityTaskDao.findTaskById(id);
+		if (task == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND);
+		}
+
+		task.setIsDeleted(true);
+		crmActivityTaskDao.save(task);
+
+		log.info("deleteTask: execution ended");
+		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_ACTIVITY_DELETED), false);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getRelatedTasks(Long id) {
+		log.info("getRelatedTasks: execution started");
+
+		CrmActivityTask task = crmActivityTaskDao.findTaskById(id);
+		if (task == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND);
+		}
+
+		User currentUser = userService.getCurrentUser();
+		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, task.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_VIEW_DENIED);
+		}
+
+		if (task.getContact() == null && task.getDeal() == null) {
+			log.info("getRelatedTasks: execution ended");
+			return new ResponseEntityDto(false, List.of());
+		}
+
+		CrmActivityTaskFilterParams params = new CrmActivityTaskFilterParams();
+		params.setSortKey(CrmActivityTaskSort.DUE_AT);
+		params.setSortOrder(Sort.Direction.DESC);
+		params.setCurrentEmployeeId(currentUser.getEmployee().getEmployeeId());
+		params.setIsRestrictedToOwner(CrmUtil.isCrmSalesRepresentative(currentUser));
+		if (task.getContact() != null) {
+			params.setRelatedContactIds(List.of(task.getContact().getId()));
+		}
+		if (task.getDeal() != null) {
+			params.setRelatedDealId(task.getDeal().getId());
+		}
+		params.setExcludedId(id);
+		params.setMaxResults(CrmConstants.RELATED_ACTIVITY_LIMIT);
+
+		List<CrmActivityTaskResponseDto> tasks = crmActivityTaskDao.findTasks(params);
+
+		log.info("getRelatedTasks: execution ended");
+		return new ResponseEntityDto(false, tasks);
 	}
 
 	protected void validateActivityCreationLimit() {

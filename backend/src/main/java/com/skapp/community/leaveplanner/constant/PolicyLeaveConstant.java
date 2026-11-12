@@ -37,4 +37,6 @@ public class PolicyLeaveConstant {
 
 	public static final long ALL_LEAVE_TYPES_ID = -1L;
 
+	public static final int ABSENCE_RATE_WINDOW_DAYS = 30;
+
 }

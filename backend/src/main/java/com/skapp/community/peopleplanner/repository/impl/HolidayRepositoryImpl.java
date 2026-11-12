@@ -83,6 +83,23 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 	}
 
 	@Override
+	public List<Holiday> findAllActiveHolidaysBetweenWithWorkLocations(LocalDate startDate, LocalDate endDate) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Holiday> criteriaQuery = criteriaBuilder.createQuery(Holiday.class);
+		Root<Holiday> root = criteriaQuery.from(Holiday.class);
+		root.fetch(Holiday_.workLocations, JoinType.LEFT);
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(criteriaBuilder.equal(root.get(Holiday_.isActive), true));
+		predicates.add(criteriaBuilder.between(root.get(Holiday_.date), startDate, endDate));
+
+		criteriaQuery.where(predicates.toArray(new Predicate[0]));
+		criteriaQuery.distinct(true);
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
+	@Override
 	public List<Holiday> findAllActiveHolidaysByWorkLocationId(Long workLocationId) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Holiday> criteriaQuery = criteriaBuilder.createQuery(Holiday.class);

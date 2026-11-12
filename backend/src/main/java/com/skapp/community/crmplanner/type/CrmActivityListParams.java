@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.springframework.data.domain.Sort;
 
 import java.time.Instant;
+import java.util.List;
 
 @Getter
 @Setter
@@ -23,5 +24,13 @@ public class CrmActivityListParams {
 	private Instant rangeEnd;
 
 	private Sort.Direction sortOrder;
+
+	private List<Long> relatedContactIds;
+
+	private Long relatedDealId;
+
+	private Long excludedId;
+
+	private Integer maxResults;
 
 }

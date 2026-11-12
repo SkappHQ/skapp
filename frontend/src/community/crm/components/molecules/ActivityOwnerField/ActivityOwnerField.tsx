@@ -22,13 +22,15 @@ import {
   CrmLogMeetingFormValues
 } from "~community/crm/types/CrmCommonTypes";
 import { updateOwnerRecord } from "~community/crm/utils/commonUtil";
+import { CrmScheduleMeetingFormValues } from "~enterprise/crm/types/ScheduleMeetingTypes";
 
 interface Props {
   id: string;
   formik:
     | FormikProps<CrmLogCallFormValues>
     | FormikProps<CrmLogMeetingFormValues>
-    | FormikProps<CrmAddTaskFormValues>;
+    | FormikProps<CrmAddTaskFormValues>
+    | FormikProps<CrmScheduleMeetingFormValues>;
 }
 
 const ActivityOwnerField: FC<Props> = ({ id, formik }) => {

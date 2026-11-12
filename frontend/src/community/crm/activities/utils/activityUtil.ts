@@ -101,11 +101,11 @@ export const toCallFormValues = (
     call.durationMinutes != null
       ? formatCallDuration(call.durationMinutes)
       : "",
-  contactId: call.contact && call.contact.id ? call.contact.id : null,
+  contactId: call.contact?.id ?? null,
   ownerId: call.ownerId,
-  comments: call.comments ? call.comments : "",
-  dealId: call.deal && call.deal.id ? call.deal.id : null,
-  companyId: call.company && call.company.id ? call.company.id : null
+  comments: call.comments ?? "",
+  dealId: call.deal?.id ?? null,
+  companyId: call.company?.id ?? null
 });
 
 export const toCallEditPayload = (
@@ -137,9 +137,9 @@ export const toMeetingFormValues = (
     contact.id ? [contact.id] : []
   ),
   ownerId: meeting.ownerId,
-  comments: meeting.comments ? meeting.comments : "",
-  dealId: meeting.deal && meeting.deal.id ? meeting.deal.id : null,
-  companyId: meeting.company && meeting.company.id ? meeting.company.id : null
+  comments: meeting.comments ?? "",
+  dealId: meeting.deal?.id ?? null,
+  companyId: meeting.company?.id ?? null
 });
 
 export const toMeetingEditPayload = (
@@ -179,10 +179,10 @@ export const toActivityTaskFormValues = (
   priority: task.priority,
   dueAt: task.dueAt,
   ownerId: task.ownerId,
-  contactId: task.contact && task.contact.id ? task.contact.id : null,
-  dealId: task.deal && task.deal.id ? task.deal.id : null,
-  companyId: task.company && task.company.id ? task.company.id : null,
-  notes: task.notes ? task.notes : ""
+  contactId: task.contact?.id ?? null,
+  dealId: task.deal?.id ?? null,
+  companyId: task.company?.id ?? null,
+  notes: task.notes ?? ""
 });
 
 export const toActivityTaskEditPayload = (

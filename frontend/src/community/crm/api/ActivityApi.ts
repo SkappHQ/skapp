@@ -37,6 +37,7 @@ import {
   CrmMeetingEntity,
   CrmTaskCompletionPayload
 } from "~community/crm/types/CrmCommonTypes";
+import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 const fetchActivityFeed = async (
   params: ActivityFeedFilters
@@ -119,6 +120,9 @@ export const useCreateEmail = (
   return useMutation({
     mutationFn: createEmail,
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
       queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
       onSuccess();
     },
@@ -196,6 +200,9 @@ export const useCreateCall = (
   return useMutation({
     mutationFn: createCall,
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
       queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
       onSuccess();
     },
@@ -251,6 +258,9 @@ export const useCreateMeeting = (
   return useMutation({
     mutationFn: createMeeting,
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
       queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
       onSuccess();
     },
@@ -273,6 +283,9 @@ export const useCreateTask = (
   return useMutation({
     mutationFn: createTask,
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
       queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
       onSuccess();
     },

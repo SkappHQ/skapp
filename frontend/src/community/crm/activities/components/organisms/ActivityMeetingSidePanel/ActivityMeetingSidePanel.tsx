@@ -113,7 +113,7 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId }) => {
                 "meetingSidePanel",
                 "relatedTitle"
               ])}
-              rows={(relatedMeetings ?? []).map(toMeetingRow)}
+              rows={relatedMeetings.map(toMeetingRow)}
               onRowClick={handleRelatedRowClick}
             />
           )

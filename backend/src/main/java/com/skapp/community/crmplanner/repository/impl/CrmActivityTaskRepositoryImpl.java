@@ -16,6 +16,7 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
+import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
@@ -63,6 +64,15 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 			predicates.add(cb.lessThan(dueAt, params.getRangeEnd()));
 		}
 		predicates.add(cb.isFalse(task.get(CrmActivityTask_.isDeleted)));
+		if (params.getRelatedContactIds() != null) {
+			predicates.add(task.get(CrmActivityTask_.contact).get(CrmContact_.id).in(params.getRelatedContactIds()));
+		}
+		if (params.getRelatedDealId() != null) {
+			predicates.add(cb.equal(task.get(CrmActivityTask_.deal).get(CrmDeal_.id), params.getRelatedDealId()));
+		}
+		if (params.getExcludedId() != null) {
+			predicates.add(cb.notEqual(task.get(CrmActivityTask_.id), params.getExcludedId()));
+		}
 
 		if (params.getSearchPattern() != null) {
 			Join<CrmActivityTask, CrmContact> contact = task.join(CrmActivityTask_.contact, JoinType.LEFT);
@@ -97,7 +107,11 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 			.where(predicates.toArray(new Predicate[0]))
 			.orderBy(orders);
 
-		return entityManager.createQuery(query).getResultList().stream().map(row -> {
+		TypedQuery<Tuple> typedQuery = entityManager.createQuery(query);
+		if (params.getMaxResults() != null) {
+			typedQuery.setMaxResults(params.getMaxResults());
+		}
+		return typedQuery.getResultList().stream().map(row -> {
 			CrmActivityTaskResponseDto dto = new CrmActivityTaskResponseDto();
 			dto.setId(row.get(0, Long.class));
 			dto.setName(row.get(1, String.class));

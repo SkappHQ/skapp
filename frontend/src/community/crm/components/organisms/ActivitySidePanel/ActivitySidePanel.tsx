@@ -34,6 +34,7 @@ interface Props {
   emptyDealsDescription: string;
   commentsTitle?: string;
   emptyCommentsText?: string;
+  activityId?: number;
   title?: string;
   comments?: string;
   deal?: CrmDealEntity;
@@ -58,6 +59,7 @@ const ActivitySidePanel: FC<Props> = ({
   emptyDealsDescription,
   commentsTitle,
   emptyCommentsText,
+  activityId,
   title,
   comments,
   deal,
@@ -89,8 +91,7 @@ const ActivitySidePanel: FC<Props> = ({
 
   const linkedDealId = deal?.id && deals[deal.id] ? deal.id : null;
 
-  const { isCrmSalesManager, isCrmAdmin, isSuperAdmin } = useSessionData();
-  const isDeleteAllowed = isCrmSalesManager || isCrmAdmin || isSuperAdmin;
+  const { isCrmSalesManager } = useSessionData();
 
   const deleteItem: MenuItemProps = {
     id: "delete",
@@ -110,7 +111,7 @@ const ActivitySidePanel: FC<Props> = ({
 
   const actionItems: MenuItemProps[] = [
     ...menuItems,
-    ...(isDeleteAllowed ? [deleteItem] : [])
+    ...(isCrmSalesManager ? [deleteItem] : [])
   ];
 
   return (
@@ -127,6 +128,7 @@ const ActivitySidePanel: FC<Props> = ({
             {title &&
               (onTitleSave ? (
                 <SidePanelActivityTitle
+                  key={activityId}
                   id={id}
                   title={title}
                   onSave={onTitleSave}
@@ -164,6 +166,7 @@ const ActivitySidePanel: FC<Props> = ({
           <div className="flex flex-col flex-1 gap-6 min-w-0">
             {onCommentsSave ? (
               <SidePanelActivityComments
+                key={activityId}
                 id={id}
                 comments={comments}
                 onSave={onCommentsSave}

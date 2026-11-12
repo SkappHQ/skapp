@@ -27,6 +27,7 @@ import {
   getMissingCompanyIds,
   updateCompanyRecord
 } from "~community/crm/utils/companyUtil";
+import { CrmScheduleMeetingFormValues } from "~enterprise/crm/types/ScheduleMeetingTypes";
 
 interface Props {
   id: string;
@@ -34,7 +35,8 @@ interface Props {
     | FormikProps<CrmLogCallFormValues>
     | FormikProps<CrmLogMeetingFormValues>
     | FormikProps<CrmAddTaskFormValues>
-    | FormikProps<CrmLogEmailFormValues>;
+    | FormikProps<CrmLogEmailFormValues>
+    | FormikProps<CrmScheduleMeetingFormValues>;
   fieldAriaLabel: string;
   mismatchTooltip?: string;
 }

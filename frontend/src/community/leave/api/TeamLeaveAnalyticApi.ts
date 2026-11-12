@@ -7,10 +7,11 @@ import { useLeaveStore } from "../store/store";
 import { analyticAPIs } from "./utils/ApiEndpoints";
 import { leaveQueryKeys } from "./utils/QueryKeys";
 
-export const useGetTeamLeaveHistory = (teamId: number) => {
+export const useGetTeamLeaveHistory = (teamId: number, enabled = true) => {
   const params = useLeaveStore((state) => state.teamLeaveAnalyticParams);
 
   return useQuery({
+    enabled,
     queryKey: [leaveQueryKeys.TEAM_LEAVE_HISTORY, teamId, params],
     queryFn: async () => {
       const url = analyticAPIs.TEAM_LEAVE_HISTORY(teamId);
