@@ -1,7 +1,10 @@
 import { FC, useState } from "react";
 
 import { getDateForPeriod } from "~community/common/utils/dateTimeUtils";
-import { useGetPolicyTeamLeaveTrend } from "~community/leave/api/PolicyLeaveApi";
+import {
+  useGetPolicyTeamLeaveHistory,
+  useGetPolicyTeamLeaveTrend
+} from "~community/leave/api/PolicyLeaveApi";
 import {
   useGetTeamLeaveHistory,
   useGetTeamLeaveTrendForYear
@@ -19,11 +22,29 @@ interface Props {
 
 const TeamLeaveAnalyticsContent: FC<Props> = ({ teamId }) => {
   const [chartFilters, setChartFilters] = useState<SelectedFiltersTypes>({});
-  const { data: leaveHistoryData, isLoading: isHistoryPending } =
-    useGetTeamLeaveHistory(Number(teamId));
 
   const { isLeavePoliciesEnabled, isLoading: isPolicyConfigLoading } =
     useLeavePoliciesEnabled();
+
+  const { data: legacyLeaveHistoryData, isLoading: isLegacyHistoryPending } =
+    useGetTeamLeaveHistory(
+      Number(teamId),
+      !isPolicyConfigLoading && !isLeavePoliciesEnabled
+    );
+
+  const { data: policyLeaveHistoryData, isLoading: isPolicyHistoryPending } =
+    useGetPolicyTeamLeaveHistory(
+      Number(teamId),
+      !isPolicyConfigLoading && isLeavePoliciesEnabled
+    );
+
+  const leaveHistoryData = isLeavePoliciesEnabled
+    ? policyLeaveHistoryData
+    : legacyLeaveHistoryData;
+
+  const isHistoryPending =
+    isPolicyConfigLoading ||
+    (isLeavePoliciesEnabled ? isPolicyHistoryPending : isLegacyHistoryPending);
 
   const {
     data: legacyLeaveTrendData,

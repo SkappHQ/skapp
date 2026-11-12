@@ -45,6 +45,7 @@ export interface UseGetPolicyLeaveTypesArgs {
   isActive?: boolean;
   page: number;
   size: number;
+  enabled?: boolean;
 }
 
 export interface PolicyLeaveTypesPageResponse {

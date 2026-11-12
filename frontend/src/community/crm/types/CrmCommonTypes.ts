@@ -1,3 +1,5 @@
+import { CrmMeetingVenueDetails } from "~enterprise/crm/types/ScheduleMeetingTypes";
+
 import {
   CrmDealStageColorsEnum,
   CrmDealStageEnum,
@@ -174,7 +176,7 @@ export interface CrmLogCallFormValues {
   companyId: number | null;
 }
 
-export interface CrmMeetingEntity {
+export interface CrmMeetingEntity extends CrmMeetingVenueDetails {
   id: number;
   name: string;
   meetingDate: string;

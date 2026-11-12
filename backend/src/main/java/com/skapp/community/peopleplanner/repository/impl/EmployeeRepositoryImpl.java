@@ -52,6 +52,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.CriteriaUpdate;
 import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.From;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Order;
@@ -66,6 +67,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.query.QueryUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -1807,6 +1809,97 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			.getResultList()
 			.stream()
 			.collect(Collectors.toMap(EmployeeEmailIdDto::getEmail, EmployeeEmailIdDto::getEmployeeId));
+	}
+
+	@Override
+	public List<Employee> findEmployeesInScope(List<Long> teamIds, Long supervisorEmployeeId) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<Employee> criteriaQuery = criteriaBuilder.createQuery(Employee.class);
+		Root<Employee> root = criteriaQuery.from(Employee.class);
+		root.fetch(Employee_.workLocation, JoinType.LEFT);
+
+		criteriaQuery.select(root)
+			.where(buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, root, teamIds, supervisorEmployeeId)
+				.toArray(new Predicate[0]));
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
+	@Override
+	public List<Predicate> buildEmployeeScopePredicates(CriteriaBuilder criteriaBuilder, CriteriaQuery<?> criteriaQuery,
+			From<?, Employee> employee, List<Long> teamIds, Long supervisorEmployeeId) {
+		return buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee, teamIds, supervisorEmployeeId,
+				false);
+	}
+
+	@Override
+	public List<Predicate> buildEmployeeScopePredicates(CriteriaBuilder criteriaBuilder, CriteriaQuery<?> criteriaQuery,
+			From<?, Employee> employee, List<Long> teamIds, Long supervisorEmployeeId, boolean includeOwnTeams) {
+		List<Predicate> predicates = new ArrayList<>();
+
+		Join<Employee, User> user = employee.join(Employee_.user);
+		Join<Employee, EmployeeRole> employeeRole = employee.join(Employee_.employeeRole, JoinType.LEFT);
+
+		predicates.add(criteriaBuilder.equal(user.get(User_.isActive), true));
+		predicates.add(criteriaBuilder
+			.not(employee.get(Employee_.ACCOUNT_STATUS).in(AccountStatus.TERMINATED, AccountStatus.DELETED)));
+		predicates.add(PeopleUtil.notGuestEmployeePredicate(criteriaBuilder, employeeRole));
+
+		if (!CollectionUtils.isEmpty(teamIds)) {
+			Subquery<Long> teamMembers = criteriaQuery.subquery(Long.class);
+			Root<EmployeeTeam> employeeTeam = teamMembers.from(EmployeeTeam.class);
+			teamMembers.select(employeeTeam.get(EmployeeTeam_.employee).get(Employee_.employeeId))
+				.where(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId).in(teamIds));
+
+			predicates.add(employee.get(Employee_.employeeId).in(teamMembers));
+		}
+
+		if (supervisorEmployeeId != null) {
+			Subquery<Long> managedEmployees = criteriaQuery.subquery(Long.class);
+			Root<EmployeeManager> employeeManager = managedEmployees.from(EmployeeManager.class);
+			managedEmployees.select(employeeManager.get(EmployeeManager_.employee).get(Employee_.employeeId))
+				.where(criteriaBuilder.equal(employeeManager.get(EmployeeManager_.manager).get(Employee_.employeeId),
+						supervisorEmployeeId));
+
+			List<Predicate> scopePredicates = new ArrayList<>();
+			scopePredicates.add(employee.get(Employee_.employeeId).in(managedEmployees));
+
+			if (includeOwnTeams) {
+				Subquery<Long> ownTeams = criteriaQuery.subquery(Long.class);
+				Root<EmployeeTeam> memberTeam = ownTeams.from(EmployeeTeam.class);
+				ownTeams.select(memberTeam.get(EmployeeTeam_.team).get(Team_.teamId))
+					.where(criteriaBuilder.equal(memberTeam.get(EmployeeTeam_.employee).get(Employee_.employeeId),
+							supervisorEmployeeId));
+
+				Subquery<Long> ownTeamMembers = criteriaQuery.subquery(Long.class);
+				Root<EmployeeTeam> ownTeamMember = ownTeamMembers.from(EmployeeTeam.class);
+				ownTeamMembers.select(ownTeamMember.get(EmployeeTeam_.employee).get(Employee_.employeeId))
+					.where(ownTeamMember.get(EmployeeTeam_.team).get(Team_.teamId).in(ownTeams));
+
+				scopePredicates.add(employee.get(Employee_.employeeId).in(ownTeamMembers));
+				scopePredicates.add(criteriaBuilder.equal(employee.get(Employee_.employeeId), supervisorEmployeeId));
+			}
+			else {
+				Subquery<Long> supervisedTeams = criteriaQuery.subquery(Long.class);
+				Root<EmployeeTeam> supervisorTeam = supervisedTeams.from(EmployeeTeam.class);
+				supervisedTeams.select(supervisorTeam.get(EmployeeTeam_.team).get(Team_.teamId))
+					.where(criteriaBuilder.equal(supervisorTeam.get(EmployeeTeam_.employee).get(Employee_.employeeId),
+							supervisorEmployeeId),
+							criteriaBuilder.isTrue(supervisorTeam.get(EmployeeTeam_.isSupervisor)));
+
+				Subquery<Long> supervisedTeamMembers = criteriaQuery.subquery(Long.class);
+				Root<EmployeeTeam> teamMember = supervisedTeamMembers.from(EmployeeTeam.class);
+				supervisedTeamMembers.select(teamMember.get(EmployeeTeam_.employee).get(Employee_.employeeId))
+					.where(teamMember.get(EmployeeTeam_.team).get(Team_.teamId).in(supervisedTeams));
+
+				scopePredicates.add(employee.get(Employee_.employeeId).in(supervisedTeamMembers));
+			}
+
+			predicates.add(criteriaBuilder.or(scopePredicates.toArray(new Predicate[0])));
+		}
+
+		return predicates;
 	}
 
 }

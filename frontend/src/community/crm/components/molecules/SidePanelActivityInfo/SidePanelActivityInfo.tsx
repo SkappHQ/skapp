@@ -48,21 +48,22 @@ const SidePanelActivityInfo: FC<Props> = ({
   onOwnerChange,
   onCompanyChange
 }) => {
-  const translateText = useTranslator(
-    "crmModule",
-    "activities",
-    "activitySidePanel",
-    "info"
-  );
-  const translatePlaceholder = useTranslator("crmModule", "deals", "common");
+  const translateText = useTranslator("crmModule");
   const translateAria = useTranslator(
     "crmAria",
     "activities",
     "activitySidePanel"
   );
 
-  const noValue = translateText(["noValue"]);
-  const resolvedStartTimeLabel = startTimeLabel || translateText(["startTime"]);
+  const noValue = translateText([
+    "activities",
+    "activitySidePanel",
+    "info",
+    "noValue"
+  ]);
+  const resolvedStartTimeLabel =
+    startTimeLabel ||
+    translateText(["activities", "activitySidePanel", "info", "startTime"]);
 
   const handleOwnerChange = (user: CrmOwnerEntity | null): void => {
     if (user && user.employeeId !== owner?.employeeId) {
@@ -103,22 +104,43 @@ const SidePanelActivityInfo: FC<Props> = ({
 
       {secondaryRow}
 
-      <PropertyRow label={translateText(["activityOwner"])}>
+      <PropertyRow
+        label={translateText([
+          "activities",
+          "activitySidePanel",
+          "info",
+          "activityOwner"
+        ])}
+      >
         <div className="flex flex-col w-full">
           <OwnerPopupSearch
             selectedUser={owner || null}
             onChange={handleOwnerChange}
             placeholder={noValue}
-            searchPlaceholder={translatePlaceholder([
+            searchPlaceholder={translateText([
+              "deals",
+              "common",
               "placeholders",
               "ownerSearch"
             ])}
-            noResultsText={translatePlaceholder(["placeholders", "noResults"])}
+            noResultsText={translateText([
+              "deals",
+              "common",
+              "placeholders",
+              "noResults"
+            ])}
           />
         </div>
       </PropertyRow>
 
-      <PropertyRow label={translateText(["relatedTo"])}>
+      <PropertyRow
+        label={translateText([
+          "activities",
+          "activitySidePanel",
+          "info",
+          "relatedTo"
+        ])}
+      >
         <SidePanelCompanyField
           id={`${id}-related-to`}
           companyId={companyId}

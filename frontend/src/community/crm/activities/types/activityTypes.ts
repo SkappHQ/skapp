@@ -1,4 +1,7 @@
+import { ReactNode } from "react";
+
 import { CrmPriorityEnum } from "~community/crm/enums/common";
+import { CrmMeetingVenueDetails } from "~enterprise/crm/types/ScheduleMeetingTypes";
 
 export enum ActivityType {
   TASK = "TASK",
@@ -29,7 +32,7 @@ export enum ActivityDatePreset {
   LAST_30_DAYS = "LAST_30_DAYS"
 }
 
-export interface ActivityRow {
+export interface ActivityRow extends CrmMeetingVenueDetails {
   id: number;
   type: ActivityType;
   title: string;
@@ -44,6 +47,12 @@ export interface ActivityRow {
   companyId: number | null;
   contactIds: number[];
   canComplete: boolean;
+}
+
+export interface ActivityRowSubtitlePart {
+  key: string;
+  isVisible: boolean;
+  content: ReactNode;
 }
 
 export interface ActivityFeedResponse {
@@ -118,7 +127,8 @@ export interface ActivityEmailResponse extends ActivityListItemBase {
   contactIds: number[];
 }
 
-export interface ActivityMeetingResponse extends ActivityListItemBase {
+export interface ActivityMeetingResponse
+  extends ActivityListItemBase, CrmMeetingVenueDetails {
   name: string;
   meetingDate: string | null;
   startAt: string | null;
@@ -174,6 +184,12 @@ export interface ActivityLinkEditPayload {
   isDealRemoved?: boolean;
   companyId?: number;
   isCompanyRemoved?: boolean;
+}
+
+export interface ActivityDealEditPayload {
+  id: number;
+  dealId?: number;
+  isDealRemoved?: boolean;
 }
 
 export interface ActivityCallEditPayload extends ActivityLinkEditPayload {

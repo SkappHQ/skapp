@@ -24,6 +24,7 @@ import {
 import { updateCompanyRecord } from "~community/crm/utils/companyUtil";
 import { updateContactRecord } from "~community/crm/utils/contactUtil";
 import { getMeetingValidationSchema } from "~community/crm/utils/meetingValidations";
+import { getMeetingVenueInfo } from "~enterprise/crm/utils/meetingVenueUtil";
 
 interface Props {
   meeting: CrmMeetingEntity;
@@ -36,13 +37,8 @@ const SidePanelMeetingInfo: FC<Props> = ({
   onSave,
   onCompanyClick
 }) => {
-  const translateModule = useTranslator("crmModule");
-  const translateText = useTranslator("crmModule", "activities");
-  const translatePanelAria = useTranslator(
-    "crmAria",
-    "activities",
-    "activitySidePanel"
-  );
+  const translateText = useTranslator("crmModule");
+  const translateAria = useTranslator("crmAria", "activities");
 
   const { owners, contacts, setContacts, companies, setCompanies } =
     useCrmStore(
@@ -69,7 +65,7 @@ const SidePanelMeetingInfo: FC<Props> = ({
 
   const formik = useFormik<CrmLogMeetingFormValues>({
     initialValues,
-    validationSchema: getMeetingValidationSchema(translateModule),
+    validationSchema: getMeetingValidationSchema(translateText),
     onSubmit: (values, { resetForm }) => {
       onSave(toMeetingEditPayload(meeting.id, values, formik.initialValues));
       resetForm({ values });
@@ -80,7 +76,12 @@ const SidePanelMeetingInfo: FC<Props> = ({
 
   const { values, errors, setFieldValue } = formik;
 
-  const noValue = translateText(["activitySidePanel", "info", "noValue"]);
+  const noValue = translateText([
+    "activities",
+    "activitySidePanel",
+    "info",
+    "noValue"
+  ]);
 
   const handleDateChange = (date: Date): void => {
     setFieldValue("date", toDateFieldValue(date));
@@ -90,19 +91,27 @@ const SidePanelMeetingInfo: FC<Props> = ({
     <div className="flex flex-col gap-4">
       <SidePanelContactsField
         id="meeting-attendees"
-        title={translateText(["meetingSidePanel", "info", "attendees"])}
+        title={translateText([
+          "activities",
+          "meetingSidePanel",
+          "info",
+          "attendees"
+        ])}
         selectedLabel={translateText([
+          "activities",
           "meetingSidePanel",
           "info",
           "selectedAttendees"
         ])}
         searchPlaceholder={translateText([
+          "activities",
           "meetingSidePanel",
           "info",
           "searchAttendees"
         ])}
-        editAriaLabel={translatePanelAria(["editAttendees"])}
+        editAriaLabel={translateAria(["activitySidePanel", "editAttendees"])}
         emptyLabel={translateText([
+          "activities",
           "activitySidePanel",
           "info",
           "noLongerAvailable"
@@ -119,19 +128,29 @@ const SidePanelMeetingInfo: FC<Props> = ({
             ? DateTime.fromISO(values.date)
             : DateTime.fromISO(meeting.meetingDate)
         }
-        dateLabel={translateText(["activitySidePanel", "info", "date"])}
+        dateLabel={translateText([
+          "activities",
+          "activitySidePanel",
+          "info",
+          "date"
+        ])}
         {...(values.startTime && {
           startTime: DateTime.fromFormat(values.startTime, TIME_FORMAT_24_HOUR)
         })}
         secondaryRow={
           <PropertyRow
-            label={translateText(["meetingSidePanel", "info", "endTime"])}
+            label={translateText([
+              "activities",
+              "meetingSidePanel",
+              "info",
+              "endTime"
+            ])}
           >
             <SidePanelTimeField
               id="meeting-end-time"
               value={values.endTime}
               placeholder={noValue}
-              ariaLabel={translatePanelAria(["editEndTime"])}
+              ariaLabel={translateAria(["activitySidePanel", "editEndTime"])}
               {...(errors.endTime && { errorMessage: errors.endTime })}
               onChange={(time) => setFieldValue("endTime", time)}
             />
@@ -145,6 +164,8 @@ const SidePanelMeetingInfo: FC<Props> = ({
         onOwnerChange={(ownerId) => setFieldValue("ownerId", ownerId)}
         onCompanyChange={(companyId) => setFieldValue("companyId", companyId)}
       />
+
+      {getMeetingVenueInfo(meeting)}
     </div>
   );
 };

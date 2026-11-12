@@ -16,11 +16,14 @@ import {
   getContactDisplayName,
   updateContactRecord
 } from "~community/crm/utils/contactUtil";
+import { CrmScheduleMeetingFormValues } from "~enterprise/crm/types/ScheduleMeetingTypes";
 
 interface Props {
   id: string;
   formik:
-    FormikProps<CrmLogMeetingFormValues> | FormikProps<CrmLogEmailFormValues>;
+    | FormikProps<CrmLogMeetingFormValues>
+    | FormikProps<CrmLogEmailFormValues>
+    | FormikProps<CrmScheduleMeetingFormValues>;
   name: string;
   label: string;
   placeholder: string;

@@ -12,7 +12,7 @@ interface Props {
   call?: CrmCallEntity;
   isOpen: boolean;
   onClose: () => void;
-  related: ReactNode;
+  related?: ReactNode;
   onTitleSave: (title: string) => void;
   onCommentsSave: (comments: string) => void;
   onDealChange: (dealId: number | null) => void;
@@ -64,6 +64,7 @@ const CallSidePanel: FC<Props> = ({
       menuAriaLabel={translateAria(["kebabMenu"])}
       emptyDealsDescription={translateText(["noDealsDescription"])}
       {...(call && {
+        activityId: call.id,
         title: call.subject,
         comments: call.comments,
         deal: call.deal,

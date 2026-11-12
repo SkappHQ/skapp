@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -52,6 +53,13 @@ public class CrmActivityEmailController {
 	public ResponseEntity<ResponseEntityDto> editEmail(@PathVariable Long id,
 			@RequestBody CrmActivityEmailEditRequestDto requestDto) {
 		ResponseEntityDto response = crmActivityEmailService.editEmail(id, requestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@DeleteMapping("/{id}")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_MANAGER')")
+	public ResponseEntity<ResponseEntityDto> deleteEmail(@PathVariable Long id) {
+		ResponseEntityDto response = crmActivityEmailService.deleteEmail(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

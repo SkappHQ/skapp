@@ -34,6 +34,7 @@ interface Props {
   commentsTitle?: string;
   emptyCommentsText?: string;
   commentsAriaLabel?: string;
+  activityId?: number;
   editCommentsAriaLabel?: string;
   title?: string;
   comments?: string;
@@ -60,6 +61,7 @@ const ActivitySidePanel: FC<Props> = ({
   commentsTitle,
   emptyCommentsText,
   commentsAriaLabel,
+  activityId,
   editCommentsAriaLabel,
   title,
   comments,
@@ -129,6 +131,7 @@ const ActivitySidePanel: FC<Props> = ({
             {icon}
             {title && (
               <SidePanelActivityTitle
+                key={activityId}
                 id={id}
                 title={title}
                 onSave={onTitleSave}
@@ -163,6 +166,7 @@ const ActivitySidePanel: FC<Props> = ({
         <div className="flex gap-6 pb-4">
           <div className="flex flex-col flex-1 gap-6 min-w-0">
             <SidePanelActivityComments
+              key={activityId}
               id={id}
               comments={comments}
               onSave={onCommentsSave}

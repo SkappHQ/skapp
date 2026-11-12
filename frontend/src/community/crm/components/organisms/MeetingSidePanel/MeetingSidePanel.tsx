@@ -12,7 +12,7 @@ interface Props {
   meeting?: CrmMeetingEntity;
   isOpen: boolean;
   onClose: () => void;
-  related: ReactNode;
+  related?: ReactNode;
   onTitleSave: (title: string) => void;
   onCommentsSave: (comments: string) => void;
   onDealChange: (dealId: number | null) => void;
@@ -76,6 +76,7 @@ const MeetingSidePanel: FC<Props> = ({
       menuAriaLabel={translateAria(["kebabMenu"])}
       emptyDealsDescription={translateText(["noDealsDescription"])}
       {...(meeting && {
+        activityId: meeting.id,
         title: meeting.name,
         comments: meeting.comments,
         deal: meeting.deal,

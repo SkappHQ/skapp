@@ -6,7 +6,9 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.StringUtils;
+import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmActivityCall;
@@ -61,6 +63,8 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 	private final CrmCompanyDao crmCompanyDao;
 
 	private final CrmOwnerResolverService crmOwnerResolver;
+
+	private final MessageUtil messageUtil;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -210,6 +214,9 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_EDIT_DENIED);
 		}
 
+		CrmValidations.validateActivityLinkRemoval(requestDto.getIsDealRemoved(), requestDto.getDealId(),
+				requestDto.getIsCompanyRemoved(), requestDto.getCompanyId());
+
 		if (requestDto.getSubject() != null) {
 			CrmValidations.validateCallSubject(requestDto.getSubject());
 			call.setSubject(requestDto.getSubject());
@@ -268,6 +275,56 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 
 		log.info("editCall: execution ended");
 		return new ResponseEntityDto(false, crmMapper.crmActivityCallToCrmActivityCallResponseDto(updatedCall));
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto deleteCall(Long id) {
+		log.info("deleteCall: execution started");
+
+		CrmActivityCall call = crmActivityCallDao.findCallById(id);
+		if (call == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_NOT_FOUND);
+		}
+
+		call.setIsDeleted(true);
+		crmActivityCallDao.save(call);
+
+		log.info("deleteCall: execution ended");
+		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_ACTIVITY_DELETED), false);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getRelatedCalls(Long id) {
+		log.info("getRelatedCalls: execution started");
+
+		CrmActivityCall call = crmActivityCallDao.findCallById(id);
+		if (call == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_NOT_FOUND);
+		}
+
+		User currentUser = userService.getCurrentUser();
+		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, call.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_VIEW_DENIED);
+		}
+
+		CrmActivityCallFilterParams params = new CrmActivityCallFilterParams();
+		params.setSortKey(CrmActivityCallSort.LOGGED_AT);
+		params.setSortOrder(Sort.Direction.DESC);
+		params.setCurrentEmployeeId(currentUser.getEmployee().getEmployeeId());
+		params.setIsRestrictedToOwner(CrmUtil.isCrmSalesRepresentative(currentUser));
+		params.setRelatedContactIds(List.of(call.getContact().getId()));
+		if (call.getDeal() != null) {
+			params.setRelatedDealId(call.getDeal().getId());
+		}
+		params.setExcludedId(id);
+		params.setMaxResults(CrmConstants.RELATED_ACTIVITY_LIMIT);
+
+		List<CrmActivityCallResponseDto> calls = crmActivityCallDao.findCalls(params);
+
+		log.info("getRelatedCalls: execution ended");
+		return new ResponseEntityDto(false, calls);
 	}
 
 	protected void validateActivityCreationLimit() {
