@@ -15,9 +15,10 @@ interface Props {
   related?: ReactNode;
   onTitleSave: (title: string) => void;
   onCommentsSave: (comments: string) => void;
+  onDealChange: (dealId: number | null) => void;
   onDetailsSave: (payload: ActivityMeetingEditPayload) => void;
   onDelete: () => void;
-  onCompanyClick: () => void;
+  onCompanyClick: (companyId: number) => void;
 }
 
 const MeetingSidePanel: FC<Props> = ({
@@ -27,6 +28,7 @@ const MeetingSidePanel: FC<Props> = ({
   related,
   onTitleSave,
   onCommentsSave,
+  onDealChange,
   onDetailsSave,
   onDelete,
   onCompanyClick
@@ -42,6 +44,16 @@ const MeetingSidePanel: FC<Props> = ({
     "meetingSidePanel"
   );
 
+  const attendeeCompanyIds = meeting
+    ? Array.from(
+        new Set(
+          meeting.contacts.flatMap((contact) =>
+            contact.companyId ? [contact.companyId] : []
+          )
+        )
+      )
+    : [];
+
   return (
     <ActivitySidePanel
       id="meeting"
@@ -51,6 +63,7 @@ const MeetingSidePanel: FC<Props> = ({
       related={related}
       onTitleSave={onTitleSave}
       onCommentsSave={onCommentsSave}
+      onDealChange={onDealChange}
       icon={
         <MeetingFilledIcon
           width={TASK_DETAIL_ICON_SIZE}
@@ -67,6 +80,8 @@ const MeetingSidePanel: FC<Props> = ({
         title: meeting.name,
         comments: meeting.comments,
         deal: meeting.deal,
+        dealFilterCompanyId:
+          attendeeCompanyIds.length === 1 ? attendeeCompanyIds[0] : null,
         info: (
           <SidePanelMeetingInfo
             key={meeting.id}

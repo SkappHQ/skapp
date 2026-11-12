@@ -886,7 +886,8 @@
       },
       "buttons": {
         "save": "Save",
-        "discard": "Discard"
+        "discard": "Discard",
+        "removeDeal": "Remove deal"
       },
       "deleteModal": {
         "title": "Are you sure?",

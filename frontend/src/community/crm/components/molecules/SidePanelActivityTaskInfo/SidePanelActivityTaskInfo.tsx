@@ -14,7 +14,7 @@ import {
 import PriorityDropdown from "~community/crm/components/molecules/PriorityDropdown/PriorityDropdown";
 import PropertyRow from "~community/crm/components/molecules/PropertyRow/PropertyRow";
 import SidePanelActivityInfo from "~community/crm/components/molecules/SidePanelActivityInfo/SidePanelActivityInfo";
-import SidePanelLinkButton from "~community/crm/components/molecules/SidePanelLinkButton/SidePanelLinkButton";
+import SidePanelContactField from "~community/crm/components/molecules/SidePanelContactField/SidePanelContactField";
 import { useActivityAutoSave } from "~community/crm/hooks/useActivityAutoSave";
 import { useCrmStore } from "~community/crm/store/store";
 import {
@@ -23,16 +23,14 @@ import {
 } from "~community/crm/types/CrmCommonTypes";
 import { getActivityTaskValidationSchema } from "~community/crm/utils/activityTaskValidations";
 import { updateCompanyRecord } from "~community/crm/utils/companyUtil";
-import {
-  getContactDisplayName,
-  updateContactRecord
-} from "~community/crm/utils/contactUtil";
+import { updateContactRecord } from "~community/crm/utils/contactUtil";
+import { isDealMatchingCompany } from "~community/crm/utils/dealUtil";
 
 interface Props {
   task: CrmActivityTaskEntity;
   onSave: (payload: ActivityTaskEditPayload) => void;
-  onContactClick: () => void;
-  onCompanyClick: () => void;
+  onContactClick: (contactId: number) => void;
+  onCompanyClick: (companyId: number) => void;
 }
 
 const SidePanelActivityTaskInfo: FC<Props> = ({
@@ -42,6 +40,11 @@ const SidePanelActivityTaskInfo: FC<Props> = ({
   onCompanyClick
 }) => {
   const translateText = useTranslator("crmModule");
+  const translateAria = useTranslator(
+    "crmAria",
+    "activities",
+    "activitySidePanel"
+  );
   const displayZone = useDisplayZone();
 
   const { owners, contacts, setContacts, companies, setCompanies } =
@@ -80,7 +83,20 @@ const SidePanelActivityTaskInfo: FC<Props> = ({
 
   useActivityAutoSave(formik);
 
-  const { values, setFieldValue } = formik;
+  const { values, setFieldValue, resetForm } = formik;
+
+  const handleContactChange = (
+    contactId: number,
+    contactCompanyId?: number | null
+  ): void => {
+    if (task.deal && !isDealMatchingCompany(task.deal, contactCompanyId)) {
+      onSave({ id: task.id, contactId, isDealRemoved: true });
+      resetForm({ values: { ...values, contactId, dealId: null } });
+      return;
+    }
+
+    setFieldValue("contactId", contactId);
+  };
 
   const handleDueDateChange = (date: Date): void => {
     setFieldValue("dueAt", pickedDayToInstant(date, displayZone));
@@ -94,21 +110,19 @@ const SidePanelActivityTaskInfo: FC<Props> = ({
           <PropertyRow
             label={translateText(["tasks", "sidePanel", "info", "contactName"])}
           >
-            {task.contact ? (
-              <SidePanelLinkButton
-                label={getContactDisplayName(task.contact)}
-                onClick={onContactClick}
-              />
-            ) : (
-              <span className="body2">
-                {translateText([
-                  "activities",
-                  "activitySidePanel",
-                  "info",
-                  "noValue"
-                ])}
-              </span>
-            )}
+            <SidePanelContactField
+              id="activity-task-contact"
+              contactId={values.contactId}
+              emptyLabel={translateText([
+                "activities",
+                "activitySidePanel",
+                "info",
+                "noValue"
+              ])}
+              editAriaLabel={translateAria(["editContact"])}
+              onContactClick={onContactClick}
+              onChange={handleContactChange}
+            />
           </PropertyRow>
 
           <PropertyRow
@@ -134,10 +148,11 @@ const SidePanelActivityTaskInfo: FC<Props> = ({
       ])}
       hideStartTime
       {...(values.ownerId && { owner: owners[values.ownerId] })}
-      companyName={task.company?.name}
+      companyId={values.companyId}
       onCompanyClick={onCompanyClick}
       onDateChange={handleDueDateChange}
       onOwnerChange={(ownerId) => setFieldValue("ownerId", ownerId)}
+      onCompanyChange={(companyId) => setFieldValue("companyId", companyId)}
     />
   );
 };

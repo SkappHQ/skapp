@@ -7,6 +7,8 @@ import {
 import { ACTIVITY_TIME_SLOT_MINUTES } from "~community/crm/activities/constants/activityConstants";
 import {
   ActivityCallEditPayload,
+  ActivityDealEditPayload,
+  ActivityLinkEditPayload,
   ActivityMeetingEditPayload,
   ActivityTaskEditPayload
 } from "~community/crm/activities/types/activityTypes";
@@ -19,6 +21,7 @@ import {
   CrmMeetingEntity
 } from "~community/crm/types/CrmCommonTypes";
 import { formatCallDuration } from "~community/crm/utils/callUtil";
+import { parseCallDurationToMinutes } from "~community/crm/utils/callValidations";
 
 export const getTimeSlotStart = (dateTime: DateTime): DateTime =>
   dateTime.set({
@@ -66,6 +69,26 @@ export const toActivityInstant = (
     .toISO();
 };
 
+interface ActivityLinkFormValues {
+  ownerId: number | null;
+  dealId: number | null;
+  companyId: number | null;
+}
+
+const toLinkEditPayload = (
+  values: ActivityLinkFormValues,
+  saved: ActivityLinkFormValues
+): ActivityLinkEditPayload => ({
+  ...(values.ownerId &&
+    values.ownerId !== saved.ownerId && { ownerId: values.ownerId }),
+  ...(values.dealId !== saved.dealId &&
+    (values.dealId ? { dealId: values.dealId } : { isDealRemoved: true })),
+  ...(values.companyId !== saved.companyId &&
+    (values.companyId
+      ? { companyId: values.companyId }
+      : { isCompanyRemoved: true }))
+});
+
 const toTimeFieldValue = (isoDateTime: string): string =>
   DateTime.fromISO(isoDateTime).toFormat(TIME_FORMAT_24_HOUR);
 
@@ -92,12 +115,16 @@ export const toCallEditPayload = (
   saved: CrmLogCallFormValues
 ): ActivityCallEditPayload => ({
   id,
-  ...(values.ownerId &&
-    values.ownerId !== saved.ownerId && { ownerId: values.ownerId }),
+  ...toLinkEditPayload(values, saved),
   ...((values.date !== saved.date || values.time !== saved.time) &&
     values.date && {
       loggedAt: toActivityInstant(values.date, values.time)
-    })
+    }),
+  ...(values.duration !== saved.duration && {
+    durationMinutes: parseCallDurationToMinutes(values.duration)
+  }),
+  ...(values.contactId &&
+    values.contactId !== saved.contactId && { contactId: values.contactId })
 });
 
 export const toMeetingFormValues = (
@@ -122,11 +149,12 @@ export const toMeetingEditPayload = (
   saved: CrmLogMeetingFormValues
 ): ActivityMeetingEditPayload => {
   const isDateChanged = values.date !== saved.date;
+  const isContactsChanged =
+    values.contactIds.join(",") !== saved.contactIds.join(",");
 
   return {
     id,
-    ...(values.ownerId &&
-      values.ownerId !== saved.ownerId && { ownerId: values.ownerId }),
+    ...toLinkEditPayload(values, saved),
     ...(isDateChanged &&
       values.date && {
         meetingDate: DateTime.fromISO(values.date).toISODate()
@@ -140,7 +168,8 @@ export const toMeetingEditPayload = (
       values.date &&
       values.endTime && {
         endAt: toActivityInstant(values.date, values.endTime)
-      })
+      }),
+    ...(isContactsChanged && { contactIds: values.contactIds })
   };
 };
 
@@ -163,8 +192,15 @@ export const toActivityTaskEditPayload = (
   saved: CrmAddTaskFormValues
 ): ActivityTaskEditPayload => ({
   id,
-  ...(values.ownerId &&
-    values.ownerId !== saved.ownerId && { ownerId: values.ownerId }),
+  ...toLinkEditPayload(values, saved),
   ...(values.priority !== saved.priority && { priority: values.priority }),
-  ...(values.dueAt !== saved.dueAt && { dueAt: values.dueAt })
+  ...(values.dueAt !== saved.dueAt && { dueAt: values.dueAt }),
+  ...(values.contactId &&
+    values.contactId !== saved.contactId && { contactId: values.contactId })
 });
+
+export const toDealEditPayload = (
+  id: number,
+  dealId: number | null
+): ActivityDealEditPayload =>
+  dealId ? { id, dealId } : { id, isDealRemoved: true };

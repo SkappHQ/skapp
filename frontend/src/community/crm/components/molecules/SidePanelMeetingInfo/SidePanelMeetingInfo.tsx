@@ -32,7 +32,7 @@ import { getMeetingVenueInfo } from "~enterprise/crm/utils/meetingVenueUtil";
 interface Props {
   meeting: CrmMeetingEntity;
   onSave: (payload: ActivityMeetingEditPayload) => void;
-  onCompanyClick: () => void;
+  onCompanyClick: (companyId: number) => void;
 }
 
 const SidePanelMeetingInfo: FC<Props> = ({
@@ -165,11 +165,12 @@ const SidePanelMeetingInfo: FC<Props> = ({
           </PropertyRow>
         }
         {...(values.ownerId && { owner: owners[values.ownerId] })}
-        companyName={meeting.company?.name}
+        companyId={values.companyId}
         onCompanyClick={onCompanyClick}
         onDateChange={handleDateChange}
         onStartTimeChange={(time) => setFieldValue("startTime", time)}
         onOwnerChange={(ownerId) => setFieldValue("ownerId", ownerId)}
+        onCompanyChange={(companyId) => setFieldValue("companyId", companyId)}
       />
 
       {getMeetingVenueInfo(meeting)}

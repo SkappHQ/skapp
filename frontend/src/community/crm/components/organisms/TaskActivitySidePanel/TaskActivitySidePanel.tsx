@@ -21,12 +21,13 @@ interface Props {
   related?: ReactNode;
   onTitleSave: (title: string) => void;
   onCommentsSave: (comments: string) => void;
+  onDealChange: (dealId: number | null) => void;
   onDetailsSave: (payload: ActivityTaskEditPayload) => void;
   onDelete: () => void;
   onMarkAsDone: () => void;
   onReopen: () => void;
-  onContactClick: () => void;
-  onCompanyClick: () => void;
+  onContactClick: (contactId: number) => void;
+  onCompanyClick: (companyId: number) => void;
 }
 
 const TaskActivitySidePanel: FC<Props> = ({
@@ -36,6 +37,7 @@ const TaskActivitySidePanel: FC<Props> = ({
   related,
   onTitleSave,
   onCommentsSave,
+  onDealChange,
   onDetailsSave,
   onDelete,
   onMarkAsDone,
@@ -57,6 +59,7 @@ const TaskActivitySidePanel: FC<Props> = ({
       related={related}
       onTitleSave={onTitleSave}
       onCommentsSave={onCommentsSave}
+      onDealChange={onDealChange}
       icon={
         <ChecklistVerificationFilledIcon
           width={TASK_DETAIL_ICON_SIZE}
@@ -88,6 +91,7 @@ const TaskActivitySidePanel: FC<Props> = ({
         title: task.name,
         comments: task.notes,
         deal: task.deal,
+        dealFilterCompanyId: task.contact?.companyId,
         info: (
           <div className="flex flex-col gap-4">
             <ButtonV2

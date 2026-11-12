@@ -5,6 +5,7 @@ import { useShallow } from "zustand/react/shallow";
 
 import { TIME_FORMAT_24_HOUR } from "~community/common/constants/timeConstants";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { callDurationPattern } from "~community/common/regex/regexPatterns";
 import { ActivityCallEditPayload } from "~community/crm/activities/types/activityTypes";
 import {
   toCallEditPayload,
@@ -13,25 +14,28 @@ import {
 } from "~community/crm/activities/utils/activityUtil";
 import PropertyRow from "~community/crm/components/molecules/PropertyRow/PropertyRow";
 import SidePanelActivityInfo from "~community/crm/components/molecules/SidePanelActivityInfo/SidePanelActivityInfo";
-import SidePanelLinkButton from "~community/crm/components/molecules/SidePanelLinkButton/SidePanelLinkButton";
+import SidePanelContactField from "~community/crm/components/molecules/SidePanelContactField/SidePanelContactField";
+import SidePanelTextField from "~community/crm/components/molecules/SidePanelTextField/SidePanelTextField";
 import { useActivityAutoSave } from "~community/crm/hooks/useActivityAutoSave";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmCallEntity,
   CrmLogCallFormValues
 } from "~community/crm/types/CrmCommonTypes";
-import { getCallValidationSchema } from "~community/crm/utils/callValidations";
-import { updateCompanyRecord } from "~community/crm/utils/companyUtil";
+import { formatCallDuration } from "~community/crm/utils/callUtil";
 import {
-  getContactDisplayName,
-  updateContactRecord
-} from "~community/crm/utils/contactUtil";
+  getCallValidationSchema,
+  parseCallDurationToMinutes
+} from "~community/crm/utils/callValidations";
+import { updateCompanyRecord } from "~community/crm/utils/companyUtil";
+import { updateContactRecord } from "~community/crm/utils/contactUtil";
+import { isDealMatchingCompany } from "~community/crm/utils/dealUtil";
 
 interface Props {
   call: CrmCallEntity;
   onSave: (payload: ActivityCallEditPayload) => void;
-  onContactClick: () => void;
-  onCompanyClick: () => void;
+  onContactClick: (contactId: number) => void;
+  onCompanyClick: (companyId: number) => void;
 }
 
 const SidePanelCallInfo: FC<Props> = ({
@@ -41,6 +45,11 @@ const SidePanelCallInfo: FC<Props> = ({
   onCompanyClick
 }) => {
   const translateText = useTranslator("crmModule");
+  const translateAria = useTranslator(
+    "crmAria",
+    "activities",
+    "activitySidePanel"
+  );
 
   const { owners, contacts, setContacts, companies, setCompanies } =
     useCrmStore(
@@ -75,7 +84,36 @@ const SidePanelCallInfo: FC<Props> = ({
 
   useActivityAutoSave(formik);
 
-  const { values, setFieldValue } = formik;
+  const { values, setFieldValue, resetForm } = formik;
+
+  const validateDuration = (duration: string): string =>
+    duration.trim() && !callDurationPattern().test(duration.trim())
+      ? translateText([
+          "activities",
+          "logCall",
+          "modal",
+          "validations",
+          "duration"
+        ])
+      : "";
+
+  const handleDurationSave = (duration: string): void => {
+    const minutes = parseCallDurationToMinutes(duration);
+    if (minutes) setFieldValue("duration", formatCallDuration(minutes));
+  };
+
+  const handleContactChange = (
+    contactId: number,
+    contactCompanyId?: number | null
+  ): void => {
+    if (call.deal && !isDealMatchingCompany(call.deal, contactCompanyId)) {
+      onSave({ id: call.id, contactId, isDealRemoved: true });
+      resetForm({ values: { ...values, contactId, dealId: null } });
+      return;
+    }
+
+    setFieldValue("contactId", contactId);
+  };
 
   const handleDateChange = (date: Date): void => {
     setFieldValue("date", toDateFieldValue(date));
@@ -93,21 +131,19 @@ const SidePanelCallInfo: FC<Props> = ({
             "contact"
           ])}
         >
-          {call.contact ? (
-            <SidePanelLinkButton
-              label={getContactDisplayName(call.contact)}
-              onClick={onContactClick}
-            />
-          ) : (
-            <span className="body2">
-              {translateText([
-                "activities",
-                "activitySidePanel",
-                "info",
-                "noLongerAvailable"
-              ])}
-            </span>
-          )}
+          <SidePanelContactField
+            id="call-contact"
+            contactId={values.contactId}
+            emptyLabel={translateText([
+              "activities",
+              "activitySidePanel",
+              "info",
+              "noLongerAvailable"
+            ])}
+            editAriaLabel={translateAria(["editContact"])}
+            onContactClick={onContactClick}
+            onChange={handleContactChange}
+          />
         </PropertyRow>
       }
       date={
@@ -131,24 +167,28 @@ const SidePanelCallInfo: FC<Props> = ({
             "duration"
           ])}
         >
-          <span className="body2">
-            {values.duration
-              ? values.duration
-              : translateText([
-                  "activities",
-                  "activitySidePanel",
-                  "info",
-                  "noValue"
-                ])}
-          </span>
+          <SidePanelTextField
+            id="call-duration"
+            value={values.duration}
+            placeholder={translateText([
+              "activities",
+              "activitySidePanel",
+              "info",
+              "noValue"
+            ])}
+            ariaLabel={translateAria(["editDuration"])}
+            validate={validateDuration}
+            onSave={handleDurationSave}
+          />
         </PropertyRow>
       }
       {...(values.ownerId && { owner: owners[values.ownerId] })}
-      companyName={call.company?.name}
+      companyId={values.companyId}
       onCompanyClick={onCompanyClick}
       onDateChange={handleDateChange}
       onStartTimeChange={(time) => setFieldValue("time", time)}
       onOwnerChange={(ownerId) => setFieldValue("ownerId", ownerId)}
+      onCompanyChange={(companyId) => setFieldValue("companyId", companyId)}
     />
   );
 };
