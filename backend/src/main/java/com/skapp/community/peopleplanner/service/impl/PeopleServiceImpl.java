@@ -1336,7 +1336,7 @@ public class PeopleServiceImpl implements PeopleService {
 		Employee employee = user.getEmployee();
 		CreateEmployeeResponseDto responseDto = peopleMapper.employeeToCreateEmployeeResponseDto(employee);
 
-		if (user.getLoginMethod() == LoginMethod.CREDENTIALS) {
+		if (user.getLoginMethod() == LoginMethod.CREDENTIALS && sharesCredentialsOnCreate()) {
 			EmployeeCredentialsResponseDto credentials = new EmployeeCredentialsResponseDto();
 			credentials.setEmail(employee.getUser() != null ? employee.getUser().getEmail() : null);
 			credentials.setTempPassword(tempPassword);
@@ -2370,6 +2370,10 @@ public class PeopleServiceImpl implements PeopleService {
 	 */
 	protected boolean checkUserCountExceeded() {
 		return false;
+	}
+
+	protected boolean sharesCredentialsOnCreate() {
+		return true;
 	}
 
 	/**
