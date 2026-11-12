@@ -72,6 +72,21 @@ export interface ActivityFeedFilters {
   size?: number;
 }
 
+export enum ActivityRecordType {
+  CONTACT = "CONTACT",
+  DEAL = "DEAL",
+  COMPANY = "COMPANY"
+}
+
+export interface RecordActivityFilters {
+  recordType: ActivityRecordType;
+  recordId: number;
+  type?: ActivityType;
+  search?: string;
+  page?: number;
+  size?: number;
+}
+
 export type ActivityFilterValues = Pick<
   ActivityFeedFilters,
   "ownerId" | "fromDate" | "toDate"

@@ -26,7 +26,8 @@ import {
   ActivityMeetingResponse,
   ActivityTaskCreatePayload,
   ActivityTaskEditPayload,
-  ActivityTaskResponse
+  ActivityTaskResponse,
+  RecordActivityFilters
 } from "~community/crm/activities/types/activityTypes";
 import { crmActivityEndpoints } from "~community/crm/api/utils/ApiEndpoints";
 import { crmActivityQueryKeys } from "~community/crm/api/utils/QueryKeys";
@@ -57,6 +58,31 @@ export const useGetActivityFeed = (
     queryFn: ({ pageParam }) =>
       fetchActivityFeed({ ...params, page: pageParam }),
     enabled,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) =>
+      lastPage && lastPage.currentPage < lastPage.totalPages - 1
+        ? lastPage.currentPage + 1
+        : null,
+    refetchOnWindowFocus: false
+  });
+
+const fetchRecordActivities = async (
+  params: RecordActivityFilters
+): Promise<ActivityFeedResponse> => {
+  const response = await authFetch.get(
+    crmActivityEndpoints.GET_RECORD_ACTIVITIES,
+    { params }
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useGetRecordActivities = (
+  params: RecordActivityFilters
+): UseInfiniteQueryResult<InfiniteData<ActivityFeedResponse>, AxiosError> =>
+  useInfiniteQuery({
+    queryKey: crmActivityQueryKeys.RECORD(params),
+    queryFn: ({ pageParam }) =>
+      fetchRecordActivities({ ...params, page: pageParam }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) =>
       lastPage && lastPage.currentPage < lastPage.totalPages - 1

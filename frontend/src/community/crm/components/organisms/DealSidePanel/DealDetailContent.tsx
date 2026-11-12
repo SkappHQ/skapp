@@ -1,19 +1,17 @@
-import { FC, useEffect, useMemo } from "react";
+import { FC, useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import RecordActivitiesTab from "~community/crm/activities/components/organisms/RecordActivitiesTab/RecordActivitiesTab";
+import { ActivityRecordType } from "~community/crm/activities/types/activityTypes";
 import { useEditDeal, useGetDealById } from "~community/crm/api/DealApi";
-import { useGetTasksInfinite } from "~community/crm/api/TaskApi";
-import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
-import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
+import { useRecordActivityTab } from "~community/crm/hooks/useRecordActivityTab";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmDealEntity } from "~community/crm/types/CrmCommonTypes";
-import { CrmTaskFilterRequest } from "~community/crm/types/CrmTypes";
 import { ingestEditedDeal } from "~community/crm/utils/boardUtil";
 import { mergeDeals } from "~community/crm/utils/dealUtil";
-import { toTaskIds, updateTaskRecord } from "~community/crm/utils/taskUtil";
 
 import DealDescriptionSection from "./DealDescriptionSection";
 import DealPropertiesSidebar from "./DealPropertiesSidebar";
@@ -28,42 +26,23 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
   const translateText = useTranslator("crmModule");
   const { setToastMessage } = useToast();
 
-  const { deal, deals, board, tasks, setDeals, setBoardColumn, setTasks } =
-    useCrmStore(
-      useShallow((store) => ({
-        deal: store.deals[dealId],
-        deals: store.deals,
-        board: store.board,
-        tasks: store.tasks,
-        setDeals: store.setDeals,
-        setBoardColumn: store.setBoardColumn,
-        setTasks: store.setTasks
-      }))
-    );
+  const [activityTab, setActivityTab] = useRecordActivityTab(dealId);
 
-  const taskFilters: CrmTaskFilterRequest = {
-    dealId,
-    size: TASK_PAGE_SIZE
-  };
+  const { deal, deals, board, setDeals, setBoardColumn } = useCrmStore(
+    useShallow((store) => ({
+      deal: store.deals[dealId],
+      deals: store.deals,
+      board: store.board,
+      setDeals: store.setDeals,
+      setBoardColumn: store.setBoardColumn
+    }))
+  );
 
   const {
     data: dealDetail,
     isLoading: isDealLoading,
     isFetchedAfterMount
   } = useGetDealById(dealId, true);
-
-  const {
-    data: fetchedTasks,
-    isLoading: isTasksLoading,
-    fetchNextPage: fetchNextTasksPage,
-    hasNextPage: hasNextTasksPage,
-    isFetchingNextPage: isFetchingNextTasksPage
-  } = useGetTasksInfinite(taskFilters);
-
-  const dealTasks = useMemo(
-    () => fetchedTasks?.pages.flatMap((page) => page?.items ?? []) ?? [],
-    [fetchedTasks]
-  );
 
   useEffect(() => {
     const dealFields: CrmDealEntity = { id: dealId };
@@ -72,13 +51,8 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
       Object.assign(dealFields, dealDetail);
     }
 
-    if (fetchedTasks) {
-      setTasks(updateTaskRecord(tasks, dealTasks));
-      dealFields.taskIds = toTaskIds(dealTasks);
-    }
-
     setDeals(mergeDeals(deals, [dealFields]));
-  }, [dealId, dealDetail, isFetchedAfterMount, fetchedTasks]);
+  }, [dealId, dealDetail, isFetchedAfterMount]);
 
   const handleSuccess = (updatedDeal: CrmDealEntity): void => {
     const next = ingestEditedDeal({ deals, board }, updatedDeal);
@@ -111,7 +85,7 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
     editDeal({ ...fields, id: dealId });
   };
 
-  if (isDealLoading || isTasksLoading || !deal) {
+  if (isDealLoading || !deal) {
     return <DealSidePanelSkeleton />;
   }
 
@@ -132,20 +106,16 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
           />
           <div className="flex flex-col gap-3">
             <h2 className="h2">
-              {translateText(["deals", "sidePanel", "tasks", "title"])}
+              {translateText(["activities", "recordTab", "tabLabel"])}
             </h2>
             <hr className="border-secondary-accent" />
-            <SidePanelTasksSection
-              taskIds={deal.taskIds}
-              emptyDescription={translateText([
-                "deals",
-                "sidePanel",
-                "tasks",
-                "emptyDescription"
-              ])}
-              hasNextPage={hasNextTasksPage}
-              isFetchingNextPage={isFetchingNextTasksPage}
-              onFetchNextPage={fetchNextTasksPage}
+            <RecordActivitiesTab
+              key={dealId}
+              id="deal-activities"
+              recordType={ActivityRecordType.DEAL}
+              recordId={dealId}
+              activeTab={activityTab}
+              onTabChange={setActivityTab}
             />
           </div>
         </div>

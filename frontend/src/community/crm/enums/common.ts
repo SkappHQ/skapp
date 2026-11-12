@@ -5,7 +5,7 @@ export enum CrmPriorityEnum {
 }
 
 export enum CrmSidePanelTabEnum {
-  TASKS = "TASKS",
+  ACTIVITIES = "ACTIVITIES",
   DEALS = "DEALS",
   CONTACTS = "CONTACTS"
 }
