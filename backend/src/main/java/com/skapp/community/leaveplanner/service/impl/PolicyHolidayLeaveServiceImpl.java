@@ -1,6 +1,9 @@
 package com.skapp.community.leaveplanner.service.impl;
 
+import com.skapp.community.common.model.Organization;
 import com.skapp.community.common.model.WorkLocation;
+import com.skapp.community.common.repository.OrganizationDao;
+import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.leaveplanner.constant.PolicyLeaveConstant;
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
@@ -8,8 +11,11 @@ import com.skapp.community.leaveplanner.repository.PolicyLeaveRequestDao;
 import com.skapp.community.leaveplanner.service.PolicyHolidayLeaveEmailService;
 import com.skapp.community.leaveplanner.service.PolicyHolidayLeaveNotificationService;
 import com.skapp.community.leaveplanner.service.PolicyHolidayLeaveService;
+import com.skapp.community.leaveplanner.type.LeaveDuration;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.leaveplanner.type.LeaveState;
+import com.skapp.community.leaveplanner.util.LeaveModuleUtil;
+import com.skapp.community.leaveplanner.util.PolicyHolidayLeaveUtil;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Holiday;
 import com.skapp.community.peopleplanner.repository.HolidayDao;
@@ -19,20 +25,21 @@ import com.skapp.community.timeplanner.repository.TimeConfigDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class PolicyHolidayLeaveServiceImpl implements PolicyHolidayLeaveService {
-
-	private static final float FULL_DAY = 1f;
 
 	private static final float HALF_DAY = 0.5f;
 
@@ -42,12 +49,13 @@ public class PolicyHolidayLeaveServiceImpl implements PolicyHolidayLeaveService 
 
 	private final TimeConfigDao timeConfigDao;
 
+	private final OrganizationDao organizationDao;
+
 	private final PolicyHolidayLeaveEmailService policyHolidayLeaveEmailService;
 
 	private final PolicyHolidayLeaveNotificationService policyHolidayLeaveNotificationService;
 
 	@Override
-	@Transactional
 	public void adjustLeaveRequestsForHoliday(Holiday holiday) {
 		log.info("adjustLeaveRequestsForHoliday: execution started");
 
@@ -63,81 +71,107 @@ public class PolicyHolidayLeaveServiceImpl implements PolicyHolidayLeaveService 
 			.toList();
 
 		List<PolicyLeaveRequest> updatedRequests = new ArrayList<>();
-		policyLeaveRequestDao.findUpcomingRequests(PolicyLeaveConstant.ATTENDANCE_LEAVE_STATUSES, holidayDate)
-			.stream()
-			.filter(request -> !request.getStartDate().isAfter(holidayDate))
-			.filter(request -> appliesToEmployee(holiday, request.getEmployee()))
-			.filter(request -> !isDateAlreadyCovered(holiday, otherHolidaysOnDate, request.getEmployee()))
-			.forEach(request -> {
-				if (adjustLeaveRequest(request, holiday)) {
-					updatedRequests.add(request);
-				}
-			});
+		List<Consumer<String>> emails = new ArrayList<>();
+		for (PolicyLeaveRequest request : policyLeaveRequestDao
+			.findRequestsOnDate(PolicyLeaveConstant.ATTENDANCE_LEAVE_STATUSES, holidayDate)) {
+			Employee employee = request.getEmployee();
+			if (!appliesToEmployee(holiday, employee)) {
+				continue;
+			}
+
+			Set<LeaveState> coveredBefore = getCoveredHalves(otherHolidaysOnDate, employee);
+			Set<LeaveState> addedHalves = getHalves(holiday.getHolidayDuration());
+			addedHalves.removeAll(coveredBefore);
+			if (addedHalves.isEmpty()) {
+				continue;
+			}
+
+			LeaveRequestStatus originalStatus = request.getStatus();
+			Adjustment adjustment = adjustLeaveRequest(request, coveredBefore, addedHalves);
+			if (adjustment == Adjustment.UNCHANGED) {
+				continue;
+			}
+			boolean isVoided = adjustment == Adjustment.VOIDED;
+
+			EmailBodyTemplates employeeTemplate = PolicyHolidayLeaveUtil.getEmployeeTemplate(isVoided, originalStatus);
+			EmailBodyTemplates managerTemplate = PolicyHolidayLeaveUtil.getManagerTemplate(isVoided, originalStatus);
+			policyHolidayLeaveNotificationService.sendHolidayLeaveRequestNotifications(request, holiday,
+					employeeTemplate, managerTemplate);
+			emails.add(organizationName -> policyHolidayLeaveEmailService.sendHolidayLeaveRequestEmails(request,
+					holiday, employeeTemplate, managerTemplate, organizationName));
+			updatedRequests.add(request);
+		}
 
 		if (!updatedRequests.isEmpty()) {
 			policyLeaveRequestDao.saveAll(updatedRequests);
+			runAfterCommit(emails);
 		}
 
 		log.info("adjustLeaveRequestsForHoliday: execution ended with {} request(s)", updatedRequests.size());
 	}
 
-	private boolean adjustLeaveRequest(PolicyLeaveRequest request, Holiday holiday) {
-		boolean isFullDayHoliday = holiday.getHolidayDuration() == HolidayDuration.FULL_DAY;
-		LeaveRequestStatus originalStatus = request.getStatus();
-
+	private Adjustment adjustLeaveRequest(PolicyLeaveRequest request, Set<LeaveState> coveredBefore,
+			Set<LeaveState> addedHalves) {
 		if (request.getStartDate().equals(request.getEndDate())) {
-			if (isHalfDay(request.getLeaveState())) {
-				if (!isFullDayHoliday && !isSameHalf(holiday.getHolidayDuration(), request.getLeaveState())) {
-					return false;
+			if (LeaveModuleUtil.isHalfDay(request.getLeaveState())) {
+				if (!addedHalves.contains(request.getLeaveState())) {
+					return Adjustment.UNCHANGED;
 				}
-				voidLeaveRequest(request, holiday, originalStatus);
-				return true;
+				voidLeaveRequest(request);
+				return Adjustment.VOIDED;
 			}
 
-			if (isFullDayHoliday) {
-				voidLeaveRequest(request, holiday, originalStatus);
-				return true;
+			Set<LeaveState> remainingHalves = EnumSet.of(LeaveState.HALFDAY_MORNING, LeaveState.HALFDAY_EVENING);
+			remainingHalves.removeAll(coveredBefore);
+			remainingHalves.removeAll(addedHalves);
+			if (remainingHalves.isEmpty()) {
+				voidLeaveRequest(request);
+				return Adjustment.VOIDED;
 			}
 
-			request.setLeaveState(holiday.getHolidayDuration() == HolidayDuration.HALF_DAY_MORNING
-					? LeaveState.HALFDAY_EVENING : LeaveState.HALFDAY_MORNING);
+			if (request.getPolicy().getLeaveType().getMinDuration() != LeaveDuration.FULL_DAY) {
+				request.setLeaveState(remainingHalves.iterator().next());
+			}
 			request.setDurationDays(HALF_DAY);
-			sendUpdated(request, holiday);
-			return true;
+			return Adjustment.SHORTENED;
 		}
 
-		float revisedDuration = request.getDurationDays() - (isFullDayHoliday ? FULL_DAY : HALF_DAY);
+		float revisedDuration = request.getDurationDays() - addedHalves.size() * HALF_DAY;
 		if (revisedDuration <= 0f) {
-			voidLeaveRequest(request, holiday, originalStatus);
-			return true;
+			voidLeaveRequest(request);
+			return Adjustment.VOIDED;
 		}
 
 		request.setDurationDays(revisedDuration);
-		sendUpdated(request, holiday);
-		return true;
+		return Adjustment.SHORTENED;
 	}
 
-	private void voidLeaveRequest(PolicyLeaveRequest request, Holiday holiday, LeaveRequestStatus originalStatus) {
-		request.setStatus(originalStatus == LeaveRequestStatus.PENDING ? LeaveRequestStatus.CANCELLED
+	private void voidLeaveRequest(PolicyLeaveRequest request) {
+		request.setStatus(request.getStatus() == LeaveRequestStatus.PENDING ? LeaveRequestStatus.CANCELLED
 				: LeaveRequestStatus.REVOKED);
-
-		policyHolidayLeaveEmailService.sendHolidayLeaveRequestVoidedEmails(request, holiday, originalStatus);
-		policyHolidayLeaveNotificationService.sendHolidayLeaveRequestVoidedNotifications(request, holiday,
-				originalStatus);
 	}
 
-	private void sendUpdated(PolicyLeaveRequest request, Holiday holiday) {
-		policyHolidayLeaveEmailService.sendHolidayLeaveRequestUpdatedEmails(request, holiday);
-		policyHolidayLeaveNotificationService.sendHolidayLeaveRequestUpdatedNotifications(request, holiday);
+	// The halves of the date already off for this employee because of other holidays
+	private Set<LeaveState> getCoveredHalves(List<Holiday> holidays, Employee employee) {
+		Set<LeaveState> covered = EnumSet.noneOf(LeaveState.class);
+		holidays.stream()
+			.filter(holiday -> appliesToEmployee(holiday, employee))
+			.forEach(holiday -> covered.addAll(getHalves(holiday.getHolidayDuration())));
+		return covered;
 	}
 
-	private boolean isDateAlreadyCovered(Holiday holiday, List<Holiday> otherHolidaysOnDate, Employee employee) {
-		return otherHolidaysOnDate.stream()
-			.filter(existing -> appliesToEmployee(existing, employee))
-			.map(Holiday::getHolidayDuration)
-			.anyMatch(duration -> duration == HolidayDuration.FULL_DAY || duration == holiday.getHolidayDuration());
+	private Set<LeaveState> getHalves(HolidayDuration holidayDuration) {
+		return switch (holidayDuration) {
+			case FULL_DAY -> EnumSet.of(LeaveState.HALFDAY_MORNING, LeaveState.HALFDAY_EVENING);
+			case HALF_DAY_MORNING -> EnumSet.of(LeaveState.HALFDAY_MORNING);
+			case HALF_DAY_EVENING -> EnumSet.of(LeaveState.HALFDAY_EVENING);
+			case EXTENDED -> EnumSet.noneOf(LeaveState.class);
+		};
 	}
 
+	// Same rule as the holidays an employee sees when applying: holidays with no work
+	// location
+	// apply to everyone, the others only to employees in one of their work locations
 	private boolean appliesToEmployee(Holiday holiday, Employee employee) {
 		Set<WorkLocation> workLocations = holiday.getWorkLocations();
 		if (workLocations == null || workLocations.isEmpty()) {
@@ -154,13 +188,43 @@ public class PolicyHolidayLeaveServiceImpl implements PolicyHolidayLeaveService 
 					workLocation -> employeeWorkLocation.getWorkLocationId().equals(workLocation.getWorkLocationId()));
 	}
 
-	private boolean isHalfDay(LeaveState leaveState) {
-		return leaveState == LeaveState.HALFDAY_MORNING || leaveState == LeaveState.HALFDAY_EVENING;
+	private String getOrganizationName() {
+		return organizationDao.findTopByOrderByOrganizationIdDesc().map(Organization::getOrganizationName).orElse("");
 	}
 
-	private boolean isSameHalf(HolidayDuration holidayDuration, LeaveState leaveState) {
-		return (holidayDuration == HolidayDuration.HALF_DAY_MORNING && leaveState == LeaveState.HALFDAY_MORNING)
-				|| (holidayDuration == HolidayDuration.HALF_DAY_EVENING && leaveState == LeaveState.HALFDAY_EVENING);
+	// Emails can't be rolled back, so they go out only once the holiday and the leave
+	// changes
+	// are committed
+	private void runAfterCommit(List<Consumer<String>> emails) {
+		Runnable sendAll = () -> {
+			String organizationName = getOrganizationName();
+			emails.forEach(email -> {
+				try {
+					email.accept(organizationName);
+				}
+				catch (Exception e) {
+					log.error("runAfterCommit: holiday leave email failed", e);
+				}
+			});
+		};
+
+		if (TransactionSynchronizationManager.isSynchronizationActive()) {
+			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+				@Override
+				public void afterCommit() {
+					sendAll.run();
+				}
+			});
+		}
+		else {
+			sendAll.run();
+		}
+	}
+
+	private enum Adjustment {
+
+		UNCHANGED, VOIDED, SHORTENED
+
 	}
 
 }
