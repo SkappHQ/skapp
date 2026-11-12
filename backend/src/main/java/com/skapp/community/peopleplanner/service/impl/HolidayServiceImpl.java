@@ -19,6 +19,8 @@ import com.skapp.community.leaveplanner.payload.LeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.repository.LeaveEntitlementDao;
 import com.skapp.community.leaveplanner.repository.LeaveRequestDao;
 import com.skapp.community.leaveplanner.repository.LeaveRequestEntitlementDao;
+import com.skapp.community.leaveplanner.service.LeavePolicyService;
+import com.skapp.community.leaveplanner.service.PolicyHolidayLeaveService;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.leaveplanner.type.LeaveState;
 import com.skapp.community.peopleplanner.constant.PeopleConstants;
@@ -97,6 +99,10 @@ public class HolidayServiceImpl implements HolidayService {
 
 	private final EmployeeDao employeeDao;
 
+	private final LeavePolicyService leavePolicyService;
+
+	private final PolicyHolidayLeaveService policyHolidayLeaveService;
+
 	@Override
 	public ResponseEntityDto getAllHolidays(HolidayFilterDto holidayFilterDto) {
 		log.info("getAllHolidays: execution started");
@@ -142,6 +148,8 @@ public class HolidayServiceImpl implements HolidayService {
 		Map<String, WorkLocation> workLocationsByName = allWorkLocations.stream()
 			.collect(Collectors.toMap(wl -> wl.getName().trim(), wl -> wl, (a, b) -> a));
 
+		boolean isLeavePoliciesEnabled = leavePolicyService.isLeavePoliciesEnabled();
+
 		holidayBulkRequestDto.getHolidayDtoList().forEach(holidayDto -> {
 			try {
 
@@ -158,13 +166,18 @@ public class HolidayServiceImpl implements HolidayService {
 				holiday.setWorkLocations(workLocations);
 				holidayDao.save(holiday);
 
-				LeaveRequestFilterDto leaveRequestFilterDto = new LeaveRequestFilterDto();
-				leaveRequestFilterDto.setEndDate(holidayDate);
-				leaveRequestFilterDto.setStartDate(holidayDate);
-				List<LeaveRequest> leaveRequests = leaveRequestDao
-					.findAllLeaveRequestsByDateRange(leaveRequestFilterDto);
-				if (systemHolidays.isEmpty() && !leaveRequests.isEmpty()) {
-					leaveRequests.forEach(leaveRequest -> updateLeaveRequestDueHoliday(holiday, leaveRequest));
+				if (isLeavePoliciesEnabled) {
+					policyHolidayLeaveService.adjustLeaveRequestsForHoliday(holiday);
+				}
+				else {
+					LeaveRequestFilterDto leaveRequestFilterDto = new LeaveRequestFilterDto();
+					leaveRequestFilterDto.setEndDate(holidayDate);
+					leaveRequestFilterDto.setStartDate(holidayDate);
+					List<LeaveRequest> leaveRequests = leaveRequestDao
+						.findAllLeaveRequestsByDateRange(leaveRequestFilterDto);
+					if (systemHolidays.isEmpty() && !leaveRequests.isEmpty()) {
+						leaveRequests.forEach(leaveRequest -> updateLeaveRequestDueHoliday(holiday, leaveRequest));
+					}
 				}
 
 				savedHolidays.add(holiday);
