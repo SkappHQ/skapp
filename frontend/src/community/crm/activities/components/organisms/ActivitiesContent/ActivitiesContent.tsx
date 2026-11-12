@@ -208,11 +208,6 @@ const ActivitiesContent: FC = () => {
         openCrmSidePanel(CrmSidePanelTypes.MEETING_SIDE_PANEL);
         break;
       case ActivityType.TASK:
-        setTaskCompletions((current) => {
-          const next = { ...current };
-          delete next[row.id];
-          return next;
-        });
         setSelectedActivityTaskId(row.id);
         openCrmSidePanel(CrmSidePanelTypes.ACTIVITY_TASK_SIDE_PANEL);
         break;
@@ -223,6 +218,14 @@ const ActivitiesContent: FC = () => {
       default:
         break;
     }
+  };
+
+  const handlePanelCompletionChange = (taskId: number): void => {
+    setTaskCompletions((current) => {
+      const next = { ...current };
+      delete next[taskId];
+      return next;
+    });
   };
 
   const applyCompletion = (taskId: number, isCompleted: boolean): void => {
@@ -365,7 +368,10 @@ const ActivitiesContent: FC = () => {
       )}
       {selectedActivityTaskId !== null && (
         <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
-          <ActivityTaskSidePanel taskId={selectedActivityTaskId} />
+          <ActivityTaskSidePanel
+            taskId={selectedActivityTaskId}
+            onCompletionChange={handlePanelCompletionChange}
+          />
         </SidePanelWrapper>
       )}
       {selectedEmailId !== null && (

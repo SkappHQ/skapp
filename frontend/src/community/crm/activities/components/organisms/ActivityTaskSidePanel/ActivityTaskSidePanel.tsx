@@ -23,9 +23,10 @@ import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 
 interface Props {
   taskId: number;
+  onCompletionChange: (taskId: number) => void;
 }
 
-const ActivityTaskSidePanel: FC<Props> = ({ taskId }) => {
+const ActivityTaskSidePanel: FC<Props> = ({ taskId, onCompletionChange }) => {
   const translateText = useTranslator("crmModule");
   const { setToastMessage } = useToast();
   const router = useRouter();
@@ -105,6 +106,11 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId }) => {
     }
   };
 
+  const handleCompletionChange = (isCompleted: boolean): void => {
+    onCompletionChange(taskId);
+    updateTask({ id: taskId, isCompleted });
+  };
+
   const handleRelatedRowClick = (row: ActivityRow): void => {
     setSelectedActivityTaskId(row.id);
   };
@@ -132,8 +138,8 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId }) => {
         onTitleSave={(name) => updateTask({ id: taskId, name })}
         onCommentsSave={(notes) => updateTask({ id: taskId, notes })}
         onDelete={openDeleteModal}
-        onMarkAsDone={() => updateTask({ id: taskId, isCompleted: true })}
-        onReopen={() => updateTask({ id: taskId, isCompleted: false })}
+        onMarkAsDone={() => handleCompletionChange(true)}
+        onReopen={() => handleCompletionChange(false)}
         onContactClick={handleContactClick}
         onCompanyClick={handleCompanyClick}
       />
