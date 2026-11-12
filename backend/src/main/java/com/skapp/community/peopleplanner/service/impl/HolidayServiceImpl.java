@@ -245,8 +245,12 @@ public class HolidayServiceImpl implements HolidayService {
 			.filter(holiday -> holiday.getDate().getYear() == year)
 			.toList();
 
+		boolean isLeavePoliciesEnabled = leavePolicyService.isLeavePoliciesEnabled();
 		holidays.forEach(holiday -> {
-			if (hasLeaveRequestsForDate(holiday.getDate())) {
+			boolean hasLeaveRequests = isLeavePoliciesEnabled
+					? policyHolidayLeaveService.hasLeaveRequestsOnDate(holiday.getDate())
+					: hasLeaveRequestsForDate(holiday.getDate());
+			if (hasLeaveRequests) {
 				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_CANNOT_BE_DELETED_LEAVES_EXIST);
 			}
 		});
@@ -267,6 +271,7 @@ public class HolidayServiceImpl implements HolidayService {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_DELETE_HOLIDAYS_ARRAY_EMPTY);
 		}
 
+		boolean isLeavePoliciesEnabled = leavePolicyService.isLeavePoliciesEnabled();
 		List<Long> holidayIds = holidayDeleteDto.getHolidayIds();
 		for (Long holidayId : holidayIds) {
 			Optional<Holiday> optionalHoliday = holidayDao.findById(holidayId);
@@ -277,13 +282,10 @@ public class HolidayServiceImpl implements HolidayService {
 					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SPECIFIC_HOLIDAY_NOT_FOUND,
 							new String[] { String.valueOf(holidayId) });
 				}
-				LeaveRequestFilterDto leaveRequestFilterDto = new LeaveRequestFilterDto();
-				leaveRequestFilterDto.setStartDate(holiday.getDate());
-				leaveRequestFilterDto.setEndDate(holiday.getDate());
-				leaveRequestFilterDto.setStatus(List.of(LeaveRequestStatus.PENDING, LeaveRequestStatus.APPROVED));
-				List<LeaveRequest> leaveRequests = leaveRequestDao
-					.findAllLeaveRequestsByDateRange(leaveRequestFilterDto);
-				if (!leaveRequests.isEmpty()) {
+				boolean hasLeaveRequests = isLeavePoliciesEnabled
+						? policyHolidayLeaveService.hasLeaveRequestsOnDate(holiday.getDate())
+						: hasPendingOrApprovedLeaveRequestsForDate(holiday.getDate());
+				if (hasLeaveRequests) {
 					throw new ModuleException(
 							PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_CANNOT_BE_DELETED_LEAVES_EXIST);
 				}
@@ -538,6 +540,15 @@ public class HolidayServiceImpl implements HolidayService {
 		List<LeaveRequest> leaveRequests = leaveRequestDao.findAllLeaveRequestsByDateRange(leaveRequestFilterDto);
 
 		return !leaveRequests.isEmpty();
+	}
+
+	private boolean hasPendingOrApprovedLeaveRequestsForDate(LocalDate date) {
+		LeaveRequestFilterDto leaveRequestFilterDto = new LeaveRequestFilterDto();
+		leaveRequestFilterDto.setStartDate(date);
+		leaveRequestFilterDto.setEndDate(date);
+		leaveRequestFilterDto.setStatus(List.of(LeaveRequestStatus.PENDING, LeaveRequestStatus.APPROVED));
+
+		return !leaveRequestDao.findAllLeaveRequestsByDateRange(leaveRequestFilterDto).isEmpty();
 	}
 
 	private boolean isMultipleDaysLeave(LeaveRequest leaveRequest) {

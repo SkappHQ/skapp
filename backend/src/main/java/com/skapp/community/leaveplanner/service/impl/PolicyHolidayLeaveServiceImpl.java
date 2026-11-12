@@ -109,6 +109,17 @@ public class PolicyHolidayLeaveServiceImpl implements PolicyHolidayLeaveService 
 		log.info("adjustLeaveRequestsForHoliday: execution ended with {} request(s)", updatedRequests.size());
 	}
 
+	@Override
+	public boolean hasLeaveRequestsOnDate(LocalDate date) {
+		log.info("hasLeaveRequestsOnDate: execution started");
+
+		boolean hasLeaveRequests = policyLeaveRequestDao
+			.existsRequestOnDate(PolicyLeaveConstant.BALANCE_HOLDING_STATUSES, date);
+
+		log.info("hasLeaveRequestsOnDate: execution ended");
+		return hasLeaveRequests;
+	}
+
 	private Adjustment adjustLeaveRequest(PolicyLeaveRequest request, Set<LeaveState> coveredBefore,
 			Set<LeaveState> addedHalves) {
 		if (request.getStartDate().equals(request.getEndDate())) {

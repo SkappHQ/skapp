@@ -536,6 +536,21 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
+	@Override
+	public boolean existsRequestOnDate(Collection<LeaveRequestStatus> statuses, LocalDate date) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
+		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
+
+		criteriaQuery.select(root.get(PolicyLeaveRequest_.id))
+			.where(root.get(PolicyLeaveRequest_.status).in(statuses),
+					criteriaBuilder.lessThanOrEqualTo(root.get(PolicyLeaveRequest_.startDate), date),
+					criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), date));
+
+		return !entityManager.createQuery(criteriaQuery).setMaxResults(1).getResultList().isEmpty();
+	}
+
 	private List<Predicate> buildApprovedLeaveInWindowPredicates(CriteriaBuilder criteriaBuilder,
 			CriteriaQuery<?> criteriaQuery, Root<PolicyLeaveRequest> root, Join<PolicyLeaveRequest, Employee> employee,
 			LocalDate startDate, LocalDate endDate, List<Long> leaveTypeIds, List<Long> teamIds,

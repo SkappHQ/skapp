@@ -76,4 +76,6 @@ public interface PolicyLeaveRequestRepository {
 
 	List<PolicyLeaveRequest> findRequestsOnDate(Collection<LeaveRequestStatus> statuses, LocalDate date);
 
+	boolean existsRequestOnDate(Collection<LeaveRequestStatus> statuses, LocalDate date);
+
 }
