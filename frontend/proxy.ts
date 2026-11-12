@@ -435,10 +435,12 @@ const resolveInvoiceIntegrationsAccess: AccessGuard = ({
 const resolveTimeApprovalsAccess: AccessGuard = ({
   request,
   currentPath,
+  claims,
   roles
 }) =>
   currentPath.startsWith(ROUTES.INVOICE.TIME_APPROVALS.BASE) &&
-  !roles.includes(AdminTypes.INVOICE_ADMIN)
+  (!roles.includes(AdminTypes.INVOICE_ADMIN) ||
+    !isCoreOrProTier(getClaimTiers(claims)))
     ? redirectToUnauthorized(request)
     : null;
 
