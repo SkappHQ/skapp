@@ -18,7 +18,7 @@ interface Props {
   task?: CrmActivityTaskEntity;
   isOpen: boolean;
   onClose: () => void;
-  related: ReactNode;
+  related?: ReactNode;
   onTitleSave: (title: string) => void;
   onCommentsSave: (comments: string) => void;
   onDetailsSave: (payload: ActivityTaskEditPayload) => void;
@@ -84,6 +84,7 @@ const TaskActivitySidePanel: FC<Props> = ({
         "noDealsDescription"
       ])}
       {...(task && {
+        activityId: task.id,
         title: task.name,
         comments: task.notes,
         deal: task.deal,

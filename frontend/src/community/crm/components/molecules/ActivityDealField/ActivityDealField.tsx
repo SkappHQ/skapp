@@ -20,6 +20,7 @@ import {
 } from "~community/crm/types/CrmCommonTypes";
 import { CrmDealFilterRequest } from "~community/crm/types/CrmTypes";
 import { mergeDeals } from "~community/crm/utils/dealUtil";
+import { CrmScheduleMeetingFormValues } from "~enterprise/crm/types/ScheduleMeetingTypes";
 
 interface Props {
   id: string;
@@ -27,7 +28,8 @@ interface Props {
     | FormikProps<CrmLogCallFormValues>
     | FormikProps<CrmLogMeetingFormValues>
     | FormikProps<CrmAddTaskFormValues>
-    | FormikProps<CrmLogEmailFormValues>;
+    | FormikProps<CrmLogEmailFormValues>
+    | FormikProps<CrmScheduleMeetingFormValues>;
   fieldAriaLabel: string;
   isClearedNoticeVisible?: boolean;
   isMismatch?: boolean;

@@ -27,6 +27,7 @@ import {
   updateContactRecord
 } from "~community/crm/utils/contactUtil";
 import { getMeetingValidationSchema } from "~community/crm/utils/meetingValidations";
+import { getMeetingVenueInfo } from "~enterprise/crm/utils/meetingVenueUtil";
 
 interface Props {
   meeting: CrmMeetingEntity;
@@ -155,6 +156,8 @@ const SidePanelMeetingInfo: FC<Props> = ({
         onStartTimeChange={(time) => setFieldValue("startTime", time)}
         onOwnerChange={(ownerId) => setFieldValue("ownerId", ownerId)}
       />
+
+      {getMeetingVenueInfo(meeting)}
     </div>
   );
 };

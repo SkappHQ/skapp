@@ -5,6 +5,7 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.StringUtils;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
@@ -26,11 +27,13 @@ import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.service.CrmActivityEmailService;
+import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
 import com.skapp.community.crmplanner.type.CrmActivityEmailContactRole;
 import com.skapp.community.crmplanner.type.CrmActivityEmailFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityEmailSort;
 import com.skapp.community.crmplanner.util.CrmUtil;
 import com.skapp.community.crmplanner.util.CrmValidations;
+import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.util.Validations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -66,6 +69,10 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 	private final CrmDealDao crmDealDao;
 
 	private final CrmCompanyDao crmCompanyDao;
+
+	private final MessageUtil messageUtil;
+
+	private final CrmOwnerResolverService crmOwnerResolver;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -222,6 +229,9 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_EMAIL_EDIT_DENIED);
 		}
 
+		CrmValidations.validateActivityLinkRemoval(requestDto.getIsDealRemoved(), requestDto.getDealId(),
+				requestDto.getIsCompanyRemoved(), requestDto.getCompanyId());
+
 		if (requestDto.getSubject() != null) {
 			CrmValidations.validateEmailSubject(requestDto.getSubject());
 			email.setSubject(requestDto.getSubject());
@@ -238,6 +248,11 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 
 		if (requestDto.getDescription() != null) {
 			email.setDescription(requestDto.getDescription());
+		}
+
+		if (requestDto.getOwnerId() != null) {
+			Employee owner = crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser);
+			email.setOwner(owner);
 		}
 
 		if (Boolean.TRUE.equals(requestDto.getIsDealRemoved())) {
@@ -364,6 +379,23 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 			.filter(contact -> !Boolean.TRUE.equals(contact.getIsDeleted()))
 			.map(crmMapper::crmContactToCrmContactLookupResponseDto)
 			.toList();
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto deleteEmail(Long id) {
+		log.info("deleteEmail: execution started");
+
+		CrmActivityEmail email = crmActivityEmailDao.findEmailById(id);
+		if (email == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_EMAIL_NOT_FOUND);
+		}
+
+		email.setIsDeleted(true);
+		crmActivityEmailDao.save(email);
+
+		log.info("deleteEmail: execution ended");
+		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_ACTIVITY_DELETED), false);
 	}
 
 	protected void validateActivityCreationLimit() {

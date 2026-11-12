@@ -5,7 +5,9 @@ import {
   SortOrderTypes
 } from "~community/common/types/CommonTypes";
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
+import { LeaveHistoryDataTypes as EmployeeLeaveHistoryDataTypes } from "~community/leave/types/AnalyticsTypes";
 import { PolicyType } from "~community/leave/types/LeavePolicyTypes";
+import { LeaveHistoryDataTypes as TeamLeaveHistoryDataTypes } from "~community/leave/types/TeamLeaveAnalyticsTypes";
 import { HolidayDurationType } from "~community/people/types/HolidayTypes";
 
 export enum PolicyBalanceDisabledReason {
@@ -169,6 +171,17 @@ export interface PolicyEmployeesOnLeaveResponse {
   results: PolicyEmployeesOnLeaveType[];
 }
 
+export interface PolicyLeaveUtilizationSourceParams {
+  isProTier: boolean;
+  isLeavePoliciesEnabled: boolean;
+  isLeavePolicyConfigLoading: boolean;
+}
+
+export interface PolicyLeaveUtilizationSource {
+  isLegacyEnabled: boolean;
+  isPolicyEnabled: boolean;
+}
+
 export interface PolicyResourceAvailabilityParams {
   teamIds: number | string | null;
   startDate: string;
@@ -217,4 +230,46 @@ export interface PolicyLeaveRequestQueryParams {
   year: string;
   status?: string;
   policyId?: string;
+}
+
+export interface PolicyTeamLeaveHistoryQueryParams {
+  status?: string | null;
+  leaveType?: string | null;
+  startDate?: string;
+  endDate?: string;
+  teamMemberIds?: string | null;
+  page?: number;
+  sortKey?: SortKeyTypes;
+  sortOrder?: SortOrderTypes;
+  size?: string;
+  isExport?: boolean;
+}
+
+export interface PolicyEmployeeLeaveHistoryQueryParams {
+  startDate: string;
+  endDate: string;
+  leaveType?: string;
+  status?: string;
+  isExport: boolean;
+  page: string;
+  size: string;
+}
+
+export interface UseGetPolicyEmployeeLeaveHistoryArgs {
+  employeeId: number;
+  selectedDates: Date[];
+  status: string[];
+  type: string[];
+  page: number;
+  size: number;
+  isExport: boolean;
+  enabled?: boolean;
+}
+
+export interface PolicyTeamLeaveHistoryResponse {
+  results: TeamLeaveHistoryDataTypes[];
+}
+
+export interface PolicyEmployeeLeaveHistoryResponse {
+  results: EmployeeLeaveHistoryDataTypes[];
 }

@@ -11,8 +11,12 @@ public interface CrmActivityCallService {
 
 	ResponseEntityDto getCallById(Long id);
 
+	ResponseEntityDto getRelatedCalls(Long id);
+
 	ResponseEntityDto createCall(CrmActivityCallCreateRequestDto requestDto);
 
 	ResponseEntityDto editCall(Long id, CrmActivityCallEditRequestDto requestDto);
+
+	ResponseEntityDto deleteCall(Long id);
 
 }

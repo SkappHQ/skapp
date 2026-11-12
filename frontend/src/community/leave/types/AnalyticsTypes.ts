@@ -1,3 +1,5 @@
+import { AbsenceRateKpiTypes } from "~community/leave/enums/AnalyticsEnums";
+
 import { SummarizedLeaveType } from "./MyRequests";
 
 export type PieChartPosition = "center" | "bottom";
@@ -38,3 +40,13 @@ export interface DownloadDataAsCSVType {
 }
 
 export type ToggleState = Record<string, boolean>;
+
+export interface AbsenceRateType {
+  type?: AbsenceRateKpiTypes | null;
+  currentAbsenceRate?: number | null;
+  monthBeforeAbsenceRate?: number | null;
+}
+
+export interface AbsenceRateResponse {
+  results: AbsenceRateType[];
+}

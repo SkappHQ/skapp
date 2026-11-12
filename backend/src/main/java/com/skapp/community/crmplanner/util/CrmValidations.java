@@ -23,6 +23,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -415,6 +416,28 @@ public class CrmValidations {
 	public static void validateMeetingTimes(Instant startAt, Instant endAt) {
 		if (startAt != null && endAt != null && !endAt.isAfter(startAt)) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_MEETING_TIME_RANGE_INVALID);
+		}
+	}
+
+	public static void validateMeetingTimesOnDate(LocalDate meetingDate, Instant startAt, Instant endAt, ZoneId zone) {
+		if (meetingDate == null) {
+			return;
+		}
+		if (startAt != null && !startAt.atZone(zone).toLocalDate().equals(meetingDate)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_MEETING_TIME_DATE_MISMATCH);
+		}
+		if (endAt != null && !endAt.atZone(zone).toLocalDate().equals(meetingDate)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_MEETING_TIME_DATE_MISMATCH);
+		}
+	}
+
+	public static void validateActivityLinkRemoval(Boolean isDealRemoved, Long dealId, Boolean isCompanyRemoved,
+			Long companyId) {
+		if (Boolean.TRUE.equals(isDealRemoved) && dealId != null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_DEAL_REMOVAL_CONFLICT);
+		}
+		if (Boolean.TRUE.equals(isCompanyRemoved) && companyId != null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_COMPANY_REMOVAL_CONFLICT);
 		}
 	}
 
