@@ -26,8 +26,8 @@ interface Props {
   onDelete: () => void;
   onMarkAsDone: () => void;
   onReopen: () => void;
-  onContactClick: () => void;
-  onCompanyClick: () => void;
+  onContactClick: (contactId: number) => void;
+  onCompanyClick: (companyId: number) => void;
 }
 
 const TaskActivitySidePanel: FC<Props> = ({
@@ -90,6 +90,7 @@ const TaskActivitySidePanel: FC<Props> = ({
         title: task.name,
         comments: task.notes,
         deal: task.deal,
+        dealFilterCompanyId: task.contact?.companyId,
         info: (
           <div className="flex flex-col gap-4">
             <ButtonV2

@@ -29,7 +29,7 @@ import { getEmailValidationSchema } from "~community/crm/utils/emailValidations"
 interface Props {
   email: CrmActivityEmailEntity;
   onSave: (payload: ActivityEmailEditPayload) => void;
-  onCompanyClick: () => void;
+  onCompanyClick: (companyId: number) => void;
 }
 
 type RecipientField = "toContactIds" | "ccContactIds" | "bccContactIds";

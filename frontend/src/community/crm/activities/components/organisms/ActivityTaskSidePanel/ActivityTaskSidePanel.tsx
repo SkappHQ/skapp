@@ -94,16 +94,12 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId }) => {
     router.push(url);
   };
 
-  const handleContactClick = (): void => {
-    if (task?.contact?.id) {
-      openRecord(ROUTES.CRM.CONTACT_DETAIL(task.contact.id));
-    }
+  const handleContactClick = (contactId: number): void => {
+    openRecord(ROUTES.CRM.CONTACT_DETAIL(contactId));
   };
 
-  const handleCompanyClick = (): void => {
-    if (task?.company?.id) {
-      openRecord(ROUTES.CRM.COMPANY_DETAIL(task.company.id));
-    }
+  const handleCompanyClick = (companyId: number): void => {
+    openRecord(ROUTES.CRM.COMPANY_DETAIL(companyId));
   };
 
   const handleRelatedRowClick = (row: ActivityRow): void => {

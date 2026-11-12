@@ -24,12 +24,13 @@ import {
 import { getActivityTaskValidationSchema } from "~community/crm/utils/activityTaskValidations";
 import { updateCompanyRecord } from "~community/crm/utils/companyUtil";
 import { updateContactRecord } from "~community/crm/utils/contactUtil";
+import { isDealMatchingCompany } from "~community/crm/utils/dealUtil";
 
 interface Props {
   task: CrmActivityTaskEntity;
   onSave: (payload: ActivityTaskEditPayload) => void;
-  onContactClick: () => void;
-  onCompanyClick: () => void;
+  onContactClick: (contactId: number) => void;
+  onCompanyClick: (companyId: number) => void;
 }
 
 const SidePanelActivityTaskInfo: FC<Props> = ({
@@ -82,7 +83,20 @@ const SidePanelActivityTaskInfo: FC<Props> = ({
 
   useActivityAutoSave(formik);
 
-  const { values, setFieldValue } = formik;
+  const { values, setFieldValue, resetForm } = formik;
+
+  const handleContactChange = (
+    contactId: number,
+    contactCompanyId?: number | null
+  ): void => {
+    if (task.deal && !isDealMatchingCompany(task.deal, contactCompanyId)) {
+      onSave({ id: task.id, contactId, isDealRemoved: true });
+      resetForm({ values: { ...values, contactId, dealId: null } });
+      return;
+    }
+
+    setFieldValue("contactId", contactId);
+  };
 
   const handleDueDateChange = (date: Date): void => {
     setFieldValue("dueAt", pickedDayToInstant(date, displayZone));
@@ -107,7 +121,7 @@ const SidePanelActivityTaskInfo: FC<Props> = ({
               ])}
               editAriaLabel={translateAria(["editContact"])}
               onContactClick={onContactClick}
-              onChange={(contactId) => setFieldValue("contactId", contactId)}
+              onChange={handleContactChange}
             />
           </PropertyRow>
 

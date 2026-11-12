@@ -18,8 +18,8 @@ interface Props {
   onDealChange: (dealId: number | null) => void;
   onDetailsSave: (payload: ActivityCallEditPayload) => void;
   onDelete: () => void;
-  onContactClick: () => void;
-  onCompanyClick: () => void;
+  onContactClick: (contactId: number) => void;
+  onCompanyClick: (companyId: number) => void;
 }
 
 const CallSidePanel: FC<Props> = ({
@@ -67,6 +67,7 @@ const CallSidePanel: FC<Props> = ({
         title: call.subject,
         comments: call.comments,
         deal: call.deal,
+        dealFilterCompanyId: call.contact?.companyId,
         info: (
           <SidePanelCallInfo
             key={call.id}

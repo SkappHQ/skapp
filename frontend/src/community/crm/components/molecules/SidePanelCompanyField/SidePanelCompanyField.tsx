@@ -17,7 +17,7 @@ interface Props {
   companyId: number | null;
   emptyLabel: string;
   editAriaLabel: string;
-  onCompanyClick: () => void;
+  onCompanyClick: (companyId: number) => void;
   onChange: (companyId: number) => void;
 }
 
@@ -46,7 +46,10 @@ const SidePanelCompanyField: FC<Props> = ({
     [debouncedSearch]
   );
 
-  const { data: lookupData } = useGetCompanyLookup(lookupFilter);
+  const { data: lookupData } = useGetCompanyLookup(
+    lookupFilter,
+    debouncedSearch.length > 0
+  );
 
   const lookupItems = useMemo(
     () => (lookupData ? lookupData.items : []),
@@ -71,19 +74,21 @@ const SidePanelCompanyField: FC<Props> = ({
     onChange(selectedId);
   };
 
+  const handleLinkClick = (): void => {
+    if (companyId) onCompanyClick(companyId);
+  };
+
   return (
     <SidePanelLinkPopupField
       id={id}
       options={options}
       selectedId={selectedCompany ? companyId : null}
-      linkLabel={
-        selectedCompany && selectedCompany.name ? selectedCompany.name : ""
-      }
+      linkLabel={selectedCompany?.name ? selectedCompany.name : ""}
       emptyLabel={emptyLabel}
       editAriaLabel={editAriaLabel}
       searchPlaceholder={translateText(["placeholders", "relatedTo"])}
       noResultsText={translateText(["emptyStates", "noCompanies"])}
-      onLinkClick={onCompanyClick}
+      onLinkClick={handleLinkClick}
       onSearch={setSearchTerm}
       onSelect={handleSelect}
     />

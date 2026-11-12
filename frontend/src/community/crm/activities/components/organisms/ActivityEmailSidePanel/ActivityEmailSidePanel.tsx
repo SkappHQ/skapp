@@ -80,11 +80,9 @@ const ActivityEmailSidePanel: FC<Props> = ({ emailId }) => {
     handleClose();
   }, [isError, isFetching]);
 
-  const handleCompanyClick = (): void => {
-    if (email?.company?.id) {
-      handleClose();
-      router.push(ROUTES.CRM.COMPANY_DETAIL(email.company.id));
-    }
+  const handleCompanyClick = (companyId: number): void => {
+    handleClose();
+    router.push(ROUTES.CRM.COMPANY_DETAIL(companyId));
   };
 
   return (

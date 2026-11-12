@@ -8,11 +8,17 @@ import { CrmActivityDealFormValues } from "~community/crm/types/CrmCommonTypes";
 
 interface Props {
   id: string;
+  filterCompanyId?: number;
   onSave: (dealId: number | null) => void;
   onClose: () => void;
 }
 
-const AddActivityDealModal: FC<Props> = ({ id, onSave, onClose }) => {
+const AddActivityDealModal: FC<Props> = ({
+  id,
+  filterCompanyId,
+  onSave,
+  onClose
+}) => {
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator(
     "crmAria",
@@ -37,6 +43,7 @@ const AddActivityDealModal: FC<Props> = ({ id, onSave, onClose }) => {
           id={`${id}-add-deal`}
           formik={formik}
           fieldAriaLabel={translateAria(["dealSearch"])}
+          {...(filterCompanyId && { filterCompanyId })}
         />
       }
       buttons={{

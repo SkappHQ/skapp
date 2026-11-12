@@ -64,7 +64,7 @@ const SidePanelTextField: FC<Props> = ({
       onClick={startEditing}
     >
       <span className="block truncate" title={value}>
-        {value ? value : placeholder}
+        {value || placeholder}
       </span>
     </button>
   );

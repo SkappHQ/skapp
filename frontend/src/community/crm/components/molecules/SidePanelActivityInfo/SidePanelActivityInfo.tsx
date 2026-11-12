@@ -24,7 +24,7 @@ interface Props {
   secondaryRow?: ReactNode;
   owner?: CrmOwnerEntity;
   companyId?: number | null;
-  onCompanyClick: () => void;
+  onCompanyClick: (companyId: number) => void;
   onDateChange: (date: Date) => void;
   onStartTimeChange?: (time: string) => void;
   onOwnerChange: (ownerId: number) => void;

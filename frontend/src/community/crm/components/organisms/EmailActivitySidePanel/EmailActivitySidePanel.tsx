@@ -17,7 +17,7 @@ interface Props {
   onDealChange: (dealId: number | null) => void;
   onDetailsSave: (payload: ActivityEmailEditPayload) => void;
   onDelete: () => void;
-  onCompanyClick: () => void;
+  onCompanyClick: (companyId: number) => void;
 }
 
 const EmailActivitySidePanel: FC<Props> = ({

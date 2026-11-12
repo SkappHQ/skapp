@@ -8,6 +8,7 @@ import SidePanelDealSection from "~community/crm/components/molecules/SidePanelD
 interface Props {
   id: string;
   dealId: number | null;
+  filterCompanyId?: number | null;
   emptyDescription: string;
   onDealChange: (dealId: number | null) => void;
 }
@@ -15,6 +16,7 @@ interface Props {
 const SidePanelActivityDeal: FC<Props> = ({
   id,
   dealId,
+  filterCompanyId,
   emptyDescription,
   onDealChange
 }) => {
@@ -79,6 +81,7 @@ const SidePanelActivityDeal: FC<Props> = ({
       {isAddDealModalOpen && (
         <AddActivityDealModal
           id={id}
+          {...(filterCompanyId && { filterCompanyId })}
           onSave={handleSave}
           onClose={() => setIsAddDealModalOpen(false)}
         />

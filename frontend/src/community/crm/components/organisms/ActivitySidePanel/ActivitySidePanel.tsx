@@ -38,6 +38,7 @@ interface Props {
   title?: string;
   comments?: string;
   deal?: CrmDealEntity;
+  dealFilterCompanyId?: number | null;
   info?: ReactNode;
   related?: ReactNode;
   onTitleSave: (title: string) => void;
@@ -63,6 +64,7 @@ const ActivitySidePanel: FC<Props> = ({
   title,
   comments,
   deal,
+  dealFilterCompanyId,
   info,
   related,
   onTitleSave,
@@ -87,6 +89,8 @@ const ActivitySidePanel: FC<Props> = ({
 
     setDeals(mergeDeals(deals, [deal]));
   }, [deal]);
+
+  const linkedDealId = deal?.id && deals[deal.id] ? deal.id : null;
 
   const { isCrmSalesManager, isCrmAdmin, isSuperAdmin } = useSessionData();
   const isDeleteAllowed = isCrmSalesManager || isCrmAdmin || isSuperAdmin;
@@ -173,7 +177,8 @@ const ActivitySidePanel: FC<Props> = ({
               <hr className="border-secondary-accent" />
               <SidePanelActivityDeal
                 id={id}
-                dealId={deal && deal.id && deals[deal.id] ? deal.id : null}
+                dealId={linkedDealId}
+                filterCompanyId={dealFilterCompanyId}
                 emptyDescription={emptyDealsDescription}
                 onDealChange={onDealChange}
               />

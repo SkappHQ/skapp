@@ -89,11 +89,9 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId }) => {
     handleDeleteError
   );
 
-  const handleCompanyClick = (): void => {
-    if (meeting?.company?.id) {
-      handleClose();
-      router.push(ROUTES.CRM.COMPANY_DETAIL(meeting.company.id));
-    }
+  const handleCompanyClick = (companyId: number): void => {
+    handleClose();
+    router.push(ROUTES.CRM.COMPANY_DETAIL(companyId));
   };
 
   const handleRelatedRowClick = (row: ActivityRow): void => {
