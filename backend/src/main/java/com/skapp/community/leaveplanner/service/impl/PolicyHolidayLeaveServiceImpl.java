@@ -151,7 +151,6 @@ public class PolicyHolidayLeaveServiceImpl implements PolicyHolidayLeaveService 
 				: LeaveRequestStatus.REVOKED);
 	}
 
-	// The halves of the date already off for this employee because of other holidays
 	private Set<LeaveState> getCoveredHalves(List<Holiday> holidays, Employee employee) {
 		Set<LeaveState> covered = EnumSet.noneOf(LeaveState.class);
 		holidays.stream()
@@ -169,9 +168,6 @@ public class PolicyHolidayLeaveServiceImpl implements PolicyHolidayLeaveService 
 		};
 	}
 
-	// Same rule as the holidays an employee sees when applying: holidays with no work
-	// location
-	// apply to everyone, the others only to employees in one of their work locations
 	private boolean appliesToEmployee(Holiday holiday, Employee employee) {
 		Set<WorkLocation> workLocations = holiday.getWorkLocations();
 		if (workLocations == null || workLocations.isEmpty()) {
@@ -192,9 +188,6 @@ public class PolicyHolidayLeaveServiceImpl implements PolicyHolidayLeaveService 
 		return organizationDao.findTopByOrderByOrganizationIdDesc().map(Organization::getOrganizationName).orElse("");
 	}
 
-	// Emails can't be rolled back, so they go out only once the holiday and the leave
-	// changes
-	// are committed
 	private void runAfterCommit(List<Consumer<String>> emails) {
 		Runnable sendAll = () -> {
 			String organizationName = getOrganizationName();
