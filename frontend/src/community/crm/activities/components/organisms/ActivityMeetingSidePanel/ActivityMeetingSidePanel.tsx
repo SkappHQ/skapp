@@ -124,6 +124,7 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId }) => {
           updateMeeting({ id: meetingId, comments })
         }
         onDelete={openDeleteModal}
+        onDetailsSave={updateMeeting}
         onCompanyClick={handleCompanyClick}
       />
       <DeleteActivityModal

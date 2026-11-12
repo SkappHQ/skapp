@@ -8,10 +8,10 @@ import { FC, ReactNode } from "react";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
+import { ActivityTaskEditPayload } from "~community/crm/activities/types/activityTypes";
 import SidePanelActivityTaskInfo from "~community/crm/components/molecules/SidePanelActivityTaskInfo/SidePanelActivityTaskInfo";
 import ActivitySidePanel from "~community/crm/components/organisms/ActivitySidePanel/ActivitySidePanel";
 import { TASK_DETAIL_ICON_SIZE } from "~community/crm/constants/taskConstants";
-import { useCrmStore } from "~community/crm/store/store";
 import { CrmActivityTaskEntity } from "~community/crm/types/CrmCommonTypes";
 
 interface Props {
@@ -21,6 +21,7 @@ interface Props {
   related?: ReactNode;
   onTitleSave: (title: string) => void;
   onCommentsSave: (comments: string) => void;
+  onDetailsSave: (payload: ActivityTaskEditPayload) => void;
   onDelete: () => void;
   onMarkAsDone: () => void;
   onReopen: () => void;
@@ -35,6 +36,7 @@ const TaskActivitySidePanel: FC<Props> = ({
   related,
   onTitleSave,
   onCommentsSave,
+  onDetailsSave,
   onDelete,
   onMarkAsDone,
   onReopen,
@@ -43,8 +45,6 @@ const TaskActivitySidePanel: FC<Props> = ({
 }) => {
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria", "activities", "taskSidePanel");
-
-  const owners = useCrmStore((state) => state.owners);
 
   const isCompleted = task?.isCompleted === true;
 
@@ -112,8 +112,9 @@ const TaskActivitySidePanel: FC<Props> = ({
                 : translateText(["tasks", "sidePanel", "info", "markAsDone"])}
             </ButtonV2>
             <SidePanelActivityTaskInfo
+              key={task.id}
               task={task}
-              owner={owners[task.ownerId]}
+              onSave={onDetailsSave}
               onContactClick={onContactClick}
               onCompanyClick={onCompanyClick}
             />

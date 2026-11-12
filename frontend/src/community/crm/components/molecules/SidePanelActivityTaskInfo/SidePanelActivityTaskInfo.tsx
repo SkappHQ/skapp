@@ -1,37 +1,94 @@
-import { Label } from "@rootcodelabs/skapp-ui";
+import { useFormik } from "formik";
 import { DateTime } from "luxon";
-import { FC } from "react";
+import { FC, useEffect, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
+import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { pickedDayToInstant } from "~community/common/utils/dateTimeUtils";
+import { ActivityTaskEditPayload } from "~community/crm/activities/types/activityTypes";
+import {
+  toActivityTaskEditPayload,
+  toActivityTaskFormValues
+} from "~community/crm/activities/utils/activityUtil";
+import PriorityDropdown from "~community/crm/components/molecules/PriorityDropdown/PriorityDropdown";
 import PropertyRow from "~community/crm/components/molecules/PropertyRow/PropertyRow";
 import SidePanelActivityInfo from "~community/crm/components/molecules/SidePanelActivityInfo/SidePanelActivityInfo";
 import SidePanelLinkButton from "~community/crm/components/molecules/SidePanelLinkButton/SidePanelLinkButton";
+import { useActivityAutoSave } from "~community/crm/hooks/useActivityAutoSave";
+import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmActivityTaskEntity,
-  CrmOwnerEntity
+  CrmAddTaskFormValues
 } from "~community/crm/types/CrmCommonTypes";
-import { getContactDisplayName } from "~community/crm/utils/contactUtil";
-import { getPriorityConfig } from "~community/crm/utils/priorityUtil";
+import { getActivityTaskValidationSchema } from "~community/crm/utils/activityTaskValidations";
+import { updateCompanyRecord } from "~community/crm/utils/companyUtil";
+import {
+  getContactDisplayName,
+  updateContactRecord
+} from "~community/crm/utils/contactUtil";
 
 interface Props {
   task: CrmActivityTaskEntity;
-  owner?: CrmOwnerEntity;
+  onSave: (payload: ActivityTaskEditPayload) => void;
   onContactClick: () => void;
   onCompanyClick: () => void;
 }
 
 const SidePanelActivityTaskInfo: FC<Props> = ({
   task,
-  owner,
+  onSave,
   onContactClick,
   onCompanyClick
 }) => {
   const translateText = useTranslator("crmModule");
+  const displayZone = useDisplayZone();
 
-  const priorityConfig = getPriorityConfig(task.priority);
+  const { owners, contacts, setContacts, companies, setCompanies } =
+    useCrmStore(
+      useShallow((state) => ({
+        owners: state.owners,
+        contacts: state.contacts,
+        setContacts: state.setContacts,
+        companies: state.companies,
+        setCompanies: state.setCompanies
+      }))
+    );
+
+  useEffect(() => {
+    if (task.contact) {
+      setContacts(updateContactRecord(contacts, [task.contact]));
+    }
+    if (task.company) {
+      setCompanies(updateCompanyRecord(companies, [task.company]));
+    }
+  }, [task]);
+
+  const initialValues = useMemo(
+    () => toActivityTaskFormValues(task),
+    [task.id]
+  );
+
+  const formik = useFormik<CrmAddTaskFormValues>({
+    initialValues,
+    validationSchema: getActivityTaskValidationSchema(translateText),
+    onSubmit: (values, { resetForm }) => {
+      onSave(toActivityTaskEditPayload(task.id, values, formik.initialValues));
+      resetForm({ values });
+    }
+  });
+
+  useActivityAutoSave(formik);
+
+  const { values, setFieldValue } = formik;
+
+  const handleDueDateChange = (date: Date): void => {
+    setFieldValue("dueAt", pickedDayToInstant(date, displayZone));
+  };
 
   return (
     <SidePanelActivityInfo
+      id="activity-task"
       primaryRow={
         <>
           <PropertyRow
@@ -57,23 +114,18 @@ const SidePanelActivityTaskInfo: FC<Props> = ({
           <PropertyRow
             label={translateText(["tasks", "sidePanel", "info", "priority"])}
           >
-            <Label
-              backgroundColor={priorityConfig.bgColor}
-              textColor={priorityConfig.textColor}
-            >
-              <span className="flex items-center gap-1">
-                {priorityConfig.icon}
-                {translateText([
-                  "common",
-                  "priorityOptions",
-                  priorityConfig.key
-                ])}
-              </span>
-            </Label>
+            <PriorityDropdown
+              value={values.priority}
+              onChange={(priority) => setFieldValue("priority", priority)}
+            />
           </PropertyRow>
         </>
       }
-      date={DateTime.fromISO(task.dueAt)}
+      date={
+        values.dueAt
+          ? DateTime.fromISO(values.dueAt)
+          : DateTime.fromISO(task.dueAt)
+      }
       dateLabel={translateText([
         "activities",
         "taskSidePanel",
@@ -81,9 +133,11 @@ const SidePanelActivityTaskInfo: FC<Props> = ({
         "dueDate"
       ])}
       hideStartTime
-      owner={owner}
+      {...(values.ownerId && { owner: owners[values.ownerId] })}
       companyName={task.company?.name}
       onCompanyClick={onCompanyClick}
+      onDateChange={handleDueDateChange}
+      onOwnerChange={(ownerId) => setFieldValue("ownerId", ownerId)}
     />
   );
 };

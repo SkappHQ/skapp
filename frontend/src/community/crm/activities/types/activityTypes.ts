@@ -180,19 +180,28 @@ export interface ActivityTaskCreatePayload {
 
 export interface ActivityCallEditPayload {
   id: number;
+  ownerId?: number;
   subject?: string;
   comments?: string;
+  loggedAt?: string | null;
 }
 
 export interface ActivityMeetingEditPayload {
   id: number;
+  ownerId?: number;
   name?: string;
   comments?: string;
+  meetingDate?: string | null;
+  startAt?: string | null;
+  endAt?: string | null;
 }
 
 export interface ActivityTaskEditPayload {
   id: number;
+  ownerId?: number;
   name?: string;
   notes?: string;
   isCompleted?: boolean;
+  priority?: CrmPriorityEnum;
+  dueAt?: string | null;
 }

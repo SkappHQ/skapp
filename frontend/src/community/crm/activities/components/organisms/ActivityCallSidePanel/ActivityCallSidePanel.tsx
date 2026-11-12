@@ -128,6 +128,7 @@ const ActivityCallSidePanel: FC<Props> = ({ callId }) => {
         onTitleSave={(subject) => updateCall({ id: callId, subject })}
         onCommentsSave={(comments) => updateCall({ id: callId, comments })}
         onDelete={openDeleteModal}
+        onDetailsSave={updateCall}
         onContactClick={handleContactClick}
         onCompanyClick={handleCompanyClick}
       />

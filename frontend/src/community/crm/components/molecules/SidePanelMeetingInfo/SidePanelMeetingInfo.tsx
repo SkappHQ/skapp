@@ -1,45 +1,109 @@
 import { AvatarGroup } from "@rootcodelabs/skapp-ui";
+import { useFormik } from "formik";
 import { DateTime } from "luxon";
-import { FC } from "react";
+import { FC, useEffect, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
-import { TIME_FORMAT_12_HOUR } from "~community/common/constants/timeConstants";
+import { TIME_FORMAT_24_HOUR } from "~community/common/constants/timeConstants";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { ActivityMeetingEditPayload } from "~community/crm/activities/types/activityTypes";
+import {
+  toDateFieldValue,
+  toMeetingEditPayload,
+  toMeetingFormValues
+} from "~community/crm/activities/utils/activityUtil";
 import PropertyRow from "~community/crm/components/molecules/PropertyRow/PropertyRow";
 import SidePanelActivityInfo from "~community/crm/components/molecules/SidePanelActivityInfo/SidePanelActivityInfo";
+import SidePanelTimeField from "~community/crm/components/molecules/SidePanelTimeField/SidePanelTimeField";
+import { useActivityAutoSave } from "~community/crm/hooks/useActivityAutoSave";
+import { useCrmStore } from "~community/crm/store/store";
 import {
-  CrmMeetingEntity,
-  CrmOwnerEntity
+  CrmLogMeetingFormValues,
+  CrmMeetingEntity
 } from "~community/crm/types/CrmCommonTypes";
-import { getContactDisplayName } from "~community/crm/utils/contactUtil";
+import { updateCompanyRecord } from "~community/crm/utils/companyUtil";
+import {
+  getContactDisplayName,
+  updateContactRecord
+} from "~community/crm/utils/contactUtil";
+import { getMeetingValidationSchema } from "~community/crm/utils/meetingValidations";
 import { getMeetingVenueInfo } from "~enterprise/crm/utils/meetingVenueUtil";
 
 interface Props {
   meeting: CrmMeetingEntity;
-  owner?: CrmOwnerEntity;
+  onSave: (payload: ActivityMeetingEditPayload) => void;
   onCompanyClick: () => void;
 }
 
 const SidePanelMeetingInfo: FC<Props> = ({
   meeting,
-  owner,
+  onSave,
   onCompanyClick
 }) => {
-  const translateText = useTranslator("crmModule", "activities");
-  const translateAria = useTranslator(
-    "crmAria",
-    "activities",
-    "meetingSidePanel"
+  const translateText = useTranslator("crmModule");
+  const translateAria = useTranslator("crmAria", "activities");
+
+  const { owners, contacts, setContacts, companies, setCompanies } =
+    useCrmStore(
+      useShallow((state) => ({
+        owners: state.owners,
+        contacts: state.contacts,
+        setContacts: state.setContacts,
+        companies: state.companies,
+        setCompanies: state.setCompanies
+      }))
+    );
+
+  useEffect(() => {
+    setContacts(updateContactRecord(contacts, meeting.contacts));
+    if (meeting.company) {
+      setCompanies(updateCompanyRecord(companies, [meeting.company]));
+    }
+  }, [meeting]);
+
+  const initialValues = useMemo(
+    () => toMeetingFormValues(meeting),
+    [meeting.id]
   );
+
+  const formik = useFormik<CrmLogMeetingFormValues>({
+    initialValues,
+    validationSchema: getMeetingValidationSchema(translateText),
+    onSubmit: (values, { resetForm }) => {
+      onSave(toMeetingEditPayload(meeting.id, values, formik.initialValues));
+      resetForm({ values });
+    }
+  });
+
+  useActivityAutoSave(formik);
+
+  const { values, errors, setFieldValue } = formik;
+
+  const noValue = translateText([
+    "activities",
+    "activitySidePanel",
+    "info",
+    "noValue"
+  ]);
+
+  const handleDateChange = (date: Date): void => {
+    setFieldValue("date", toDateFieldValue(date));
+  };
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-2 border border-secondary-accent rounded-xl p-3">
         <p className="subtitle1">
-          {translateText(["meetingSidePanel", "info", "attendees"])}
+          {translateText([
+            "activities",
+            "meetingSidePanel",
+            "info",
+            "attendees"
+          ])}
         </p>
         {meeting.contacts.length > 0 ? (
           <AvatarGroup
-            ariaLabel={translateAria(["attendees"])}
+            ariaLabel={translateAria(["meetingSidePanel", "attendees"])}
             avatars={meeting.contacts.map((contact) => {
               const contactName = getContactDisplayName(contact);
               const [firstName, lastName] = contactName.split(" ");
@@ -55,31 +119,57 @@ const SidePanelMeetingInfo: FC<Props> = ({
           />
         ) : (
           <span className="body2">
-            {translateText(["activitySidePanel", "info", "noLongerAvailable"])}
+            {translateText([
+              "activities",
+              "activitySidePanel",
+              "info",
+              "noLongerAvailable"
+            ])}
           </span>
         )}
       </div>
 
       <SidePanelActivityInfo
-        date={DateTime.fromISO(meeting.meetingDate)}
-        dateLabel={translateText(["activitySidePanel", "info", "date"])}
-        {...(meeting.startAt && {
-          startTime: DateTime.fromISO(meeting.startAt)
+        id="meeting"
+        date={
+          values.date
+            ? DateTime.fromISO(values.date)
+            : DateTime.fromISO(meeting.meetingDate)
+        }
+        dateLabel={translateText([
+          "activities",
+          "activitySidePanel",
+          "info",
+          "date"
+        ])}
+        {...(values.startTime && {
+          startTime: DateTime.fromFormat(values.startTime, TIME_FORMAT_24_HOUR)
         })}
         secondaryRow={
           <PropertyRow
-            label={translateText(["meetingSidePanel", "info", "endTime"])}
+            label={translateText([
+              "activities",
+              "meetingSidePanel",
+              "info",
+              "endTime"
+            ])}
           >
-            <span className="body2">
-              {meeting.endAt
-                ? DateTime.fromISO(meeting.endAt).toFormat(TIME_FORMAT_12_HOUR)
-                : translateText(["activitySidePanel", "info", "noValue"])}
-            </span>
+            <SidePanelTimeField
+              id="meeting-end-time"
+              value={values.endTime}
+              placeholder={noValue}
+              ariaLabel={translateAria(["activitySidePanel", "editEndTime"])}
+              {...(errors.endTime && { errorMessage: errors.endTime })}
+              onChange={(time) => setFieldValue("endTime", time)}
+            />
           </PropertyRow>
         }
-        owner={owner}
+        {...(values.ownerId && { owner: owners[values.ownerId] })}
         companyName={meeting.company?.name}
         onCompanyClick={onCompanyClick}
+        onDateChange={handleDateChange}
+        onStartTimeChange={(time) => setFieldValue("startTime", time)}
+        onOwnerChange={(ownerId) => setFieldValue("ownerId", ownerId)}
       />
 
       {getMeetingVenueInfo(meeting)}
