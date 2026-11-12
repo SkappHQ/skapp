@@ -14,4 +14,6 @@ public interface CrmActivityTaskService {
 
 	ResponseEntityDto editTask(Long id, CrmActivityTaskEditRequestDto requestDto);
 
+	ResponseEntityDto deleteTask(Long id);
+
 }
