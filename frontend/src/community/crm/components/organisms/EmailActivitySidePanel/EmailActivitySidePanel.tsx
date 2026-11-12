@@ -6,7 +6,6 @@ import { ActivityEmailEditPayload } from "~community/crm/activities/types/activi
 import SidePanelActivityEmailInfo from "~community/crm/components/molecules/SidePanelActivityEmailInfo/SidePanelActivityEmailInfo";
 import ActivitySidePanel from "~community/crm/components/organisms/ActivitySidePanel/ActivitySidePanel";
 import { TASK_DETAIL_ICON_SIZE } from "~community/crm/constants/taskConstants";
-import { useCrmStore } from "~community/crm/store/store";
 import { CrmActivityEmailEntity } from "~community/crm/types/CrmCommonTypes";
 
 interface Props {
@@ -43,8 +42,6 @@ const EmailActivitySidePanel: FC<Props> = ({
     "emailSidePanel"
   );
 
-  const owners = useCrmStore((state) => state.owners);
-
   return (
     <ActivitySidePanel
       id="activity-email"
@@ -67,6 +64,8 @@ const EmailActivitySidePanel: FC<Props> = ({
       emptyDealsDescription={translateText(["noDealsDescription"])}
       commentsTitle={translateText(["description"])}
       emptyCommentsText={translateText(["noDescription"])}
+      commentsAriaLabel={translateAria(["description"])}
+      editCommentsAriaLabel={translateAria(["editDescription"])}
       {...(email && {
         title: email.subject,
         comments: email.description,
@@ -76,7 +75,6 @@ const EmailActivitySidePanel: FC<Props> = ({
             key={email.id}
             email={email}
             onSave={onDetailsSave}
-            owner={owners[email.ownerId]}
             onCompanyClick={onCompanyClick}
           />
         )

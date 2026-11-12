@@ -44,6 +44,7 @@ const LogEmailModalContent: FC<Props> = ({ onClose }) => {
       ccContactIds: [],
       bccContactIds: [],
       subject: "",
+      ownerId: null,
       dealId: null,
       companyId: null,
       description: ""

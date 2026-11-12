@@ -1,6 +1,6 @@
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
-import { FC, useEffect, useMemo } from "react";
+import { FC, ReactNode, useEffect, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { TIME_FORMAT_24_HOUR } from "~community/common/constants/timeConstants";
@@ -20,8 +20,7 @@ import { useActivityAutoSave } from "~community/crm/hooks/useActivityAutoSave";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmActivityEmailEntity,
-  CrmLogEmailFormValues,
-  CrmOwnerEntity
+  CrmLogEmailFormValues
 } from "~community/crm/types/CrmCommonTypes";
 import { updateCompanyRecord } from "~community/crm/utils/companyUtil";
 import { updateContactRecord } from "~community/crm/utils/contactUtil";
@@ -29,7 +28,6 @@ import { getEmailValidationSchema } from "~community/crm/utils/emailValidations"
 
 interface Props {
   email: CrmActivityEmailEntity;
-  owner?: CrmOwnerEntity;
   onSave: (payload: ActivityEmailEditPayload) => void;
   onCompanyClick: () => void;
 }
@@ -38,7 +36,6 @@ type RecipientField = "toContactIds" | "ccContactIds" | "bccContactIds";
 
 const SidePanelActivityEmailInfo: FC<Props> = ({
   email,
-  owner,
   onSave,
   onCompanyClick
 }) => {
@@ -50,14 +47,16 @@ const SidePanelActivityEmailInfo: FC<Props> = ({
     "emailSidePanel"
   );
 
-  const { contacts, setContacts, companies, setCompanies } = useCrmStore(
-    useShallow((state) => ({
-      contacts: state.contacts,
-      setContacts: state.setContacts,
-      companies: state.companies,
-      setCompanies: state.setCompanies
-    }))
-  );
+  const { contacts, setContacts, companies, setCompanies, owners } =
+    useCrmStore(
+      useShallow((state) => ({
+        contacts: state.contacts,
+        setContacts: state.setContacts,
+        companies: state.companies,
+        setCompanies: state.setCompanies,
+        owners: state.owners
+      }))
+    );
 
   useEffect(() => {
     setContacts(
@@ -85,16 +84,19 @@ const SidePanelActivityEmailInfo: FC<Props> = ({
 
   const noValue = translateText(["activitySidePanel", "info", "noValue"]);
 
-  const validateFromAddress = (fromAddress: string): string =>
-    fromAddress && !isValidEmail().test(fromAddress)
+  const validateFromAddress = (fromAddress: string): string => {
+    const trimmedAddress = fromAddress.trim();
+
+    return trimmedAddress && !isValidEmail().test(trimmedAddress)
       ? translateModule(["contacts", "modal", "validations", "invalidEmail"])
       : "";
+  };
 
   const renderRecipients = (
     field: RecipientField,
     titleKey: "to" | "cc" | "bcc",
     ariaKey: "editTo" | "editCc" | "editBcc"
-  ) => (
+  ): ReactNode => (
     <SidePanelContactsField
       id={`activity-email-${titleKey}`}
       title={translateText(["emailSidePanel", "info", titleKey])}
@@ -148,12 +150,12 @@ const SidePanelActivityEmailInfo: FC<Props> = ({
         dateLabel={translateText(["activitySidePanel", "info", "date"])}
         startTime={DateTime.fromFormat(values.time, TIME_FORMAT_24_HOUR)}
         startTimeLabel={translateText(["emailSidePanel", "info", "time"])}
-        {...(owner && { owner })}
+        {...(values.ownerId && { owner: owners[values.ownerId] })}
         companyId={values.companyId}
         onCompanyClick={onCompanyClick}
         onDateChange={(date) => setFieldValue("date", toDateFieldValue(date))}
         onStartTimeChange={(time) => setFieldValue("time", time)}
-        onOwnerChange={(ownerId) => onSave({ id: email.id, ownerId })}
+        onOwnerChange={(ownerId) => setFieldValue("ownerId", ownerId)}
         onCompanyChange={(companyId) => setFieldValue("companyId", companyId)}
       />
     </div>

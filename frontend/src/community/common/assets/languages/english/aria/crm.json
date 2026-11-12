@@ -148,9 +148,8 @@
     },
     "emailSidePanel": {
       "kebabMenu": "Email actions",
-      "to": "Email to recipients",
-      "cc": "Email cc recipients",
-      "bcc": "Email bcc recipients",
+      "description": "Email description",
+      "editDescription": "Edit email description",
       "editTo": "Change the To recipients",
       "editCc": "Change the Cc recipients",
       "editBcc": "Change the Bcc recipients",
@@ -233,8 +232,7 @@
       "clearRelatedTo": "Clear selected company"
     },
     "meetingSidePanel": {
-      "kebabMenu": "Meeting actions",
-      "attendees": "Meeting attendees"
+      "kebabMenu": "Meeting actions"
     },
     "activitySidePanel": {
       "title": "Activity title",

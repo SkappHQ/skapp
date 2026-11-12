@@ -218,8 +218,9 @@ export const toEmailFormValues = (
   ccContactIds: toContactIds(email.cc),
   bccContactIds: toContactIds(email.bcc),
   subject: email.subject,
-  dealId: email.deal && email.deal.id ? email.deal.id : null,
-  companyId: email.company && email.company.id ? email.company.id : null,
+  ownerId: email.ownerId,
+  dealId: email.deal?.id ? email.deal.id : null,
+  companyId: email.company?.id ? email.company.id : null,
   description: email.description ? email.description : ""
 });
 
@@ -229,6 +230,7 @@ export const toEmailEditPayload = (
   saved: CrmLogEmailFormValues
 ): ActivityEmailEditPayload => ({
   id,
+  ...toLinkEditPayload(values, saved),
   ...(values.fromAddress !== saved.fromAddress && {
     fromAddress: values.fromAddress
   }),
@@ -244,11 +246,7 @@ export const toEmailEditPayload = (
   }),
   ...(!isSameIds(values.bccContactIds, saved.bccContactIds) && {
     bccContactIds: values.bccContactIds
-  }),
-  ...(values.companyId !== saved.companyId &&
-    (values.companyId
-      ? { companyId: values.companyId }
-      : { isCompanyRemoved: true }))
+  })
 });
 
 export const toDealEditPayload = (

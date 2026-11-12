@@ -2,7 +2,8 @@ import {
   AutoCompleteDropdown,
   AutoCompleteDropdownProps,
   AvatarChip,
-  AvatarGroup
+  AvatarGroup,
+  AvatarProps
 } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -19,6 +20,7 @@ import { CrmContactEntity } from "~community/crm/types/CrmCommonTypes";
 import {
   getContactCompanyName,
   getContactDisplayName,
+  getContactNameParts,
   updateContactRecord
 } from "~community/crm/utils/contactUtil";
 
@@ -176,17 +178,12 @@ const SidePanelContactsField: FC<Props> = ({
     );
   };
 
-  const toAvatar = (contact: CrmContactEntity) => {
-    const [firstName, lastName] = getContactDisplayName(contact).split(" ");
-
-    return {
-      id: String(contact.id),
-      firstName,
-      lastName,
-      title: getContactDisplayName(contact),
-      size: "xs" as const
-    };
-  };
+  const toAvatar = (contact: CrmContactEntity): AvatarProps => ({
+    id: `${id}-${contact.id}`,
+    ...getContactNameParts(contact),
+    title: getContactDisplayName(contact),
+    size: "xs"
+  });
 
   return (
     <div ref={wrapperRef} className="relative self-stretch">

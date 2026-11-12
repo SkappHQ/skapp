@@ -10,6 +10,8 @@ interface Props {
   onSave: (comments: string) => void;
   title?: string;
   emptyText?: string;
+  ariaLabel?: string;
+  editAriaLabel?: string;
 }
 
 const SidePanelActivityComments: FC<Props> = ({
@@ -17,7 +19,9 @@ const SidePanelActivityComments: FC<Props> = ({
   comments,
   onSave,
   title,
-  emptyText
+  emptyText,
+  ariaLabel,
+  editAriaLabel
 }) => {
   const translateText = useTranslator(
     "crmModule",
@@ -55,7 +59,7 @@ const SidePanelActivityComments: FC<Props> = ({
             onChange={(e) => changeValue(e.target.value)}
             className="w-full body2"
             rows={4}
-            aria-label={translateAria(["comments"])}
+            aria-label={ariaLabel ? ariaLabel : translateAria(["comments"])}
             autoFocus
           />
           <div className="flex gap-2 justify-end">
@@ -82,7 +86,9 @@ const SidePanelActivityComments: FC<Props> = ({
           id={`${id}-comments`}
           type="button"
           className="subtitle3 max-h-24 overflow-y-auto break-words cursor-pointer hover:bg-secondary-background rounded text-left w-full bg-transparent border-none"
-          aria-label={translateAria(["editComments"])}
+          aria-label={
+            editAriaLabel ? editAriaLabel : translateAria(["editComments"])
+          }
           onClick={startEditing}
         >
           {comments ? comments : emptyLabel}
