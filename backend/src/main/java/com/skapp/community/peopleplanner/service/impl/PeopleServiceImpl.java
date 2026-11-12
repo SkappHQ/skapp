@@ -1336,7 +1336,7 @@ public class PeopleServiceImpl implements PeopleService {
 		Employee employee = user.getEmployee();
 		CreateEmployeeResponseDto responseDto = peopleMapper.employeeToCreateEmployeeResponseDto(employee);
 
-		if (user.getLoginMethod() == LoginMethod.CREDENTIALS && sharesCredentialsOnCreate()) {
+		if (user.getLoginMethod() == LoginMethod.CREDENTIALS && isCredentialSharingOnCreateEnabled()) {
 			EmployeeCredentialsResponseDto credentials = new EmployeeCredentialsResponseDto();
 			credentials.setEmail(employee.getUser() != null ? employee.getUser().getEmail() : null);
 			credentials.setTempPassword(tempPassword);
@@ -2372,7 +2372,7 @@ public class PeopleServiceImpl implements PeopleService {
 		return false;
 	}
 
-	protected boolean sharesCredentialsOnCreate() {
+	protected boolean isCredentialSharingOnCreateEnabled() {
 		return true;
 	}
 
