@@ -191,6 +191,10 @@ const ROUTES = {
       BASE: "/invoice/integrations",
       SYNC: (provider: string, resource: string) =>
         `/invoice/integrations/${provider}?resource=${resource}`
+    },
+    TIME_APPROVALS: {
+      BASE: "/invoice/time-approvals",
+      ID: (id: number) => `/invoice/time-approvals/${id}`
     }
   }
 };
