@@ -1,6 +1,5 @@
 import { Dropdown } from "@rootcodelabs/skapp-ui";
 import { FC, ReactNode, useEffect, useMemo, useState } from "react";
-import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
@@ -10,19 +9,13 @@ import ActivitySearchField from "~community/crm/activities/components/molecules/
 import ActivityFeed from "~community/crm/activities/components/organisms/ActivityFeed/ActivityFeed";
 import {
   ActivityRecordType,
-  ActivityRow,
   ActivityTab,
   ActivityType,
   RecordActivityFilters
 } from "~community/crm/activities/types/activityTypes";
-import {
-  useGetRecordActivities,
-  useUpdateTaskCompletion
-} from "~community/crm/api/ActivityApi";
-import { useGetDealsByIds } from "~community/crm/api/DealApi";
-import { useCrmStore } from "~community/crm/store/store";
-import { CrmTaskCompletionPayload } from "~community/crm/types/CrmCommonTypes";
-import { getMissingDealIds, mergeDeals } from "~community/crm/utils/dealUtil";
+import { useGetRecordActivities } from "~community/crm/api/ActivityApi";
+import { useActivityDeals } from "~community/crm/hooks/useActivityDeals";
+import { useActivityTaskCompletion } from "~community/crm/hooks/useActivityTaskCompletion";
 
 export interface RecordActivitiesTabProps {
   id: string;
@@ -47,16 +40,8 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
   const { setToastMessage } = useToast();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [taskCompletions, setTaskCompletions] = useState<
-    Record<number, boolean>
-  >({});
 
-  const { deals, setDeals } = useCrmStore(
-    useShallow((store) => ({
-      deals: store.deals,
-      setDeals: store.setDeals
-    }))
-  );
+  const { taskCompletions, handleToggleComplete } = useActivityTaskCompletion();
 
   const activityType = {
     [ActivityTab.ALL]: null,
@@ -87,27 +72,9 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
 
   const pages = useMemo(() => (data ? data.pages : []), [data]);
 
-  const missingDealIds = useMemo(
-    () =>
-      getMissingDealIds(
-        pages.flatMap((page) =>
-          page.items.flatMap((row) => (row.dealId ? [row.dealId] : []))
-        ),
-        deals
-      ),
-    [pages, deals]
-  );
+  const rows = useMemo(() => pages.flatMap((page) => page.items), [pages]);
 
-  const { data: fetchedDeals } = useGetDealsByIds(
-    missingDealIds,
-    missingDealIds.length > 0
-  );
-
-  useEffect(() => {
-    if (!fetchedDeals?.length) return;
-
-    setDeals(mergeDeals(deals, fetchedDeals));
-  }, [fetchedDeals]);
+  useActivityDeals(rows);
 
   useEffect(() => {
     if (!isError) return;
@@ -118,47 +85,6 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
       title: translateText(["activities", "recordTab", "loadErrorToast"])
     });
   }, [isError]);
-
-  const applyCompletion = (taskId: number, isCompleted: boolean): void => {
-    setTaskCompletions((current) => ({ ...current, [taskId]: isCompleted }));
-  };
-
-  const handleToggleError = ({
-    id: taskId,
-    isCompleted
-  }: CrmTaskCompletionPayload): void => {
-    applyCompletion(taskId, !isCompleted);
-    setToastMessage({
-      open: true,
-      toastType: ToastType.ERROR,
-      title: translateText([
-        "tasks",
-        "common",
-        "toastMessages",
-        "toggleErrorTitle"
-      ]),
-      description: translateText([
-        "tasks",
-        "common",
-        "toastMessages",
-        "toggleErrorDescription"
-      ])
-    });
-  };
-
-  const { mutate: updateTaskCompletion, isPending } =
-    useUpdateTaskCompletion(handleToggleError);
-
-  const handleToggleComplete = (
-    row: ActivityRow,
-    isCompleted: boolean
-  ): void => {
-    if (isPending) return;
-
-    applyCompletion(row.id, isCompleted);
-
-    updateTaskCompletion({ id: row.id, isCompleted });
-  };
 
   const typeOptions = [
     ActivityTab.ALL,
