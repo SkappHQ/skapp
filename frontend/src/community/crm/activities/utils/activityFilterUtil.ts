@@ -93,7 +93,10 @@ export const areFilterValuesEqual = (
   first: ActivityFeedFilters,
   second: ActivityFeedFilters
 ): boolean =>
-  first.ownerId === second.ownerId && isSameDateRange(first, second);
+  first.ownerId === second.ownerId &&
+  first.taskStatus === second.taskStatus &&
+  first.priority === second.priority &&
+  isSameDateRange(first, second);
 
 export const filterCRMEmployees = (
   members: CrmOwnerEntity[],

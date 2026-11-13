@@ -62,19 +62,28 @@ export interface ActivityFeedResponse {
   totalPages: number;
 }
 
+export enum ActivityTaskStatus {
+  OVERDUE = "OVERDUE",
+  TODAY = "TODAY",
+  UPCOMING = "UPCOMING",
+  COMPLETED = "COMPLETED"
+}
+
 export interface ActivityFeedFilters {
   type?: ActivityType;
   search?: string;
   ownerId?: number;
   fromDate?: string;
   toDate?: string;
+  taskStatus?: ActivityTaskStatus;
+  priority?: CrmPriorityEnum;
   page?: number;
   size?: number;
 }
 
 export type ActivityFilterValues = Pick<
   ActivityFeedFilters,
-  "ownerId" | "fromDate" | "toDate"
+  "ownerId" | "fromDate" | "toDate" | "taskStatus" | "priority"
 >;
 
 export interface ActivityDateRange {
@@ -94,6 +103,8 @@ export interface ActivityListFilters {
   ownerId?: number;
   startDate?: string;
   endDate?: string;
+  taskStatus?: ActivityTaskStatus;
+  priority?: CrmPriorityEnum;
 }
 
 interface ActivityListItemBase {

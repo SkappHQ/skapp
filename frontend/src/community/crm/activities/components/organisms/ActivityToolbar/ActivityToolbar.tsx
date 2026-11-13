@@ -74,13 +74,15 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
 
       {(showControls || action) && (
         <div className="flex flex-wrap items-center gap-3">
-          {showControls && isManager && (
+          {showControls && (isManager || activeTab === ActivityTab.TASKS) && (
             <ActivityFilterControl
               id={`${id}-filter`}
               filters={filters}
               onApplyFilters={onApplyFilters}
               teamMembers={teamMembers}
               isTeamMembersError={isTeamMembersError}
+              isTaskFilterShown={activeTab === ActivityTab.TASKS}
+              isTeamMemberShown={isManager}
               timeZone={timeZone}
             />
           )}

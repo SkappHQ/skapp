@@ -2,16 +2,20 @@ import { ButtonV2, CloseIcon, IconButton } from "@rootcodelabs/skapp-ui";
 import { FC, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import ActivityChipFilterField from "~community/crm/activities/components/molecules/ActivityChipFilterField/ActivityChipFilterField";
 import ActivityDateRangeField from "~community/crm/activities/components/molecules/ActivityDateRangeField/ActivityDateRangeField";
 import ActivityTeamMemberField from "~community/crm/activities/components/molecules/ActivityTeamMemberField/ActivityTeamMemberField";
 import {
   ActivityDateRange,
-  ActivityFeedFilters
+  ActivityFeedFilters,
+  ActivityTaskStatus
 } from "~community/crm/activities/types/activityTypes";
 import {
   areFilterValuesEqual,
   validateDateRange
 } from "~community/crm/activities/utils/activityFilterUtil";
+import { PRIORITY_OPTIONS } from "~community/crm/constants/taskConstants";
+import { CrmPriorityEnum } from "~community/crm/enums/common";
 import { CrmOwnerEntity } from "~community/crm/types/CrmCommonTypes";
 
 export interface ActivityFilterPopoverProps {
@@ -19,6 +23,8 @@ export interface ActivityFilterPopoverProps {
   filters: ActivityFeedFilters;
   teamMembers: CrmOwnerEntity[];
   isTeamMembersError: boolean;
+  isTaskFilterShown: boolean;
+  isTeamMemberShown: boolean;
   timeZone?: string;
   onApply: (filters: ActivityFeedFilters) => void;
   onClose: () => void;
@@ -29,6 +35,8 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
   filters,
   teamMembers,
   isTeamMembersError,
+  isTaskFilterShown,
+  isTeamMemberShown,
   timeZone,
   onApply,
   onClose
@@ -57,19 +65,39 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
     onClose();
   };
 
+  const updateFilters = (
+    clearedKeys: (keyof ActivityFeedFilters)[],
+    changes: ActivityFeedFilters
+  ): void => {
+    setSelectedFilters((previous) => {
+      const next = { ...previous };
+      clearedKeys.forEach((key) => {
+        delete next[key];
+      });
+      return { ...next, ...changes };
+    });
+  };
+
   const handleDateRangeChange = (dateRange: ActivityDateRange): void => {
-    setSelectedFilters((previous) => ({
-      ...(previous.ownerId ? { ownerId: previous.ownerId } : {}),
-      ...dateRange
-    }));
+    updateFilters(["fromDate", "toDate"], dateRange);
   };
 
   const handleOwnerChange = (ownerId: number | null): void => {
-    setSelectedFilters((previous) => ({
-      ...(previous.fromDate ? { fromDate: previous.fromDate } : {}),
-      ...(previous.toDate ? { toDate: previous.toDate } : {}),
-      ...(ownerId ? { ownerId } : {})
-    }));
+    updateFilters(["ownerId"], ownerId ? { ownerId } : {});
+  };
+
+  const handleTaskStatusChange = (taskStatus: string | null): void => {
+    updateFilters(
+      ["taskStatus"],
+      taskStatus ? { taskStatus: taskStatus as ActivityTaskStatus } : {}
+    );
+  };
+
+  const handlePriorityChange = (priority: string | null): void => {
+    updateFilters(
+      ["priority"],
+      priority ? { priority: priority as CrmPriorityEnum } : {}
+    );
   };
 
   return (
@@ -96,6 +124,51 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
           />
         </div>
 
+        {isTaskFilterShown && (
+          <>
+            <ActivityChipFilterField
+              id={`${id}-task-status`}
+              label={translateText([
+                "activities",
+                "toolbar",
+                "filters",
+                "taskStatus",
+                "label"
+              ])}
+              options={Object.values(ActivityTaskStatus).map((status) => ({
+                value: status,
+                label: translateText([
+                  "activities",
+                  "toolbar",
+                  "filters",
+                  "taskStatus",
+                  "options",
+                  status.toLowerCase()
+                ])
+              }))}
+              selectedValue={selectedFilters.taskStatus}
+              onChange={handleTaskStatusChange}
+            />
+
+            <ActivityChipFilterField
+              id={`${id}-priority`}
+              label={translateText([
+                "activities",
+                "toolbar",
+                "filters",
+                "priority",
+                "label"
+              ])}
+              options={PRIORITY_OPTIONS.map((option) => ({
+                value: option.value,
+                label: translateText(["common", "priorityOptions", option.key])
+              }))}
+              selectedValue={selectedFilters.priority}
+              onChange={handlePriorityChange}
+            />
+          </>
+        )}
+
         <ActivityDateRangeField
           id={`${id}-date-range`}
           value={selectedFilters}
@@ -103,13 +176,15 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
           onChange={handleDateRangeChange}
         />
 
-        <ActivityTeamMemberField
-          id={`${id}-team-member`}
-          teamMembers={teamMembers}
-          selectedOwnerId={selectedFilters.ownerId}
-          isError={isTeamMembersError}
-          onChange={handleOwnerChange}
-        />
+        {isTeamMemberShown && (
+          <ActivityTeamMemberField
+            id={`${id}-team-member`}
+            teamMembers={teamMembers}
+            selectedOwnerId={selectedFilters.ownerId}
+            isError={isTeamMembersError}
+            onChange={handleOwnerChange}
+          />
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-3 border-t border-secondary-accent px-5 pt-4 pb-5">

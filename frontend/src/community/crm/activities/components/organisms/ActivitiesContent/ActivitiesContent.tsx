@@ -120,7 +120,9 @@ const ActivitiesContent: FC = () => {
       ...(searchTerm ? { searchKeyword: searchTerm } : {}),
       ...(filters.ownerId ? { ownerId: filters.ownerId } : {}),
       ...(filters.fromDate ? { startDate: filters.fromDate } : {}),
-      ...(filters.toDate ? { endDate: filters.toDate } : {})
+      ...(filters.toDate ? { endDate: filters.toDate } : {}),
+      ...(filters.taskStatus ? { taskStatus: filters.taskStatus } : {}),
+      ...(filters.priority ? { priority: filters.priority } : {})
     }),
     [searchTerm, filters]
   );
@@ -200,6 +202,21 @@ const ActivitiesContent: FC = () => {
     searchTerm.length > 0 || Object.keys(filters).length > 0;
   const showControls =
     isLoading || isError || hasActiveFilters || rows.length > 0;
+
+  const handleTabChange = (tab: ActivityTab): void => {
+    setActiveTab(tab);
+
+    if (tab === ActivityTab.TASKS) return;
+
+    setFilters((previous) => {
+      if (!isManager) return {};
+
+      const next = { ...previous };
+      delete next.taskStatus;
+      delete next.priority;
+      return next;
+    });
+  };
 
   const handleRowClick = (row: ActivityRow): void => {
     switch (row.type) {
@@ -324,7 +341,7 @@ const ActivitiesContent: FC = () => {
     <div className="flex flex-col w-full gap-4 pt-5.5 lg:pt-1">
       <ActivityToolbar
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={handleTabChange}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         resultCount={resultCount}
