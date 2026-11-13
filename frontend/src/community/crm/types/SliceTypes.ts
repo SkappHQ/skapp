@@ -1,4 +1,6 @@
+import { ActivityType } from "~community/crm/activities/types/activityTypes";
 import {
+  CrmActivityPrefill,
   CrmBoardRecord,
   CrmCompanyRecord,
   CrmContactRecord,
@@ -49,6 +51,8 @@ export interface CrmUiSliceTypes {
   contactModalType: CrmModalTypes;
   isTaskModalOpen: boolean;
   taskModalType: CrmModalTypes;
+  recordActivityModalType: ActivityType | null;
+  recordActivityPrefill: CrmActivityPrefill | null;
   isDealStageModalOpen: boolean;
   dealStageModalType: CrmModalTypes;
 
@@ -81,6 +85,12 @@ export interface CrmUiSliceTypes {
   setContactModalType: (contactModalType: CrmModalTypes) => void;
   setIsTaskModalOpen: (isTaskModalOpen: boolean) => void;
   setTaskModalType: (taskModalType: CrmModalTypes) => void;
+  setRecordActivityModalType: (
+    recordActivityModalType: ActivityType | null
+  ) => void;
+  setRecordActivityPrefill: (
+    recordActivityPrefill: CrmActivityPrefill | null
+  ) => void;
   setIsDealStageModalOpen: (isDealStageModalOpen: boolean) => void;
   setDealStageModalType: (dealStageModalType: CrmModalTypes) => void;
 

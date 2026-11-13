@@ -10,6 +10,7 @@ import { IconName } from "~community/common/types/IconTypes";
 import ContactModalController from "~community/crm/components/organisms/ContactModalController/ContactModalController";
 import ContactSidePanel from "~community/crm/components/organisms/ContactSidePanel/ContactSidePanel";
 import { ContactTable } from "~community/crm/components/organisms/ContactTable/ContactTable";
+import RecordActivityModalController from "~community/crm/components/organisms/RecordActivityModalController/RecordActivityModalController";
 import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
@@ -82,6 +83,7 @@ const Contacts: NextPage = () => {
 
         <ContactModalController />
         <TaskModalController />
+        <RecordActivityModalController />
         <ContactTable isCrmDataLoading={isCrmInitialDataLoading} />
       </>
     </ContentLayout>
