@@ -359,7 +359,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
               <RecordActivitiesTab
                 key={companyId}
                 id="company-activities"
-                recordType={CrmActivityAssociationEnum.COMPANY}
+                activityAssociation={CrmActivityAssociationEnum.COMPANY}
                 recordId={companyId}
                 activeTab={activityTab}
                 onTabChange={setActivityTab}

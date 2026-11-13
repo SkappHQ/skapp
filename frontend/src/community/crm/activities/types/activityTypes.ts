@@ -76,7 +76,7 @@ export interface ActivityFeedFilters {
 }
 
 export interface RecordActivityFilters {
-  recordType: CrmActivityAssociationEnum;
+  activityAssociation: CrmActivityAssociationEnum;
   recordId: number;
   type?: ActivityType;
   search?: string;

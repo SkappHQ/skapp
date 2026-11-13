@@ -321,7 +321,7 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
               <RecordActivitiesTab
                 key={contactId}
                 id="contact-activities"
-                recordType={CrmActivityAssociationEnum.CONTACT}
+                activityAssociation={CrmActivityAssociationEnum.CONTACT}
                 recordId={contactId}
                 activeTab={activityTab}
                 onTabChange={setActivityTab}

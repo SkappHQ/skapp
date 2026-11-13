@@ -19,7 +19,7 @@ import { useActivityTaskCompletion } from "~community/crm/hooks/useActivityTaskC
 
 export interface RecordActivitiesTabProps {
   id: string;
-  recordType: CrmActivityAssociationEnum;
+  activityAssociation: CrmActivityAssociationEnum;
   recordId: number;
   activeTab: ActivityTab;
   onTabChange: (tab: ActivityTab) => void;
@@ -28,7 +28,7 @@ export interface RecordActivitiesTabProps {
 
 const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
   id,
-  recordType,
+  activityAssociation,
   recordId,
   activeTab,
   onTabChange,
@@ -53,12 +53,12 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
 
   const filters: RecordActivityFilters = useMemo(
     () => ({
-      recordType,
+      activityAssociation,
       recordId,
       ...(activityType ? { type: activityType } : {}),
       ...(searchTerm ? { search: searchTerm } : {})
     }),
-    [recordType, recordId, activityType, searchTerm]
+    [activityAssociation, recordId, activityType, searchTerm]
   );
 
   const {

@@ -112,7 +112,7 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
             <RecordActivitiesTab
               key={dealId}
               id="deal-activities"
-              recordType={CrmActivityAssociationEnum.DEAL}
+              activityAssociation={CrmActivityAssociationEnum.DEAL}
               recordId={dealId}
               activeTab={activityTab}
               onTabChange={setActivityTab}
