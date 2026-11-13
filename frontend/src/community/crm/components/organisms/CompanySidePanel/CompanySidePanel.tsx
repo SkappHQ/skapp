@@ -13,27 +13,29 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import RecordActivitiesTab from "~community/crm/activities/components/organisms/RecordActivitiesTab/RecordActivitiesTab";
 import {
   useGetCompanyById,
   useGetCompanyMetrics
 } from "~community/crm/api/CompanyApi";
 import { useGetContactsInfinite } from "~community/crm/api/ContactApi";
 import { useGetDealsInfinite } from "~community/crm/api/DealApi";
-import { useGetTasksInfinite } from "~community/crm/api/TaskApi";
 import SidePanelCompanyHeader from "~community/crm/components/molecules/SidePanelCompanyHeader/SidePanelCompanyHeader";
 import SidePanelContactsSection from "~community/crm/components/molecules/SidePanelContactsSection/SidePanelContactsSection";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import SidePanelMetricCards from "~community/crm/components/molecules/SidePanelMetricCards/SidePanelMetricCards";
 import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
 import SidePanelHeaderSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
-import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import {
   CONTACT_PAGE_SIZE,
   DEAL_PAGE_SIZE
 } from "~community/crm/constants/commonConstants";
-import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
-import { CrmSidePanelTabEnum } from "~community/crm/enums/common";
+import {
+  CrmActivityAssociationEnum,
+  CrmSidePanelTabEnum
+} from "~community/crm/enums/common";
 import { useIndustryNameMapper } from "~community/crm/hooks/useIndustryNameMapper";
+import { useRecordActivityTab } from "~community/crm/hooks/useRecordActivityTab";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmCompanyEntity,
@@ -43,8 +45,7 @@ import {
   CrmContactFilterRequest,
   CrmDealFilterRequest,
   CrmModalTypes,
-  CrmSidePanelTypes,
-  CrmTaskFilterRequest
+  CrmSidePanelTypes
 } from "~community/crm/types/CrmTypes";
 import {
   getCompanyMetricItems,
@@ -59,7 +60,6 @@ import {
   mergeDeals,
   toDealIds
 } from "~community/crm/utils/dealUtil";
-import { toTaskIds, updateTaskRecord } from "~community/crm/utils/taskUtil";
 
 import CompanySidePanelHeaderActions from "./CompanySidePanelHeaderActions";
 import CompanySidePanelSkeleton from "./CompanySidePanelSkeleton";
@@ -75,20 +75,19 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
   const { getIndustryByName } = useIndustryNameMapper();
 
   const [activeTab, setActiveTab] = useState<CrmSidePanelTabEnum>(
-    CrmSidePanelTabEnum.TASKS
+    CrmSidePanelTabEnum.ACTIVITIES
   );
+  const [activityTab, setActivityTab] = useRecordActivityTab(companyId);
 
   const {
     companies,
     industries,
-    tasks,
     isCrmDataInitialized,
     deals,
     contacts,
     isCrmSidePanelOpen,
     crmSidePanelType,
     setCompanies,
-    setTasks,
     setDeals,
     setContacts,
     setSelectedCompanyId,
@@ -99,14 +98,12 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
     useShallow((state) => ({
       companies: state.companies,
       industries: state.industries,
-      tasks: state.tasks,
       isCrmDataInitialized: state.isCrmDataInitialized,
       deals: state.deals,
       contacts: state.contacts,
       isCrmSidePanelOpen: state.isCrmSidePanelOpen,
       crmSidePanelType: state.crmSidePanelType,
       setCompanies: state.setCompanies,
-      setTasks: state.setTasks,
       setDeals: state.setDeals,
       setContacts: state.setContacts,
       setSelectedCompanyId: state.setSelectedCompanyId,
@@ -141,11 +138,6 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
     handleClose();
   };
 
-  const taskFilters: CrmTaskFilterRequest = {
-    companyId,
-    size: TASK_PAGE_SIZE
-  };
-
   const dealFilters: CrmDealFilterRequest = {
     companyId,
     size: DEAL_PAGE_SIZE
@@ -169,13 +161,6 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
     isFetching: isMetricsFetching
   } = useGetCompanyMetrics(companyId);
   const {
-    data: fetchedTasks,
-    isLoading: isTasksLoading,
-    fetchNextPage: fetchNextTasksPage,
-    hasNextPage: hasNextTasksPage,
-    isFetchingNextPage: isFetchingNextTasksPage
-  } = useGetTasksInfinite(taskFilters);
-  const {
     data: fetchedDeals,
     isLoading: isDealsLoading,
     fetchNextPage: fetchNextDealsPage,
@@ -194,7 +179,6 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
     !isCrmDataInitialized ||
     isCompanyLoading ||
     isMetricsLoading ||
-    isTasksLoading ||
     isDealsLoading ||
     isContactsLoading;
 
@@ -222,13 +206,6 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
       Object.assign(companyFields, fetchedCompany);
     }
 
-    if (fetchedTasks) {
-      const taskItems = fetchedTasks.pages.flatMap((page) => page?.items ?? []);
-
-      setTasks(updateTaskRecord(tasks, taskItems));
-      companyFields.taskIds = toTaskIds(taskItems);
-    }
-
     if (fetchedDeals) {
       const dealItems = fetchedDeals.pages.flatMap((page) => page?.items ?? []);
 
@@ -246,7 +223,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
     }
 
     setCompanies(updateCompany(companies, companyId, companyFields));
-  }, [companyId, fetchedCompany, fetchedTasks, fetchedDeals, fetchedContacts]);
+  }, [companyId, fetchedCompany, fetchedDeals, fetchedContacts]);
 
   const handleDealCreated = (createdDeal: CrmDealEntity) => {
     setDeals(mergeDeals(deals, [createdDeal]));
@@ -297,8 +274,8 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
 
   const tabs: TabItem[] = [
     {
-      id: CrmSidePanelTabEnum.TASKS,
-      label: translateText(["companies", "sidePanel", "tabs", "tasks"])
+      id: CrmSidePanelTabEnum.ACTIVITIES,
+      label: translateText(["activities", "recordTab", "tabLabel"])
     },
     {
       id: CrmSidePanelTabEnum.DEALS,
@@ -378,18 +355,14 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
               />
             )}
 
-            {activeTab === CrmSidePanelTabEnum.TASKS && (
-              <SidePanelTasksSection
-                taskIds={company.taskIds}
-                hasNextPage={hasNextTasksPage}
-                isFetchingNextPage={isFetchingNextTasksPage}
-                onFetchNextPage={fetchNextTasksPage}
-                emptyDescription={translateText([
-                  "companies",
-                  "sidePanel",
-                  "tasks",
-                  "emptyDescription"
-                ])}
+            {activeTab === CrmSidePanelTabEnum.ACTIVITIES && (
+              <RecordActivitiesTab
+                key={companyId}
+                id="company-activities"
+                activityAssociation={CrmActivityAssociationEnum.COMPANY}
+                recordId={companyId}
+                activeTab={activityTab}
+                onTabChange={setActivityTab}
               />
             )}
           </>

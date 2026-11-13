@@ -26,7 +26,8 @@ import {
   ActivityMeetingResponse,
   ActivityTaskCreatePayload,
   ActivityTaskEditPayload,
-  ActivityTaskResponse
+  ActivityTaskResponse,
+  RecordActivityFilters
 } from "~community/crm/activities/types/activityTypes";
 import { crmActivityEndpoints } from "~community/crm/api/utils/ApiEndpoints";
 import { crmActivityQueryKeys } from "~community/crm/api/utils/QueryKeys";
@@ -40,7 +41,7 @@ import {
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 const fetchActivityFeed = async (
-  params: ActivityFeedFilters
+  params: ActivityFeedFilters | RecordActivityFilters
 ): Promise<ActivityFeedResponse> => {
   const response = await authFetch.get(crmActivityEndpoints.GET_ACTIVITY_FEED, {
     params
@@ -54,6 +55,23 @@ export const useGetActivityFeed = (
 ): UseInfiniteQueryResult<InfiniteData<ActivityFeedResponse>, AxiosError> =>
   useInfiniteQuery({
     queryKey: crmActivityQueryKeys.FEED(params),
+    queryFn: ({ pageParam }) =>
+      fetchActivityFeed({ ...params, page: pageParam }),
+    enabled,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) =>
+      lastPage && lastPage.currentPage < lastPage.totalPages - 1
+        ? lastPage.currentPage + 1
+        : null,
+    refetchOnWindowFocus: false
+  });
+
+export const useGetRecordActivities = (
+  params: RecordActivityFilters,
+  enabled: boolean
+): UseInfiniteQueryResult<InfiniteData<ActivityFeedResponse>, AxiosError> =>
+  useInfiniteQuery({
+    queryKey: crmActivityQueryKeys.RECORD(params),
     queryFn: ({ pageParam }) =>
       fetchActivityFeed({ ...params, page: pageParam }),
     enabled,

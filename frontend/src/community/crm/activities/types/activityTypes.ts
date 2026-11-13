@@ -1,6 +1,9 @@
 import { ReactNode } from "react";
 
-import { CrmPriorityEnum } from "~community/crm/enums/common";
+import {
+  CrmActivityAssociationEnum,
+  CrmPriorityEnum
+} from "~community/crm/enums/common";
 import { CrmMeetingVenueDetails } from "~enterprise/crm/types/ScheduleMeetingTypes";
 
 export enum ActivityType {
@@ -68,6 +71,15 @@ export interface ActivityFeedFilters {
   ownerId?: number;
   fromDate?: string;
   toDate?: string;
+  page?: number;
+  size?: number;
+}
+
+export interface RecordActivityFilters {
+  activityAssociation: CrmActivityAssociationEnum;
+  recordId: number;
+  type?: ActivityType;
+  search?: string;
   page?: number;
   size?: number;
 }

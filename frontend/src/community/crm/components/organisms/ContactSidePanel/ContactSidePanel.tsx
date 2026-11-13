@@ -14,22 +14,24 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import RecordActivitiesTab from "~community/crm/activities/components/organisms/RecordActivitiesTab/RecordActivitiesTab";
 import {
   useGetContactById,
   useGetContactMetrics
 } from "~community/crm/api/ContactApi";
 import { useGetDealsInfinite } from "~community/crm/api/DealApi";
-import { useGetTasksInfinite } from "~community/crm/api/TaskApi";
 import SidePanelContactHeader from "~community/crm/components/molecules/SidePanelContactHeader/SidePanelContactHeader";
 import SidePanelContactInfo from "~community/crm/components/molecules/SidePanelContactInfo/SidePanelContactInfo";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import SidePanelMetricCards from "~community/crm/components/molecules/SidePanelMetricCards/SidePanelMetricCards";
 import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
 import SidePanelHeaderSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
-import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { DEAL_PAGE_SIZE } from "~community/crm/constants/commonConstants";
-import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
-import { CrmSidePanelTabEnum } from "~community/crm/enums/common";
+import {
+  CrmActivityAssociationEnum,
+  CrmSidePanelTabEnum
+} from "~community/crm/enums/common";
+import { useRecordActivityTab } from "~community/crm/hooks/useRecordActivityTab";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactEntity,
@@ -38,8 +40,7 @@ import {
 import {
   CrmDealFilterRequest,
   CrmModalTypes,
-  CrmSidePanelTypes,
-  CrmTaskFilterRequest
+  CrmSidePanelTypes
 } from "~community/crm/types/CrmTypes";
 import {
   getContactMetricItems,
@@ -50,7 +51,6 @@ import {
   mergeDeals,
   toDealIds
 } from "~community/crm/utils/dealUtil";
-import { toTaskIds, updateTaskRecord } from "~community/crm/utils/taskUtil";
 
 import ContactSidePanelSkeleton from "./ContactSidePanelSkeleton";
 
@@ -63,19 +63,18 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
   const translateAria = useTranslator("crmAria");
 
   const [activeTab, setActiveTab] = useState<CrmSidePanelTabEnum>(
-    CrmSidePanelTabEnum.TASKS
+    CrmSidePanelTabEnum.ACTIVITIES
   );
+  const [activityTab, setActivityTab] = useRecordActivityTab(contactId);
 
   const {
     contacts,
     companies,
-    tasks,
     deals,
     isCrmSidePanelOpen,
     crmSidePanelType,
     setContacts,
     setCompanies,
-    setTasks,
     setDeals,
     setIsContactModalOpen,
     setContactModalType,
@@ -84,13 +83,11 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
     useShallow((state) => ({
       contacts: state.contacts,
       companies: state.companies,
-      tasks: state.tasks,
       deals: state.deals,
       isCrmSidePanelOpen: state.isCrmSidePanelOpen,
       crmSidePanelType: state.crmSidePanelType,
       setContacts: state.setContacts,
       setCompanies: state.setCompanies,
-      setTasks: state.setTasks,
       setDeals: state.setDeals,
       setIsContactModalOpen: state.setIsContactModalOpen,
       setContactModalType: state.setContactModalType,
@@ -122,11 +119,6 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
 
   const { setToastMessage } = useToast();
 
-  const taskFilters: CrmTaskFilterRequest = {
-    contactId,
-    size: TASK_PAGE_SIZE
-  };
-
   const dealFilters: CrmDealFilterRequest = {
     contactId,
     size: DEAL_PAGE_SIZE
@@ -145,13 +137,6 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
     isFetching: isMetricsFetching
   } = useGetContactMetrics(contactId);
   const {
-    data: fetchedTasks,
-    isLoading: isTasksLoading,
-    fetchNextPage: fetchNextTasksPage,
-    hasNextPage: hasNextTasksPage,
-    isFetchingNextPage: isFetchingNextTasksPage
-  } = useGetTasksInfinite(taskFilters);
-  const {
     data: fetchedDeals,
     isLoading: isDealsLoading,
     fetchNextPage: fetchNextDealsPage,
@@ -159,8 +144,7 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
     isFetchingNextPage: isFetchingNextDealsPage
   } = useGetDealsInfinite(dealFilters);
 
-  const isLoading =
-    isContactLoading || isMetricsLoading || isTasksLoading || isDealsLoading;
+  const isLoading = isContactLoading || isMetricsLoading || isDealsLoading;
 
   useEffect(() => {
     if (
@@ -186,13 +170,6 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
       Object.assign(contactFields, fetchedContact);
     }
 
-    if (fetchedTasks) {
-      const taskItems = fetchedTasks.pages.flatMap((page) => page?.items ?? []);
-
-      setTasks(updateTaskRecord(tasks, taskItems));
-      contactFields.taskIds = toTaskIds(taskItems);
-    }
-
     if (fetchedDeals) {
       const dealItems = fetchedDeals.pages.flatMap((page) => page?.items ?? []);
 
@@ -201,7 +178,7 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
     }
 
     setContacts(updateContact(contacts, contactId, contactFields));
-  }, [contactId, fetchedContact, fetchedTasks, fetchedDeals]);
+  }, [contactId, fetchedContact, fetchedDeals]);
 
   const contact = contacts[contactId];
 
@@ -265,8 +242,8 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
 
   const tabs: TabItem[] = [
     {
-      id: CrmSidePanelTabEnum.TASKS,
-      label: translateText(["contacts", "sidePanel", "tabs", "tasks"])
+      id: CrmSidePanelTabEnum.ACTIVITIES,
+      label: translateText(["activities", "recordTab", "tabLabel"])
     },
     {
       id: CrmSidePanelTabEnum.DEALS,
@@ -330,7 +307,7 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
                 activeTabId={activeTab}
                 onTabChange={(tabId) => {
                   if (
-                    tabId === CrmSidePanelTabEnum.TASKS ||
+                    tabId === CrmSidePanelTabEnum.ACTIVITIES ||
                     tabId === CrmSidePanelTabEnum.DEALS
                   ) {
                     setActiveTab(tabId);
@@ -340,12 +317,14 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
               <hr className="border-secondary-accent" />
             </div>
 
-            {activeTab === CrmSidePanelTabEnum.TASKS && (
-              <SidePanelTasksSection
-                taskIds={contact.taskIds}
-                hasNextPage={hasNextTasksPage}
-                isFetchingNextPage={isFetchingNextTasksPage}
-                onFetchNextPage={fetchNextTasksPage}
+            {activeTab === CrmSidePanelTabEnum.ACTIVITIES && (
+              <RecordActivitiesTab
+                key={contactId}
+                id="contact-activities"
+                activityAssociation={CrmActivityAssociationEnum.CONTACT}
+                recordId={contactId}
+                activeTab={activityTab}
+                onTabChange={setActivityTab}
               />
             )}
 

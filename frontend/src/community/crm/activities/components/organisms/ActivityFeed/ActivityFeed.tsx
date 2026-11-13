@@ -34,8 +34,11 @@ export interface ActivityFeedProps {
   timeZone?: string;
   taskCompletions: Record<number, boolean>;
   emptyStateButton?: ButtonV2Props | null;
+  emptyStateText?: { title: string; description: string };
+  errorMessage?: string;
+  isShowTaskCheckbox?: boolean;
   onLoadMore: () => void;
-  onRowClick: (row: ActivityRow) => void;
+  onRowClick?: (row: ActivityRow) => void;
   onToggleComplete: (row: ActivityRow, isCompleted: boolean) => void;
 }
 
@@ -51,6 +54,9 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
   timeZone,
   taskCompletions,
   emptyStateButton,
+  emptyStateText,
+  errorMessage,
+  isShowTaskCheckbox,
   onLoadMore,
   onRowClick,
   onToggleComplete
@@ -87,7 +93,9 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
     ? ["noResults"]
     : ["emptyState", activeTab.toLowerCase()];
 
-  const isShowCheckbox = activeTab === ActivityTab.TASKS;
+  const customEmptyStateText = trimmedSearchTerm ? null : emptyStateText;
+
+  const isShowCheckbox = isShowTaskCheckbox || activeTab === ActivityTab.TASKS;
 
   const renderContent = () => {
     if (isLoading) {
@@ -107,7 +115,7 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
           role="alert"
           className="flex items-center justify-center p-6 rounded-lg bg-secondary-background body2 text-center"
         >
-          {translateText(["activities", "feed", "loadError"])}
+          {errorMessage || translateText(["activities", "feed", "loadError"])}
         </div>
       );
     }
@@ -116,16 +124,24 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
       return (
         <EmptyDataView
           icon={<SearchIcon />}
-          title={translateText(
-            ["activities", "feed", ...emptyStateKeys, "title"],
-            { term: trimmedSearchTerm }
-          )}
-          description={translateText([
-            "activities",
-            "feed",
-            ...emptyStateKeys,
-            "description"
-          ])}
+          title={
+            customEmptyStateText
+              ? customEmptyStateText.title
+              : translateText(
+                  ["activities", "feed", ...emptyStateKeys, "title"],
+                  { term: trimmedSearchTerm }
+                )
+          }
+          description={
+            customEmptyStateText
+              ? customEmptyStateText.description
+              : translateText([
+                  "activities",
+                  "feed",
+                  ...emptyStateKeys,
+                  "description"
+                ])
+          }
           {...(emptyStateButton ? { button: emptyStateButton } : {})}
           className={{ wrapper: "bg-secondary-background rounded-lg" }}
         />

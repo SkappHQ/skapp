@@ -11,7 +11,7 @@ export interface ActivityFeedSectionProps {
   timeZone?: string;
   isShowCheckbox: boolean;
   taskCompletions: Record<number, boolean>;
-  onRowClick: (row: ActivityRowData) => void;
+  onRowClick?: (row: ActivityRowData) => void;
   onToggleComplete: (row: ActivityRowData, isCompleted: boolean) => void;
 }
 

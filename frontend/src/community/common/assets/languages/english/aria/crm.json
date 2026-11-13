@@ -199,6 +199,9 @@
       "loading": "Loading activities",
       "loadingMore": "Loading more activities"
     },
+    "recordTab": {
+      "typeFilter": "Filter activities by type"
+    },
     "toolbar": {
       "clearSearch": "Clear search",
       "openFilters": "Open filters",
