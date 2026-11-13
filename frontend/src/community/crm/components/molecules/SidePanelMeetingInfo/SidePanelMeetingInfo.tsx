@@ -1,4 +1,3 @@
-import { AvatarGroup } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
 import { FC, useEffect, useMemo } from "react";
@@ -14,6 +13,7 @@ import {
 } from "~community/crm/activities/utils/activityUtil";
 import PropertyRow from "~community/crm/components/molecules/PropertyRow/PropertyRow";
 import SidePanelActivityInfo from "~community/crm/components/molecules/SidePanelActivityInfo/SidePanelActivityInfo";
+import SidePanelContactsField from "~community/crm/components/molecules/SidePanelContactsField/SidePanelContactsField";
 import SidePanelTimeField from "~community/crm/components/molecules/SidePanelTimeField/SidePanelTimeField";
 import { useActivityAutoSave } from "~community/crm/hooks/useActivityAutoSave";
 import { useCrmStore } from "~community/crm/store/store";
@@ -22,10 +22,7 @@ import {
   CrmMeetingEntity
 } from "~community/crm/types/CrmCommonTypes";
 import { updateCompanyRecord } from "~community/crm/utils/companyUtil";
-import {
-  getContactDisplayName,
-  updateContactRecord
-} from "~community/crm/utils/contactUtil";
+import { updateContactRecord } from "~community/crm/utils/contactUtil";
 import { getMeetingValidationSchema } from "~community/crm/utils/meetingValidations";
 import { getMeetingVenueInfo } from "~enterprise/crm/utils/meetingVenueUtil";
 
@@ -92,42 +89,37 @@ const SidePanelMeetingInfo: FC<Props> = ({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2 border border-secondary-accent rounded-xl p-3">
-        <p className="subtitle1">
-          {translateText([
-            "activities",
-            "meetingSidePanel",
-            "info",
-            "attendees"
-          ])}
-        </p>
-        {meeting.contacts.length > 0 ? (
-          <AvatarGroup
-            ariaLabel={translateAria(["meetingSidePanel", "attendees"])}
-            avatars={meeting.contacts.map((contact) => {
-              const contactName = getContactDisplayName(contact);
-              const [firstName, lastName] = contactName.split(" ");
-
-              return {
-                id: String(contact.id),
-                firstName,
-                lastName,
-                title: contactName,
-                size: "sm"
-              };
-            })}
-          />
-        ) : (
-          <span className="body2">
-            {translateText([
-              "activities",
-              "activitySidePanel",
-              "info",
-              "noLongerAvailable"
-            ])}
-          </span>
-        )}
-      </div>
+      <SidePanelContactsField
+        id="meeting-attendees"
+        title={translateText([
+          "activities",
+          "meetingSidePanel",
+          "info",
+          "attendees"
+        ])}
+        selectedLabel={translateText([
+          "activities",
+          "meetingSidePanel",
+          "info",
+          "selectedAttendees"
+        ])}
+        searchPlaceholder={translateText([
+          "activities",
+          "meetingSidePanel",
+          "info",
+          "searchAttendees"
+        ])}
+        editAriaLabel={translateAria(["activitySidePanel", "editAttendees"])}
+        emptyLabel={translateText([
+          "activities",
+          "activitySidePanel",
+          "info",
+          "noLongerAvailable"
+        ])}
+        isRequired
+        contactIds={values.contactIds}
+        onChange={(contactIds) => setFieldValue("contactIds", contactIds)}
+      />
 
       <SidePanelActivityInfo
         id="meeting"

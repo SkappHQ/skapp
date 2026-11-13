@@ -12,7 +12,6 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import SidePanelActivityComments from "~community/crm/components/molecules/SidePanelActivityComments/SidePanelActivityComments";
 import SidePanelActivityDeal from "~community/crm/components/molecules/SidePanelActivityDeal/SidePanelActivityDeal";
 import SidePanelActivityTitle from "~community/crm/components/molecules/SidePanelActivityTitle/SidePanelActivityTitle";
-import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
 import SidePanelHeaderSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
 import { useCrmStore } from "~community/crm/store/store";
@@ -34,16 +33,18 @@ interface Props {
   emptyDealsDescription: string;
   commentsTitle?: string;
   emptyCommentsText?: string;
+  commentsAriaLabel?: string;
   activityId?: number;
+  editCommentsAriaLabel?: string;
   title?: string;
   comments?: string;
   deal?: CrmDealEntity;
   dealFilterCompanyId?: number | null;
   info?: ReactNode;
   related?: ReactNode;
-  onTitleSave?: (title: string) => void;
-  onCommentsSave?: (comments: string) => void;
-  onDealChange?: (dealId: number | null) => void;
+  onTitleSave: (title: string) => void;
+  onCommentsSave: (comments: string) => void;
+  onDealChange: (dealId: number | null) => void;
 }
 
 const ActivitySidePanel: FC<Props> = ({
@@ -59,7 +60,9 @@ const ActivitySidePanel: FC<Props> = ({
   emptyDealsDescription,
   commentsTitle,
   emptyCommentsText,
+  commentsAriaLabel,
   activityId,
+  editCommentsAriaLabel,
   title,
   comments,
   deal,
@@ -89,32 +92,10 @@ const ActivitySidePanel: FC<Props> = ({
     setDeals(mergeDeals(deals, [deal]));
   }, [deal]);
 
-  const { isCrmSalesManager } = useSessionData();
+  const linkedDealId = deal?.id && deals[deal.id] ? deal.id : null;
 
-  const renderDeal = (): ReactNode => {
-    const linkedDealId = deal?.id && deals[deal.id] ? deal.id : null;
-
-    if (onDealChange) {
-      return (
-        <SidePanelActivityDeal
-          id={id}
-          dealId={linkedDealId}
-          filterCompanyId={dealFilterCompanyId}
-          emptyDescription={emptyDealsDescription}
-          onDealChange={onDealChange}
-        />
-      );
-    }
-
-    return (
-      <SidePanelDealSection
-        dealIds={linkedDealId ? [linkedDealId] : []}
-        showAddDealAction={false}
-        emptyHeightClassName="h-[163px]"
-        emptyDescription={emptyDealsDescription}
-      />
-    );
-  };
+  const { isCrmSalesManager, isCrmAdmin, isSuperAdmin } = useSessionData();
+  const isDeleteAllowed = isCrmSalesManager || isCrmAdmin || isSuperAdmin;
 
   const deleteItem: MenuItemProps = {
     id: "delete",
@@ -134,7 +115,7 @@ const ActivitySidePanel: FC<Props> = ({
 
   const actionItems: MenuItemProps[] = [
     ...menuItems,
-    ...(isCrmSalesManager ? [deleteItem] : [])
+    ...(isDeleteAllowed ? [deleteItem] : [])
   ];
 
   return (
@@ -148,17 +129,14 @@ const ActivitySidePanel: FC<Props> = ({
         ) : (
           <div className="flex items-center gap-4 pl-2">
             {icon}
-            {title &&
-              (onTitleSave ? (
-                <SidePanelActivityTitle
-                  key={activityId}
-                  id={id}
-                  title={title}
-                  onSave={onTitleSave}
-                />
-              ) : (
-                <h2 className="h2 text-black">{title}</h2>
-              ))}
+            {title && (
+              <SidePanelActivityTitle
+                key={activityId}
+                id={id}
+                title={title}
+                onSave={onTitleSave}
+              />
+            )}
           </div>
         )
       }
@@ -187,30 +165,27 @@ const ActivitySidePanel: FC<Props> = ({
       ) : (
         <div className="flex gap-6 pb-4">
           <div className="flex flex-col flex-1 gap-6 min-w-0">
-            {onCommentsSave ? (
-              <SidePanelActivityComments
-                key={activityId}
-                id={id}
-                comments={comments}
-                onSave={onCommentsSave}
-              />
-            ) : (
-              <div className="flex flex-col gap-1">
-                <p className="subtitle1">
-                  {commentsTitle ?? translateText(["comments"])}
-                </p>
-                <p className="subtitle3 max-h-24 overflow-y-auto break-words">
-                  {comments ??
-                    emptyCommentsText ??
-                    translateText(["noComments"])}
-                </p>
-              </div>
-            )}
+            <SidePanelActivityComments
+              key={activityId}
+              id={id}
+              comments={comments}
+              onSave={onCommentsSave}
+              title={commentsTitle}
+              emptyText={emptyCommentsText}
+              ariaLabel={commentsAriaLabel}
+              editAriaLabel={editCommentsAriaLabel}
+            />
 
             <div className="flex flex-col gap-3">
               <h2 className="h2">{translateText(["dealsTitle"])}</h2>
               <hr className="border-secondary-accent" />
-              {renderDeal()}
+              <SidePanelActivityDeal
+                id={id}
+                dealId={linkedDealId}
+                filterCompanyId={dealFilterCompanyId}
+                emptyDescription={emptyDealsDescription}
+                onDealChange={onDealChange}
+              />
             </div>
 
             {related}

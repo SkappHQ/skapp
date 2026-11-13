@@ -2,18 +2,14 @@ import { DateTime } from "luxon";
 import { FC, ReactNode } from "react";
 
 import {
-  SHORT_MONTH_YEAR_FORMAT,
   TIME_FORMAT_12_HOUR,
   TIME_FORMAT_24_HOUR
 } from "~community/common/constants/timeConstants";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { formatDayWithOrdinalIndicator } from "~community/common/utils/dateTimeUtils";
-import OwnerAvatarChip from "~community/crm/components/atoms/OwnerAvatarChip/OwnerAvatarChip";
 import OwnerPopupSearch from "~community/crm/components/molecules/OwnerPopupSearch/OwnerPopupSearch";
 import PropertyRow from "~community/crm/components/molecules/PropertyRow/PropertyRow";
 import SidePanelCompanyField from "~community/crm/components/molecules/SidePanelCompanyField/SidePanelCompanyField";
 import SidePanelDateField from "~community/crm/components/molecules/SidePanelDateField/SidePanelDateField";
-import SidePanelLinkButton from "~community/crm/components/molecules/SidePanelLinkButton/SidePanelLinkButton";
 import SidePanelTimeField from "~community/crm/components/molecules/SidePanelTimeField/SidePanelTimeField";
 import { CrmOwnerEntity } from "~community/crm/types/CrmCommonTypes";
 
@@ -27,13 +23,12 @@ interface Props {
   hideStartTime?: boolean;
   secondaryRow?: ReactNode;
   owner?: CrmOwnerEntity;
-  companyId?: number | null;
-  companyName?: string;
+  companyId: number | null;
   onCompanyClick: (companyId: number) => void;
-  onDateChange?: (date: Date) => void;
+  onDateChange: (date: Date) => void;
   onStartTimeChange?: (time: string) => void;
-  onOwnerChange?: (ownerId: number) => void;
-  onCompanyChange?: (companyId: number) => void;
+  onOwnerChange: (ownerId: number) => void;
+  onCompanyChange: (companyId: number) => void;
 }
 
 const SidePanelActivityInfo: FC<Props> = ({
@@ -47,7 +42,6 @@ const SidePanelActivityInfo: FC<Props> = ({
   secondaryRow,
   owner,
   companyId,
-  companyName,
   onCompanyClick,
   onDateChange,
   onStartTimeChange,
@@ -68,69 +62,13 @@ const SidePanelActivityInfo: FC<Props> = ({
     "noValue"
   ]);
   const resolvedStartTimeLabel =
-    startTimeLabel ??
+    startTimeLabel ||
     translateText(["activities", "activitySidePanel", "info", "startTime"]);
 
   const handleOwnerChange = (user: CrmOwnerEntity | null): void => {
-    if (onOwnerChange && user && user.employeeId !== owner?.employeeId) {
+    if (user && user.employeeId !== owner?.employeeId) {
       onOwnerChange(user.employeeId);
     }
-  };
-
-  const renderOwner = (): ReactNode => {
-    if (onOwnerChange) {
-      return (
-        <div className="flex flex-col w-full">
-          <OwnerPopupSearch
-            selectedUser={owner ?? null}
-            onChange={handleOwnerChange}
-            placeholder={noValue}
-            searchPlaceholder={translateText([
-              "deals",
-              "common",
-              "placeholders",
-              "ownerSearch"
-            ])}
-            noResultsText={translateText([
-              "deals",
-              "common",
-              "placeholders",
-              "noResults"
-            ])}
-          />
-        </div>
-      );
-    }
-
-    return owner ? (
-      <OwnerAvatarChip id={String(owner.employeeId)} owner={owner} size="xs" />
-    ) : (
-      <span className="body2">{noValue}</span>
-    );
-  };
-
-  const renderCompany = (): ReactNode => {
-    if (onCompanyChange) {
-      return (
-        <SidePanelCompanyField
-          id={`${id}-related-to`}
-          companyId={companyId ?? null}
-          emptyLabel={noValue}
-          editAriaLabel={translateAria(["editRelatedTo"])}
-          onCompanyClick={onCompanyClick}
-          onChange={onCompanyChange}
-        />
-      );
-    }
-
-    return companyId && companyName ? (
-      <SidePanelLinkButton
-        label={companyName}
-        onClick={() => onCompanyClick(companyId)}
-      />
-    ) : (
-      <span className="body2">{noValue}</span>
-    );
   };
 
   return (
@@ -138,18 +76,12 @@ const SidePanelActivityInfo: FC<Props> = ({
       {primaryRow}
 
       <PropertyRow label={dateLabel}>
-        {onDateChange ? (
-          <SidePanelDateField
-            id={`${id}-date`}
-            date={date}
-            ariaLabel={translateAria(["editDate"])}
-            onChange={onDateChange}
-          />
-        ) : (
-          <span className="body2">
-            {`${formatDayWithOrdinalIndicator(date)} ${date.toFormat(SHORT_MONTH_YEAR_FORMAT)}`}
-          </span>
-        )}
+        <SidePanelDateField
+          id={`${id}-date`}
+          date={date}
+          ariaLabel={translateAria(["editDate"])}
+          onChange={onDateChange}
+        />
       </PropertyRow>
 
       {!hideStartTime && (
@@ -180,7 +112,25 @@ const SidePanelActivityInfo: FC<Props> = ({
           "activityOwner"
         ])}
       >
-        {renderOwner()}
+        <div className="flex flex-col w-full">
+          <OwnerPopupSearch
+            selectedUser={owner || null}
+            onChange={handleOwnerChange}
+            placeholder={noValue}
+            searchPlaceholder={translateText([
+              "deals",
+              "common",
+              "placeholders",
+              "ownerSearch"
+            ])}
+            noResultsText={translateText([
+              "deals",
+              "common",
+              "placeholders",
+              "noResults"
+            ])}
+          />
+        </div>
       </PropertyRow>
 
       <PropertyRow
@@ -191,7 +141,14 @@ const SidePanelActivityInfo: FC<Props> = ({
           "relatedTo"
         ])}
       >
-        {renderCompany()}
+        <SidePanelCompanyField
+          id={`${id}-related-to`}
+          companyId={companyId}
+          emptyLabel={noValue}
+          editAriaLabel={translateAria(["editRelatedTo"])}
+          onCompanyClick={onCompanyClick}
+          onChange={onCompanyChange}
+        />
       </PropertyRow>
     </div>
   );

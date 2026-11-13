@@ -627,7 +627,9 @@
         "cc": "Cc",
         "bcc": "Bcc",
         "from": "From",
-        "time": "Time"
+        "time": "Time",
+        "selectedRecipients": "Selected recipients",
+        "searchContacts": "Search contacts"
       }
     },
     "callSidePanel": {
@@ -908,7 +910,9 @@
       "deleteMeeting": "Delete meeting",
       "info": {
         "attendees": "Attendees",
-        "endTime": "End time"
+        "endTime": "End time",
+        "selectedAttendees": "Selected attendees",
+        "searchAttendees": "Search contacts"
       },
       "relatedTitle": "Related meetings"
     }
