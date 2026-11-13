@@ -72,7 +72,7 @@ public class PolicyHolidayLeaveServiceImpl implements PolicyHolidayLeaveService 
 		List<PolicyLeaveRequest> updatedRequests = new ArrayList<>();
 		List<Consumer<String>> emails = new ArrayList<>();
 		for (PolicyLeaveRequest request : policyLeaveRequestDao
-			.findRequestsOnDate(PolicyLeaveConstant.ATTENDANCE_LEAVE_STATUSES, holidayDate)) {
+			.findRequestsInRange(PolicyLeaveConstant.ATTENDANCE_LEAVE_STATUSES, holidayDate, holidayDate)) {
 			Employee employee = request.getEmployee();
 			if (!appliesToEmployee(holiday, employee)) {
 				continue;
@@ -107,6 +107,36 @@ public class PolicyHolidayLeaveServiceImpl implements PolicyHolidayLeaveService 
 		}
 
 		log.info("adjustLeaveRequestsForHoliday: execution ended with {} request(s)", updatedRequests.size());
+	}
+
+	@Override
+	public boolean hasLeaveRequestsOnHolidays(List<Holiday> holidays) {
+		log.info("hasLeaveRequestsOnHolidays: execution started");
+
+		LocalDate firstDate = holidays.stream().map(Holiday::getDate).min(LocalDate::compareTo).orElseThrow();
+		LocalDate lastDate = holidays.stream().map(Holiday::getDate).max(LocalDate::compareTo).orElseThrow();
+		List<PolicyLeaveRequest> requests = policyLeaveRequestDao
+			.findRequestsInRange(PolicyLeaveConstant.ATTENDANCE_LEAVE_STATUSES, firstDate, lastDate);
+
+		boolean hasLeaveRequests = holidays.stream()
+			.anyMatch(holiday -> requests.stream().anyMatch(request -> isAffectedByHoliday(request, holiday)));
+
+		log.info("hasLeaveRequestsOnHolidays: execution ended for {} holiday(s) with result {}", holidays.size(),
+				hasLeaveRequests);
+		return hasLeaveRequests;
+	}
+
+	private boolean isAffectedByHoliday(PolicyLeaveRequest request, Holiday holiday) {
+		LocalDate holidayDate = holiday.getDate();
+		if (holidayDate.isBefore(request.getStartDate()) || holidayDate.isAfter(request.getEndDate())
+				|| !appliesToEmployee(holiday, request.getEmployee())) {
+			return false;
+		}
+
+		if (request.getStartDate().equals(request.getEndDate()) && LeaveModuleUtil.isHalfDay(request.getLeaveState())) {
+			return getHalves(holiday.getHolidayDuration()).contains(request.getLeaveState());
+		}
+		return true;
 	}
 
 	private Adjustment adjustLeaveRequest(PolicyLeaveRequest request, Set<LeaveState> coveredBefore,

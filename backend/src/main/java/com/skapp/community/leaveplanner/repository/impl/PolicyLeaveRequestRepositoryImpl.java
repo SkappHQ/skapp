@@ -517,7 +517,8 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 	}
 
 	@Override
-	public List<PolicyLeaveRequest> findRequestsOnDate(Collection<LeaveRequestStatus> statuses, LocalDate date) {
+	public List<PolicyLeaveRequest> findRequestsInRange(Collection<LeaveRequestStatus> statuses, LocalDate startDate,
+			LocalDate endDate) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<PolicyLeaveRequest> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveRequest.class);
@@ -530,8 +531,8 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 
 		criteriaQuery.select(root)
 			.where(criteriaBuilder.isTrue(user.get(User_.isActive)), root.get(PolicyLeaveRequest_.status).in(statuses),
-					criteriaBuilder.lessThanOrEqualTo(root.get(PolicyLeaveRequest_.startDate), date),
-					criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), date));
+					criteriaBuilder.lessThanOrEqualTo(root.get(PolicyLeaveRequest_.startDate), endDate),
+					criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), startDate));
 
 		return entityManager.createQuery(criteriaQuery).getResultList();
 	}

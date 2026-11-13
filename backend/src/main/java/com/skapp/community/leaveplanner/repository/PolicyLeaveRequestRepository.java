@@ -74,6 +74,7 @@ public interface PolicyLeaveRequestRepository {
 
 	List<PolicyLeaveRequest> findUpcomingRequests(Collection<LeaveRequestStatus> statuses, LocalDate fromDate);
 
-	List<PolicyLeaveRequest> findRequestsOnDate(Collection<LeaveRequestStatus> statuses, LocalDate date);
+	List<PolicyLeaveRequest> findRequestsInRange(Collection<LeaveRequestStatus> statuses, LocalDate startDate,
+			LocalDate endDate);
 
 }
