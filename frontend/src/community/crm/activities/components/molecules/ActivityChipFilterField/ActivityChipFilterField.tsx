@@ -1,13 +1,16 @@
 import { Chip } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import { ActivityTaskStatus } from "~community/crm/activities/types/activityTypes";
+import {
+  ActivityChipFilterOption,
+  ActivityTaskStatus
+} from "~community/crm/activities/types/activityTypes";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 
 export interface ActivityChipFilterFieldProps {
   id: string;
   label: string;
-  options: { value: ActivityTaskStatus | CrmPriorityEnum; label: string }[];
+  options: ActivityChipFilterOption[];
   selectedValue?: ActivityTaskStatus | CrmPriorityEnum;
   onChange: (value: ActivityTaskStatus | CrmPriorityEnum | null) => void;
 }

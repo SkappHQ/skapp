@@ -79,6 +79,11 @@ export interface ActivityFeedFilters {
   size?: number;
 }
 
+export interface ActivityChipFilterOption {
+  value: ActivityTaskStatus | CrmPriorityEnum;
+  label: string;
+}
+
 export interface ActivityFilterValues {
   ownerId?: number;
   fromDate?: string;
