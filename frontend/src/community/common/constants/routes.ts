@@ -194,8 +194,7 @@ const ROUTES = {
     },
     TIME_APPROVALS: {
       BASE: "/invoice/time-approvals",
-      ID: (id: number) => `/invoice/time-approvals/${id}`,
-      TAB: (tab: string) => `/invoice/time-approvals?tab=${tab}`
+      ID: (id: number) => `/invoice/time-approvals/${id}`
     }
   }
 };
