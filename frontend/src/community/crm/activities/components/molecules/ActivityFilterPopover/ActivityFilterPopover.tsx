@@ -2,25 +2,32 @@ import { ButtonV2, CloseIcon, IconButton } from "@rootcodelabs/skapp-ui";
 import { FC, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import ActivityChipFilterField from "~community/crm/activities/components/molecules/ActivityChipFilterField/ActivityChipFilterField";
 import ActivityDateRangeField from "~community/crm/activities/components/molecules/ActivityDateRangeField/ActivityDateRangeField";
 import ActivityTeamMemberField from "~community/crm/activities/components/molecules/ActivityTeamMemberField/ActivityTeamMemberField";
 import {
   ActivityDateRange,
-  ActivityFeedFilters
+  ActivityFilterValues,
+  ActivityTaskStatus
 } from "~community/crm/activities/types/activityTypes";
 import {
   areFilterValuesEqual,
   validateDateRange
 } from "~community/crm/activities/utils/activityFilterUtil";
+import { PRIORITY_OPTIONS } from "~community/crm/constants/taskConstants";
+import { CrmPriorityEnum } from "~community/crm/enums/common";
 import { CrmOwnerEntity } from "~community/crm/types/CrmCommonTypes";
 
 export interface ActivityFilterPopoverProps {
   id: string;
-  filters: ActivityFeedFilters;
+  filters: ActivityFilterValues;
   teamMembers: CrmOwnerEntity[];
   isTeamMembersError: boolean;
+  isTaskFilterShown: boolean;
+  isDateRangeShown: boolean;
+  isTeamMemberShown: boolean;
   timeZone?: string;
-  onApply: (filters: ActivityFeedFilters) => void;
+  onApply: (filters: ActivityFilterValues) => void;
   onClose: () => void;
 }
 
@@ -29,6 +36,9 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
   filters,
   teamMembers,
   isTeamMembersError,
+  isTaskFilterShown,
+  isDateRangeShown,
+  isTeamMemberShown,
   timeZone,
   onApply,
   onClose
@@ -36,8 +46,15 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
 
+  const TASK_STATUS_LABEL_KEYS: Record<ActivityTaskStatus, string> = {
+    [ActivityTaskStatus.OVERDUE]: "overdue",
+    [ActivityTaskStatus.TODAY]: "today",
+    [ActivityTaskStatus.UPCOMING]: "upcoming",
+    [ActivityTaskStatus.COMPLETED]: "completed"
+  };
+
   const [selectedFilters, setSelectedFilters] =
-    useState<ActivityFeedFilters>(filters);
+    useState<ActivityFilterValues>(filters);
 
   const isRangeValid = validateDateRange(selectedFilters);
   const isChanged = !areFilterValuesEqual(selectedFilters, filters);
@@ -57,19 +74,43 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
     onClose();
   };
 
+  const updateFilters = (
+    clearedKeys: (keyof ActivityFilterValues)[],
+    changes: ActivityFilterValues
+  ): void => {
+    setSelectedFilters((previous) => {
+      const next = { ...previous };
+      clearedKeys.forEach((key) => {
+        delete next[key];
+      });
+      return { ...next, ...changes };
+    });
+  };
+
   const handleDateRangeChange = (dateRange: ActivityDateRange): void => {
-    setSelectedFilters((previous) => ({
-      ...(previous.ownerId ? { ownerId: previous.ownerId } : {}),
-      ...dateRange
-    }));
+    updateFilters(["fromDate", "toDate"], dateRange);
   };
 
   const handleOwnerChange = (ownerId: number | null): void => {
-    setSelectedFilters((previous) => ({
-      ...(previous.fromDate ? { fromDate: previous.fromDate } : {}),
-      ...(previous.toDate ? { toDate: previous.toDate } : {}),
-      ...(ownerId ? { ownerId } : {})
-    }));
+    updateFilters(["ownerId"], ownerId ? { ownerId } : {});
+  };
+
+  const handleTaskStatusChange = (
+    value: ActivityTaskStatus | CrmPriorityEnum | null
+  ): void => {
+    updateFilters(
+      ["taskStatus"],
+      value ? { taskStatus: value as ActivityTaskStatus } : {}
+    );
+  };
+
+  const handlePriorityChange = (
+    value: ActivityTaskStatus | CrmPriorityEnum | null
+  ): void => {
+    updateFilters(
+      ["priority"],
+      value ? { priority: value as CrmPriorityEnum } : {}
+    );
   };
 
   return (
@@ -96,20 +137,69 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
           />
         </div>
 
-        <ActivityDateRangeField
-          id={`${id}-date-range`}
-          value={selectedFilters}
-          timeZone={timeZone}
-          onChange={handleDateRangeChange}
-        />
+        {isTaskFilterShown && (
+          <>
+            <ActivityChipFilterField
+              id={`${id}-task-status`}
+              label={translateText([
+                "activities",
+                "toolbar",
+                "filters",
+                "taskStatus",
+                "label"
+              ])}
+              options={Object.values(ActivityTaskStatus).map((status) => ({
+                value: status,
+                label: translateText([
+                  "activities",
+                  "toolbar",
+                  "filters",
+                  "taskStatus",
+                  "options",
+                  TASK_STATUS_LABEL_KEYS[status]
+                ])
+              }))}
+              selectedValue={selectedFilters.taskStatus}
+              onChange={handleTaskStatusChange}
+            />
 
-        <ActivityTeamMemberField
-          id={`${id}-team-member`}
-          teamMembers={teamMembers}
-          selectedOwnerId={selectedFilters.ownerId}
-          isError={isTeamMembersError}
-          onChange={handleOwnerChange}
-        />
+            <ActivityChipFilterField
+              id={`${id}-priority`}
+              label={translateText([
+                "activities",
+                "toolbar",
+                "filters",
+                "priority",
+                "label"
+              ])}
+              options={PRIORITY_OPTIONS.map((option) => ({
+                value: option.value,
+                label: translateText(["common", "priorityOptions", option.key])
+              }))}
+              selectedValue={selectedFilters.priority}
+              onChange={handlePriorityChange}
+            />
+          </>
+        )}
+
+        {isDateRangeShown && (
+          <ActivityDateRangeField
+            id={`${id}-date-range`}
+            value={selectedFilters}
+            timeZone={timeZone}
+            onChange={handleDateRangeChange}
+          />
+        )}
+
+        {isTeamMemberShown && (
+          <ActivityTeamMemberField
+            id={`${id}-team-member`}
+            teamMembers={teamMembers}
+            selectedOwnerId={selectedFilters.ownerId}
+            isError={isTeamMembersError}
+            onChange={handleOwnerChange}
+          />
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-3 border-t border-secondary-accent px-5 pt-4 pb-5">

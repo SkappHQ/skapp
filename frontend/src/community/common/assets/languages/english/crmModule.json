@@ -773,6 +773,18 @@
       },
       "filters": {
         "title": "Filters",
+        "taskStatus": {
+          "label": "Task status",
+          "options": {
+            "overdue": "Overdue",
+            "today": "Today",
+            "upcoming": "Upcoming",
+            "completed": "Completed"
+          }
+        },
+        "priority": {
+          "label": "Priority"
+        },
         "dateRange": {
           "label": "Date range",
           "presets": {
