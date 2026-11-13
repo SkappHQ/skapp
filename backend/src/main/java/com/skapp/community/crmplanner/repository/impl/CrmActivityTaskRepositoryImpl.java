@@ -12,6 +12,7 @@ import com.skapp.community.crmplanner.repository.CrmActivityTaskRepository;
 import com.skapp.community.crmplanner.type.CrmActivityTaskFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityTaskPriority;
 import com.skapp.community.crmplanner.type.CrmActivityTaskSort;
+import com.skapp.community.crmplanner.type.CrmActivityTaskStatus;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
@@ -72,6 +73,25 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 		}
 		if (params.getExcludedId() != null) {
 			predicates.add(cb.notEqual(task.get(CrmActivityTask_.id), params.getExcludedId()));
+		}
+		if (params.getPriority() != null) {
+			predicates.add(cb.equal(task.get(CrmActivityTask_.priority), params.getPriority()));
+		}
+		if (params.getTaskStatus() == CrmActivityTaskStatus.COMPLETED) {
+			predicates.add(cb.isTrue(task.get(CrmActivityTask_.isCompleted)));
+		}
+		if (params.getTaskStatus() == CrmActivityTaskStatus.OVERDUE) {
+			predicates.add(cb.isFalse(task.get(CrmActivityTask_.isCompleted)));
+			predicates.add(cb.lessThan(dueAt, params.getTodayStart()));
+		}
+		if (params.getTaskStatus() == CrmActivityTaskStatus.TODAY) {
+			predicates.add(cb.isFalse(task.get(CrmActivityTask_.isCompleted)));
+			predicates.add(cb.greaterThanOrEqualTo(dueAt, params.getTodayStart()));
+			predicates.add(cb.lessThan(dueAt, params.getTodayEnd()));
+		}
+		if (params.getTaskStatus() == CrmActivityTaskStatus.UPCOMING) {
+			predicates.add(cb.isFalse(task.get(CrmActivityTask_.isCompleted)));
+			predicates.add(cb.greaterThanOrEqualTo(dueAt, params.getTodayEnd()));
 		}
 
 		if (params.getSearchPattern() != null) {
