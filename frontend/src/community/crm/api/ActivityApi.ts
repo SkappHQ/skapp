@@ -69,10 +69,9 @@ export const useGetActivityFeed = (
 const fetchRecordActivities = async (
   params: RecordActivityFilters
 ): Promise<ActivityFeedResponse> => {
-  const response = await authFetch.get(
-    crmActivityEndpoints.GET_RECORD_ACTIVITIES,
-    { params }
-  );
+  const response = await authFetch.get(crmActivityEndpoints.GET_ACTIVITY_FEED, {
+    params
+  });
   return response?.data?.results?.[0];
 };
 
