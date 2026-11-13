@@ -2190,10 +2190,11 @@ public class TimeServiceImpl implements TimeService {
 			.toList();
 
 		if (policyAttendanceLeaveService.isLeavePoliciesEnabled()) {
-			handlePolicyCalendarEventsDeletion(
-					policyAttendanceLeaveService.voidLeaveRequestsOnRemovedDays(removingConfigs));
+			List<PolicyLeaveRequest> voidedLeaveRequests = policyAttendanceLeaveService
+				.voidLeaveRequestsOnRemovedDays(removingConfigs);
 			timeConfigDao.deleteAll(removingConfigs);
 			currentTimeConfigs.removeAll(removingConfigs);
+			handlePolicyCalendarEventsDeletion(voidedLeaveRequests);
 			return;
 		}
 
