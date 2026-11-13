@@ -18,14 +18,18 @@ import LogActivityModal from "~community/crm/components/molecules/LogActivityMod
 import LogMeetingModalForm from "~community/crm/components/molecules/LogMeetingModalForm/LogMeetingModalForm";
 import { CrmErrorMessageKeyEnum } from "~community/crm/enums/common";
 import { useDefaultCrmOwner } from "~community/crm/hooks/useDefaultCrmOwner";
-import { CrmLogMeetingFormValues } from "~community/crm/types/CrmCommonTypes";
+import {
+  CrmActivityPrefill,
+  CrmLogMeetingFormValues
+} from "~community/crm/types/CrmCommonTypes";
 import { getMeetingValidationSchema } from "~community/crm/utils/meetingValidations";
 
 interface Props {
+  prefill?: CrmActivityPrefill;
   onClose: () => void;
 }
 
-const LogMeetingModalContent: FC<Props> = ({ onClose }) => {
+const LogMeetingModalContent: FC<Props> = ({ prefill, onClose }) => {
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator(
     "crmAria",
@@ -46,13 +50,13 @@ const LogMeetingModalContent: FC<Props> = ({ onClose }) => {
       date: now.startOf("day").toUTC().toISO(),
       startTime: slotStart.toFormat(TIME_FORMAT_24_HOUR),
       endTime: getActivityEndTimeSlot(slotStart).toFormat(TIME_FORMAT_24_HOUR),
-      contactIds: [],
+      contactIds: prefill && prefill.contactId ? [prefill.contactId] : [],
       ownerId: defaultOwner ? defaultOwner.employeeId : null,
       comments: "",
-      dealId: null,
-      companyId: null
+      dealId: prefill ? prefill.dealId : null,
+      companyId: prefill ? prefill.companyId : null
     };
-  }, [defaultOwner]);
+  }, [defaultOwner, prefill]);
 
   const toPayload = (
     values: CrmLogMeetingFormValues
