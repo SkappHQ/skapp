@@ -18,6 +18,7 @@ import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.type.NotificationCategory;
 import com.skapp.community.common.type.NotificationType;
 import com.skapp.community.common.util.transformer.PageTransformer;
+import com.skapp.community.leaveplanner.service.LeavePolicyService;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,6 +70,8 @@ public class NotificationServiceImpl implements NotificationService {
 	private final PageTransformer pageTransformer;
 
 	private final EmployeeDao employeeDao;
+
+	private final LeavePolicyService leavePolicyService;
 
 	@Override
 	public void createNotification(Employee employee, String resourceId, NotificationType notificationType,
@@ -297,7 +300,8 @@ public class NotificationServiceImpl implements NotificationService {
 		log.info("getNotificationCountByType: execution started");
 
 		Long userId = userService.getCurrentUser().getUserId();
-		List<NotificationTypeCountResponseDto> results = notificationDao.countNotificationsByTypeForUser(userId);
+		List<NotificationTypeCountResponseDto> results = notificationDao.countNotificationsByTypeForUser(userId,
+				leavePolicyService.isLeavePoliciesEnabled());
 
 		Map<NotificationType, Long> countMap = results.stream()
 			.collect(Collectors.toMap(NotificationTypeCountResponseDto::getNotificationType,

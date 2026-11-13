@@ -9,6 +9,8 @@ import com.skapp.community.common.payload.response.NotificationTypeCountResponse
 import com.skapp.community.common.repository.NotificationRepository;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.leaveplanner.model.LeaveRequest_;
+import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
+import com.skapp.community.leaveplanner.model.PolicyLeaveRequest_;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import com.skapp.community.timeplanner.model.TimeRequest;
@@ -97,7 +99,8 @@ public class NotificationRepositoryImpl implements NotificationRepository {
 	}
 
 	@Override
-	public List<NotificationTypeCountResponseDto> countNotificationsByTypeForUser(Long userId) {
+	public List<NotificationTypeCountResponseDto> countNotificationsByTypeForUser(Long userId,
+			boolean isLeavePoliciesEnabled) {
 		var criteriaBuilder = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<NotificationTypeCountResponseDto> criteriaQuery = criteriaBuilder
@@ -113,13 +116,25 @@ public class NotificationRepositoryImpl implements NotificationRepository {
 		predicates.add(criteriaBuilder.equal(root.get(Notification_.IS_TYPE_VIEWED), Boolean.FALSE));
 
 		Subquery<Long> ownLeaveExistsSubquery = criteriaQuery.subquery(Long.class);
-		Root<LeaveRequest> leaveRequestRoot = ownLeaveExistsSubquery.from(LeaveRequest.class);
-		ownLeaveExistsSubquery.select(leaveRequestRoot.get(LeaveRequest_.leaveRequestId));
-		ownLeaveExistsSubquery.where(
-				criteriaBuilder.equal(leaveRequestRoot.get(LeaveRequest_.leaveRequestId).as(String.class),
-						root.get(Notification_.resourceId)),
-				criteriaBuilder.equal(leaveRequestRoot.get(LeaveRequest_.employee).get(Employee_.employeeId),
-						notificationEmployeeJoin.get(Employee_.employeeId)));
+		if (isLeavePoliciesEnabled) {
+			Root<PolicyLeaveRequest> policyLeaveRequestRoot = ownLeaveExistsSubquery.from(PolicyLeaveRequest.class);
+			ownLeaveExistsSubquery.select(policyLeaveRequestRoot.get(PolicyLeaveRequest_.id));
+			ownLeaveExistsSubquery.where(
+					criteriaBuilder.equal(policyLeaveRequestRoot.get(PolicyLeaveRequest_.id).as(String.class),
+							root.get(Notification_.resourceId)),
+					criteriaBuilder.equal(
+							policyLeaveRequestRoot.get(PolicyLeaveRequest_.employee).get(Employee_.employeeId),
+							notificationEmployeeJoin.get(Employee_.employeeId)));
+		}
+		else {
+			Root<LeaveRequest> leaveRequestRoot = ownLeaveExistsSubquery.from(LeaveRequest.class);
+			ownLeaveExistsSubquery.select(leaveRequestRoot.get(LeaveRequest_.leaveRequestId));
+			ownLeaveExistsSubquery.where(
+					criteriaBuilder.equal(leaveRequestRoot.get(LeaveRequest_.leaveRequestId).as(String.class),
+							root.get(Notification_.resourceId)),
+					criteriaBuilder.equal(leaveRequestRoot.get(LeaveRequest_.employee).get(Employee_.employeeId),
+							notificationEmployeeJoin.get(Employee_.employeeId)));
+		}
 
 		Predicate notOwnLeaveRequest = criteriaBuilder.not(criteriaBuilder.and(
 				root.get(Notification_.notificationType)

@@ -19,7 +19,7 @@ public interface NotificationRepository {
 
 	long countUnreadNotificationsByUserId(Long userId);
 
-	List<NotificationTypeCountResponseDto> countNotificationsByTypeForUser(Long userId);
+	List<NotificationTypeCountResponseDto> countNotificationsByTypeForUser(Long userId, boolean isLeavePoliciesEnabled);
 
 	int markTypeViewedByUserIdAndTypes(Long userId, Collection<NotificationType> types);
 
