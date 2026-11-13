@@ -18,6 +18,7 @@ import com.skapp.community.leaveplanner.mapper.LeaveMapper;
 import com.skapp.community.leaveplanner.model.LeaveEntitlement;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.leaveplanner.model.LeaveRequestEntitlement;
+import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
 import com.skapp.community.leaveplanner.payload.LeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.payload.request.EmployeesOnLeavePeriodFilterDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveRequestResponseDto;
@@ -2189,9 +2190,11 @@ public class TimeServiceImpl implements TimeService {
 			.toList();
 
 		if (policyAttendanceLeaveService.isLeavePoliciesEnabled()) {
-			policyAttendanceLeaveService.voidLeaveRequestsOnRemovedDays(removingConfigs);
+			List<PolicyLeaveRequest> voidedLeaveRequests = policyAttendanceLeaveService
+				.voidLeaveRequestsOnRemovedDays(removingConfigs);
 			timeConfigDao.deleteAll(removingConfigs);
 			currentTimeConfigs.removeAll(removingConfigs);
+			handlePolicyCalendarEventsDeletion(voidedLeaveRequests);
 			return;
 		}
 
@@ -2302,6 +2305,9 @@ public class TimeServiceImpl implements TimeService {
 	 */
 	protected void handleCalendarEventsDeletion(LeaveRequest leaveRequest) {
 		// This feature is available only for Pro tenants.
+	}
+
+	protected void handlePolicyCalendarEventsDeletion(List<PolicyLeaveRequest> voidedLeaveRequests) {
 	}
 
 	protected TimeRecordChipResponseDto createTimeRecordChipDto() {

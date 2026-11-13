@@ -1,6 +1,7 @@
 package com.skapp.community.leaveplanner.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
 import com.skapp.community.leaveplanner.payload.request.LeaveRequestAvailabilityFilterDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveRequestResponseDto;
 import com.skapp.community.timeplanner.model.TimeConfig;
@@ -39,6 +40,6 @@ public interface PolicyAttendanceLeaveService {
 
 	Set<DayOfWeek> getDaysWithUpcomingLeaveRequests();
 
-	void voidLeaveRequestsOnRemovedDays(List<TimeConfig> removingConfigs);
+	List<PolicyLeaveRequest> voidLeaveRequestsOnRemovedDays(List<TimeConfig> removingConfigs);
 
 }

@@ -179,14 +179,14 @@ public class PolicyAttendanceLeaveServiceImpl implements PolicyAttendanceLeaveSe
 
 	@Override
 	@Transactional
-	public void voidLeaveRequestsOnRemovedDays(List<TimeConfig> removingConfigs) {
+	public List<PolicyLeaveRequest> voidLeaveRequestsOnRemovedDays(List<TimeConfig> removingConfigs) {
 		log.info("voidLeaveRequestsOnRemovedDays: execution started");
 
 		Set<DayOfWeek> removingDays = removingConfigs.stream()
 			.map(TimeConfig::getDay)
 			.collect(Collectors.toCollection(() -> EnumSet.noneOf(DayOfWeek.class)));
 		if (removingDays.isEmpty()) {
-			return;
+			return List.of();
 		}
 
 		LocalDate today = timeZoneService.currentOrganizationDate();
@@ -197,7 +197,7 @@ public class PolicyAttendanceLeaveServiceImpl implements PolicyAttendanceLeaveSe
 				.anyMatch(removingDays::contains))
 			.toList();
 		if (affectedRequests.isEmpty()) {
-			return;
+			return List.of();
 		}
 
 		affectedRequests.forEach(request -> {
@@ -257,6 +257,7 @@ public class PolicyAttendanceLeaveServiceImpl implements PolicyAttendanceLeaveSe
 		policyLeaveRequestDao.saveAll(affectedRequests);
 
 		log.info("voidLeaveRequestsOnRemovedDays: execution ended with {} request(s)", affectedRequests.size());
+		return affectedRequests;
 	}
 
 	private Set<DayOfWeek> getUpcomingDays(LocalDate startDate, LocalDate endDate, LocalDate today) {
