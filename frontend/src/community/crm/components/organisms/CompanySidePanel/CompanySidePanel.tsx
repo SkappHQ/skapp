@@ -365,7 +365,6 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
                 actions={
                   <RecordActivityActions
                     id="company-activity-actions"
-                    activeTab={activityTab}
                     prefill={{
                       contactId: null,
                       dealId: null,

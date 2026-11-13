@@ -120,7 +120,6 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
             />
             <RecordActivityActions
               id="deal-activity-actions"
-              activeTab={activityTab}
               prefill={{
                 contactId: deal?.contactId ? deal.contactId : null,
                 dealId,

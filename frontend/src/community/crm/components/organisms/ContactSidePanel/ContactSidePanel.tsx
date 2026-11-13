@@ -327,7 +327,6 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
                 actions={
                   <RecordActivityActions
                     id="contact-activity-actions"
-                    activeTab={activityTab}
                     prefill={{
                       contactId,
                       dealId: null,

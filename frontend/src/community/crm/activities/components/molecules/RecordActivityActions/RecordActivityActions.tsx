@@ -3,10 +3,7 @@ import { FC } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import {
-  ActivityTab,
-  ActivityType
-} from "~community/crm/activities/types/activityTypes";
+import { ActivityType } from "~community/crm/activities/types/activityTypes";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmActivityPrefill } from "~community/crm/types/CrmCommonTypes";
 import ScheduleMeetingAction from "~enterprise/crm/components/organisms/ScheduleMeetingAction/ScheduleMeetingAction";
@@ -15,14 +12,12 @@ import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 interface RecordActivityActionsProps {
   id: string;
-  activeTab: ActivityTab;
   prefill: CrmActivityPrefill;
   isLineButton?: boolean;
 }
 
 const RecordActivityActions: FC<RecordActivityActionsProps> = ({
   id,
-  activeTab,
   prefill,
   isLineButton = false
 }) => {
@@ -46,7 +41,7 @@ const RecordActivityActions: FC<RecordActivityActionsProps> = ({
 
   return (
     <div className="flex items-center gap-2">
-      {activeTab === ActivityTab.MEETINGS && <ScheduleMeetingAction />}
+      <ScheduleMeetingAction prefill={prefill} />
       <ButtonV2
         id={`${id}-add`}
         type="button"
