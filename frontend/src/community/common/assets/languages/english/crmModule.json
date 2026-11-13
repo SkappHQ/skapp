@@ -696,6 +696,11 @@
       "meetings": "Meetings",
       "emails": "Emails"
     },
+    "addActivity": {
+      "button": "Add activity",
+      "modalTitle": "Add activity",
+      "typeLabel": "Type"
+    },
     "buckets": {
       "overdue": "Overdue",
       "today": "Today",

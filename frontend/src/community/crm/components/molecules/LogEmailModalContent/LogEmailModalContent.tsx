@@ -1,6 +1,6 @@
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
-import { FC, useMemo } from "react";
+import { FC, ReactNode, useMemo } from "react";
 
 import { TIME_FORMAT_24_HOUR } from "~community/common/constants/timeConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -20,10 +20,12 @@ import { CrmLogEmailFormValues } from "~community/crm/types/CrmCommonTypes";
 import { getEmailValidationSchema } from "~community/crm/utils/emailValidations";
 
 interface Props {
+  title?: string;
+  typeField?: ReactNode;
   onClose: () => void;
 }
 
-const LogEmailModalContent: FC<Props> = ({ onClose }) => {
+const LogEmailModalContent: FC<Props> = ({ title, typeField, onClose }) => {
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator(
     "crmAria",
@@ -154,7 +156,9 @@ const LogEmailModalContent: FC<Props> = ({ onClose }) => {
 
   return (
     <LogActivityModal
-      title={translateText(["activities", "logEmail", "modal", "title"])}
+      title={
+        title || translateText(["activities", "logEmail", "modal", "title"])
+      }
       isDirty={dirty}
       isPending={isPending}
       isSubmitting={isSubmitting}
@@ -163,6 +167,7 @@ const LogEmailModalContent: FC<Props> = ({ onClose }) => {
       onSave={submitForm}
       onClose={onClose}
     >
+      {typeField}
       <LogEmailModalForm formik={formik} />
     </LogActivityModal>
   );
