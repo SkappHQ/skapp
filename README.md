@@ -63,12 +63,11 @@ For detailed setup instructions including prerequisites and configuration option
 
 | Layer | Technology |
 |-------|------------|
-| Frontend | React, TypeScript, Tailwind CSS |
-| Backend | Node.js, NestJS |
-| Database | PostgreSQL |
+| Frontend | Next.js, React, TypeScript, Tailwind CSS, MUI, React Query |
+| Backend | Java 21, Spring Boot |
+| Database | MySQL, Liquibase |
 | Cache | Redis |
-| Search | Elasticsearch |
-| Infrastructure | Docker, Kubernetes |
+| Infrastructure | Docker |
 
 ## 📖 Documentation
 
@@ -78,6 +77,10 @@ For detailed setup instructions including prerequisites and configuration option
 ## 🤝 Contributing
 
 We love contributions! To learn how to contribute, check out the **[CONTRIBUTING.md](CONTRIBUTING.md)** file.
+
+## 🏢 Enterprise Contributors
+
+Working on Skapp Enterprise as part of the Skapp team? Setup, submodules and repo conventions for the enterprise edition are in the internal handbook at `reference/repositories/skapp/readme.md`.
 
 ## 📜 License
 
