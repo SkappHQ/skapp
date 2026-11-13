@@ -78,6 +78,10 @@ For detailed setup instructions including prerequisites and configuration option
 
 We love contributions! To learn how to contribute, check out the **[CONTRIBUTING.md](CONTRIBUTING.md)** file.
 
+## 🏢 Enterprise Contributors
+
+Working on Skapp Enterprise as part of the Skapp team? Setup, submodules and repo conventions for the enterprise edition are in the internal handbook at `reference/repositories/skapp/readme.md`.
+
 ## 📜 License
 
 GNU AFFERO GENERAL PUBLIC LICENSE (see **[LICENSE](LICENSE)**).
