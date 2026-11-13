@@ -34,6 +34,7 @@ import com.skapp.community.crmplanner.payload.response.board.CrmBoardOwnerRespon
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardStageResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmDealByStageItemResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmDealsByStageResponseDto;
+import com.skapp.community.crmplanner.repository.CrmActivityTaskDao;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
@@ -85,6 +86,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 	private final CrmOwnerResolverService crmOwnerResolver;
 
 	private final CrmTaskDao crmTaskDao;
+
+	private final CrmActivityTaskDao crmActivityTaskDao;
 
 	private final CrmTaskTypeDao crmTaskTypeDao;
 
@@ -238,7 +241,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 			.flatMap(p -> p.getContent().stream())
 			.map(CrmDeal::getId)
 			.toList();
-		Map<Long, Long> taskCountMap = crmTaskDao.countTasksByDealIds(allDealIds, ownerId);
+		Map<Long, Long> taskCountMap = crmActivityTaskDao.countTasksByDealIds(allDealIds, ownerId);
 
 		List<CrmDealsByStageResponseDto> result = uniqueStageIds.stream().map(stageId -> {
 			Page<CrmDeal> dealsPage = dealPagesByStage.get(stageId);

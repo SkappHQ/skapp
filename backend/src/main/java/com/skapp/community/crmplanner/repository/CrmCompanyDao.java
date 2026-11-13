@@ -20,4 +20,6 @@ public interface CrmCompanyDao extends JpaRepository<CrmCompany, Long>, CrmCompa
 
 	long countByIsDeletedFalse();
 
+	boolean existsByIdAndIsDeletedFalse(Long id);
+
 }

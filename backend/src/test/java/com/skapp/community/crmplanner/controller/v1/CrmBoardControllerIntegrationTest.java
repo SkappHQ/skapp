@@ -9,7 +9,7 @@ import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.model.CrmIndustry;
-import com.skapp.community.crmplanner.model.CrmTask;
+import com.skapp.community.crmplanner.model.CrmActivityTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmDealUpdateStageRequestDto;
 import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
@@ -18,11 +18,11 @@ import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.repository.CrmIndustryDao;
-import com.skapp.community.crmplanner.repository.CrmTaskDao;
+import com.skapp.community.crmplanner.repository.CrmActivityTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
-import com.skapp.community.crmplanner.type.CrmTaskPriority;
+import com.skapp.community.crmplanner.type.CrmActivityTaskPriority;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
@@ -94,7 +94,7 @@ class CrmBoardControllerIntegrationTest {
 
 	private final EmployeeRoleDao employeeRoleDao;
 
-	private final CrmTaskDao crmTaskDao;
+	private final CrmActivityTaskDao crmActivityTaskDao;
 
 	private final CrmTaskTypeDao crmTaskTypeDao;
 
@@ -639,44 +639,41 @@ class CrmBoardControllerIntegrationTest {
 			.with(SecurityTestUtils.bearerToken(noCrmRoleToken))).andDo(print()).andExpect(status().isForbidden());
 	}
 
-	private CrmTask createTask(CrmDeal deal) {
+	private CrmActivityTask createTask(CrmDeal deal) {
 		return createTask(deal, 1L);
 	}
 
-	private CrmTask createTask(CrmDeal deal, Long ownerId) {
-		CrmTask task = new CrmTask();
+	private CrmActivityTask createTask(CrmDeal deal, Long ownerId) {
+		CrmActivityTask task = new CrmActivityTask();
 		task.setName("Test Task");
-		task.setType(taskType);
-		task.setPriority(CrmTaskPriority.MEDIUM);
+		task.setPriority(CrmActivityTaskPriority.MEDIUM);
 		task.setOwner(employeeDao.getReferenceById(ownerId));
 		task.setDeal(deal);
 		task.setIsDeleted(false);
 		task.setIsCompleted(false);
-		return crmTaskDao.save(task);
+		return crmActivityTaskDao.save(task);
 	}
 
-	private CrmTask createCompletedTask(CrmDeal deal) {
-		CrmTask task = new CrmTask();
+	private CrmActivityTask createCompletedTask(CrmDeal deal) {
+		CrmActivityTask task = new CrmActivityTask();
 		task.setName("Completed Task");
-		task.setType(taskType);
-		task.setPriority(CrmTaskPriority.MEDIUM);
+		task.setPriority(CrmActivityTaskPriority.MEDIUM);
 		task.setOwner(employeeDao.getReferenceById(1L));
 		task.setDeal(deal);
 		task.setIsDeleted(false);
 		task.setIsCompleted(true);
-		return crmTaskDao.save(task);
+		return crmActivityTaskDao.save(task);
 	}
 
-	private CrmTask createDeletedTask(CrmDeal deal) {
-		CrmTask task = new CrmTask();
+	private CrmActivityTask createDeletedTask(CrmDeal deal) {
+		CrmActivityTask task = new CrmActivityTask();
 		task.setName("Deleted Task");
-		task.setType(taskType);
-		task.setPriority(CrmTaskPriority.MEDIUM);
+		task.setPriority(CrmActivityTaskPriority.MEDIUM);
 		task.setOwner(employeeDao.getReferenceById(1L));
 		task.setDeal(deal);
 		task.setIsDeleted(true);
 		task.setIsCompleted(false);
-		return crmTaskDao.save(task);
+		return crmActivityTaskDao.save(task);
 	}
 
 	private CrmIndustry createIndustry(String name, boolean isDeleted) {

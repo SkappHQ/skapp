@@ -5,11 +5,14 @@ import com.skapp.community.crmplanner.payload.response.CrmActivityTaskResponseDt
 import com.skapp.community.crmplanner.type.CrmActivityTaskFilterParams;
 
 import java.util.List;
+import java.util.Map;
 
 public interface CrmActivityTaskRepository {
 
 	List<CrmActivityTaskResponseDto> findTasks(CrmActivityTaskFilterParams params);
 
 	CrmActivityTask findTaskById(Long id);
+
+	Map<Long, Long> countTasksByDealIds(List<Long> dealIds, Long ownerId);
 
 }

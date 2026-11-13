@@ -33,4 +33,10 @@ public class CrmActivityListParams {
 
 	private Integer maxResults;
 
+	private CrmActivityAssociation activityAssociation;
+
+	private Long recordId;
+
+	private CrmActivityType activityType;
+
 }
