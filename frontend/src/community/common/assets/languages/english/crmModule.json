@@ -707,7 +707,8 @@
     },
     "addActivity": {
       "button": "Add activity",
-      "pickerTitle": "Add activity"
+      "modalTitle": "Add activity",
+      "typeLabel": "Type"
     },
     "buckets": {
       "overdue": "Overdue",

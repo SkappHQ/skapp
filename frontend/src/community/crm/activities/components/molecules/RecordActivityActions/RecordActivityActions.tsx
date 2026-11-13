@@ -1,8 +1,7 @@
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, Dropdown } from "@rootcodelabs/skapp-ui";
 import { FC, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import ActivityTypePickerModal from "~community/crm/activities/components/molecules/ActivityTypePickerModal/ActivityTypePickerModal";
 import { ActivityType } from "~community/crm/activities/types/activityTypes";
 import AddActivityTaskModalContent from "~community/crm/components/molecules/AddActivityTaskModalContent/AddActivityTaskModalContent";
 import LogCallModalContent from "~community/crm/components/molecules/LogCallModalContent/LogCallModalContent";
@@ -14,17 +13,45 @@ interface RecordActivityActionsProps {
 }
 
 const RecordActivityActions: FC<RecordActivityActionsProps> = ({ id }) => {
-  const translateText = useTranslator("crmModule", "activities", "addActivity");
+  const translateText = useTranslator("crmModule", "activities");
 
-  const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<ActivityType | null>(null);
 
-  const handleTypeSelect = (type: ActivityType): void => {
-    setIsPickerOpen(false);
-    setSelectedType(type);
-  };
-
   const handleModalClose = (): void => setSelectedType(null);
+
+  const renderModal = (type: ActivityType) => {
+    const modalProps = {
+      title: translateText(["addActivity", "modalTitle"]),
+      typeField: (
+        <Dropdown
+          id={`${id}-type`}
+          options={Object.values(ActivityType).map((option) => ({
+            id: option,
+            value: option,
+            label: translateText(["types", option.toLowerCase()])
+          }))}
+          value={type}
+          onChange={(value) => setSelectedType(value as ActivityType)}
+          label={translateText(["addActivity", "typeLabel"])}
+          variant="primary"
+          className="rounded-lg"
+          width="100%"
+        />
+      ),
+      onClose: handleModalClose
+    };
+
+    switch (type) {
+      case ActivityType.TASK:
+        return <AddActivityTaskModalContent {...modalProps} />;
+      case ActivityType.CALL:
+        return <LogCallModalContent {...modalProps} />;
+      case ActivityType.MEETING:
+        return <LogMeetingModalContent {...modalProps} />;
+      case ActivityType.EMAIL:
+        return <LogEmailModalContent {...modalProps} />;
+    }
+  };
 
   return (
     <>
@@ -32,29 +59,11 @@ const RecordActivityActions: FC<RecordActivityActionsProps> = ({ id }) => {
         id={`${id}-add`}
         variant="primary"
         type="button"
-        onClick={() => setIsPickerOpen(true)}
+        onClick={() => setSelectedType(ActivityType.TASK)}
       >
-        {translateText(["button"])}
+        {translateText(["addActivity", "button"])}
       </ButtonV2>
-      {isPickerOpen && (
-        <ActivityTypePickerModal
-          id={`${id}-picker`}
-          onSelect={handleTypeSelect}
-          onClose={() => setIsPickerOpen(false)}
-        />
-      )}
-      {selectedType === ActivityType.TASK && (
-        <AddActivityTaskModalContent onClose={handleModalClose} />
-      )}
-      {selectedType === ActivityType.CALL && (
-        <LogCallModalContent onClose={handleModalClose} />
-      )}
-      {selectedType === ActivityType.MEETING && (
-        <LogMeetingModalContent onClose={handleModalClose} />
-      )}
-      {selectedType === ActivityType.EMAIL && (
-        <LogEmailModalContent onClose={handleModalClose} />
-      )}
+      {selectedType && renderModal(selectedType)}
     </>
   );
 };

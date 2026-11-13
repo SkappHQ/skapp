@@ -1,6 +1,6 @@
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
-import { FC, useMemo } from "react";
+import { FC, ReactNode, useMemo } from "react";
 
 import { TIME_FORMAT_24_HOUR } from "~community/common/constants/timeConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -22,10 +22,12 @@ import { CrmLogMeetingFormValues } from "~community/crm/types/CrmCommonTypes";
 import { getMeetingValidationSchema } from "~community/crm/utils/meetingValidations";
 
 interface Props {
+  title?: string;
+  typeField?: ReactNode;
   onClose: () => void;
 }
 
-const LogMeetingModalContent: FC<Props> = ({ onClose }) => {
+const LogMeetingModalContent: FC<Props> = ({ title, typeField, onClose }) => {
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator(
     "crmAria",
@@ -161,7 +163,11 @@ const LogMeetingModalContent: FC<Props> = ({ onClose }) => {
 
   return (
     <LogActivityModal
-      title={translateText(["activities", "logMeeting", "modal", "title"])}
+      title={
+        title
+          ? title
+          : translateText(["activities", "logMeeting", "modal", "title"])
+      }
       isDirty={dirty}
       isPending={isPending}
       isSubmitting={isSubmitting}
@@ -170,6 +176,7 @@ const LogMeetingModalContent: FC<Props> = ({ onClose }) => {
       onSave={submitForm}
       onClose={onClose}
     >
+      {typeField}
       <LogMeetingModalForm formik={formik} />
     </LogActivityModal>
   );
