@@ -517,7 +517,8 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 	}
 
 	@Override
-	public List<PolicyLeaveRequest> findRequestsOnDate(Collection<LeaveRequestStatus> statuses, LocalDate date) {
+	public List<PolicyLeaveRequest> findRequestsInRange(Collection<LeaveRequestStatus> statuses, LocalDate startDate,
+			LocalDate endDate) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<PolicyLeaveRequest> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveRequest.class);
@@ -530,25 +531,10 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 
 		criteriaQuery.select(root)
 			.where(criteriaBuilder.isTrue(user.get(User_.isActive)), root.get(PolicyLeaveRequest_.status).in(statuses),
-					criteriaBuilder.lessThanOrEqualTo(root.get(PolicyLeaveRequest_.startDate), date),
-					criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), date));
+					criteriaBuilder.lessThanOrEqualTo(root.get(PolicyLeaveRequest_.startDate), endDate),
+					criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), startDate));
 
 		return entityManager.createQuery(criteriaQuery).getResultList();
-	}
-
-	@Override
-	public boolean existsRequestOnDate(Collection<LeaveRequestStatus> statuses, LocalDate date) {
-		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-
-		CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
-		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
-
-		criteriaQuery.select(root.get(PolicyLeaveRequest_.id))
-			.where(root.get(PolicyLeaveRequest_.status).in(statuses),
-					criteriaBuilder.lessThanOrEqualTo(root.get(PolicyLeaveRequest_.startDate), date),
-					criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), date));
-
-		return !entityManager.createQuery(criteriaQuery).setMaxResults(1).getResultList().isEmpty();
 	}
 
 	private List<Predicate> buildApprovedLeaveInWindowPredicates(CriteriaBuilder criteriaBuilder,

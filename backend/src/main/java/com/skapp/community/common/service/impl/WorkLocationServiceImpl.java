@@ -11,13 +11,8 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Holiday;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.HolidayDao;
+import com.skapp.community.peopleplanner.service.HolidayService;
 import com.skapp.community.peopleplanner.type.AccountStatus;
-import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
-import com.skapp.community.leaveplanner.payload.LeaveRequestFilterDto;
-import com.skapp.community.leaveplanner.repository.LeaveRequestDao;
-import com.skapp.community.leaveplanner.service.LeavePolicyService;
-import com.skapp.community.leaveplanner.service.PolicyHolidayLeaveService;
-import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.common.constant.CommonConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.model.WorkLocation;
@@ -52,15 +47,11 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 
 	private final HolidayDao holidayDao;
 
-	private final LeaveRequestDao leaveRequestDao;
-
 	private final MessageUtil messageUtil;
 
 	private final TimeZoneService timeZoneService;
 
-	private final LeavePolicyService leavePolicyService;
-
-	private final PolicyHolidayLeaveService policyHolidayLeaveService;
+	private final HolidayService holidayService;
 
 	@Override
 	@Transactional
@@ -258,27 +249,10 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 		List<Holiday> holidaysToDelete = holidayDao.findFutureActiveHolidaysExclusiveToWorkLocation(workLocationId,
 				timeZoneService.currentOrganizationDate());
 
-		boolean isLeavePoliciesEnabled = leavePolicyService.isLeavePoliciesEnabled();
-		for (Holiday holiday : holidaysToDelete) {
-			boolean hasLeaveRequests = isLeavePoliciesEnabled
-					? policyHolidayLeaveService.hasLeaveRequestsOnDate(holiday.getDate())
-					: hasPendingOrApprovedLeaveRequestsForDate(holiday.getDate());
-			if (hasLeaveRequests) {
-				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_CANNOT_BE_DELETED_LEAVES_EXIST);
-			}
-		}
+		holidayService.validateNoLeaveRequestsOnHolidays(holidaysToDelete);
 
 		holidaysToDelete.forEach(holiday -> holiday.setActive(false));
 		holidayDao.saveAll(holidaysToDelete);
-	}
-
-	private boolean hasPendingOrApprovedLeaveRequestsForDate(LocalDate date) {
-		LeaveRequestFilterDto leaveRequestFilterDto = new LeaveRequestFilterDto();
-		leaveRequestFilterDto.setStartDate(date);
-		leaveRequestFilterDto.setEndDate(date);
-		leaveRequestFilterDto.setStatus(List.of(LeaveRequestStatus.PENDING, LeaveRequestStatus.APPROVED));
-
-		return !leaveRequestDao.findAllLeaveRequestsByDateRange(leaveRequestFilterDto).isEmpty();
 	}
 
 	private void clearWorkLocationFromEmployees(Long workLocationId) {

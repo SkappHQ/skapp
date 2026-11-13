@@ -2,12 +2,12 @@ package com.skapp.community.leaveplanner.service;
 
 import com.skapp.community.peopleplanner.model.Holiday;
 
-import java.time.LocalDate;
+import java.util.List;
 
 public interface PolicyHolidayLeaveService {
 
 	void adjustLeaveRequestsForHoliday(Holiday holiday);
 
-	boolean hasLeaveRequestsOnDate(LocalDate date);
+	boolean hasLeaveRequestsOnHolidays(List<Holiday> holidays);
 
 }
