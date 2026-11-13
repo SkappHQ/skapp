@@ -19,7 +19,7 @@ public class CrmActivityFeedFilterDto {
 
 	private LocalDate toDate;
 
-	private CrmActivityAssociation recordType;
+	private CrmActivityAssociation activityAssociation;
 
 	private Long recordId;
 

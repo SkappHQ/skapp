@@ -61,18 +61,18 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 
 		CrmValidations.validateActivityDateRange(filterDto.getFromDate(), filterDto.getToDate());
 
-		if ((filterDto.getRecordType() == null) != (filterDto.getRecordId() == null)) {
+		if ((filterDto.getActivityAssociation() == null) != (filterDto.getRecordId() == null)) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR);
 		}
-		if (filterDto.getRecordType() != null) {
-			validateRecordAccess(currentUser, filterDto.getRecordType(), filterDto.getRecordId());
+		if (filterDto.getActivityAssociation() != null) {
+			validateRecordAccess(currentUser, filterDto.getActivityAssociation(), filterDto.getRecordId());
 		}
 
 		CrmActivityListParams params = new CrmActivityListParams();
 		params.setCurrentEmployeeId(currentUser.getEmployee().getEmployeeId());
 		params.setIsRestrictedToOwner(isRepresentative);
 		params.setOwnerId(filterDto.getOwnerId());
-		params.setRecordType(filterDto.getRecordType());
+		params.setActivityAssociation(filterDto.getActivityAssociation());
 		params.setRecordId(filterDto.getRecordId());
 		params.setActivityType(filterDto.getType());
 		params.setSortOrder(Sort.Direction.DESC);
@@ -98,8 +98,8 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 		return new ResponseEntityDto(false, pageDto);
 	}
 
-	private void validateRecordAccess(User currentUser, CrmActivityAssociation recordType, Long recordId) {
-		switch (recordType) {
+	private void validateRecordAccess(User currentUser, CrmActivityAssociation activityAssociation, Long recordId) {
+		switch (activityAssociation) {
 			case CONTACT -> {
 				if (!crmContactDao.existsByIdAndIsDeletedFalse(recordId)) {
 					throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND);
