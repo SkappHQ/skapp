@@ -29,7 +29,7 @@ import {
 interface Props {
   title?: string;
   prefill?: CrmActivityPrefill;
-  typeField?: ReactNode;
+  typeField?: (isDisabled: boolean) => ReactNode;
   onClose: () => void;
 }
 
@@ -183,7 +183,7 @@ const LogCallModalContent: FC<Props> = ({
       onSave={submitForm}
       onClose={onClose}
     >
-      {typeField}
+      {typeField?.(isPending || isSubmitting)}
       <LogCallModalForm formik={formik} />
     </LogActivityModal>
   );

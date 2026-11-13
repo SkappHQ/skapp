@@ -202,6 +202,9 @@
     "recordTab": {
       "typeFilter": "Filter activities by type"
     },
+    "addActivity": {
+      "type": "Choose the activity type"
+    },
     "toolbar": {
       "clearSearch": "Clear search",
       "openFilters": "Open filters",

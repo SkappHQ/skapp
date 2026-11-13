@@ -23,7 +23,7 @@ import { getActivityTaskValidationSchema } from "~community/crm/utils/activityTa
 interface Props {
   title?: string;
   prefill?: CrmActivityPrefill;
-  typeField?: ReactNode;
+  typeField?: (isDisabled: boolean) => ReactNode;
   onClose: () => void;
 }
 
@@ -171,7 +171,7 @@ const AddActivityTaskModalContent: FC<Props> = ({
       onSave={submitForm}
       onClose={onClose}
     >
-      {typeField}
+      {typeField?.(isPending || isSubmitting)}
       <AddActivityTaskModalForm formik={formik} />
     </LogActivityModal>
   );

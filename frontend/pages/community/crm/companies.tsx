@@ -10,6 +10,7 @@ import { IconName } from "~community/common/types/IconTypes";
 import CompanyModalController from "~community/crm/components/organisms/CompanyModalController/CompanyModalController";
 import CompanySidePanel from "~community/crm/components/organisms/CompanySidePanel/CompanySidePanel";
 import { CompanyTable } from "~community/crm/components/organisms/CompanyTable/CompanyTable";
+import RecordActivityModalController from "~community/crm/components/organisms/RecordActivityModalController/RecordActivityModalController";
 import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
@@ -82,6 +83,7 @@ const Companies: NextPage = () => {
 
         <CompanyModalController />
         <TaskModalController />
+        <RecordActivityModalController />
         <CompanyTable />
       </>
     </ContentLayout>

@@ -27,7 +27,7 @@ import { getMeetingValidationSchema } from "~community/crm/utils/meetingValidati
 interface Props {
   title?: string;
   prefill?: CrmActivityPrefill;
-  typeField?: ReactNode;
+  typeField?: (isDisabled: boolean) => ReactNode;
   onClose: () => void;
 }
 
@@ -57,7 +57,7 @@ const LogMeetingModalContent: FC<Props> = ({
       date: now.startOf("day").toUTC().toISO(),
       startTime: slotStart.toFormat(TIME_FORMAT_24_HOUR),
       endTime: getActivityEndTimeSlot(slotStart).toFormat(TIME_FORMAT_24_HOUR),
-      contactIds: prefill && prefill.contactId ? [prefill.contactId] : [],
+      contactIds: prefill?.contactId ? [prefill.contactId] : [],
       ownerId: defaultOwner ? defaultOwner.employeeId : null,
       comments: "",
       dealId: prefill ? prefill.dealId : null,
@@ -183,7 +183,7 @@ const LogMeetingModalContent: FC<Props> = ({
       onSave={submitForm}
       onClose={onClose}
     >
-      {typeField}
+      {typeField?.(isPending || isSubmitting)}
       <LogMeetingModalForm formik={formik} />
     </LogActivityModal>
   );

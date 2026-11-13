@@ -1,5 +1,7 @@
 import { StateCreator } from "zustand";
 
+import { ActivityType } from "~community/crm/activities/types/activityTypes";
+import { CrmActivityPrefill } from "~community/crm/types/CrmCommonTypes";
 import {
   CrmModalTypes,
   CrmSidePanelTypes
@@ -25,6 +27,8 @@ const CrmUiSlice: StateCreator<
   contactModalType: CrmModalTypes.ADD_CONTACT_MODAL,
   isTaskModalOpen: false,
   taskModalType: CrmModalTypes.ADD_TASK_MODAL,
+  recordActivityModalType: null,
+  recordActivityPrefill: null,
   isDealStageModalOpen: false,
   dealStageModalType: CrmModalTypes.ADD_DEAL_STAGE_MODAL,
 
@@ -61,6 +65,11 @@ const CrmUiSlice: StateCreator<
     set({ contactModalType }),
   setIsTaskModalOpen: (isTaskModalOpen: boolean) => set({ isTaskModalOpen }),
   setTaskModalType: (taskModalType: CrmModalTypes) => set({ taskModalType }),
+  setRecordActivityModalType: (recordActivityModalType: ActivityType | null) =>
+    set({ recordActivityModalType }),
+  setRecordActivityPrefill: (
+    recordActivityPrefill: CrmActivityPrefill | null
+  ) => set({ recordActivityPrefill }),
   setIsDealStageModalOpen: (isDealStageModalOpen: boolean) =>
     set({ isDealStageModalOpen }),
   setDealStageModalType: (dealStageModalType: CrmModalTypes) =>

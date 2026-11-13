@@ -25,7 +25,7 @@ import { getEmailValidationSchema } from "~community/crm/utils/emailValidations"
 interface Props {
   title?: string;
   prefill?: CrmActivityPrefill;
-  typeField?: ReactNode;
+  typeField?: (isDisabled: boolean) => ReactNode;
   onClose: () => void;
 }
 
@@ -51,7 +51,7 @@ const LogEmailModalContent: FC<Props> = ({
       fromAddress: "",
       date: now.startOf("day").toUTC().toISO(),
       time: getTimeSlotStart(now).toFormat(TIME_FORMAT_24_HOUR),
-      toContactIds: prefill && prefill.contactId ? [prefill.contactId] : [],
+      toContactIds: prefill?.contactId ? [prefill.contactId] : [],
       ccContactIds: [],
       bccContactIds: [],
       subject: "",
@@ -176,7 +176,7 @@ const LogEmailModalContent: FC<Props> = ({
       onSave={submitForm}
       onClose={onClose}
     >
-      {typeField}
+      {typeField?.(isPending || isSubmitting)}
       <LogEmailModalForm formik={formik} />
     </LogActivityModal>
   );

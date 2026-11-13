@@ -14,6 +14,7 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import RecordActivityActions from "~community/crm/activities/components/molecules/RecordActivityActions/RecordActivityActions";
 import RecordActivitiesTab from "~community/crm/activities/components/organisms/RecordActivitiesTab/RecordActivitiesTab";
 import { ActivityRecordType } from "~community/crm/activities/types/activityTypes";
 import {
@@ -323,6 +324,16 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
                 recordId={contactId}
                 activeTab={activityTab}
                 onTabChange={setActivityTab}
+                actions={
+                  <RecordActivityActions
+                    id="contact-activity-actions"
+                    prefill={{
+                      contactId,
+                      dealId: null,
+                      companyId: contact.companyId ? contact.companyId : null
+                    }}
+                  />
+                }
               />
             )}
 

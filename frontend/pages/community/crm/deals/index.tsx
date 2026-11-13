@@ -9,6 +9,7 @@ import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePan
 import DealSidePanel from "~community/crm/components/organisms/DealSidePanel/DealSidePanel";
 import DealsKanbanBoardSkeleton from "~community/crm/components/organisms/DealsKanbanBoard/DealsKanbanBoardSkeleton";
 import DealsSection from "~community/crm/components/organisms/DealsSection/DealsSection";
+import RecordActivityModalController from "~community/crm/components/organisms/RecordActivityModalController/RecordActivityModalController";
 import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
@@ -57,6 +58,7 @@ const Deals: NextPage = () => {
           <AddDealSidePanel />
         </SidePanelWrapper>
         <TaskModalController />
+        <RecordActivityModalController />
         {isCrmInitialDataLoading ? (
           <DealsKanbanBoardSkeleton laneCount={4} cardCount={5} />
         ) : (

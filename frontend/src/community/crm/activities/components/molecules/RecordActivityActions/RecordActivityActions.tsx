@@ -1,70 +1,63 @@
-import { ButtonV2, Dropdown } from "@rootcodelabs/skapp-ui";
-import { FC, useState } from "react";
+import { ButtonV2, PlusIcon } from "@rootcodelabs/skapp-ui";
+import { FC } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { ActivityType } from "~community/crm/activities/types/activityTypes";
-import AddActivityTaskModalContent from "~community/crm/components/molecules/AddActivityTaskModalContent/AddActivityTaskModalContent";
-import LogCallModalContent from "~community/crm/components/molecules/LogCallModalContent/LogCallModalContent";
-import LogEmailModalContent from "~community/crm/components/molecules/LogEmailModalContent/LogEmailModalContent";
-import LogMeetingModalContent from "~community/crm/components/molecules/LogMeetingModalContent/LogMeetingModalContent";
+import { useCrmStore } from "~community/crm/store/store";
+import { CrmActivityPrefill } from "~community/crm/types/CrmCommonTypes";
+import ScheduleMeetingAction from "~enterprise/crm/components/organisms/ScheduleMeetingAction/ScheduleMeetingAction";
+import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
+import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 interface RecordActivityActionsProps {
   id: string;
+  prefill: CrmActivityPrefill;
+  isLineButton?: boolean;
 }
 
-const RecordActivityActions: FC<RecordActivityActionsProps> = ({ id }) => {
+const RecordActivityActions: FC<RecordActivityActionsProps> = ({
+  id,
+  prefill,
+  isLineButton = false
+}) => {
   const translateText = useTranslator("crmModule", "activities");
 
-  const [selectedType, setSelectedType] = useState<ActivityType | null>(null);
+  const { setRecordActivityModalType, setRecordActivityPrefill } = useCrmStore(
+    useShallow((store) => ({
+      setRecordActivityModalType: store.setRecordActivityModalType,
+      setRecordActivityPrefill: store.setRecordActivityPrefill
+    }))
+  );
 
-  const handleModalClose = (): void => setSelectedType(null);
+  const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
-  const renderModal = (type: ActivityType) => {
-    const modalProps = {
-      title: translateText(["addActivity", "modalTitle"]),
-      typeField: (
-        <Dropdown
-          id={`${id}-type`}
-          options={Object.values(ActivityType).map((option) => ({
-            id: option,
-            value: option,
-            label: translateText(["types", option.toLowerCase()])
-          }))}
-          value={type}
-          onChange={(value) => setSelectedType(value as ActivityType)}
-          label={translateText(["addActivity", "typeLabel"])}
-          variant="primary"
-          className="rounded-lg"
-          width="100%"
-        />
-      ),
-      onClose: handleModalClose
-    };
-
-    switch (type) {
-      case ActivityType.TASK:
-        return <AddActivityTaskModalContent {...modalProps} />;
-      case ActivityType.CALL:
-        return <LogCallModalContent {...modalProps} />;
-      case ActivityType.MEETING:
-        return <LogMeetingModalContent {...modalProps} />;
-      case ActivityType.EMAIL:
-        return <LogEmailModalContent {...modalProps} />;
-    }
+  const handleAddActivity = (): void => {
+    guardCrmCreate(CrmLimitResource.ACTIVITIES, () => {
+      setRecordActivityPrefill(prefill);
+      setRecordActivityModalType(ActivityType.TASK);
+    });
   };
 
   return (
-    <>
+    <div className="flex items-center gap-2">
+      <ScheduleMeetingAction prefill={prefill} />
       <ButtonV2
         id={`${id}-add`}
-        variant="primary"
         type="button"
-        onClick={() => setSelectedType(ActivityType.TASK)}
+        variant={isLineButton ? "line" : "primary"}
+        {...(isLineButton && {
+          size: "sm",
+          icon: <PlusIcon />,
+          iconPosition: "end"
+        })}
+        disabled={isCheckingCrmLimit}
+        isLoading={isCheckingCrmLimit}
+        onClick={handleAddActivity}
       >
         {translateText(["addActivity", "button"])}
       </ButtonV2>
-      {selectedType && renderModal(selectedType)}
-    </>
+    </div>
   );
 };
 
