@@ -73,6 +73,7 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
 
   const isDealMismatch = Boolean(
     values.dealId &&
+    deals[values.dealId] &&
     recipients.length > 0 &&
     !isDealMatchingContacts(deals[values.dealId], recipients)
   );
