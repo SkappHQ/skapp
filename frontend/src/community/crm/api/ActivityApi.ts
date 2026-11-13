@@ -67,12 +67,14 @@ export const useGetActivityFeed = (
   });
 
 export const useGetRecordActivities = (
-  params: RecordActivityFilters
+  params: RecordActivityFilters,
+  enabled: boolean
 ): UseInfiniteQueryResult<InfiniteData<ActivityFeedResponse>, AxiosError> =>
   useInfiniteQuery({
     queryKey: crmActivityQueryKeys.RECORD(params),
     queryFn: ({ pageParam }) =>
       fetchActivityFeed({ ...params, page: pageParam }),
+    enabled,
     initialPageParam: 0,
     getNextPageParam: (lastPage) =>
       lastPage && lastPage.currentPage < lastPage.totalPages - 1
@@ -195,11 +197,16 @@ const updateTaskCompletion = async ({
 
 export const useUpdateTaskCompletion = (
   onError: (payload: CrmTaskCompletionPayload) => void
-): UseMutationResult<void, ErrorResponse, CrmTaskCompletionPayload> =>
-  useMutation({
+): UseMutationResult<void, ErrorResponse, CrmTaskCompletionPayload> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
     mutationFn: updateTaskCompletion,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL }),
     onError: (_error, payload) => onError(payload)
   });
+};
 
 const createCall = async (
   payload: ActivityCallCreatePayload
