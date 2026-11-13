@@ -16,8 +16,8 @@ import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.service.CrmActivityFeedService;
+import com.skapp.community.crmplanner.type.CrmActivityAssociation;
 import com.skapp.community.crmplanner.type.CrmActivityListParams;
-import com.skapp.community.crmplanner.type.CrmActivityRecordType;
 import com.skapp.community.crmplanner.util.CrmUtil;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import lombok.RequiredArgsConstructor;
@@ -98,7 +98,7 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 		return new ResponseEntityDto(false, pageDto);
 	}
 
-	private void validateRecordAccess(User currentUser, CrmActivityRecordType recordType, Long recordId) {
+	private void validateRecordAccess(User currentUser, CrmActivityAssociation recordType, Long recordId) {
 		switch (recordType) {
 			case CONTACT -> {
 				if (!crmContactDao.existsByIdAndIsDeletedFalse(recordId)) {

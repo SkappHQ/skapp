@@ -1,6 +1,6 @@
 package com.skapp.community.crmplanner.type;
 
-public enum CrmActivityRecordType {
+public enum CrmActivityAssociation {
 
 	CONTACT, DEAL, COMPANY
 

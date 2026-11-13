@@ -24,8 +24,8 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.payload.response.CrmActivityFeedRowResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityFeedRepository;
+import com.skapp.community.crmplanner.type.CrmActivityAssociation;
 import com.skapp.community.crmplanner.type.CrmActivityListParams;
-import com.skapp.community.crmplanner.type.CrmActivityRecordType;
 import com.skapp.community.crmplanner.type.CrmActivityTaskPriority;
 import com.skapp.community.crmplanner.type.CrmActivityType;
 import com.skapp.community.peopleplanner.model.Employee_;
@@ -98,13 +98,13 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		if (params.getActivityType() != null && params.getActivityType() != CrmActivityType.TASK) {
 			taskPredicates.add(cb.disjunction());
 		}
-		if (params.getRecordType() == CrmActivityRecordType.CONTACT) {
+		if (params.getRecordType() == CrmActivityAssociation.CONTACT) {
 			taskPredicates.add(cb.equal(taskContact.get(CrmContact_.id), params.getRecordId()));
 		}
-		if (params.getRecordType() == CrmActivityRecordType.DEAL) {
+		if (params.getRecordType() == CrmActivityAssociation.DEAL) {
 			taskPredicates.add(cb.equal(taskDeal.get(CrmDeal_.id), params.getRecordId()));
 		}
-		if (params.getRecordType() == CrmActivityRecordType.COMPANY) {
+		if (params.getRecordType() == CrmActivityAssociation.COMPANY) {
 			Join<CrmContact, CrmCompany> contactRecordCompany = taskContact.join(CrmContact_.company, JoinType.LEFT);
 			taskPredicates.add(cb.or(cb.equal(taskCompany.get(CrmCompany_.id), params.getRecordId()),
 					cb.equal(contactRecordCompany.get(CrmCompany_.id), params.getRecordId())));
@@ -157,13 +157,13 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		if (params.getActivityType() != null && params.getActivityType() != CrmActivityType.CALL) {
 			callPredicates.add(cb.disjunction());
 		}
-		if (params.getRecordType() == CrmActivityRecordType.CONTACT) {
+		if (params.getRecordType() == CrmActivityAssociation.CONTACT) {
 			callPredicates.add(cb.equal(callContact.get(CrmContact_.id), params.getRecordId()));
 		}
-		if (params.getRecordType() == CrmActivityRecordType.DEAL) {
+		if (params.getRecordType() == CrmActivityAssociation.DEAL) {
 			callPredicates.add(cb.equal(callDeal.get(CrmDeal_.id), params.getRecordId()));
 		}
-		if (params.getRecordType() == CrmActivityRecordType.COMPANY) {
+		if (params.getRecordType() == CrmActivityAssociation.COMPANY) {
 			Join<CrmContact, CrmCompany> contactRecordCompany = callContact.join(CrmContact_.company, JoinType.LEFT);
 			callPredicates.add(cb.or(cb.equal(callCompany.get(CrmCompany_.id), params.getRecordId()),
 					cb.equal(contactRecordCompany.get(CrmCompany_.id), params.getRecordId())));
@@ -215,23 +215,23 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		if (params.getActivityType() != null && params.getActivityType() != CrmActivityType.MEETING) {
 			meetingPredicates.add(cb.disjunction());
 		}
-		if (params.getRecordType() == CrmActivityRecordType.DEAL) {
+		if (params.getRecordType() == CrmActivityAssociation.DEAL) {
 			meetingPredicates.add(cb.equal(meetingDeal.get(CrmDeal_.id), params.getRecordId()));
 		}
-		if (params.getRecordType() == CrmActivityRecordType.CONTACT
-				|| params.getRecordType() == CrmActivityRecordType.COMPANY) {
+		if (params.getRecordType() == CrmActivityAssociation.CONTACT
+				|| params.getRecordType() == CrmActivityAssociation.COMPANY) {
 			JpaSubQuery<Long> recordContactMatch = meetingRows.subquery(Long.class);
 			Root<CrmActivityMeetingContact> link = recordContactMatch.from(CrmActivityMeetingContact.class);
 			Join<CrmActivityMeetingContact, CrmContact> contact = link.join(CrmActivityMeetingContact_.contact);
 			Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
 			Path<Long> meetingId = link.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId);
-			Path<Long> recordPath = params.getRecordType() == CrmActivityRecordType.CONTACT
+			Path<Long> recordPath = params.getRecordType() == CrmActivityAssociation.CONTACT
 					? contact.get(CrmContact_.id) : contactCompany.get(CrmCompany_.id);
 			recordContactMatch.select(meetingId)
 				.where(cb.equal(meetingId, meeting.get(CrmActivityMeeting_.id)),
 						cb.isFalse(contact.get(CrmContact_.isDeleted)), cb.equal(recordPath, params.getRecordId()));
 			meetingPredicates
-				.add(params.getRecordType() == CrmActivityRecordType.CONTACT ? cb.exists(recordContactMatch)
+				.add(params.getRecordType() == CrmActivityAssociation.CONTACT ? cb.exists(recordContactMatch)
 						: cb.or(cb.equal(meetingCompany.get(CrmCompany_.id), params.getRecordId()),
 								cb.exists(recordContactMatch)));
 		}
@@ -298,22 +298,22 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		if (params.getActivityType() != null && params.getActivityType() != CrmActivityType.EMAIL) {
 			emailPredicates.add(cb.disjunction());
 		}
-		if (params.getRecordType() == CrmActivityRecordType.DEAL) {
+		if (params.getRecordType() == CrmActivityAssociation.DEAL) {
 			emailPredicates.add(cb.equal(emailDeal.get(CrmDeal_.id), params.getRecordId()));
 		}
-		if (params.getRecordType() == CrmActivityRecordType.CONTACT
-				|| params.getRecordType() == CrmActivityRecordType.COMPANY) {
+		if (params.getRecordType() == CrmActivityAssociation.CONTACT
+				|| params.getRecordType() == CrmActivityAssociation.COMPANY) {
 			JpaSubQuery<Long> recordContactMatch = emailRows.subquery(Long.class);
 			Root<CrmActivityEmailContact> link = recordContactMatch.from(CrmActivityEmailContact.class);
 			Join<CrmActivityEmailContact, CrmContact> contact = link.join(CrmActivityEmailContact_.contact);
 			Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
 			Path<Long> emailId = link.get(CrmActivityEmailContact_.id).get(CrmActivityEmailContactId_.emailId);
-			Path<Long> recordPath = params.getRecordType() == CrmActivityRecordType.CONTACT
+			Path<Long> recordPath = params.getRecordType() == CrmActivityAssociation.CONTACT
 					? contact.get(CrmContact_.id) : contactCompany.get(CrmCompany_.id);
 			recordContactMatch.select(emailId)
 				.where(cb.equal(emailId, email.get(CrmActivityEmail_.id)),
 						cb.isFalse(contact.get(CrmContact_.isDeleted)), cb.equal(recordPath, params.getRecordId()));
-			emailPredicates.add(params.getRecordType() == CrmActivityRecordType.CONTACT ? cb.exists(recordContactMatch)
+			emailPredicates.add(params.getRecordType() == CrmActivityAssociation.CONTACT ? cb.exists(recordContactMatch)
 					: cb.or(cb.equal(emailCompany.get(CrmCompany_.id), params.getRecordId()),
 							cb.exists(recordContactMatch)));
 		}

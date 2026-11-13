@@ -1,6 +1,6 @@
 package com.skapp.community.crmplanner.payload.request;
 
-import com.skapp.community.crmplanner.type.CrmActivityRecordType;
+import com.skapp.community.crmplanner.type.CrmActivityAssociation;
 import com.skapp.community.crmplanner.type.CrmActivityType;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,7 +19,7 @@ public class CrmActivityFeedFilterDto {
 
 	private LocalDate toDate;
 
-	private CrmActivityRecordType recordType;
+	private CrmActivityAssociation recordType;
 
 	private Long recordId;
 
