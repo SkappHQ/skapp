@@ -1,11 +1,11 @@
 import { FormikProps } from "formik";
-import { FC, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { SearchableDropdownItem } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useGetDealLookup } from "~community/crm/api/DealApi";
+import { useGetDealLookup, useGetDealsByIds } from "~community/crm/api/DealApi";
 import SelectableSearchField from "~community/crm/components/molecules/SelectableSearchField/SelectableSearchField";
 import {
   DEFAULT_LOOKUP_PAGE_SIZE,
@@ -20,7 +20,7 @@ import {
   CrmLogMeetingFormValues
 } from "~community/crm/types/CrmCommonTypes";
 import { CrmDealFilterRequest } from "~community/crm/types/CrmTypes";
-import { mergeDeals } from "~community/crm/utils/dealUtil";
+import { getMissingDealIds, mergeDeals } from "~community/crm/utils/dealUtil";
 import { CrmScheduleMeetingFormValues } from "~enterprise/crm/types/ScheduleMeetingTypes";
 
 interface Props {
@@ -98,6 +98,20 @@ const ActivityDealField: FC<Props> = ({
       })),
     [lookupItems]
   );
+
+  const missingDealIds = useMemo(
+    () => (values.dealId ? getMissingDealIds([values.dealId], deals) : []),
+    [values.dealId, deals]
+  );
+  const { data: fetchedDeals } = useGetDealsByIds(
+    missingDealIds,
+    missingDealIds.length > 0
+  );
+  useEffect(() => {
+    if (fetchedDeals && fetchedDeals.length > 0) {
+      setDeals(mergeDeals(deals, fetchedDeals));
+    }
+  }, [fetchedDeals]);
 
   const selectedDeal = values.dealId ? deals[values.dealId] : null;
 
