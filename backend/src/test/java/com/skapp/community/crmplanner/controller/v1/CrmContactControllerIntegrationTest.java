@@ -7,6 +7,7 @@ import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.model.CrmCompany;
+import com.skapp.community.crmplanner.model.CrmActivityTask;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
@@ -14,12 +15,14 @@ import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactEditRequestDto;
+import com.skapp.community.crmplanner.repository.CrmActivityTaskDao;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
+import com.skapp.community.crmplanner.type.CrmActivityTaskPriority;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.crmplanner.type.CrmTaskPriority;
@@ -98,6 +101,8 @@ class CrmContactControllerIntegrationTest {
 	private final CrmDealStageDao crmDealStageDao;
 
 	private final CrmTaskDao crmTaskDao;
+
+	private final CrmActivityTaskDao crmActivityTaskDao;
 
 	private final CrmTaskTypeDao crmTaskTypeDao;
 
@@ -224,6 +229,28 @@ class CrmContactControllerIntegrationTest {
 		task.setDeal(crmDealDao.getReferenceById(dealId));
 		task.setOwner(employeeDao.getReferenceById(1L));
 		return crmTaskDao.save(task);
+	}
+
+	private CrmActivityTask savedActivityTask(Long contactId, boolean completed, Instant dueAt) {
+		CrmActivityTask task = new CrmActivityTask();
+		task.setName("Test Activity Task");
+		task.setPriority(CrmActivityTaskPriority.MEDIUM);
+		task.setIsCompleted(completed);
+		task.setDueAt(dueAt);
+		task.setContact(crmContactDao.getReferenceById(contactId));
+		task.setOwner(employeeDao.getReferenceById(1L));
+		return crmActivityTaskDao.save(task);
+	}
+
+	private CrmActivityTask savedDealActivityTask(Long dealId, boolean completed, Instant dueAt) {
+		CrmActivityTask task = new CrmActivityTask();
+		task.setName("Deal Activity Task");
+		task.setPriority(CrmActivityTaskPriority.MEDIUM);
+		task.setIsCompleted(completed);
+		task.setDueAt(dueAt);
+		task.setDeal(crmDealDao.getReferenceById(dealId));
+		task.setOwner(employeeDao.getReferenceById(1L));
+		return crmActivityTaskDao.save(task);
 	}
 
 	private CrmCompany savedCompany() {
@@ -1321,8 +1348,8 @@ class CrmContactControllerIntegrationTest {
 		savedDeal(contactId, companyId, wonStage, "400");
 		savedDeal(contactId, companyId, wonStage, "600");
 		savedDeal(contactId, companyId, lostStage, "999");
-		savedTask(contactId, false, Instant.now().plus(3, ChronoUnit.DAYS));
-		savedTask(contactId, false, Instant.now().minus(2, ChronoUnit.DAYS));
+		savedActivityTask(contactId, false, Instant.now().plus(3, ChronoUnit.DAYS));
+		savedActivityTask(contactId, false, Instant.now().minus(2, ChronoUnit.DAYS));
 
 		String content = performGetMetricsByIdRequest(contactId).andDo(print())
 			.andExpect(status().isOk())
@@ -1353,8 +1380,8 @@ class CrmContactControllerIntegrationTest {
 		CrmDealStage openStage = savedStage(CrmDealStageType.OPEN);
 		CrmDeal deal = savedDeal(contactId, companyId, openStage, "0");
 
-		savedDealTask(deal.getId(), false, Instant.now().plus(1, ChronoUnit.DAYS));
-		savedDealTask(deal.getId(), false, Instant.now().minus(1, ChronoUnit.DAYS));
+		savedDealActivityTask(deal.getId(), false, Instant.now().plus(1, ChronoUnit.DAYS));
+		savedDealActivityTask(deal.getId(), false, Instant.now().minus(1, ChronoUnit.DAYS));
 
 		performGetMetricsByIdRequest(contactId).andDo(print())
 			.andExpect(status().isOk())
@@ -1372,10 +1399,10 @@ class CrmContactControllerIntegrationTest {
 		CrmDealStage openStage = savedStage(CrmDealStageType.OPEN);
 		CrmDeal deal = savedDeal(contactId, companyId, openStage, "0");
 
-		savedTask(contactId, false, Instant.now().plus(1, ChronoUnit.DAYS));
-		savedTask(contactId, false, Instant.now().minus(1, ChronoUnit.DAYS));
-		savedDealTask(deal.getId(), false, Instant.now().plus(1, ChronoUnit.DAYS));
-		savedDealTask(deal.getId(), false, Instant.now().minus(1, ChronoUnit.DAYS));
+		savedActivityTask(contactId, false, Instant.now().plus(1, ChronoUnit.DAYS));
+		savedActivityTask(contactId, false, Instant.now().minus(1, ChronoUnit.DAYS));
+		savedDealActivityTask(deal.getId(), false, Instant.now().plus(1, ChronoUnit.DAYS));
+		savedDealActivityTask(deal.getId(), false, Instant.now().minus(1, ChronoUnit.DAYS));
 
 		String metrics = performGetMetricsByIdRequest(contactId).andExpect(status().isOk())
 			.andReturn()
@@ -1398,11 +1425,11 @@ class CrmContactControllerIntegrationTest {
 
 		CrmDealStage wonStage = savedStage(CrmDealStageType.WON);
 		savedDeal(contactId, companyId, wonStage, "400");
-		savedTask(contactId, false, Instant.now().plus(1, ChronoUnit.DAYS));
+		savedActivityTask(contactId, false, Instant.now().plus(1, ChronoUnit.DAYS));
 
 		savedDeal(otherContactId, companyId, wonStage, "999");
-		savedTask(otherContactId, false, Instant.now().plus(1, ChronoUnit.DAYS));
-		savedTask(otherContactId, false, Instant.now().minus(1, ChronoUnit.DAYS));
+		savedActivityTask(otherContactId, false, Instant.now().plus(1, ChronoUnit.DAYS));
+		savedActivityTask(otherContactId, false, Instant.now().minus(1, ChronoUnit.DAYS));
 
 		String content = performGetMetricsByIdRequest(contactId).andDo(print())
 			.andExpect(status().isOk())

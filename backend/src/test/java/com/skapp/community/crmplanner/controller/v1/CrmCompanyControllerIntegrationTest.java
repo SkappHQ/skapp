@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.controller.v1;
 
 import com.jayway.jsonpath.JsonPath;
 import com.skapp.community.crmplanner.model.CrmContact;
+import com.skapp.community.crmplanner.model.CrmActivityTask;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmIndustry;
 import com.skapp.community.crmplanner.model.CrmDealStage;
@@ -20,6 +21,7 @@ import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.service.CrmContactService;
 import com.skapp.community.crmplanner.service.CrmDealService;
+import com.skapp.community.crmplanner.repository.CrmActivityTaskDao;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
@@ -27,6 +29,7 @@ import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.repository.CrmIndustryDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
+import com.skapp.community.crmplanner.type.CrmActivityTaskPriority;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.crmplanner.type.CrmTaskPriority;
@@ -123,6 +126,8 @@ class CrmCompanyControllerIntegrationTest {
 	private final CrmContactDao crmContactDao;
 
 	private final CrmTaskDao crmTaskDao;
+
+	private final CrmActivityTaskDao crmActivityTaskDao;
 
 	private final CrmTaskTypeDao crmTaskTypeDao;
 
@@ -961,6 +966,16 @@ class CrmCompanyControllerIntegrationTest {
 		crmTaskDao.save(task);
 	}
 
+	private void createCompanyActivityTask(Long companyId, Instant dueAt) {
+		CrmActivityTask task = new CrmActivityTask();
+		task.setName("Metrics Activity Task");
+		task.setPriority(CrmActivityTaskPriority.MEDIUM);
+		task.setOwner(employeeDao.getReferenceById(1L));
+		task.setCompany(crmCompanyDao.getReferenceById(companyId));
+		task.setDueAt(dueAt);
+		crmActivityTaskDao.save(task);
+	}
+
 	// --- getCompanyMetricsById ---
 
 	@Test
@@ -972,8 +987,8 @@ class CrmCompanyControllerIntegrationTest {
 		CrmDealStage wonStage = createStage("Won Stage", CrmDealStageType.WON, 2);
 		createDeal("Open Deal", company, contact, openStage, "200", false);
 		createDeal("Won Deal", company, contact, wonStage, "400", false);
-		createCompanyTask(company.getId(), Instant.now().plus(5, ChronoUnit.DAYS));
-		createCompanyTask(company.getId(), Instant.now().minus(1, ChronoUnit.DAYS));
+		createCompanyActivityTask(company.getId(), Instant.now().plus(5, ChronoUnit.DAYS));
+		createCompanyActivityTask(company.getId(), Instant.now().minus(1, ChronoUnit.DAYS));
 
 		// Second company with its own deals and tasks - metrics must stay correlated to
 		// the
@@ -982,8 +997,8 @@ class CrmCompanyControllerIntegrationTest {
 		CrmContact otherContact = createMetricsContact(otherCompany, "metrics.other@example.com");
 		createDeal("Other Open Deal", otherCompany, otherContact, openStage, "999", false);
 		createDeal("Other Won Deal", otherCompany, otherContact, wonStage, "888", false);
-		createCompanyTask(otherCompany.getId(), Instant.now().plus(3, ChronoUnit.DAYS));
-		createCompanyTask(otherCompany.getId(), Instant.now().minus(2, ChronoUnit.DAYS));
+		createCompanyActivityTask(otherCompany.getId(), Instant.now().plus(3, ChronoUnit.DAYS));
+		createCompanyActivityTask(otherCompany.getId(), Instant.now().minus(2, ChronoUnit.DAYS));
 
 		String content = performRequest(
 				get(BASE_PATH + "/" + company.getId() + "/metrics").accept(MediaType.APPLICATION_JSON))
