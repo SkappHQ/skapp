@@ -150,6 +150,12 @@ export type CrmTaskRecord = Record<number, CrmTaskEntity>;
 export type CrmTaskTypeRecord = Record<number, CrmTaskTypeEntity>;
 export type CrmIndustryRecord = Record<number, CrmIndustryEntity>;
 
+export interface CrmActivityPrefill {
+  contactId: number | null;
+  dealId: number | null;
+  companyId: number | null;
+}
+
 export interface CrmLogEmailFormValues {
   fromAddress: string;
   date: string | null;

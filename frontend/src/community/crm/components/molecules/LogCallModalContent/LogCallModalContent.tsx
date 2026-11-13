@@ -17,7 +17,10 @@ import LogActivityModal from "~community/crm/components/molecules/LogActivityMod
 import LogCallModalForm from "~community/crm/components/molecules/LogCallModalForm/LogCallModalForm";
 import { CrmErrorMessageKeyEnum } from "~community/crm/enums/common";
 import { useDefaultCrmOwner } from "~community/crm/hooks/useDefaultCrmOwner";
-import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
+import {
+  CrmActivityPrefill,
+  CrmLogCallFormValues
+} from "~community/crm/types/CrmCommonTypes";
 import {
   getCallValidationSchema,
   parseCallDurationToMinutes
@@ -25,11 +28,17 @@ import {
 
 interface Props {
   title?: string;
+  prefill?: CrmActivityPrefill;
   typeField?: ReactNode;
   onClose: () => void;
 }
 
-const LogCallModalContent: FC<Props> = ({ title, typeField, onClose }) => {
+const LogCallModalContent: FC<Props> = ({
+  title,
+  typeField,
+  prefill,
+  onClose
+}) => {
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator(
     "crmAria",
@@ -49,13 +58,13 @@ const LogCallModalContent: FC<Props> = ({ title, typeField, onClose }) => {
       date: now.startOf("day").toUTC().toISO(),
       time: getTimeSlotStart(now).toFormat(TIME_FORMAT_24_HOUR),
       duration: "",
-      contactId: null,
+      contactId: prefill ? prefill.contactId : null,
       ownerId: defaultOwner ? defaultOwner.employeeId : null,
       comments: "",
-      dealId: null,
-      companyId: null
+      dealId: prefill ? prefill.dealId : null,
+      companyId: prefill ? prefill.companyId : null
     };
-  }, [defaultOwner]);
+  }, [defaultOwner, prefill]);
 
   const toPayload = (
     values: CrmLogCallFormValues
