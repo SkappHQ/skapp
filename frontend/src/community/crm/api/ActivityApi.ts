@@ -197,16 +197,11 @@ const updateTaskCompletion = async ({
 
 export const useUpdateTaskCompletion = (
   onError: (payload: CrmTaskCompletionPayload) => void
-): UseMutationResult<void, ErrorResponse, CrmTaskCompletionPayload> => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
+): UseMutationResult<void, ErrorResponse, CrmTaskCompletionPayload> =>
+  useMutation({
     mutationFn: updateTaskCompletion,
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL }),
     onError: (_error, payload) => onError(payload)
   });
-};
 
 const createCall = async (
   payload: ActivityCallCreatePayload
