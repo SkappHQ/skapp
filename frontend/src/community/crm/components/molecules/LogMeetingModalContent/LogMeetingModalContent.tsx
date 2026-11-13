@@ -164,9 +164,7 @@ const LogMeetingModalContent: FC<Props> = ({ title, typeField, onClose }) => {
   return (
     <LogActivityModal
       title={
-        title
-          ? title
-          : translateText(["activities", "logMeeting", "modal", "title"])
+        title || translateText(["activities", "logMeeting", "modal", "title"])
       }
       isDirty={dirty}
       isPending={isPending}

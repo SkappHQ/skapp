@@ -156,9 +156,7 @@ const AddActivityTaskModalContent: FC<Props> = ({
   return (
     <LogActivityModal
       title={
-        title
-          ? title
-          : translateText(["activities", "addTask", "modal", "title"])
+        title || translateText(["activities", "addTask", "modal", "title"])
       }
       isDirty={dirty}
       isPending={isPending}
