@@ -22,8 +22,6 @@ import com.skapp.community.crmplanner.model.CrmDealStage_;
 import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.model.CrmActivityTask;
 import com.skapp.community.crmplanner.model.CrmActivityTask_;
-import com.skapp.community.crmplanner.model.CrmTask;
-import com.skapp.community.crmplanner.model.CrmTask_;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
 import com.skapp.community.crmplanner.type.CrmCompanyMetrics;
 import com.skapp.community.crmplanner.repository.CrmCompanyRepository;
@@ -62,19 +60,20 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 		Root<CrmCompany> company = query.from(CrmCompany.class);
 
 		Subquery<Long> taskSubquery = query.subquery(Long.class);
-		Root<CrmTask> subTask = taskSubquery.from(CrmTask.class);
-		taskSubquery.select(cb.count(subTask.get(CrmTask_.id)))
-			.where(cb.equal(subTask.get(CrmTask_.company), company), cb.isFalse(subTask.get(CrmTask_.isDeleted)),
-					cb.isFalse(subTask.get(CrmTask_.isCompleted)));
+		Root<CrmActivityTask> subTask = taskSubquery.from(CrmActivityTask.class);
+		taskSubquery.select(cb.count(subTask.get(CrmActivityTask_.id)))
+			.where(cb.equal(subTask.get(CrmActivityTask_.company), company),
+					cb.isFalse(subTask.get(CrmActivityTask_.isDeleted)),
+					cb.isFalse(subTask.get(CrmActivityTask_.isCompleted)));
 
 		Subquery<Long> overdueSubquery = query.subquery(Long.class);
-		Root<CrmTask> subOverdueTask = overdueSubquery.from(CrmTask.class);
-		overdueSubquery.select(cb.count(subOverdueTask.get(CrmTask_.id)))
-			.where(cb.equal(subOverdueTask.get(CrmTask_.company), company),
-					cb.isFalse(subOverdueTask.get(CrmTask_.isDeleted)),
-					cb.isFalse(subOverdueTask.get(CrmTask_.isCompleted)),
-					cb.isNotNull(subOverdueTask.get(CrmTask_.dueAt)),
-					cb.lessThan(subOverdueTask.get(CrmTask_.dueAt), cb.literal(overdueBefore)));
+		Root<CrmActivityTask> subOverdueTask = overdueSubquery.from(CrmActivityTask.class);
+		overdueSubquery.select(cb.count(subOverdueTask.get(CrmActivityTask_.id)))
+			.where(cb.equal(subOverdueTask.get(CrmActivityTask_.company), company),
+					cb.isFalse(subOverdueTask.get(CrmActivityTask_.isDeleted)),
+					cb.isFalse(subOverdueTask.get(CrmActivityTask_.isCompleted)),
+					cb.isNotNull(subOverdueTask.get(CrmActivityTask_.dueAt)),
+					cb.lessThan(subOverdueTask.get(CrmActivityTask_.dueAt), cb.literal(overdueBefore)));
 
 		Subquery<BigDecimal> openValueSubquery = query.subquery(BigDecimal.class);
 		Root<CrmDeal> openDeal = openValueSubquery.from(CrmDeal.class);

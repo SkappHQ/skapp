@@ -12,8 +12,6 @@ import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.model.CrmDealStage_;
 import com.skapp.community.crmplanner.model.CrmActivityTask;
 import com.skapp.community.crmplanner.model.CrmActivityTask_;
-import com.skapp.community.crmplanner.model.CrmTask;
-import com.skapp.community.crmplanner.model.CrmTask_;
 import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardContactResponseDto;
@@ -80,18 +78,20 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 					cb.isFalse(countDeal.get(CrmDeal_.isDeleted)));
 
 		Subquery<Long> openTaskSub = query.subquery(Long.class);
-		Root<CrmTask> openTask = openTaskSub.from(CrmTask.class);
-		openTaskSub.select(cb.count(openTask.get(CrmTask_.id)))
-			.where(cb.equal(openTask.get(CrmTask_.contact), contact), cb.isFalse(openTask.get(CrmTask_.isCompleted)),
-					cb.isFalse(openTask.get(CrmTask_.isDeleted)));
+		Root<CrmActivityTask> openTask = openTaskSub.from(CrmActivityTask.class);
+		openTaskSub.select(cb.count(openTask.get(CrmActivityTask_.id)))
+			.where(cb.equal(openTask.get(CrmActivityTask_.contact), contact),
+					cb.isFalse(openTask.get(CrmActivityTask_.isCompleted)),
+					cb.isFalse(openTask.get(CrmActivityTask_.isDeleted)));
 
 		Subquery<Long> overdueTaskSub = query.subquery(Long.class);
-		Root<CrmTask> overdueTask = overdueTaskSub.from(CrmTask.class);
-		overdueTaskSub.select(cb.count(overdueTask.get(CrmTask_.id)))
-			.where(cb.equal(overdueTask.get(CrmTask_.contact), contact),
-					cb.isFalse(overdueTask.get(CrmTask_.isCompleted)), cb.isFalse(overdueTask.get(CrmTask_.isDeleted)),
-					cb.isNotNull(overdueTask.get(CrmTask_.dueAt)),
-					cb.lessThan(overdueTask.get(CrmTask_.dueAt), cb.literal(overdueBefore)));
+		Root<CrmActivityTask> overdueTask = overdueTaskSub.from(CrmActivityTask.class);
+		overdueTaskSub.select(cb.count(overdueTask.get(CrmActivityTask_.id)))
+			.where(cb.equal(overdueTask.get(CrmActivityTask_.contact), contact),
+					cb.isFalse(overdueTask.get(CrmActivityTask_.isCompleted)),
+					cb.isFalse(overdueTask.get(CrmActivityTask_.isDeleted)),
+					cb.isNotNull(overdueTask.get(CrmActivityTask_.dueAt)),
+					cb.lessThan(overdueTask.get(CrmActivityTask_.dueAt), cb.literal(overdueBefore)));
 
 		Subquery<BigDecimal> pipelineRevenueSub = query.subquery(BigDecimal.class);
 		Root<CrmDeal> pipelineDeal = pipelineRevenueSub.from(CrmDeal.class);

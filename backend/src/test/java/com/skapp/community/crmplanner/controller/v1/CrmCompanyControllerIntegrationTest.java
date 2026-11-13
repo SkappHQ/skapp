@@ -856,8 +856,8 @@ class CrmCompanyControllerIntegrationTest {
 	void getCompanies_WithTasks_ReturnsOpenAndOverdueCounts() throws Exception {
 		CrmCompany company = createMetricsCompany("TaskMetricsCoUnique");
 
-		createCompanyTask(company.getId(), Instant.now().plus(5, ChronoUnit.DAYS));
-		createCompanyTask(company.getId(), Instant.now().minus(1, ChronoUnit.DAYS));
+		createCompanyActivityTask(company.getId(), Instant.now().plus(5, ChronoUnit.DAYS));
+		createCompanyActivityTask(company.getId(), Instant.now().minus(1, ChronoUnit.DAYS));
 
 		performGetCompaniesRequest("TaskMetricsCoUnique").andDo(print())
 			.andExpect(status().isOk())

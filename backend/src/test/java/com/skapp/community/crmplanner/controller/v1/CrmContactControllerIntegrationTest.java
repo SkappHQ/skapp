@@ -1021,8 +1021,8 @@ class CrmContactControllerIntegrationTest {
 		savedDeal(contactId, companyId, savedStage(CrmDealStageType.WON), "400");
 		savedDeal(contactId, companyId, savedStage(CrmDealStageType.WON), "600");
 		savedDeal(contactId, companyId, savedStage(CrmDealStageType.LOST), "999");
-		savedTask(contactId, false, Instant.now().plus(3, ChronoUnit.DAYS));
-		savedTask(contactId, false, Instant.now().minus(2, ChronoUnit.DAYS));
+		savedActivityTask(contactId, false, Instant.now().plus(3, ChronoUnit.DAYS));
+		savedActivityTask(contactId, false, Instant.now().minus(2, ChronoUnit.DAYS));
 
 		String content = performGetContactsRequest("AggMetricsContactUnique").andDo(print())
 			.andExpect(status().isOk())
