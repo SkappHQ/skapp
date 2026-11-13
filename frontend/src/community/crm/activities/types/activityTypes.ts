@@ -75,16 +75,17 @@ export interface ActivityFeedFilters {
   ownerId?: number;
   fromDate?: string;
   toDate?: string;
-  taskStatus?: ActivityTaskStatus;
-  priority?: CrmPriorityEnum;
   page?: number;
   size?: number;
 }
 
-export type ActivityFilterValues = Pick<
-  ActivityFeedFilters,
-  "ownerId" | "fromDate" | "toDate" | "taskStatus" | "priority"
->;
+export interface ActivityFilterValues {
+  ownerId?: number;
+  fromDate?: string;
+  toDate?: string;
+  taskStatus?: ActivityTaskStatus;
+  priority?: CrmPriorityEnum;
+}
 
 export interface ActivityDateRange {
   fromDate?: string;

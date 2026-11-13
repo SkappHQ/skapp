@@ -1,21 +1,21 @@
 import { Chip } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
+import { ReactElement } from "react";
 
-export interface ActivityChipFilterFieldProps {
+export interface ActivityChipFilterFieldProps<T extends string> {
   id: string;
   label: string;
-  options: { value: string; label: string }[];
-  selectedValue?: string;
-  onChange: (value: string | null) => void;
+  options: { value: T; label: string }[];
+  selectedValue?: T;
+  onChange: (value: T | null) => void;
 }
 
-const ActivityChipFilterField: FC<ActivityChipFilterFieldProps> = ({
+const ActivityChipFilterField = <T extends string>({
   id,
   label,
   options,
   selectedValue,
   onChange
-}) => (
+}: ActivityChipFilterFieldProps<T>): ReactElement => (
   <fieldset
     id={id}
     aria-labelledby={`${id}-label`}

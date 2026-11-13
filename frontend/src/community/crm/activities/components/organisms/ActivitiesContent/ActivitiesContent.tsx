@@ -111,7 +111,12 @@ const ActivitiesContent: FC = () => {
   const teamMembers = useMemo(() => Object.values(owners), [owners]);
 
   const feedFilters: ActivityFeedFilters = useMemo(
-    () => ({ ...(searchTerm ? { search: searchTerm } : {}), ...filters }),
+    () => ({
+      ...(searchTerm ? { search: searchTerm } : {}),
+      ...(filters.ownerId ? { ownerId: filters.ownerId } : {}),
+      ...(filters.fromDate ? { fromDate: filters.fromDate } : {}),
+      ...(filters.toDate ? { toDate: filters.toDate } : {})
+    }),
     [searchTerm, filters]
   );
 

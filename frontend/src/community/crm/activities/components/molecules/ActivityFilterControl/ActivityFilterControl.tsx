@@ -3,16 +3,17 @@ import { FC, MouseEvent, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import ActivityFilterPopover from "~community/crm/activities/components/molecules/ActivityFilterPopover/ActivityFilterPopover";
-import { ActivityFeedFilters } from "~community/crm/activities/types/activityTypes";
+import { ActivityFilterValues } from "~community/crm/activities/types/activityTypes";
 import { CrmOwnerEntity } from "~community/crm/types/CrmCommonTypes";
 
 interface ActivityFilterControlProps {
   id: string;
-  filters: ActivityFeedFilters;
-  onApplyFilters: (filters: ActivityFeedFilters) => void;
+  filters: ActivityFilterValues;
+  onApplyFilters: (filters: ActivityFilterValues) => void;
   teamMembers: CrmOwnerEntity[];
   isTeamMembersError: boolean;
   isTaskFilterShown: boolean;
+  isDateRangeShown: boolean;
   isTeamMemberShown: boolean;
   timeZone?: string;
 }
@@ -24,6 +25,7 @@ const ActivityFilterControl: FC<ActivityFilterControlProps> = ({
   teamMembers,
   isTeamMembersError,
   isTaskFilterShown,
+  isDateRangeShown,
   isTeamMemberShown,
   timeZone
 }) => {
@@ -88,6 +90,7 @@ const ActivityFilterControl: FC<ActivityFilterControlProps> = ({
           teamMembers={teamMembers}
           isTeamMembersError={isTeamMembersError}
           isTaskFilterShown={isTaskFilterShown}
+          isDateRangeShown={isDateRangeShown}
           isTeamMemberShown={isTeamMemberShown}
           timeZone={timeZone}
           onApply={onApplyFilters}

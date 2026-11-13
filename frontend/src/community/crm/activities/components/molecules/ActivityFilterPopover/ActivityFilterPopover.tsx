@@ -7,7 +7,7 @@ import ActivityDateRangeField from "~community/crm/activities/components/molecul
 import ActivityTeamMemberField from "~community/crm/activities/components/molecules/ActivityTeamMemberField/ActivityTeamMemberField";
 import {
   ActivityDateRange,
-  ActivityFeedFilters,
+  ActivityFilterValues,
   ActivityTaskStatus
 } from "~community/crm/activities/types/activityTypes";
 import {
@@ -20,13 +20,14 @@ import { CrmOwnerEntity } from "~community/crm/types/CrmCommonTypes";
 
 export interface ActivityFilterPopoverProps {
   id: string;
-  filters: ActivityFeedFilters;
+  filters: ActivityFilterValues;
   teamMembers: CrmOwnerEntity[];
   isTeamMembersError: boolean;
   isTaskFilterShown: boolean;
+  isDateRangeShown: boolean;
   isTeamMemberShown: boolean;
   timeZone?: string;
-  onApply: (filters: ActivityFeedFilters) => void;
+  onApply: (filters: ActivityFilterValues) => void;
   onClose: () => void;
 }
 
@@ -36,6 +37,7 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
   teamMembers,
   isTeamMembersError,
   isTaskFilterShown,
+  isDateRangeShown,
   isTeamMemberShown,
   timeZone,
   onApply,
@@ -44,8 +46,15 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
 
+  const TASK_STATUS_LABEL_KEYS: Record<ActivityTaskStatus, string> = {
+    [ActivityTaskStatus.OVERDUE]: "overdue",
+    [ActivityTaskStatus.TODAY]: "today",
+    [ActivityTaskStatus.UPCOMING]: "upcoming",
+    [ActivityTaskStatus.COMPLETED]: "completed"
+  };
+
   const [selectedFilters, setSelectedFilters] =
-    useState<ActivityFeedFilters>(filters);
+    useState<ActivityFilterValues>(filters);
 
   const isRangeValid = validateDateRange(selectedFilters);
   const isChanged = !areFilterValuesEqual(selectedFilters, filters);
@@ -66,8 +75,8 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
   };
 
   const updateFilters = (
-    clearedKeys: (keyof ActivityFeedFilters)[],
-    changes: ActivityFeedFilters
+    clearedKeys: (keyof ActivityFilterValues)[],
+    changes: ActivityFilterValues
   ): void => {
     setSelectedFilters((previous) => {
       const next = { ...previous };
@@ -86,18 +95,14 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
     updateFilters(["ownerId"], ownerId ? { ownerId } : {});
   };
 
-  const handleTaskStatusChange = (taskStatus: string | null): void => {
-    updateFilters(
-      ["taskStatus"],
-      taskStatus ? { taskStatus: taskStatus as ActivityTaskStatus } : {}
-    );
+  const handleTaskStatusChange = (
+    taskStatus: ActivityTaskStatus | null
+  ): void => {
+    updateFilters(["taskStatus"], taskStatus ? { taskStatus } : {});
   };
 
-  const handlePriorityChange = (priority: string | null): void => {
-    updateFilters(
-      ["priority"],
-      priority ? { priority: priority as CrmPriorityEnum } : {}
-    );
+  const handlePriorityChange = (priority: CrmPriorityEnum | null): void => {
+    updateFilters(["priority"], priority ? { priority } : {});
   };
 
   return (
@@ -143,7 +148,7 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
                   "filters",
                   "taskStatus",
                   "options",
-                  status.toLowerCase()
+                  TASK_STATUS_LABEL_KEYS[status]
                 ])
               }))}
               selectedValue={selectedFilters.taskStatus}
@@ -169,12 +174,14 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
           </>
         )}
 
-        <ActivityDateRangeField
-          id={`${id}-date-range`}
-          value={selectedFilters}
-          timeZone={timeZone}
-          onChange={handleDateRangeChange}
-        />
+        {isDateRangeShown && (
+          <ActivityDateRangeField
+            id={`${id}-date-range`}
+            value={selectedFilters}
+            timeZone={timeZone}
+            onChange={handleDateRangeChange}
+          />
+        )}
 
         {isTeamMemberShown && (
           <ActivityTeamMemberField

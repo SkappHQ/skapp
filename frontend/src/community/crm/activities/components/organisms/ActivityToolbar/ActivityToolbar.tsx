@@ -5,7 +5,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import ActivityFilterControl from "~community/crm/activities/components/molecules/ActivityFilterControl/ActivityFilterControl";
 import ActivitySearchField from "~community/crm/activities/components/molecules/ActivitySearchField/ActivitySearchField";
 import {
-  ActivityFeedFilters,
+  ActivityFilterValues,
   ActivityTab
 } from "~community/crm/activities/types/activityTypes";
 import { CrmOwnerEntity } from "~community/crm/types/CrmCommonTypes";
@@ -19,8 +19,8 @@ export interface ActivityToolbarProps {
   resultCount: number;
   isResultCountReady: boolean;
   isManager: boolean;
-  filters: ActivityFeedFilters;
-  onApplyFilters: (filters: ActivityFeedFilters) => void;
+  filters: ActivityFilterValues;
+  onApplyFilters: (filters: ActivityFilterValues) => void;
   teamMembers: CrmOwnerEntity[];
   isTeamMembersError: boolean;
   timeZone?: string;
@@ -82,6 +82,7 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
               teamMembers={teamMembers}
               isTeamMembersError={isTeamMembersError}
               isTaskFilterShown={activeTab === ActivityTab.TASKS}
+              isDateRangeShown={isManager}
               isTeamMemberShown={isManager}
               timeZone={timeZone}
             />
