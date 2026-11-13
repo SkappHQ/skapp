@@ -1,21 +1,24 @@
 import { Chip } from "@rootcodelabs/skapp-ui";
-import { ReactElement } from "react";
+import { FC } from "react";
 
-export interface ActivityChipFilterFieldProps<T extends string> {
+import { ActivityTaskStatus } from "~community/crm/activities/types/activityTypes";
+import { CrmPriorityEnum } from "~community/crm/enums/common";
+
+export interface ActivityChipFilterFieldProps {
   id: string;
   label: string;
-  options: { value: T; label: string }[];
-  selectedValue?: T;
-  onChange: (value: T | null) => void;
+  options: { value: ActivityTaskStatus | CrmPriorityEnum; label: string }[];
+  selectedValue?: ActivityTaskStatus | CrmPriorityEnum;
+  onChange: (value: ActivityTaskStatus | CrmPriorityEnum | null) => void;
 }
 
-const ActivityChipFilterField = <T extends string>({
+const ActivityChipFilterField: FC<ActivityChipFilterFieldProps> = ({
   id,
   label,
   options,
   selectedValue,
   onChange
-}: ActivityChipFilterFieldProps<T>): ReactElement => (
+}) => (
   <fieldset
     id={id}
     aria-labelledby={`${id}-label`}

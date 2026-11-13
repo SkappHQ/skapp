@@ -96,13 +96,21 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
   };
 
   const handleTaskStatusChange = (
-    taskStatus: ActivityTaskStatus | null
+    value: ActivityTaskStatus | CrmPriorityEnum | null
   ): void => {
-    updateFilters(["taskStatus"], taskStatus ? { taskStatus } : {});
+    updateFilters(
+      ["taskStatus"],
+      value ? { taskStatus: value as ActivityTaskStatus } : {}
+    );
   };
 
-  const handlePriorityChange = (priority: CrmPriorityEnum | null): void => {
-    updateFilters(["priority"], priority ? { priority } : {});
+  const handlePriorityChange = (
+    value: ActivityTaskStatus | CrmPriorityEnum | null
+  ): void => {
+    updateFilters(
+      ["priority"],
+      value ? { priority: value as CrmPriorityEnum } : {}
+    );
   };
 
   return (
