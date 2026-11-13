@@ -41,7 +41,7 @@ import {
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 const fetchActivityFeed = async (
-  params: ActivityFeedFilters
+  params: ActivityFeedFilters | RecordActivityFilters
 ): Promise<ActivityFeedResponse> => {
   const response = await authFetch.get(crmActivityEndpoints.GET_ACTIVITY_FEED, {
     params
@@ -66,22 +66,13 @@ export const useGetActivityFeed = (
     refetchOnWindowFocus: false
   });
 
-const fetchRecordActivities = async (
-  params: RecordActivityFilters
-): Promise<ActivityFeedResponse> => {
-  const response = await authFetch.get(crmActivityEndpoints.GET_ACTIVITY_FEED, {
-    params
-  });
-  return response?.data?.results?.[0];
-};
-
 export const useGetRecordActivities = (
   params: RecordActivityFilters
 ): UseInfiniteQueryResult<InfiniteData<ActivityFeedResponse>, AxiosError> =>
   useInfiniteQuery({
     queryKey: crmActivityQueryKeys.RECORD(params),
     queryFn: ({ pageParam }) =>
-      fetchRecordActivities({ ...params, page: pageParam }),
+      fetchActivityFeed({ ...params, page: pageParam }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) =>
       lastPage && lastPage.currentPage < lastPage.totalPages - 1

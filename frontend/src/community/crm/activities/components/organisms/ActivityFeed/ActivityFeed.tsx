@@ -115,9 +115,7 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
           role="alert"
           className="flex items-center justify-center p-6 rounded-lg bg-secondary-background body2 text-center"
         >
-          {errorMessage
-            ? errorMessage
-            : translateText(["activities", "feed", "loadError"])}
+          {errorMessage || translateText(["activities", "feed", "loadError"])}
         </div>
       );
     }
