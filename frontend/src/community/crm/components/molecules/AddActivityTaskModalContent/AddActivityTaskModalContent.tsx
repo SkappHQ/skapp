@@ -14,18 +14,14 @@ import {
   CrmPriorityEnum
 } from "~community/crm/enums/common";
 import { useDefaultCrmOwner } from "~community/crm/hooks/useDefaultCrmOwner";
-import {
-  CrmActivityPrefill,
-  CrmAddTaskFormValues
-} from "~community/crm/types/CrmCommonTypes";
+import { CrmAddTaskFormValues } from "~community/crm/types/CrmCommonTypes";
 import { getActivityTaskValidationSchema } from "~community/crm/utils/activityTaskValidations";
 
 interface Props {
-  prefill?: CrmActivityPrefill;
   onClose: () => void;
 }
 
-const AddActivityTaskModalContent: FC<Props> = ({ prefill, onClose }) => {
+const AddActivityTaskModalContent: FC<Props> = ({ onClose }) => {
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator(
     "crmAria",
@@ -43,12 +39,12 @@ const AddActivityTaskModalContent: FC<Props> = ({ prefill, onClose }) => {
       priority: CrmPriorityEnum.MEDIUM,
       dueAt: null,
       ownerId: defaultOwner ? defaultOwner.employeeId : null,
-      contactId: prefill ? prefill.contactId : null,
-      dealId: prefill ? prefill.dealId : null,
-      companyId: prefill ? prefill.companyId : null,
+      contactId: null,
+      dealId: null,
+      companyId: null,
       notes: ""
     }),
-    [defaultOwner, prefill]
+    [defaultOwner]
   );
 
   const toPayload = (

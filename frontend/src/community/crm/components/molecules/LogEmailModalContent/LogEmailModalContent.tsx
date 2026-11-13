@@ -16,18 +16,14 @@ import { useCreateEmail } from "~community/crm/api/ActivityApi";
 import LogActivityModal from "~community/crm/components/molecules/LogActivityModal/LogActivityModal";
 import LogEmailModalForm from "~community/crm/components/molecules/LogEmailModalForm/LogEmailModalForm";
 import { CrmErrorMessageKeyEnum } from "~community/crm/enums/common";
-import {
-  CrmActivityPrefill,
-  CrmLogEmailFormValues
-} from "~community/crm/types/CrmCommonTypes";
+import { CrmLogEmailFormValues } from "~community/crm/types/CrmCommonTypes";
 import { getEmailValidationSchema } from "~community/crm/utils/emailValidations";
 
 interface Props {
-  prefill?: CrmActivityPrefill;
   onClose: () => void;
 }
 
-const LogEmailModalContent: FC<Props> = ({ prefill, onClose }) => {
+const LogEmailModalContent: FC<Props> = ({ onClose }) => {
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator(
     "crmAria",
@@ -44,15 +40,15 @@ const LogEmailModalContent: FC<Props> = ({ prefill, onClose }) => {
       fromAddress: "",
       date: now.startOf("day").toUTC().toISO(),
       time: getTimeSlotStart(now).toFormat(TIME_FORMAT_24_HOUR),
-      toContactIds: prefill && prefill.contactId ? [prefill.contactId] : [],
+      toContactIds: [],
       ccContactIds: [],
       bccContactIds: [],
       subject: "",
-      dealId: prefill ? prefill.dealId : null,
-      companyId: prefill ? prefill.companyId : null,
+      dealId: null,
+      companyId: null,
       description: ""
     };
-  }, [prefill]);
+  }, []);
 
   const toPayload = (
     values: CrmLogEmailFormValues
