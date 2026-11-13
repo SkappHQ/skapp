@@ -1082,6 +1082,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 				leaveRequest.getEndDate(), isSingleDay);
 
 		if (leaveRequest.getStatus() == LeaveRequestStatus.APPROVED) {
+			notifyAutoApprovedLeaveRequest(leaveRequest, employeeManagers, isSingleDay);
 			return;
 		}
 
@@ -1092,6 +1093,32 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		leaveNotificationService.sendReceivedLeaveRequestManagerNotification(employeeManagers, employee.getFirstName(),
 				employee.getLastName(), leaveRequest.getId(), leaveRequest.getLeaveState().toString(), leaveTypeName,
 				leaveRequest.getStartDate(), leaveRequest.getEndDate(), isSingleDay);
+	}
+
+	private void notifyAutoApprovedLeaveRequest(PolicyLeaveRequest leaveRequest, List<EmployeeManager> employeeManagers,
+			boolean isSingleDay) {
+		Employee employee = leaveRequest.getEmployee();
+
+		LeaveEmailDynamicFields employeeFields = leaveRequestEmailFields(leaveRequest);
+		employeeFields.setEmployeeOrManagerName(fullName(employee));
+		EmailBodyTemplates employeeTemplate = isSingleDay
+				? EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_AUTO_APPROVED_SINGLE_DAY_LEAVE
+				: EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_AUTO_APPROVED_MULTI_DAY_LEAVE;
+
+		emailService.sendEmail(employeeTemplate, employeeFields, employee.getUser().getEmail());
+		notificationService.createNotification(employee, leaveRequest.getId().toString(),
+				NotificationType.LEAVE_REQUEST, employeeTemplate, employeeFields, NotificationCategory.LEAVE);
+
+		EmailBodyTemplates supervisorTemplate = isSingleDay
+				? EmailBodyTemplates.LEAVE_MODULE_MANAGER_AUTO_APPROVED_SINGLE_DAY_LEAVE
+				: EmailBodyTemplates.LEAVE_MODULE_MANAGER_AUTO_APPROVED_MULTI_DAY_LEAVE;
+
+		notifySupervisors(employeeManagers, leaveRequest, () -> {
+			LeaveEmailDynamicFields supervisorFields = leaveRequestEmailFields(leaveRequest);
+			supervisorFields.setEmployeeName(fullName(employee));
+			supervisorFields.setEmployeesName(fullName(employee));
+			return supervisorFields;
+		}, supervisorTemplate);
 	}
 
 	private void notifyReviewedLeaveRequest(PolicyLeaveRequest leaveRequest) {
