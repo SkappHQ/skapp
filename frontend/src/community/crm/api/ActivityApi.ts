@@ -67,12 +67,14 @@ export const useGetActivityFeed = (
   });
 
 export const useGetRecordActivities = (
-  params: RecordActivityFilters
+  params: RecordActivityFilters,
+  enabled: boolean
 ): UseInfiniteQueryResult<InfiniteData<ActivityFeedResponse>, AxiosError> =>
   useInfiniteQuery({
     queryKey: crmActivityQueryKeys.RECORD(params),
     queryFn: ({ pageParam }) =>
       fetchActivityFeed({ ...params, page: pageParam }),
+    enabled,
     initialPageParam: 0,
     getNextPageParam: (lastPage) =>
       lastPage && lastPage.currentPage < lastPage.totalPages - 1

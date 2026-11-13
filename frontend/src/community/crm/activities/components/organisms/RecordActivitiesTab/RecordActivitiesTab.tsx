@@ -68,7 +68,7 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage
-  } = useGetRecordActivities(filters);
+  } = useGetRecordActivities(filters, recordId > 0);
 
   const pages = useMemo(() => (data ? data.pages : []), [data]);
 
@@ -101,6 +101,12 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
         : translateText(["activities", "tabs", tab.toLowerCase()])
   }));
 
+  const handleTypeChange = (value: string): void => {
+    const selectedOption = typeOptions.find((option) => option.value === value);
+
+    if (selectedOption) onTabChange(selectedOption.value);
+  };
+
   const resultCount = data ? data.pages[0].totalItems : 0;
 
   return (
@@ -124,7 +130,7 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
           id={`${id}-type`}
           options={typeOptions}
           value={activeTab}
-          onChange={(value) => onTabChange(value as ActivityTab)}
+          onChange={handleTypeChange}
           variant="secondary"
           size="sm"
           width="9rem"
