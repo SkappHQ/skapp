@@ -31,7 +31,10 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 @RequiredArgsConstructor
@@ -162,6 +165,36 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 			.where(cb.equal(task.get(CrmActivityTask_.id), id), cb.isFalse(task.get(CrmActivityTask_.isDeleted)));
 
 		return entityManager.createQuery(query).getResultStream().findFirst().orElse(null);
+	}
+
+	@Override
+	public Map<Long, Long> countTasksByDealIds(List<Long> dealIds, Long ownerId) {
+		if (dealIds == null || dealIds.isEmpty()) {
+			return Collections.emptyMap();
+		}
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Tuple> query = cb.createTupleQuery();
+		Root<CrmActivityTask> task = query.from(CrmActivityTask.class);
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(task.get(CrmActivityTask_.deal).get(CrmDeal_.id).in(dealIds));
+		predicates.add(cb.isFalse(task.get(CrmActivityTask_.isDeleted)));
+		predicates.add(cb.isFalse(task.get(CrmActivityTask_.isCompleted)));
+
+		if (ownerId != null) {
+			predicates.add(cb.equal(task.get(CrmActivityTask_.owner).get(Employee_.employeeId), ownerId));
+		}
+
+		query.select(
+				cb.tuple(task.get(CrmActivityTask_.deal).get(CrmDeal_.id), cb.count(task.get(CrmActivityTask_.id))));
+		query.where(predicates.toArray(new Predicate[0]));
+		query.groupBy(task.get(CrmActivityTask_.deal).get(CrmDeal_.id));
+
+		Map<Long, Long> counts = new HashMap<>();
+		entityManager.createQuery(query)
+			.getResultList()
+			.forEach(t -> counts.put(t.get(0, Long.class), t.get(1, Long.class)));
+		return counts;
 	}
 
 }
