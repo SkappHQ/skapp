@@ -15,7 +15,6 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import RecordActivitiesTab from "~community/crm/activities/components/organisms/RecordActivitiesTab/RecordActivitiesTab";
-import { ActivityRecordType } from "~community/crm/activities/types/activityTypes";
 import {
   useGetContactById,
   useGetContactMetrics
@@ -28,7 +27,10 @@ import SidePanelMetricCards from "~community/crm/components/molecules/SidePanelM
 import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
 import SidePanelHeaderSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
 import { DEAL_PAGE_SIZE } from "~community/crm/constants/commonConstants";
-import { CrmSidePanelTabEnum } from "~community/crm/enums/common";
+import {
+  CrmActivityAssociationEnum,
+  CrmSidePanelTabEnum
+} from "~community/crm/enums/common";
 import { useRecordActivityTab } from "~community/crm/hooks/useRecordActivityTab";
 import { useCrmStore } from "~community/crm/store/store";
 import {
@@ -319,7 +321,7 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
               <RecordActivitiesTab
                 key={contactId}
                 id="contact-activities"
-                recordType={ActivityRecordType.CONTACT}
+                recordType={CrmActivityAssociationEnum.CONTACT}
                 recordId={contactId}
                 activeTab={activityTab}
                 onTabChange={setActivityTab}

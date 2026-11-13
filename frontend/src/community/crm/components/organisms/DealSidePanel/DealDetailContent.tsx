@@ -5,8 +5,8 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import RecordActivitiesTab from "~community/crm/activities/components/organisms/RecordActivitiesTab/RecordActivitiesTab";
-import { ActivityRecordType } from "~community/crm/activities/types/activityTypes";
 import { useEditDeal, useGetDealById } from "~community/crm/api/DealApi";
+import { CrmActivityAssociationEnum } from "~community/crm/enums/common";
 import { useRecordActivityTab } from "~community/crm/hooks/useRecordActivityTab";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmDealEntity } from "~community/crm/types/CrmCommonTypes";
@@ -112,7 +112,7 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
             <RecordActivitiesTab
               key={dealId}
               id="deal-activities"
-              recordType={ActivityRecordType.DEAL}
+              recordType={CrmActivityAssociationEnum.DEAL}
               recordId={dealId}
               activeTab={activityTab}
               onTabChange={setActivityTab}

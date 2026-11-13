@@ -14,7 +14,6 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import RecordActivitiesTab from "~community/crm/activities/components/organisms/RecordActivitiesTab/RecordActivitiesTab";
-import { ActivityRecordType } from "~community/crm/activities/types/activityTypes";
 import {
   useGetCompanyById,
   useGetCompanyMetrics
@@ -31,7 +30,10 @@ import {
   CONTACT_PAGE_SIZE,
   DEAL_PAGE_SIZE
 } from "~community/crm/constants/commonConstants";
-import { CrmSidePanelTabEnum } from "~community/crm/enums/common";
+import {
+  CrmActivityAssociationEnum,
+  CrmSidePanelTabEnum
+} from "~community/crm/enums/common";
 import { useIndustryNameMapper } from "~community/crm/hooks/useIndustryNameMapper";
 import { useRecordActivityTab } from "~community/crm/hooks/useRecordActivityTab";
 import { useCrmStore } from "~community/crm/store/store";
@@ -357,7 +359,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
               <RecordActivitiesTab
                 key={companyId}
                 id="company-activities"
-                recordType={ActivityRecordType.COMPANY}
+                recordType={CrmActivityAssociationEnum.COMPANY}
                 recordId={companyId}
                 activeTab={activityTab}
                 onTabChange={setActivityTab}

@@ -1,6 +1,9 @@
 import { ReactNode } from "react";
 
-import { CrmPriorityEnum } from "~community/crm/enums/common";
+import {
+  CrmActivityAssociationEnum,
+  CrmPriorityEnum
+} from "~community/crm/enums/common";
 import { CrmMeetingVenueDetails } from "~enterprise/crm/types/ScheduleMeetingTypes";
 
 export enum ActivityType {
@@ -72,14 +75,8 @@ export interface ActivityFeedFilters {
   size?: number;
 }
 
-export enum ActivityRecordType {
-  CONTACT = "CONTACT",
-  DEAL = "DEAL",
-  COMPANY = "COMPANY"
-}
-
 export interface RecordActivityFilters {
-  recordType: ActivityRecordType;
+  recordType: CrmActivityAssociationEnum;
   recordId: number;
   type?: ActivityType;
   search?: string;
