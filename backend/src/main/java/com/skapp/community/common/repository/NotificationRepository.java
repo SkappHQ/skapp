@@ -23,4 +23,6 @@ public interface NotificationRepository {
 
 	int markTypeViewedByUserIdAndTypes(Long userId, Collection<NotificationType> types);
 
+	int markTypeViewedByTypes(Collection<NotificationType> types);
+
 }

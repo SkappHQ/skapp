@@ -6,7 +6,9 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.OrganizationConfig;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.repository.NotificationDao;
 import com.skapp.community.common.repository.OrganizationConfigDao;
+import com.skapp.community.common.type.NotificationType;
 import com.skapp.community.common.type.OrganizationConfigType;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
@@ -52,6 +54,7 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,6 +87,8 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 	private final PolicyLeaveRequestDao policyLeaveRequestDao;
 
 	private final JsonMapper jsonMapper;
+
+	private final NotificationDao notificationDao;
 
 	@Override
 	@Transactional
@@ -242,6 +247,8 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		cancelPendingLeaveRequests();
 		revokeFutureApprovedLeaveRequests();
 		removeExistingLeaveAllocations();
+		notificationDao
+			.markTypeViewedByTypes(EnumSet.of(NotificationType.LEAVE_REQUEST, NotificationType.LEAVE_REQUEST_NUDGE));
 
 		String jsonValue = buildLeavePolicyConfigValue();
 
