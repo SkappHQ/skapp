@@ -1,0 +1,50 @@
+name: feature checks
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+permissions: {}
+
+concurrency:
+  group: feature-checks-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  ORCHESTRATOR: rootcodelabs/skapp-ep
+
+jobs:
+  request:
+    name: Request
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+      statuses: write
+    steps:
+      - name: Request the feature's checks
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DISPATCH_TOKEN: ${{ secrets.GIT_PAT }}
+          PULL_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          marker_prefix='<!-- feature-checks:'
+          pull_pattern='^https://github\.com/[A-Za-z0-9_.-]{1,100}/[A-Za-z0-9_.-]{1,100}/pull/[0-9]{1,7}$'
+          author=$(GH_TOKEN="$DISPATCH_TOKEN" gh api user --jq .login)
+          encoded=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PULL_NUMBER/comments" --paginate \
+            --jq ".[] | select(.user.login == \"$author\") | .body | select(startswith(\"$marker_prefix\")) | split(\"\n\")[0] | ltrimstr(\"$marker_prefix\") | rtrimstr(\" -->\")" | tail -n 1)
+          if [ -z "$encoded" ]; then
+            gh api "repos/$GITHUB_REPOSITORY/statuses/$HEAD_SHA" -f state=pending -f context=feature-checks \
+              -f description="Waiting for the feature to be added to the PR dashboard" > /dev/null
+            exit 0
+          fi
+          mapfile -t pulls < <(printf '%s' "$encoded" | base64 -d | jq -r '.[]' | grep -E "$pull_pattern")
+          if [ "${#pulls[@]}" -eq 0 ]; then
+            echo "::error::The feature marker on this pull request lists no pull request"
+            exit 1
+          fi
+          jq -n '{event_type: "feature-checks", client_payload: {pulls: $ARGS.positional}}' --args "${pulls[@]}" \
+            | GH_TOKEN="$DISPATCH_TOKEN" gh api "repos/$ORCHESTRATOR/dispatches" --input -
