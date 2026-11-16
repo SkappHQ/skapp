@@ -11,12 +11,8 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Holiday;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.HolidayDao;
+import com.skapp.community.peopleplanner.service.HolidayService;
 import com.skapp.community.peopleplanner.type.AccountStatus;
-import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
-import com.skapp.community.leaveplanner.model.LeaveRequest;
-import com.skapp.community.leaveplanner.payload.LeaveRequestFilterDto;
-import com.skapp.community.leaveplanner.repository.LeaveRequestDao;
-import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.common.constant.CommonConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.model.WorkLocation;
@@ -35,6 +31,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,11 +47,11 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 
 	private final HolidayDao holidayDao;
 
-	private final LeaveRequestDao leaveRequestDao;
-
 	private final MessageUtil messageUtil;
 
 	private final TimeZoneService timeZoneService;
+
+	private final HolidayService holidayService;
 
 	@Override
 	@Transactional
@@ -252,16 +249,7 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 		List<Holiday> holidaysToDelete = holidayDao.findFutureActiveHolidaysExclusiveToWorkLocation(workLocationId,
 				timeZoneService.currentOrganizationDate());
 
-		for (Holiday holiday : holidaysToDelete) {
-			LeaveRequestFilterDto leaveRequestFilterDto = new LeaveRequestFilterDto();
-			leaveRequestFilterDto.setStartDate(holiday.getDate());
-			leaveRequestFilterDto.setEndDate(holiday.getDate());
-			leaveRequestFilterDto.setStatus(List.of(LeaveRequestStatus.PENDING, LeaveRequestStatus.APPROVED));
-			List<LeaveRequest> leaveRequests = leaveRequestDao.findAllLeaveRequestsByDateRange(leaveRequestFilterDto);
-			if (!leaveRequests.isEmpty()) {
-				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_CANNOT_BE_DELETED_LEAVES_EXIST);
-			}
-		}
+		holidayService.validateNoLeaveRequestsOnHolidays(holidaysToDelete);
 
 		holidaysToDelete.forEach(holiday -> holiday.setActive(false));
 		holidayDao.saveAll(holidaysToDelete);
