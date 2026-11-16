@@ -121,9 +121,9 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
             <RecordActivityActions
               id="deal-activity-actions"
               prefill={{
-                contactId: deal?.contactId ? deal.contactId : null,
+                contactId: deal.contactId ? deal.contactId : null,
                 dealId,
-                companyId: deal?.companyId ? deal.companyId : null
+                companyId: deal.companyId ? deal.companyId : null
               }}
               isLineButton
             />

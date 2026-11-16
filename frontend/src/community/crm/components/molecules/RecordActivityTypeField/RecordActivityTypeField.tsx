@@ -21,16 +21,24 @@ const RecordActivityTypeField: FC<Props> = ({ isDisabled }) => {
     }))
   );
 
+  const typeOptions = Object.values(ActivityType).map((option) => ({
+    id: option,
+    value: option,
+    label: translateText(["types", option.toLowerCase()])
+  }));
+
+  const handleTypeChange = (value: string): void => {
+    const selectedOption = typeOptions.find((option) => option.value === value);
+
+    if (selectedOption) setRecordActivityModalType(selectedOption.value);
+  };
+
   return (
     <Dropdown
       id="record-activity-type"
-      options={Object.values(ActivityType).map((option) => ({
-        id: option,
-        value: option,
-        label: translateText(["types", option.toLowerCase()])
-      }))}
+      options={typeOptions}
       value={recordActivityModalType ?? ""}
-      onChange={(value) => setRecordActivityModalType(value as ActivityType)}
+      onChange={handleTypeChange}
       label={translateText(["addActivity", "typeLabel"])}
       variant={isDisabled ? "primary-disabled" : "primary"}
       ariaLabel={translateAria(["addActivity", "type"])}
