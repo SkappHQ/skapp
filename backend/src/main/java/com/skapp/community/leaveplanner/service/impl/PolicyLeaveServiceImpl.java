@@ -85,6 +85,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.util.CollectionUtils;
 
 import java.time.DayOfWeek;
@@ -1071,7 +1073,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 	private void notifyParticipants(User currentUser, PolicyLeaveRequest leaveRequest,
 			List<EmployeeManager> employeeManagers) {
-		Employee employee = currentUser.getEmployee();
+		Employee employee = leaveRequest.getEmployee();
 		boolean isSingleDay = leaveRequest.getStartDate().equals(leaveRequest.getEndDate());
 		String leaveTypeName = leaveRequest.getPolicy().getLeaveType().getName();
 
@@ -1084,6 +1086,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 				leaveRequest.getEndDate(), isSingleDay);
 
 		if (leaveRequest.getStatus() == LeaveRequestStatus.APPROVED) {
+			notifyAutoApprovedLeaveRequest(leaveRequest, employeeManagers, isSingleDay);
 			return;
 		}
 
@@ -1094,6 +1097,15 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		leaveNotificationService.sendReceivedLeaveRequestManagerNotification(employeeManagers, employee.getFirstName(),
 				employee.getLastName(), leaveRequest.getId(), leaveRequest.getLeaveState().toString(), leaveTypeName,
 				leaveRequest.getStartDate(), leaveRequest.getEndDate(), isSingleDay);
+	}
+
+	private void notifyAutoApprovedLeaveRequest(PolicyLeaveRequest leaveRequest, List<EmployeeManager> employeeManagers,
+			boolean isSingleDay) {
+		notifyEmployeeAndSupervisors(leaveRequest, employeeManagers,
+				isSingleDay ? EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_AUTO_APPROVED_SINGLE_DAY_LEAVE
+						: EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_AUTO_APPROVED_MULTI_DAY_LEAVE,
+				isSingleDay ? EmailBodyTemplates.LEAVE_MODULE_MANAGER_AUTO_APPROVED_SINGLE_DAY_LEAVE
+						: EmailBodyTemplates.LEAVE_MODULE_MANAGER_AUTO_APPROVED_MULTI_DAY_LEAVE);
 	}
 
 	private void notifyReviewedLeaveRequest(PolicyLeaveRequest leaveRequest) {
@@ -1130,7 +1142,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		if (reviewer != null) {
 			employeeFields.setManagerName(fullName(reviewer));
 		}
-		emailService.sendEmail(employeeTemplate, employeeFields, employee.getUser().getEmail());
+		sendEmailAfterCommit(employeeTemplate, employeeFields, employee.getUser().getEmail());
 		notificationService.createNotification(employee, leaveRequest.getId().toString(),
 				NotificationType.LEAVE_REQUEST, employeeTemplate, employeeFields, NotificationCategory.LEAVE);
 
@@ -1152,28 +1164,45 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 	private void notifyCancelledLeaveRequest(PolicyLeaveRequest leaveRequest) {
 		boolean isSingleDay = leaveRequest.getStartDate().equals(leaveRequest.getEndDate());
+
+		notifyEmployeeAndSupervisors(leaveRequest, employeeManagerDao.findByEmployee(leaveRequest.getEmployee()),
+				isSingleDay ? EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_CANCEL_SINGLE_DAY_LEAVE
+						: EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_CANCEL_MULTIPLE_DAY_LEAVE,
+				isSingleDay ? EmailBodyTemplates.LEAVE_MODULE_MANAGER_CANCEL_SINGLE_DAY_LEAVE
+						: EmailBodyTemplates.LEAVE_MODULE_MANAGER_CANCEL_MULTIPLE_DAY_LEAVE);
+	}
+
+	private void notifyEmployeeAndSupervisors(PolicyLeaveRequest leaveRequest, List<EmployeeManager> supervisors,
+			EmailBodyTemplates employeeTemplate, EmailBodyTemplates supervisorTemplate) {
 		Employee employee = leaveRequest.getEmployee();
 
 		LeaveEmailDynamicFields employeeFields = leaveRequestEmailFields(leaveRequest);
 		employeeFields.setEmployeeOrManagerName(fullName(employee));
-		EmailBodyTemplates employeeTemplate = isSingleDay
-				? EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_CANCEL_SINGLE_DAY_LEAVE
-				: EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_CANCEL_MULTIPLE_DAY_LEAVE;
-
-		emailService.sendEmail(employeeTemplate, employeeFields, employee.getUser().getEmail());
+		sendEmailAfterCommit(employeeTemplate, employeeFields, employee.getUser().getEmail());
 		notificationService.createNotification(employee, leaveRequest.getId().toString(),
 				NotificationType.LEAVE_REQUEST, employeeTemplate, employeeFields, NotificationCategory.LEAVE);
 
-		EmailBodyTemplates supervisorTemplate = isSingleDay
-				? EmailBodyTemplates.LEAVE_MODULE_MANAGER_CANCEL_SINGLE_DAY_LEAVE
-				: EmailBodyTemplates.LEAVE_MODULE_MANAGER_CANCEL_MULTIPLE_DAY_LEAVE;
-
-		notifySupervisors(employeeManagerDao.findByEmployee(employee), leaveRequest, () -> {
+		notifySupervisors(supervisors, leaveRequest, () -> {
 			LeaveEmailDynamicFields supervisorFields = leaveRequestEmailFields(leaveRequest);
 			supervisorFields.setEmployeeName(fullName(employee));
 			supervisorFields.setEmployeesName(fullName(employee));
 			return supervisorFields;
 		}, supervisorTemplate);
+	}
+
+	private void sendEmailAfterCommit(EmailBodyTemplates template, LeaveEmailDynamicFields dynamicFields,
+			String recipient) {
+		if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+			emailService.sendEmail(template, dynamicFields, recipient);
+			return;
+		}
+
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCommit() {
+				emailService.sendEmail(template, dynamicFields, recipient);
+			}
+		});
 	}
 
 	private void notifySupervisors(List<EmployeeManager> supervisors, PolicyLeaveRequest leaveRequest,
@@ -1188,7 +1217,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 			Employee supervisor = employeeManager.getManager();
 			LeaveEmailDynamicFields dynamicFields = fieldsSupplier.get();
 			dynamicFields.setEmployeeOrManagerName(fullName(supervisor));
-			emailService.sendEmail(template, dynamicFields, supervisor.getUser().getEmail());
+			sendEmailAfterCommit(template, dynamicFields, supervisor.getUser().getEmail());
 			notificationService.createNotification(supervisor, leaveRequest.getId().toString(), notificationType,
 					template, dynamicFields, NotificationCategory.LEAVE);
 		});
