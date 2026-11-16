@@ -5,6 +5,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import ActivityChipFilterField from "~community/crm/activities/components/molecules/ActivityChipFilterField/ActivityChipFilterField";
 import ActivityDateRangeField from "~community/crm/activities/components/molecules/ActivityDateRangeField/ActivityDateRangeField";
 import ActivityTeamMemberField from "~community/crm/activities/components/molecules/ActivityTeamMemberField/ActivityTeamMemberField";
+import { ACTIVITY_TASK_STATUS_LABEL_KEYS } from "~community/crm/activities/constants/activityConstants";
 import {
   ActivityDateRange,
   ActivityFilterValues,
@@ -12,6 +13,7 @@ import {
 } from "~community/crm/activities/types/activityTypes";
 import {
   areFilterValuesEqual,
+  replaceFilterValues,
   validateDateRange
 } from "~community/crm/activities/utils/activityFilterUtil";
 import { PRIORITY_OPTIONS } from "~community/crm/constants/taskConstants";
@@ -46,13 +48,6 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
 
-  const TASK_STATUS_LABEL_KEYS: Record<ActivityTaskStatus, string> = {
-    [ActivityTaskStatus.OVERDUE]: "overdue",
-    [ActivityTaskStatus.TODAY]: "today",
-    [ActivityTaskStatus.UPCOMING]: "upcoming",
-    [ActivityTaskStatus.COMPLETED]: "completed"
-  };
-
   const [selectedFilters, setSelectedFilters] =
     useState<ActivityFilterValues>(filters);
 
@@ -78,13 +73,9 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
     clearedKeys: (keyof ActivityFilterValues)[],
     changes: ActivityFilterValues
   ): void => {
-    setSelectedFilters((previous) => {
-      const next = { ...previous };
-      clearedKeys.forEach((key) => {
-        delete next[key];
-      });
-      return { ...next, ...changes };
-    });
+    setSelectedFilters((previous) =>
+      replaceFilterValues(previous, clearedKeys, changes)
+    );
   };
 
   const handleDateRangeChange = (dateRange: ActivityDateRange): void => {
@@ -156,7 +147,7 @@ const ActivityFilterPopover: FC<ActivityFilterPopoverProps> = ({
                   "filters",
                   "taskStatus",
                   "options",
-                  TASK_STATUS_LABEL_KEYS[status]
+                  ACTIVITY_TASK_STATUS_LABEL_KEYS[status]
                 ])
               }))}
               selectedValue={selectedFilters.taskStatus}

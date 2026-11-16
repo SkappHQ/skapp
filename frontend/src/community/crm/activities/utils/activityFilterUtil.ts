@@ -98,6 +98,20 @@ export const areFilterValuesEqual = (
   first.priority === second.priority &&
   isSameDateRange(first, second);
 
+export const replaceFilterValues = (
+  previous: ActivityFilterValues,
+  clearedKeys: (keyof ActivityFilterValues)[],
+  changes: ActivityFilterValues
+): ActivityFilterValues => {
+  const next = { ...previous };
+
+  clearedKeys.forEach((key) => {
+    delete next[key];
+  });
+
+  return { ...next, ...changes };
+};
+
 export const filterCRMEmployees = (
   members: CrmOwnerEntity[],
   searchTerm: string
