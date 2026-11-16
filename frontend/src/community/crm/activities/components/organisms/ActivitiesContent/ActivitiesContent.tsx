@@ -1,12 +1,10 @@
 import { ButtonV2, ButtonV2Props } from "@rootcodelabs/skapp-ui";
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
-import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useToast } from "~community/common/providers/ToastProvider";
 import ActivityCallSidePanel from "~community/crm/activities/components/organisms/ActivityCallSidePanel/ActivityCallSidePanel";
 import ActivityEmailSidePanel from "~community/crm/activities/components/organisms/ActivityEmailSidePanel/ActivityEmailSidePanel";
 import ActivityFeed from "~community/crm/activities/components/organisms/ActivityFeed/ActivityFeed";
@@ -35,20 +33,18 @@ import {
   useGetActivityEmails,
   useGetActivityFeed,
   useGetActivityMeetings,
-  useGetActivityTasks,
-  useUpdateTaskCompletion
+  useGetActivityTasks
 } from "~community/crm/api/ActivityApi";
-import { useGetDealsByIds } from "~community/crm/api/DealApi";
 import AddActivityTaskModalContent from "~community/crm/components/molecules/AddActivityTaskModalContent/AddActivityTaskModalContent";
 import LogCallModalContent from "~community/crm/components/molecules/LogCallModalContent/LogCallModalContent";
 import LogEmailModalContent from "~community/crm/components/molecules/LogEmailModalContent/LogEmailModalContent";
 import LogMeetingModalContent from "~community/crm/components/molecules/LogMeetingModalContent/LogMeetingModalContent";
 import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
+import { useActivityDeals } from "~community/crm/hooks/useActivityDeals";
+import { useActivityTaskCompletion } from "~community/crm/hooks/useActivityTaskCompletion";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmTaskCompletionPayload } from "~community/crm/types/CrmCommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
-import { getMissingDealIds, mergeDeals } from "~community/crm/utils/dealUtil";
 import ScheduleMeetingAction from "~enterprise/crm/components/organisms/ScheduleMeetingAction/ScheduleMeetingAction";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
@@ -56,7 +52,6 @@ import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 const ActivitiesContent: FC = () => {
   const translateText = useTranslator("crmModule");
   const displayZone = useDisplayZone();
-  const { setToastMessage } = useToast();
   const { isCrmSalesManager } = useSessionData();
   const isManager = Boolean(isCrmSalesManager);
 
@@ -65,9 +60,8 @@ const ActivitiesContent: FC = () => {
   const [activeTab, setActiveTab] = useState<ActivityTab>(DEFAULT_ACTIVITY_TAB);
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<ActivityFilterValues>({});
-  const [taskCompletions, setTaskCompletions] = useState<
-    Record<number, boolean>
-  >({});
+  const { taskCompletions, setTaskCompletions, handleToggleComplete } =
+    useActivityTaskCompletion();
   const [isLogCallModalOpen, setIsLogCallModalOpen] = useState(false);
   const [isLogMeetingModalOpen, setIsLogMeetingModalOpen] = useState(false);
   const { guardCrmCreate } = useCrmLimitGuard();
@@ -78,13 +72,11 @@ const ActivitiesContent: FC = () => {
 
   const {
     owners,
-    deals,
     selectedCallId,
     selectedMeetingId,
     selectedActivityTaskId,
     selectedEmailId,
     isCrmSidePanelOpen,
-    setDeals,
     setSelectedCallId,
     setSelectedMeetingId,
     setSelectedActivityTaskId,
@@ -93,13 +85,11 @@ const ActivitiesContent: FC = () => {
   } = useCrmStore(
     useShallow((store) => ({
       owners: store.owners,
-      deals: store.deals,
       selectedCallId: store.selectedCallId,
       selectedMeetingId: store.selectedMeetingId,
       selectedActivityTaskId: store.selectedActivityTaskId,
       selectedEmailId: store.selectedEmailId,
       isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-      setDeals: store.setDeals,
       setSelectedCallId: store.setSelectedCallId,
       setSelectedMeetingId: store.setSelectedMeetingId,
       setSelectedActivityTaskId: store.setSelectedActivityTaskId,
@@ -174,25 +164,7 @@ const ActivitiesContent: FC = () => {
 
   const rows = useMemo(() => pages.flatMap((page) => page.items), [pages]);
 
-  const missingDealIds = useMemo(
-    () =>
-      getMissingDealIds(
-        rows.flatMap((row) => (row.dealId ? [row.dealId] : [])),
-        deals
-      ),
-    [rows, deals]
-  );
-
-  const { data: fetchedDeals } = useGetDealsByIds(
-    missingDealIds,
-    missingDealIds.length > 0
-  );
-
-  useEffect(() => {
-    if (!fetchedDeals?.length) return;
-
-    setDeals(mergeDeals(deals, fetchedDeals));
-  }, [fetchedDeals]);
+  useActivityDeals(rows);
 
   const resultCount =
     isAllTab && feed.data ? feed.data.pages[0].totalItems : rows.length;
@@ -230,47 +202,6 @@ const ActivitiesContent: FC = () => {
       delete next[taskId];
       return next;
     });
-  };
-
-  const applyCompletion = (taskId: number, isCompleted: boolean): void => {
-    setTaskCompletions((current) => ({ ...current, [taskId]: isCompleted }));
-  };
-
-  const handleToggleError = ({
-    id,
-    isCompleted
-  }: CrmTaskCompletionPayload): void => {
-    applyCompletion(id, !isCompleted);
-    setToastMessage({
-      open: true,
-      toastType: ToastType.ERROR,
-      title: translateText([
-        "tasks",
-        "common",
-        "toastMessages",
-        "toggleErrorTitle"
-      ]),
-      description: translateText([
-        "tasks",
-        "common",
-        "toastMessages",
-        "toggleErrorDescription"
-      ])
-    });
-  };
-
-  const { mutate: updateTaskCompletion, isPending } =
-    useUpdateTaskCompletion(handleToggleError);
-
-  const handleToggleComplete = (
-    row: ActivityRow,
-    isCompleted: boolean
-  ): void => {
-    if (isPending) return;
-
-    applyCompletion(row.id, isCompleted);
-
-    updateTaskCompletion({ id: row.id, isCompleted });
   };
 
   const toolbarActions: Record<

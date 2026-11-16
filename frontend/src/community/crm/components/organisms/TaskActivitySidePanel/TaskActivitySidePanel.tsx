@@ -94,27 +94,29 @@ const TaskActivitySidePanel: FC<Props> = ({
         dealFilterCompanyId: task.contact?.companyId,
         info: (
           <div className="flex flex-col gap-4">
-            <ButtonV2
-              type="button"
-              variant="primary"
-              size="md"
-              onClick={onMarkAsDone}
-              disabled={isCompleted}
-              {...(isCompleted && {
-                icon: (
-                  <Icon
-                    name={IconName.TICK_ICON}
-                    fill="var(--color-secondary-icon)"
-                    width="16"
-                    height="16"
-                  />
-                )
-              })}
-            >
-              {isCompleted
-                ? translateText(["tasks", "sidePanel", "info", "statusDone"])
-                : translateText(["tasks", "sidePanel", "info", "markAsDone"])}
-            </ButtonV2>
+            <div className="flex">
+              <ButtonV2
+                type="button"
+                variant="primary"
+                size="md"
+                onClick={onMarkAsDone}
+                disabled={isCompleted}
+                {...(isCompleted && {
+                  icon: (
+                    <Icon
+                      name={IconName.TICK_ICON}
+                      fill="var(--color-secondary-icon)"
+                      width="16"
+                      height="16"
+                    />
+                  )
+                })}
+              >
+                {isCompleted
+                  ? translateText(["tasks", "sidePanel", "info", "statusDone"])
+                  : translateText(["tasks", "sidePanel", "info", "markAsDone"])}
+              </ButtonV2>
+            </div>
             <SidePanelActivityTaskInfo
               key={task.id}
               task={task}

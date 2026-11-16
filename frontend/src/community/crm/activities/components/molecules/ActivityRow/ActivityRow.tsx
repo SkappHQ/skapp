@@ -21,7 +21,7 @@ export interface ActivityRowProps {
   timeZone?: string;
   isShowCheckbox: boolean;
   taskCompletions: Record<number, boolean>;
-  onRowClick: (row: ActivityRowData) => void;
+  onRowClick?: (row: ActivityRowData) => void;
   onToggleComplete: (row: ActivityRowData, isCompleted: boolean) => void;
 }
 
@@ -50,6 +50,31 @@ const ActivityRow: FC<ActivityRowProps> = ({
   const isCompletedStyleApplied = isTask && isCompleted;
   const isStrikethroughApplied = isShowCheckbox && isCompletedStyleApplied;
 
+  const rowContent = (
+    <>
+      <ActivityTypeIcon id={`${rowId}-type`} type={row.type} />
+
+      <span className="flex flex-col flex-1 min-w-0">
+        <span
+          id={`${rowId}-subject`}
+          className={`body2 truncate ${
+            isCompletedStyleApplied ? "text-secondary-icon" : "text-black"
+          } ${isStrikethroughApplied ? "line-through" : ""}`}
+        >
+          {row.title}
+        </span>
+
+        <ActivityRowSubtitle
+          id={`${rowId}-subtitle`}
+          row={row}
+          timeZone={timeZone}
+          isCompletedStyleApplied={isCompletedStyleApplied}
+          isStrikethroughApplied={isStrikethroughApplied}
+        />
+      </span>
+    </>
+  );
+
   return (
     <div
       id={rowId}
@@ -63,42 +88,35 @@ const ActivityRow: FC<ActivityRowProps> = ({
           onToggle={(isCompleted) => onToggleComplete(row, isCompleted)}
         />
       )}
+      {isShowCheckbox && !isTask && (
+        <span aria-hidden="true" className="shrink-0 w-7" />
+      )}
 
-      <button
-        id={`${rowId}-open`}
-        type="button"
-        aria-label={translateAria(["activities", "row", "openDetails"], {
-          type: translateText([
-            "activities",
-            "types",
-            row.type.toLowerCase()
-          ]).toLowerCase(),
-          subject: row.title
-        })}
-        className="flex flex-1 items-center gap-3 min-w-0 self-stretch text-left cursor-pointer rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-accent"
-        onClick={() => onRowClick(row)}
-      >
-        <ActivityTypeIcon id={`${rowId}-type`} type={row.type} />
-
-        <span className="flex flex-col flex-1 min-w-0">
-          <span
-            id={`${rowId}-subject`}
-            className={`body2 truncate ${
-              isCompletedStyleApplied ? "text-secondary-icon" : "text-black"
-            } ${isStrikethroughApplied ? "line-through" : ""}`}
-          >
-            {row.title}
-          </span>
-
-          <ActivityRowSubtitle
-            id={`${rowId}-subtitle`}
-            row={row}
-            timeZone={timeZone}
-            isCompletedStyleApplied={isCompletedStyleApplied}
-            isStrikethroughApplied={isStrikethroughApplied}
-          />
-        </span>
-      </button>
+      {onRowClick ? (
+        <button
+          id={`${rowId}-open`}
+          type="button"
+          aria-label={translateAria(["activities", "row", "openDetails"], {
+            type: translateText([
+              "activities",
+              "types",
+              row.type.toLowerCase()
+            ]).toLowerCase(),
+            subject: row.title
+          })}
+          className="flex flex-1 items-center gap-3 min-w-0 self-stretch text-left cursor-pointer rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-accent"
+          onClick={() => onRowClick(row)}
+        >
+          {rowContent}
+        </button>
+      ) : (
+        <div
+          id={`${rowId}-content`}
+          className="flex flex-1 items-center gap-3 min-w-0 self-stretch"
+        >
+          {rowContent}
+        </div>
+      )}
 
       <div className="flex items-center gap-6 shrink-0">
         {isTask && row.priority && <PriorityLabel priority={row.priority} />}

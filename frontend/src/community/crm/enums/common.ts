@@ -5,7 +5,7 @@ export enum CrmPriorityEnum {
 }
 
 export enum CrmSidePanelTabEnum {
-  TASKS = "TASKS",
+  ACTIVITIES = "ACTIVITIES",
   DEALS = "DEALS",
   CONTACTS = "CONTACTS"
 }
@@ -59,6 +59,19 @@ export enum CrmMetricLabelThemeEnum {
 export enum CrmTaskStatusEnum {
   PENDING = "PENDING",
   COMPLETED = "COMPLETED"
+}
+
+export enum CrmActivityTaskStatusEnum {
+  OVERDUE = "OVERDUE",
+  TODAY = "TODAY",
+  UPCOMING = "UPCOMING",
+  COMPLETED = "COMPLETED"
+}
+
+export enum CrmActivityAssociationEnum {
+  CONTACT = "CONTACT",
+  DEAL = "DEAL",
+  COMPANY = "COMPANY"
 }
 
 export enum CrmTaskSortEnum {
