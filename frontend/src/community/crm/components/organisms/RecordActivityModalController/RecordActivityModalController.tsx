@@ -10,10 +10,6 @@ import LogMeetingModalContent from "~community/crm/components/molecules/LogMeeti
 import RecordActivityTypeField from "~community/crm/components/molecules/RecordActivityTypeField/RecordActivityTypeField";
 import { useCrmStore } from "~community/crm/store/store";
 
-const renderTypeField = (isDisabled: boolean): ReactNode => (
-  <RecordActivityTypeField isDisabled={isDisabled} />
-);
-
 const RecordActivityModalController: FC = () => {
   const translateText = useTranslator("crmModule", "activities");
 
@@ -37,6 +33,13 @@ const RecordActivityModalController: FC = () => {
   };
 
   if (!recordActivityModalType) return null;
+
+  const renderTypeField = (isDisabled: boolean): ReactNode => (
+    <RecordActivityTypeField
+      activityType={recordActivityModalType}
+      isDisabled={isDisabled}
+    />
+  );
 
   const modalProps = {
     title: translateText(["addActivity", "modalTitle"]),

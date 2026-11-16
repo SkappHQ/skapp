@@ -1,24 +1,21 @@
 import { Dropdown } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
-import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { ActivityType } from "~community/crm/activities/types/activityTypes";
 import { useCrmStore } from "~community/crm/store/store";
 
 interface Props {
+  activityType: ActivityType;
   isDisabled: boolean;
 }
 
-const RecordActivityTypeField: FC<Props> = ({ isDisabled }) => {
+const RecordActivityTypeField: FC<Props> = ({ activityType, isDisabled }) => {
   const translateText = useTranslator("crmModule", "activities");
   const translateAria = useTranslator("crmAria", "activities");
 
-  const { recordActivityModalType, setRecordActivityModalType } = useCrmStore(
-    useShallow((store) => ({
-      recordActivityModalType: store.recordActivityModalType,
-      setRecordActivityModalType: store.setRecordActivityModalType
-    }))
+  const setRecordActivityModalType = useCrmStore(
+    (store) => store.setRecordActivityModalType
   );
 
   const typeOptions = Object.values(ActivityType).map((option) => ({
@@ -37,7 +34,7 @@ const RecordActivityTypeField: FC<Props> = ({ isDisabled }) => {
     <Dropdown
       id="record-activity-type"
       options={typeOptions}
-      value={recordActivityModalType ?? ""}
+      value={activityType}
       onChange={handleTypeChange}
       label={translateText(["addActivity", "typeLabel"])}
       variant={isDisabled ? "primary-disabled" : "primary"}
