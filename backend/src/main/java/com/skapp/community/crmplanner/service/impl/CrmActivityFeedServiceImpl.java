@@ -7,10 +7,16 @@ import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.crmplanner.constant.CrmMessageConstant;
+import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.payload.request.CrmActivityFeedFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmActivityFeedRowResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityFeedRepository;
+import com.skapp.community.crmplanner.repository.CrmCompanyDao;
+import com.skapp.community.crmplanner.repository.CrmContactDao;
+import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.service.CrmActivityFeedService;
+import com.skapp.community.crmplanner.type.CrmActivityAssociation;
 import com.skapp.community.crmplanner.type.CrmActivityListParams;
 import com.skapp.community.crmplanner.util.CrmUtil;
 import com.skapp.community.crmplanner.util.CrmValidations;
@@ -35,6 +41,12 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 
 	private final CrmActivityFeedRepository crmActivityFeedRepository;
 
+	private final CrmContactDao crmContactDao;
+
+	private final CrmDealDao crmDealDao;
+
+	private final CrmCompanyDao crmCompanyDao;
+
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getActivities(CrmActivityFeedFilterDto filterDto) {
@@ -49,10 +61,20 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 
 		CrmValidations.validateActivityDateRange(filterDto.getFromDate(), filterDto.getToDate());
 
+		if ((filterDto.getActivityAssociation() == null) != (filterDto.getRecordId() == null)) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR);
+		}
+		if (filterDto.getActivityAssociation() != null) {
+			validateRecordAccess(currentUser, filterDto.getActivityAssociation(), filterDto.getRecordId());
+		}
+
 		CrmActivityListParams params = new CrmActivityListParams();
 		params.setCurrentEmployeeId(currentUser.getEmployee().getEmployeeId());
 		params.setIsRestrictedToOwner(isRepresentative);
 		params.setOwnerId(filterDto.getOwnerId());
+		params.setActivityAssociation(filterDto.getActivityAssociation());
+		params.setRecordId(filterDto.getRecordId());
+		params.setActivityType(filterDto.getType());
 		params.setSortOrder(Sort.Direction.DESC);
 		params.setSearchPattern(filterDto.getSearch() == null ? null : filterDto.getSearch().trim());
 		ZoneId zone = timeZoneService.requestTimezone();
@@ -74,6 +96,30 @@ public class CrmActivityFeedServiceImpl implements CrmActivityFeedService {
 
 		log.info("getActivities: execution ended");
 		return new ResponseEntityDto(false, pageDto);
+	}
+
+	private void validateRecordAccess(User currentUser, CrmActivityAssociation activityAssociation, Long recordId) {
+		switch (activityAssociation) {
+			case CONTACT -> {
+				if (!crmContactDao.existsByIdAndIsDeletedFalse(recordId)) {
+					throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND);
+				}
+			}
+			case DEAL -> {
+				CrmDeal deal = crmDealDao.findByIdWithAssociations(recordId);
+				if (deal == null) {
+					throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND);
+				}
+				if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, deal.getOwner().getEmployeeId())) {
+					throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_VIEW_DENIED);
+				}
+			}
+			case COMPANY -> {
+				if (!crmCompanyDao.existsByIdAndIsDeletedFalse(recordId)) {
+					throw new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND);
+				}
+			}
+		}
 	}
 
 }
