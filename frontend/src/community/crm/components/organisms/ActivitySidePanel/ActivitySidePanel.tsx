@@ -4,11 +4,12 @@ import {
   MenuItemProps,
   SidePanel
 } from "@rootcodelabs/skapp-ui";
-import { FC, ReactNode, useEffect } from "react";
+import { FC, ReactNode, useEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import AddActivityDealModal from "~community/crm/components/molecules/AddActivityDealModal/AddActivityDealModal";
 import SidePanelActivityComments from "~community/crm/components/molecules/SidePanelActivityComments/SidePanelActivityComments";
 import SidePanelActivityDeal from "~community/crm/components/molecules/SidePanelActivityDeal/SidePanelActivityDeal";
 import SidePanelActivityTitle from "~community/crm/components/molecules/SidePanelActivityTitle/SidePanelActivityTitle";
@@ -91,16 +92,17 @@ const ActivitySidePanel: FC<Props> = ({
 
   const { isCrmSalesManager } = useSessionData();
 
+  const [isAddDealModalOpen, setIsAddDealModalOpen] = useState(false);
+
   const renderDeal = (): ReactNode => {
     const linkedDealId = deal?.id && deals[deal.id] ? deal.id : null;
 
     if (onDealChange) {
       return (
         <SidePanelActivityDeal
-          id={id}
           dealId={linkedDealId}
-          filterCompanyId={dealFilterCompanyId}
           emptyDescription={emptyDealsDescription}
+          onAddDeal={() => setIsAddDealModalOpen(true)}
           onDealChange={onDealChange}
         />
       );
@@ -137,89 +139,105 @@ const ActivitySidePanel: FC<Props> = ({
     ...(isCrmSalesManager ? [deleteItem] : [])
   ];
 
+  const handleAddDealSave = (selectedDealId: number | null): void => {
+    setIsAddDealModalOpen(false);
+
+    if (onDealChange) onDealChange(selectedDealId);
+  };
+
   return (
-    <SidePanel
-      isOpen={isOpen}
-      onClose={onClose}
-      closeOnBackdropClick
-      header={
-        isLoading ? (
-          <SidePanelHeaderSkeleton isShowLastUpdate={false} />
+    <>
+      <SidePanel
+        isOpen={isOpen}
+        onClose={onClose}
+        closeOnBackdropClick
+        header={
+          isLoading ? (
+            <SidePanelHeaderSkeleton isShowLastUpdate={false} />
+          ) : (
+            <div className="flex items-center gap-4 pl-2">
+              {icon}
+              {title &&
+                (onTitleSave ? (
+                  <SidePanelActivityTitle
+                    key={activityId}
+                    id={id}
+                    title={title}
+                    onSave={onTitleSave}
+                  />
+                ) : (
+                  <h2 className="h2 text-black">{title}</h2>
+                ))}
+            </div>
+          )
+        }
+        headerActions={
+          isLoading ? (
+            <SidePanelHeaderActionsSkeleton />
+          ) : (
+            actionItems.length > 0 && (
+              <KebabMenu
+                id={`${id}-actions`}
+                menuItems={actionItems}
+                anchorButton={{ "aria-label": menuAriaLabel }}
+                className={{
+                  anchorElement:
+                    "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
+                }}
+              />
+            )
+          )
+        }
+      >
+        {isLoading ? (
+          <div aria-busy="true">
+            <ActivitySidePanelSkeleton />
+          </div>
         ) : (
-          <div className="flex items-center gap-4 pl-2">
-            {icon}
-            {title &&
-              (onTitleSave ? (
-                <SidePanelActivityTitle
+          <div className="flex gap-6 pb-4">
+            <div className="flex flex-col flex-1 gap-6 min-w-0">
+              {onCommentsSave ? (
+                <SidePanelActivityComments
                   key={activityId}
                   id={id}
-                  title={title}
-                  onSave={onTitleSave}
+                  comments={comments}
+                  onSave={onCommentsSave}
                 />
               ) : (
-                <h2 className="h2 text-black">{title}</h2>
-              ))}
-          </div>
-        )
-      }
-      headerActions={
-        isLoading ? (
-          <SidePanelHeaderActionsSkeleton />
-        ) : (
-          actionItems.length > 0 && (
-            <KebabMenu
-              id={`${id}-actions`}
-              menuItems={actionItems}
-              anchorButton={{ "aria-label": menuAriaLabel }}
-              className={{
-                anchorElement:
-                  "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
-              }}
-            />
-          )
-        )
-      }
-    >
-      {isLoading ? (
-        <div aria-busy="true">
-          <ActivitySidePanelSkeleton />
-        </div>
-      ) : (
-        <div className="flex gap-6 pb-4">
-          <div className="flex flex-col flex-1 gap-6 min-w-0">
-            {onCommentsSave ? (
-              <SidePanelActivityComments
-                key={activityId}
-                id={id}
-                comments={comments}
-                onSave={onCommentsSave}
-              />
-            ) : (
-              <div className="flex flex-col gap-1">
-                <p className="subtitle1">
-                  {commentsTitle ?? translateText(["comments"])}
-                </p>
-                <p className="subtitle3 max-h-24 overflow-y-auto break-words">
-                  {comments ??
-                    emptyCommentsText ??
-                    translateText(["noComments"])}
-                </p>
-              </div>
-            )}
+                <div className="flex flex-col gap-1">
+                  <p className="subtitle1">
+                    {commentsTitle ?? translateText(["comments"])}
+                  </p>
+                  <p className="subtitle3 max-h-24 overflow-y-auto break-words">
+                    {comments ??
+                      emptyCommentsText ??
+                      translateText(["noComments"])}
+                  </p>
+                </div>
+              )}
 
-            <div className="flex flex-col gap-3">
-              <h2 className="h2">{translateText(["dealsTitle"])}</h2>
-              <hr className="border-secondary-accent" />
-              {renderDeal()}
+              <div className="flex flex-col gap-3">
+                <h2 className="h2">{translateText(["dealsTitle"])}</h2>
+                <hr className="border-secondary-accent" />
+                {renderDeal()}
+              </div>
+
+              {related}
             </div>
 
-            {related}
+            <div className="w-[18.438rem] shrink-0">{info}</div>
           </div>
-
-          <div className="w-[18.438rem] shrink-0">{info}</div>
-        </div>
+        )}
+      </SidePanel>
+      {isAddDealModalOpen && (
+        <AddActivityDealModal
+          id={id}
+          {...(dealFilterCompanyId && { filterCompanyId: dealFilterCompanyId })}
+          onSave={handleAddDealSave}
+          onClose={() => setIsAddDealModalOpen(false)}
+        />
       )}
-    </SidePanel>
+    </>
   );
 };
 

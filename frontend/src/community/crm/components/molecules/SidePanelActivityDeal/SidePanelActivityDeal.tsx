@@ -1,23 +1,20 @@
 import { ButtonV2, EmptyDataView, SearchIcon } from "@rootcodelabs/skapp-ui";
-import { FC, useState } from "react";
+import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import AddActivityDealModal from "~community/crm/components/molecules/AddActivityDealModal/AddActivityDealModal";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 
 interface Props {
-  id: string;
   dealId: number | null;
-  filterCompanyId?: number | null;
   emptyDescription: string;
+  onAddDeal: () => void;
   onDealChange: (dealId: number | null) => void;
 }
 
 const SidePanelActivityDeal: FC<Props> = ({
-  id,
   dealId,
-  filterCompanyId,
   emptyDescription,
+  onAddDeal,
   onDealChange
 }) => {
   const translateText = useTranslator("crmModule");
@@ -26,13 +23,6 @@ const SidePanelActivityDeal: FC<Props> = ({
     "activities",
     "activitySidePanel"
   );
-
-  const [isAddDealModalOpen, setIsAddDealModalOpen] = useState(false);
-
-  const handleSave = (selectedDealId: number | null): void => {
-    setIsAddDealModalOpen(false);
-    onDealChange(selectedDealId);
-  };
 
   if (dealId) {
     return (
@@ -63,30 +53,20 @@ const SidePanelActivityDeal: FC<Props> = ({
   }
 
   return (
-    <>
-      <EmptyDataView
-        icon={<SearchIcon />}
-        title={translateText(["deals", "linkedSection", "emptyTitle"])}
-        description={emptyDescription}
-        button={{
-          children: translateText(["deals", "common", "buttons", "addDeal"]),
-          variant: "tertiary",
-          "aria-label": translateAria(["addDeal"]),
-          onClick: () => setIsAddDealModalOpen(true)
-        }}
-        className={{
-          wrapper: "h-[163px] bg-secondary-background rounded-lg"
-        }}
-      />
-      {isAddDealModalOpen && (
-        <AddActivityDealModal
-          id={id}
-          {...(filterCompanyId && { filterCompanyId })}
-          onSave={handleSave}
-          onClose={() => setIsAddDealModalOpen(false)}
-        />
-      )}
-    </>
+    <EmptyDataView
+      icon={<SearchIcon />}
+      title={translateText(["deals", "linkedSection", "emptyTitle"])}
+      description={emptyDescription}
+      button={{
+        children: translateText(["deals", "common", "buttons", "addDeal"]),
+        variant: "tertiary",
+        "aria-label": translateAria(["addDeal"]),
+        onClick: onAddDeal
+      }}
+      className={{
+        wrapper: "h-[163px] bg-secondary-background rounded-lg"
+      }}
+    />
   );
 };
 
