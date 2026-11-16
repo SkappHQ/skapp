@@ -72,14 +72,16 @@ export const crmActivityEndpoints = {
     `${moduleAPIPath.CRM}/activity/meeting/${id}`,
   CREATE_TASK: `${moduleAPIPath.CRM}/activity/task`,
   GET_TASK_BY_ID: (id: number) => `${moduleAPIPath.CRM}/activity/task/${id}`,
+  GET_EMAIL_BY_ID: (id: number) => `${moduleAPIPath.CRM}/activity/email/${id}`,
+  EDIT_EMAIL: (id: number) => `${moduleAPIPath.CRM}/activity/email/${id}`,
+  DELETE_EMAIL: (id: number) => `${moduleAPIPath.CRM}/activity/email/${id}`,
   DELETE_TASK: (id: number) => `${moduleAPIPath.CRM}/activity/task/${id}`,
   GET_RELATED_TASKS: (id: number) =>
     `${moduleAPIPath.CRM}/activity/task/${id}/related`,
   EDIT_MEETING: (id: number) => `${moduleAPIPath.CRM}/activity/meeting/${id}`,
   DELETE_MEETING: (id: number) => `${moduleAPIPath.CRM}/activity/meeting/${id}`,
   GET_RELATED_MEETINGS: (id: number) =>
-    `${moduleAPIPath.CRM}/activity/meeting/${id}/related`,
-  GET_EMAIL_BY_ID: (id: number) => `${moduleAPIPath.CRM}/activity/email/${id}`
+    `${moduleAPIPath.CRM}/activity/meeting/${id}/related`
 };
 
 export const crmBoardEndpoints = {

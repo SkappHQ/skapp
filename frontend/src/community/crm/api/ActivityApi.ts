@@ -17,6 +17,7 @@ import {
   ActivityCallEditPayload,
   ActivityCallResponse,
   ActivityEmailCreatePayload,
+  ActivityEmailEditPayload,
   ActivityEmailResponse,
   ActivityFeedFilters,
   ActivityFeedResponse,
@@ -309,6 +310,24 @@ export const useGetActivityTaskById = (
     refetchOnWindowFocus: false
   });
 
+const fetchEmailById = async (id: number): Promise<CrmActivityEmailEntity> => {
+  const response = await authFetch.get(
+    crmActivityEndpoints.GET_EMAIL_BY_ID(id)
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useGetEmailById = (
+  id: number,
+  enabled: boolean
+): UseQueryResult<CrmActivityEmailEntity, AxiosError> =>
+  useQuery({
+    queryKey: crmActivityQueryKeys.EMAIL(id),
+    queryFn: () => fetchEmailById(id),
+    enabled,
+    refetchOnWindowFocus: false
+  });
+
 const updateCall = async ({
   id,
   ...payload
@@ -488,21 +507,42 @@ export const useGetRelatedActivityTasks = (
     enabled,
     refetchOnWindowFocus: false
   });
-
-const fetchEmailById = async (id: number): Promise<CrmActivityEmailEntity> => {
-  const response = await authFetch.get(
-    crmActivityEndpoints.GET_EMAIL_BY_ID(id)
-  );
-  return response?.data?.results?.[0];
+const updateEmail = async ({
+  id,
+  ...payload
+}: ActivityEmailEditPayload): Promise<void> => {
+  await authFetch.patch(crmActivityEndpoints.EDIT_EMAIL(id), payload);
 };
 
-export const useGetEmailById = (
-  id: number,
-  enabled: boolean
-): UseQueryResult<CrmActivityEmailEntity, AxiosError> =>
-  useQuery({
-    queryKey: crmActivityQueryKeys.EMAIL(id),
-    queryFn: () => fetchEmailById(id),
-    enabled,
-    refetchOnWindowFocus: false
+export const useUpdateEmail = (
+  onError: (error: ErrorResponse) => void
+): UseMutationResult<void, ErrorResponse, ActivityEmailEditPayload> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateEmail,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL }),
+    onError
   });
+};
+
+const deleteEmail = async (id: number): Promise<void> => {
+  await authFetch.delete(crmActivityEndpoints.DELETE_EMAIL(id));
+};
+
+export const useDeleteEmail = (
+  onSuccess: () => void,
+  onError: (error: ErrorResponse) => void
+): UseMutationResult<void, ErrorResponse, number> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteEmail,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
+      onSuccess();
+    },
+    onError
+  });
+};
