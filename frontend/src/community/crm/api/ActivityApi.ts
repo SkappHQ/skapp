@@ -17,6 +17,7 @@ import {
   ActivityCallEditPayload,
   ActivityCallResponse,
   ActivityEmailCreatePayload,
+  ActivityEmailEditPayload,
   ActivityEmailResponse,
   ActivityFeedFilters,
   ActivityFeedResponse,
@@ -26,7 +27,8 @@ import {
   ActivityMeetingResponse,
   ActivityTaskCreatePayload,
   ActivityTaskEditPayload,
-  ActivityTaskResponse
+  ActivityTaskResponse,
+  RecordActivityFilters
 } from "~community/crm/activities/types/activityTypes";
 import { crmActivityEndpoints } from "~community/crm/api/utils/ApiEndpoints";
 import { crmActivityQueryKeys } from "~community/crm/api/utils/QueryKeys";
@@ -40,7 +42,7 @@ import {
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 const fetchActivityFeed = async (
-  params: ActivityFeedFilters
+  params: ActivityFeedFilters | RecordActivityFilters
 ): Promise<ActivityFeedResponse> => {
   const response = await authFetch.get(crmActivityEndpoints.GET_ACTIVITY_FEED, {
     params
@@ -54,6 +56,23 @@ export const useGetActivityFeed = (
 ): UseInfiniteQueryResult<InfiniteData<ActivityFeedResponse>, AxiosError> =>
   useInfiniteQuery({
     queryKey: crmActivityQueryKeys.FEED(params),
+    queryFn: ({ pageParam }) =>
+      fetchActivityFeed({ ...params, page: pageParam }),
+    enabled,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) =>
+      lastPage && lastPage.currentPage < lastPage.totalPages - 1
+        ? lastPage.currentPage + 1
+        : null,
+    refetchOnWindowFocus: false
+  });
+
+export const useGetRecordActivities = (
+  params: RecordActivityFilters,
+  enabled: boolean
+): UseInfiniteQueryResult<InfiniteData<ActivityFeedResponse>, AxiosError> =>
+  useInfiniteQuery({
+    queryKey: crmActivityQueryKeys.RECORD(params),
     queryFn: ({ pageParam }) =>
       fetchActivityFeed({ ...params, page: pageParam }),
     enabled,
@@ -309,6 +328,24 @@ export const useGetActivityTaskById = (
     refetchOnWindowFocus: false
   });
 
+const fetchEmailById = async (id: number): Promise<CrmActivityEmailEntity> => {
+  const response = await authFetch.get(
+    crmActivityEndpoints.GET_EMAIL_BY_ID(id)
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useGetEmailById = (
+  id: number,
+  enabled: boolean
+): UseQueryResult<CrmActivityEmailEntity, AxiosError> =>
+  useQuery({
+    queryKey: crmActivityQueryKeys.EMAIL(id),
+    queryFn: () => fetchEmailById(id),
+    enabled,
+    refetchOnWindowFocus: false
+  });
+
 const updateCall = async ({
   id,
   ...payload
@@ -488,21 +525,42 @@ export const useGetRelatedActivityTasks = (
     enabled,
     refetchOnWindowFocus: false
   });
-
-const fetchEmailById = async (id: number): Promise<CrmActivityEmailEntity> => {
-  const response = await authFetch.get(
-    crmActivityEndpoints.GET_EMAIL_BY_ID(id)
-  );
-  return response?.data?.results?.[0];
+const updateEmail = async ({
+  id,
+  ...payload
+}: ActivityEmailEditPayload): Promise<void> => {
+  await authFetch.patch(crmActivityEndpoints.EDIT_EMAIL(id), payload);
 };
 
-export const useGetEmailById = (
-  id: number,
-  enabled: boolean
-): UseQueryResult<CrmActivityEmailEntity, AxiosError> =>
-  useQuery({
-    queryKey: crmActivityQueryKeys.EMAIL(id),
-    queryFn: () => fetchEmailById(id),
-    enabled,
-    refetchOnWindowFocus: false
+export const useUpdateEmail = (
+  onError: (error: ErrorResponse) => void
+): UseMutationResult<void, ErrorResponse, ActivityEmailEditPayload> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateEmail,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL }),
+    onError
   });
+};
+
+const deleteEmail = async (id: number): Promise<void> => {
+  await authFetch.delete(crmActivityEndpoints.DELETE_EMAIL(id));
+};
+
+export const useDeleteEmail = (
+  onSuccess: () => void,
+  onError: (error: ErrorResponse) => void
+): UseMutationResult<void, ErrorResponse, number> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteEmail,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
+      onSuccess();
+    },
+    onError
+  });
+};

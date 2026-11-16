@@ -8,9 +8,21 @@ interface Props {
   id: string;
   comments?: string;
   onSave: (comments: string) => void;
+  title?: string;
+  emptyText?: string;
+  ariaLabel?: string;
+  editAriaLabel?: string;
 }
 
-const SidePanelActivityComments: FC<Props> = ({ id, comments, onSave }) => {
+const SidePanelActivityComments: FC<Props> = ({
+  id,
+  comments,
+  onSave,
+  title,
+  emptyText,
+  ariaLabel,
+  editAriaLabel
+}) => {
   const translateText = useTranslator(
     "crmModule",
     "activities",
@@ -34,9 +46,11 @@ const SidePanelActivityComments: FC<Props> = ({ id, comments, onSave }) => {
     onSave
   });
 
+  const emptyLabel = emptyText || translateText(["noComments"]);
+
   return (
     <div className="flex flex-col gap-1">
-      <p className="subtitle1">{translateText(["comments"])}</p>
+      <p className="subtitle1">{title || translateText(["comments"])}</p>
       {isEditing ? (
         <div className="flex flex-col gap-3">
           <TextArea
@@ -45,7 +59,7 @@ const SidePanelActivityComments: FC<Props> = ({ id, comments, onSave }) => {
             onChange={(e) => changeValue(e.target.value)}
             className="w-full body2"
             rows={4}
-            aria-label={translateAria(["comments"])}
+            aria-label={ariaLabel || translateAria(["comments"])}
             autoFocus
           />
           <div className="flex gap-2 justify-end">
@@ -72,10 +86,10 @@ const SidePanelActivityComments: FC<Props> = ({ id, comments, onSave }) => {
           id={`${id}-comments`}
           type="button"
           className="subtitle3 max-h-24 overflow-y-auto break-words cursor-pointer hover:bg-secondary-background rounded text-left w-full bg-transparent border-none"
-          aria-label={translateAria(["editComments"])}
+          aria-label={editAriaLabel || translateAria(["editComments"])}
           onClick={startEditing}
         >
-          {comments || translateText(["noComments"])}
+          {comments || emptyLabel}
         </button>
       )}
     </div>

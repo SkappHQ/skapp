@@ -65,6 +65,7 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
 
   const isDealMismatch = Boolean(
     values.dealId &&
+    deals[values.dealId] &&
     attendees.length > 0 &&
     !isDealMatchingContacts(deals[values.dealId], attendees)
   );

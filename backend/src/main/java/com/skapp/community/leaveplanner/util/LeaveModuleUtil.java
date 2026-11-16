@@ -6,6 +6,7 @@ import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
+import com.skapp.community.leaveplanner.type.LeaveState;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.Holiday;
 import com.skapp.community.peopleplanner.model.Team;
@@ -83,6 +84,15 @@ public class LeaveModuleUtil {
 
 	public static int getNumberOfMonthsBetweenTwoDates(LocalDate startDate, LocalDate endDate) {
 		return (int) ChronoUnit.MONTHS.between(startDate, endDate) + 1;
+	}
+
+	public static boolean isHalfDay(LeaveState leaveState) {
+		return leaveState == LeaveState.HALFDAY_MORNING || leaveState == LeaveState.HALFDAY_EVENING;
+	}
+
+	public static boolean isSameHalf(HolidayDuration holidayDuration, LeaveState leaveState) {
+		return (holidayDuration == HolidayDuration.HALF_DAY_MORNING && leaveState == LeaveState.HALFDAY_MORNING)
+				|| (holidayDuration == HolidayDuration.HALF_DAY_EVENING && leaveState == LeaveState.HALFDAY_EVENING);
 	}
 
 	public static HolidayDuration getHolidayAvailabilityOnGivenDate(LocalDate date, List<Holiday> holidayObjects) {

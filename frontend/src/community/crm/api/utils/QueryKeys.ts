@@ -1,6 +1,7 @@
 import {
   ActivityFeedFilters,
-  ActivityListFilters
+  ActivityListFilters,
+  RecordActivityFilters
 } from "~community/crm/activities/types/activityTypes";
 import {
   CrmCompanyDomainSearchFilterRequest,
@@ -52,6 +53,7 @@ export const crmTaskQueryKeys = {
 export const crmActivityQueryKeys = {
   ALL: [CRM_ACTIVITIES],
   FEED: (params: ActivityFeedFilters) => [CRM_ACTIVITIES, "feed", params],
+  RECORD: (params: RecordActivityFilters) => [CRM_ACTIVITIES, "record", params],
   CALLS: (params: ActivityListFilters) => [CRM_ACTIVITIES, "calls", params],
   CALL: (id: number) => [CRM_ACTIVITIES, "call", id],
   EMAILS: (params: ActivityListFilters) => [CRM_ACTIVITIES, "emails", params],
@@ -63,10 +65,10 @@ export const crmActivityQueryKeys = {
   TASKS: (params: ActivityListFilters) => [CRM_ACTIVITIES, "tasks", params],
   MEETING: (id: number) => [CRM_ACTIVITIES, "meeting", id],
   TASK: (id: number) => [CRM_ACTIVITIES, "task", id],
+  EMAIL: (id: number) => [CRM_ACTIVITIES, "email", id],
   RELATED_CALLS: (id: number) => [CRM_ACTIVITIES, "related-calls", id],
   RELATED_MEETINGS: (id: number) => [CRM_ACTIVITIES, "related-meetings", id],
-  RELATED_TASKS: (id: number) => [CRM_ACTIVITIES, "related-tasks", id],
-  EMAIL: (id: number) => [CRM_ACTIVITIES, "email", id]
+  RELATED_TASKS: (id: number) => [CRM_ACTIVITIES, "related-tasks", id]
 };
 
 export const crmDealQueryKeys = {
