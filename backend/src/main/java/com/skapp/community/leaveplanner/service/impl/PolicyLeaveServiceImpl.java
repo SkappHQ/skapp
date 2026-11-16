@@ -798,13 +798,15 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 			}
 			validateAttachmentUrls(requestDto.getAttachments());
 		}
-		if (leaveType.getMinDuration() == LeaveDuration.FULL_DAY && isHalfDay(requestDto.getLeaveState())) {
+		if (leaveType.getMinDuration() == LeaveDuration.FULL_DAY
+				&& LeaveModuleUtil.isHalfDay(requestDto.getLeaveState())) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_CANNOT_APPLY_HALFDAY);
 		}
 		if (leaveType.getMinDuration() == LeaveDuration.HALF_DAY && requestDto.getLeaveState() == LeaveState.FULLDAY) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_CANNOT_APPLY_FULLDAY);
 		}
-		if (isHalfDay(requestDto.getLeaveState()) && !requestDto.getStartDate().equals(requestDto.getEndDate())) {
+		if (LeaveModuleUtil.isHalfDay(requestDto.getLeaveState())
+				&& !requestDto.getStartDate().equals(requestDto.getEndDate())) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_HALFDAY_SINGLE_DATE_ONLY);
 		}
 		if (requestDto.getRequestDesc() != null
@@ -829,18 +831,19 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		if (overlapping.isEmpty()) {
 			return false;
 		}
-		if (!isHalfDay(leaveState)) {
+		if (!LeaveModuleUtil.isHalfDay(leaveState)) {
 			return true;
 		}
 		return overlapping.stream()
-			.anyMatch(existing -> !isHalfDay(existing.getLeaveState()) || existing.getLeaveState() == leaveState);
+			.anyMatch(existing -> !LeaveModuleUtil.isHalfDay(existing.getLeaveState())
+					|| existing.getLeaveState() == leaveState);
 	}
 
 	private float calculateRequestedDays(LocalDate startDate, LocalDate endDate, LeaveState leaveState,
 			List<Holiday> holidays) {
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
 		float workingDays = LeaveModuleUtil.getWorkingDaysBetweenTwoDates(startDate, endDate, timeConfigs, holidays);
-		if (workingDays == 1f && isHalfDay(leaveState)) {
+		if (workingDays == 1f && LeaveModuleUtil.isHalfDay(leaveState)) {
 			return LeaveModuleConstant.HALF_DAY;
 		}
 		return workingDays;
@@ -863,8 +866,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		if (leaveState == LeaveState.FULLDAY) {
 			return true;
 		}
-		return (holidayDuration == HolidayDuration.HALF_DAY_MORNING && leaveState == LeaveState.HALFDAY_MORNING)
-				|| (holidayDuration == HolidayDuration.HALF_DAY_EVENING && leaveState == LeaveState.HALFDAY_EVENING);
+		return LeaveModuleUtil.isSameHalf(holidayDuration, leaveState);
 	}
 
 	private void requireLeavePoliciesEnabled() {
@@ -1239,10 +1241,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INVALID_YEAR);
 		}
 		return year;
-	}
-
-	private boolean isHalfDay(LeaveState leaveState) {
-		return leaveState == LeaveState.HALFDAY_MORNING || leaveState == LeaveState.HALFDAY_EVENING;
 	}
 
 }
