@@ -218,6 +218,10 @@ export const invoiceEmployeeRestrictedRoutes = [
   RESCRITED_DYNAMIC_ROUTES.INVOICE.VIEW
 ];
 
+export const invoiceManagerRestrictedRoutes = [
+  ROUTES.INVOICE.CUSTOMERS.PROJECTS.BASE
+];
+
 export const employeeRestrictedRoutes = [
   RESCRITED_DYNAMIC_ROUTES.PEOPLE.EDIT,
   ROUTES.PEOPLE.ADD
