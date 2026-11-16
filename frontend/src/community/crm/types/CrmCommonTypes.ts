@@ -164,6 +164,7 @@ export interface CrmLogEmailFormValues {
   ccContactIds: number[];
   bccContactIds: number[];
   subject: string;
+  ownerId: number | null;
   dealId: number | null;
   companyId: number | null;
   description: string;

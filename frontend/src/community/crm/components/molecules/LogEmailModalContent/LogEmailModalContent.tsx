@@ -21,6 +21,7 @@ import {
   CrmLogEmailFormValues
 } from "~community/crm/types/CrmCommonTypes";
 import { getEmailValidationSchema } from "~community/crm/utils/emailValidations";
+import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 interface Props {
   title?: string;
@@ -44,22 +45,25 @@ const LogEmailModalContent: FC<Props> = ({
   );
   const { setToastMessage } = useToast();
 
+  const { data: currentUser } = useGetUserPersonalDetails();
+
   const initialValues: CrmLogEmailFormValues = useMemo(() => {
     const now = DateTime.now();
 
     return {
-      fromAddress: "",
+      fromAddress: currentUser ? currentUser.email : "",
       date: now.startOf("day").toUTC().toISO(),
       time: getTimeSlotStart(now).toFormat(TIME_FORMAT_24_HOUR),
       toContactIds: prefill?.contactId ? [prefill.contactId] : [],
       ccContactIds: [],
       bccContactIds: [],
       subject: "",
+      ownerId: null,
       dealId: prefill ? prefill.dealId : null,
       companyId: prefill ? prefill.companyId : null,
       description: ""
     };
-  }, [prefill]);
+  }, [currentUser, prefill]);
 
   const toPayload = (
     values: CrmLogEmailFormValues
@@ -96,7 +100,8 @@ const LogEmailModalContent: FC<Props> = ({
     validationSchema,
     onSubmit: handleSubmit,
     validateOnChange: false,
-    validateOnBlur: true
+    validateOnBlur: true,
+    enableReinitialize: true
   });
 
   const { dirty, isSubmitting, setSubmitting, submitForm } = formik;

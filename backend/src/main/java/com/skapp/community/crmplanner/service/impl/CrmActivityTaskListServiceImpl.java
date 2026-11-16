@@ -18,6 +18,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 
@@ -62,6 +63,13 @@ public class CrmActivityTaskListServiceImpl implements CrmActivityTaskListServic
 		}
 		if (filterDto.getEndDate() != null) {
 			params.setRangeEnd(filterDto.getEndDate().plusDays(1).atStartOfDay(zone).toInstant());
+		}
+		params.setPriority(filterDto.getPriority());
+		params.setTaskStatus(filterDto.getTaskStatus());
+		if (filterDto.getTaskStatus() != null) {
+			LocalDate today = LocalDate.now(zone);
+			params.setTodayStart(today.atStartOfDay(zone).toInstant());
+			params.setTodayEnd(today.plusDays(1).atStartOfDay(zone).toInstant());
 		}
 
 		List<CrmActivityTaskResponseDto> tasks = crmActivityTaskDao.findTasks(params);

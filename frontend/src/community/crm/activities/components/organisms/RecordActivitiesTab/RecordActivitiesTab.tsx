@@ -8,18 +8,18 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import ActivitySearchField from "~community/crm/activities/components/molecules/ActivitySearchField/ActivitySearchField";
 import ActivityFeed from "~community/crm/activities/components/organisms/ActivityFeed/ActivityFeed";
 import {
-  ActivityRecordType,
   ActivityTab,
   ActivityType,
   RecordActivityFilters
 } from "~community/crm/activities/types/activityTypes";
 import { useGetRecordActivities } from "~community/crm/api/ActivityApi";
+import { CrmActivityAssociationEnum } from "~community/crm/enums/common";
 import { useActivityDeals } from "~community/crm/hooks/useActivityDeals";
 import { useActivityTaskCompletion } from "~community/crm/hooks/useActivityTaskCompletion";
 
 export interface RecordActivitiesTabProps {
   id: string;
-  recordType: ActivityRecordType;
+  activityAssociation: CrmActivityAssociationEnum;
   recordId: number;
   activeTab: ActivityTab;
   onTabChange: (tab: ActivityTab) => void;
@@ -28,7 +28,7 @@ export interface RecordActivitiesTabProps {
 
 const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
   id,
-  recordType,
+  activityAssociation,
   recordId,
   activeTab,
   onTabChange,
@@ -53,12 +53,12 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
 
   const filters: RecordActivityFilters = useMemo(
     () => ({
-      recordType,
+      activityAssociation,
       recordId,
       ...(activityType ? { type: activityType } : {}),
       ...(searchTerm ? { search: searchTerm } : {})
     }),
-    [recordType, recordId, activityType, searchTerm]
+    [activityAssociation, recordId, activityType, searchTerm]
   );
 
   const {

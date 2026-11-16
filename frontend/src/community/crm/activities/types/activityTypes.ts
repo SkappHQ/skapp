@@ -1,6 +1,9 @@
 import { ReactNode } from "react";
 
-import { CrmPriorityEnum } from "~community/crm/enums/common";
+import {
+  CrmActivityAssociationEnum,
+  CrmPriorityEnum
+} from "~community/crm/enums/common";
 import { CrmMeetingVenueDetails } from "~enterprise/crm/types/ScheduleMeetingTypes";
 
 export enum ActivityType {
@@ -72,14 +75,8 @@ export interface ActivityFeedFilters {
   size?: number;
 }
 
-export enum ActivityRecordType {
-  CONTACT = "CONTACT",
-  DEAL = "DEAL",
-  COMPANY = "COMPANY"
-}
-
 export interface RecordActivityFilters {
-  recordType: ActivityRecordType;
+  activityAssociation: CrmActivityAssociationEnum;
   recordId: number;
   type?: ActivityType;
   search?: string;
@@ -234,4 +231,22 @@ export interface ActivityTaskEditPayload extends ActivityLinkEditPayload {
   priority?: CrmPriorityEnum;
   dueAt?: string | null;
   contactId?: number;
+}
+
+export type EmailRecipientField =
+  "toContactIds" | "ccContactIds" | "bccContactIds";
+
+export type EmailRecipientLabelKey = "to" | "cc" | "bcc";
+
+export type EmailRecipientAriaKey = "editTo" | "editCc" | "editBcc";
+
+export interface ActivityEmailEditPayload extends ActivityLinkEditPayload {
+  id: number;
+  subject?: string;
+  description?: string;
+  fromAddress?: string;
+  loggedAt?: string | null;
+  toContactIds?: number[];
+  ccContactIds?: number[];
+  bccContactIds?: number[];
 }

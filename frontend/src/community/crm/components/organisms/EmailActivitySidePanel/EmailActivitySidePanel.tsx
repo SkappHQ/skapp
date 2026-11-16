@@ -2,24 +2,32 @@ import { EmailFilledIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { ActivityEmailEditPayload } from "~community/crm/activities/types/activityTypes";
 import SidePanelActivityEmailInfo from "~community/crm/components/molecules/SidePanelActivityEmailInfo/SidePanelActivityEmailInfo";
 import ActivitySidePanel from "~community/crm/components/organisms/ActivitySidePanel/ActivitySidePanel";
 import { TASK_DETAIL_ICON_SIZE } from "~community/crm/constants/taskConstants";
-import { useCrmStore } from "~community/crm/store/store";
 import { CrmActivityEmailEntity } from "~community/crm/types/CrmCommonTypes";
 
 interface Props {
   email?: CrmActivityEmailEntity;
   isOpen: boolean;
   onClose: () => void;
+  onTitleSave: (title: string) => void;
+  onCommentsSave: (comments: string) => void;
+  onDealChange: (dealId: number | null) => void;
+  onDetailsSave: (payload: ActivityEmailEditPayload) => void;
   onDelete: () => void;
-  onCompanyClick: () => void;
+  onCompanyClick: (companyId: number) => void;
 }
 
 const EmailActivitySidePanel: FC<Props> = ({
   email,
   isOpen,
   onClose,
+  onTitleSave,
+  onCommentsSave,
+  onDealChange,
+  onDetailsSave,
   onDelete,
   onCompanyClick
 }) => {
@@ -34,7 +42,15 @@ const EmailActivitySidePanel: FC<Props> = ({
     "emailSidePanel"
   );
 
-  const owners = useCrmStore((state) => state.owners);
+  const recipientCompanyIds = email
+    ? Array.from(
+        new Set(
+          [...email.to, ...email.cc, ...email.bcc].flatMap((contact) =>
+            contact.companyId ? [contact.companyId] : []
+          )
+        )
+      )
+    : [];
 
   return (
     <ActivitySidePanel
@@ -42,6 +58,9 @@ const EmailActivitySidePanel: FC<Props> = ({
       isOpen={isOpen}
       isLoading={!email}
       onClose={onClose}
+      onTitleSave={onTitleSave}
+      onCommentsSave={onCommentsSave}
+      onDealChange={onDealChange}
       icon={
         <EmailFilledIcon
           width={TASK_DETAIL_ICON_SIZE}
@@ -55,14 +74,19 @@ const EmailActivitySidePanel: FC<Props> = ({
       emptyDealsDescription={translateText(["noDealsDescription"])}
       commentsTitle={translateText(["description"])}
       emptyCommentsText={translateText(["noDescription"])}
+      commentsAriaLabel={translateAria(["description"])}
+      editCommentsAriaLabel={translateAria(["editDescription"])}
       {...(email && {
         title: email.subject,
         comments: email.description,
         deal: email.deal,
+        dealFilterCompanyId:
+          recipientCompanyIds.length === 1 ? recipientCompanyIds[0] : null,
         info: (
           <SidePanelActivityEmailInfo
+            key={email.id}
             email={email}
-            owner={owners[email.ownerId]}
+            onSave={onDetailsSave}
             onCompanyClick={onCompanyClick}
           />
         )
