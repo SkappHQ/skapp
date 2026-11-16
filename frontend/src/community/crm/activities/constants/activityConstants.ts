@@ -4,6 +4,7 @@ import {
   ActivityDatePreset,
   ActivitySection,
   ActivityTab,
+  ActivityTaskStatus,
   ActivityType
 } from "~community/crm/activities/types/activityTypes";
 import { TASK_TYPE_ICON_MAP } from "~community/crm/constants/taskConstants";
@@ -22,6 +23,16 @@ export const ACTIVITY_SECTION_LABEL_KEYS: Record<ActivitySection, string> = {
   [ActivitySection.TODAY]: "today",
   [ActivitySection.UPCOMING]: "upcoming",
   [ActivitySection.BY_MONTH]: "byMonth"
+};
+
+export const ACTIVITY_TASK_STATUS_LABEL_KEYS: Record<
+  ActivityTaskStatus,
+  string
+> = {
+  [ActivityTaskStatus.OVERDUE]: "overdue",
+  [ActivityTaskStatus.TODAY]: "today",
+  [ActivityTaskStatus.UPCOMING]: "upcoming",
+  [ActivityTaskStatus.COMPLETED]: "completed"
 };
 
 export const ACTIVITY_DATE_PRESETS: ActivityDatePreset[] = [
