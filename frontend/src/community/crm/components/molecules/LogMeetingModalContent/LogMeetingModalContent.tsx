@@ -25,7 +25,7 @@ import {
 import { getMeetingValidationSchema } from "~community/crm/utils/meetingValidations";
 
 interface Props {
-  title?: string;
+  title: string;
   prefill?: CrmActivityPrefill;
   typeField?: (isDisabled: boolean) => ReactNode;
   onClose: () => void;
@@ -172,9 +172,7 @@ const LogMeetingModalContent: FC<Props> = ({
 
   return (
     <LogActivityModal
-      title={
-        title || translateText(["activities", "logMeeting", "modal", "title"])
-      }
+      title={title}
       isDirty={dirty}
       isPending={isPending}
       isSubmitting={isSubmitting}

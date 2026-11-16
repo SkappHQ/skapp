@@ -24,7 +24,7 @@ import { getEmailValidationSchema } from "~community/crm/utils/emailValidations"
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 interface Props {
-  title?: string;
+  title: string;
   prefill?: CrmActivityPrefill;
   typeField?: (isDisabled: boolean) => ReactNode;
   onClose: () => void;
@@ -170,9 +170,7 @@ const LogEmailModalContent: FC<Props> = ({
 
   return (
     <LogActivityModal
-      title={
-        title || translateText(["activities", "logEmail", "modal", "title"])
-      }
+      title={title}
       isDirty={dirty}
       isPending={isPending}
       isSubmitting={isSubmitting}

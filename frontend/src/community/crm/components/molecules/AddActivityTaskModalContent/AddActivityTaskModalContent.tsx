@@ -21,7 +21,7 @@ import {
 import { getActivityTaskValidationSchema } from "~community/crm/utils/activityTaskValidations";
 
 interface Props {
-  title?: string;
+  title: string;
   prefill?: CrmActivityPrefill;
   typeField?: (isDisabled: boolean) => ReactNode;
   onClose: () => void;
@@ -160,9 +160,7 @@ const AddActivityTaskModalContent: FC<Props> = ({
 
   return (
     <LogActivityModal
-      title={
-        title || translateText(["activities", "addTask", "modal", "title"])
-      }
+      title={title}
       isDirty={dirty}
       isPending={isPending}
       isSubmitting={isSubmitting}

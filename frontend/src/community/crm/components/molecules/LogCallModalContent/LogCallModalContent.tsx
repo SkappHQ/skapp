@@ -27,7 +27,7 @@ import {
 } from "~community/crm/utils/callValidations";
 
 interface Props {
-  title?: string;
+  title: string;
   prefill?: CrmActivityPrefill;
   typeField?: (isDisabled: boolean) => ReactNode;
   onClose: () => void;
@@ -172,9 +172,7 @@ const LogCallModalContent: FC<Props> = ({
 
   return (
     <LogActivityModal
-      title={
-        title || translateText(["activities", "logCall", "modal", "title"])
-      }
+      title={title}
       isDirty={dirty}
       isPending={isPending}
       isSubmitting={isSubmitting}

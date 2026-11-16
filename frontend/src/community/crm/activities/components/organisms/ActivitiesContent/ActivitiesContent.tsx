@@ -278,20 +278,28 @@ const ActivitiesContent: FC = () => {
         }
       />
       {isLogCallModalOpen && (
-        <LogCallModalContent onClose={() => setIsLogCallModalOpen(false)} />
+        <LogCallModalContent
+          title={translateText(["activities", "logCall", "modal", "title"])}
+          onClose={() => setIsLogCallModalOpen(false)}
+        />
       )}
       {isLogMeetingModalOpen && (
         <LogMeetingModalContent
+          title={translateText(["activities", "logMeeting", "modal", "title"])}
           onClose={() => setIsLogMeetingModalOpen(false)}
         />
       )}
       {isAddTaskModalOpen && (
         <AddActivityTaskModalContent
+          title={translateText(["activities", "addTask", "modal", "title"])}
           onClose={() => setIsAddTaskModalOpen(false)}
         />
       )}
       {isLogEmailModalOpen && (
-        <LogEmailModalContent onClose={() => setIsLogEmailModalOpen(false)} />
+        <LogEmailModalContent
+          title={translateText(["activities", "logEmail", "modal", "title"])}
+          onClose={() => setIsLogEmailModalOpen(false)}
+        />
       )}
       <ActivityFeed
         activeTab={activeTab}
