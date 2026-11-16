@@ -209,7 +209,8 @@ const RESCRITED_DYNAMIC_ROUTES = {
   },
   INVOICE: {
     CREATE: "/invoice/create/",
-    VIEW: "/invoice/view/"
+    VIEW: "/invoice/view/",
+    PROJECT_DETAILS: "/invoice/customers/customer-details/projects/"
   }
 };
 
@@ -219,7 +220,7 @@ export const invoiceEmployeeRestrictedRoutes = [
 ];
 
 export const invoiceManagerRestrictedRoutes = [
-  ROUTES.INVOICE.CUSTOMERS.PROJECTS.BASE
+  RESCRITED_DYNAMIC_ROUTES.INVOICE.PROJECT_DETAILS
 ];
 
 export const employeeRestrictedRoutes = [
