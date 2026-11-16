@@ -23,8 +23,13 @@ const RecordActivityActions: FC<RecordActivityActionsProps> = ({
 }) => {
   const translateText = useTranslator("crmModule", "activities");
 
-  const { setRecordActivityModalType, setRecordActivityPrefill } = useCrmStore(
+  const {
+    setIsRecordActivityModalOpen,
+    setRecordActivityModalType,
+    setRecordActivityPrefill
+  } = useCrmStore(
     useShallow((store) => ({
+      setIsRecordActivityModalOpen: store.setIsRecordActivityModalOpen,
       setRecordActivityModalType: store.setRecordActivityModalType,
       setRecordActivityPrefill: store.setRecordActivityPrefill
     }))
@@ -36,6 +41,7 @@ const RecordActivityActions: FC<RecordActivityActionsProps> = ({
     guardCrmCreate(CrmLimitResource.ACTIVITIES, () => {
       setRecordActivityPrefill(prefill);
       setRecordActivityModalType(ActivityType.TASK);
+      setIsRecordActivityModalOpen(true);
     });
   };
 

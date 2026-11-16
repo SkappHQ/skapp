@@ -14,25 +14,24 @@ const RecordActivityModalController: FC = () => {
   const translateText = useTranslator("crmModule", "activities");
 
   const {
+    isRecordActivityModalOpen,
     recordActivityModalType,
     recordActivityPrefill,
-    setRecordActivityModalType,
-    setRecordActivityPrefill
+    setIsRecordActivityModalOpen
   } = useCrmStore(
     useShallow((store) => ({
+      isRecordActivityModalOpen: store.isRecordActivityModalOpen,
       recordActivityModalType: store.recordActivityModalType,
       recordActivityPrefill: store.recordActivityPrefill,
-      setRecordActivityModalType: store.setRecordActivityModalType,
-      setRecordActivityPrefill: store.setRecordActivityPrefill
+      setIsRecordActivityModalOpen: store.setIsRecordActivityModalOpen
     }))
   );
 
   const handleModalClose = (): void => {
-    setRecordActivityModalType(null);
-    setRecordActivityPrefill(null);
+    setIsRecordActivityModalOpen(false);
   };
 
-  if (!recordActivityModalType) return null;
+  if (!isRecordActivityModalOpen) return null;
 
   const renderTypeField = (isDisabled: boolean): ReactNode => (
     <RecordActivityTypeField
@@ -44,7 +43,7 @@ const RecordActivityModalController: FC = () => {
   const modalProps = {
     title: translateText(["addActivity", "modalTitle"]),
     typeField: renderTypeField,
-    ...(recordActivityPrefill && { prefill: recordActivityPrefill }),
+    prefill: recordActivityPrefill,
     onClose: handleModalClose
   };
 

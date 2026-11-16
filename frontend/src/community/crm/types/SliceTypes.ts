@@ -51,8 +51,9 @@ export interface CrmUiSliceTypes {
   contactModalType: CrmModalTypes;
   isTaskModalOpen: boolean;
   taskModalType: CrmModalTypes;
-  recordActivityModalType: ActivityType | null;
-  recordActivityPrefill: CrmActivityPrefill | null;
+  isRecordActivityModalOpen: boolean;
+  recordActivityModalType: ActivityType;
+  recordActivityPrefill: CrmActivityPrefill;
   isDealStageModalOpen: boolean;
   dealStageModalType: CrmModalTypes;
 
@@ -85,12 +86,9 @@ export interface CrmUiSliceTypes {
   setContactModalType: (contactModalType: CrmModalTypes) => void;
   setIsTaskModalOpen: (isTaskModalOpen: boolean) => void;
   setTaskModalType: (taskModalType: CrmModalTypes) => void;
-  setRecordActivityModalType: (
-    recordActivityModalType: ActivityType | null
-  ) => void;
-  setRecordActivityPrefill: (
-    recordActivityPrefill: CrmActivityPrefill | null
-  ) => void;
+  setIsRecordActivityModalOpen: (isRecordActivityModalOpen: boolean) => void;
+  setRecordActivityModalType: (recordActivityModalType: ActivityType) => void;
+  setRecordActivityPrefill: (recordActivityPrefill: CrmActivityPrefill) => void;
   setIsDealStageModalOpen: (isDealStageModalOpen: boolean) => void;
   setDealStageModalType: (dealStageModalType: CrmModalTypes) => void;
 

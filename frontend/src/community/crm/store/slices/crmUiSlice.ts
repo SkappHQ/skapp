@@ -27,8 +27,9 @@ const CrmUiSlice: StateCreator<
   contactModalType: CrmModalTypes.ADD_CONTACT_MODAL,
   isTaskModalOpen: false,
   taskModalType: CrmModalTypes.ADD_TASK_MODAL,
-  recordActivityModalType: null,
-  recordActivityPrefill: null,
+  isRecordActivityModalOpen: false,
+  recordActivityModalType: ActivityType.TASK,
+  recordActivityPrefill: { contactId: null, dealId: null, companyId: null },
   isDealStageModalOpen: false,
   dealStageModalType: CrmModalTypes.ADD_DEAL_STAGE_MODAL,
 
@@ -65,11 +66,12 @@ const CrmUiSlice: StateCreator<
     set({ contactModalType }),
   setIsTaskModalOpen: (isTaskModalOpen: boolean) => set({ isTaskModalOpen }),
   setTaskModalType: (taskModalType: CrmModalTypes) => set({ taskModalType }),
-  setRecordActivityModalType: (recordActivityModalType: ActivityType | null) =>
+  setIsRecordActivityModalOpen: (isRecordActivityModalOpen: boolean) =>
+    set({ isRecordActivityModalOpen }),
+  setRecordActivityModalType: (recordActivityModalType: ActivityType) =>
     set({ recordActivityModalType }),
-  setRecordActivityPrefill: (
-    recordActivityPrefill: CrmActivityPrefill | null
-  ) => set({ recordActivityPrefill }),
+  setRecordActivityPrefill: (recordActivityPrefill: CrmActivityPrefill) =>
+    set({ recordActivityPrefill }),
   setIsDealStageModalOpen: (isDealStageModalOpen: boolean) =>
     set({ isDealStageModalOpen }),
   setDealStageModalType: (dealStageModalType: CrmModalTypes) =>
