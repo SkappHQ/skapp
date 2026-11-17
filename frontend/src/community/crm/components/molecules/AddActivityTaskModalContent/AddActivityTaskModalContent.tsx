@@ -1,5 +1,5 @@
 import { useFormik } from "formik";
-import { FC, useMemo } from "react";
+import { FC, ReactNode, useMemo } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -14,14 +14,25 @@ import {
   CrmPriorityEnum
 } from "~community/crm/enums/common";
 import { useDefaultCrmOwner } from "~community/crm/hooks/useDefaultCrmOwner";
-import { CrmAddTaskFormValues } from "~community/crm/types/CrmCommonTypes";
+import {
+  CrmActivityPrefill,
+  CrmAddTaskFormValues
+} from "~community/crm/types/CrmCommonTypes";
 import { getActivityTaskValidationSchema } from "~community/crm/utils/activityTaskValidations";
 
 interface Props {
+  title: string;
+  prefill?: CrmActivityPrefill;
+  typeField?: (isDisabled: boolean) => ReactNode;
   onClose: () => void;
 }
 
-const AddActivityTaskModalContent: FC<Props> = ({ onClose }) => {
+const AddActivityTaskModalContent: FC<Props> = ({
+  title,
+  typeField,
+  prefill,
+  onClose
+}) => {
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator(
     "crmAria",
@@ -39,12 +50,12 @@ const AddActivityTaskModalContent: FC<Props> = ({ onClose }) => {
       priority: CrmPriorityEnum.MEDIUM,
       dueAt: null,
       ownerId: defaultOwner ? defaultOwner.employeeId : null,
-      contactId: null,
-      dealId: null,
-      companyId: null,
+      contactId: prefill ? prefill.contactId : null,
+      dealId: prefill ? prefill.dealId : null,
+      companyId: prefill ? prefill.companyId : null,
       notes: ""
     }),
-    [defaultOwner]
+    [defaultOwner, prefill]
   );
 
   const toPayload = (
@@ -149,7 +160,7 @@ const AddActivityTaskModalContent: FC<Props> = ({ onClose }) => {
 
   return (
     <LogActivityModal
-      title={translateText(["activities", "addTask", "modal", "title"])}
+      title={title}
       isDirty={dirty}
       isPending={isPending}
       isSubmitting={isSubmitting}
@@ -158,6 +169,7 @@ const AddActivityTaskModalContent: FC<Props> = ({ onClose }) => {
       onSave={submitForm}
       onClose={onClose}
     >
+      {typeField?.(isPending || isSubmitting)}
       <AddActivityTaskModalForm formik={formik} />
     </LogActivityModal>
   );

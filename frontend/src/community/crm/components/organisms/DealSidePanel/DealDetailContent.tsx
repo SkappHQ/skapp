@@ -4,6 +4,7 @@ import { useShallow } from "zustand/react/shallow";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import RecordActivityActions from "~community/crm/activities/components/molecules/RecordActivityActions/RecordActivityActions";
 import RecordActivitiesTab from "~community/crm/activities/components/organisms/RecordActivitiesTab/RecordActivitiesTab";
 import { useEditDeal, useGetDealById } from "~community/crm/api/DealApi";
 import { CrmActivityAssociationEnum } from "~community/crm/enums/common";
@@ -116,6 +117,15 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
               recordId={dealId}
               activeTab={activityTab}
               onTabChange={setActivityTab}
+            />
+            <RecordActivityActions
+              id="deal-activity-actions"
+              prefill={{
+                contactId: deal.contactId ? deal.contactId : null,
+                dealId,
+                companyId: deal.companyId ? deal.companyId : null
+              }}
+              isLineButton
             />
           </div>
         </div>

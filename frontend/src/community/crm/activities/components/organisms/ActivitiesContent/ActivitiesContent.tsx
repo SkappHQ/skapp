@@ -45,7 +45,7 @@ import { useActivityTaskCompletion } from "~community/crm/hooks/useActivityTaskC
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
-import ScheduleMeetingAction from "~enterprise/crm/components/organisms/ScheduleMeetingAction/ScheduleMeetingAction";
+import ScheduleMeetingModalController from "~enterprise/crm/components/organisms/ScheduleMeetingModalController/ScheduleMeetingModalController";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
@@ -293,27 +293,37 @@ const ActivitiesContent: FC = () => {
           showControls &&
           actionButton && (
             <div className="flex items-center gap-2">
-              {activeTab === ActivityTab.MEETINGS && <ScheduleMeetingAction />}
+              {activeTab === ActivityTab.MEETINGS && (
+                <ScheduleMeetingModalController />
+              )}
               <ButtonV2 {...actionButton} />
             </div>
           )
         }
       />
       {isLogCallModalOpen && (
-        <LogCallModalContent onClose={() => setIsLogCallModalOpen(false)} />
+        <LogCallModalContent
+          title={translateText(["activities", "logCall", "modal", "title"])}
+          onClose={() => setIsLogCallModalOpen(false)}
+        />
       )}
       {isLogMeetingModalOpen && (
         <LogMeetingModalContent
+          title={translateText(["activities", "logMeeting", "modal", "title"])}
           onClose={() => setIsLogMeetingModalOpen(false)}
         />
       )}
       {isAddTaskModalOpen && (
         <AddActivityTaskModalContent
+          title={translateText(["activities", "addTask", "modal", "title"])}
           onClose={() => setIsAddTaskModalOpen(false)}
         />
       )}
       {isLogEmailModalOpen && (
-        <LogEmailModalContent onClose={() => setIsLogEmailModalOpen(false)} />
+        <LogEmailModalContent
+          title={translateText(["activities", "logEmail", "modal", "title"])}
+          onClose={() => setIsLogEmailModalOpen(false)}
+        />
       )}
       <ActivityFeed
         activeTab={activeTab}

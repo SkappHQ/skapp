@@ -4,11 +4,12 @@ import {
   MenuItemProps,
   SidePanel
 } from "@rootcodelabs/skapp-ui";
-import { FC, ReactNode, useEffect } from "react";
+import { FC, ReactNode, useEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import AddActivityDealModal from "~community/crm/components/molecules/AddActivityDealModal/AddActivityDealModal";
 import SidePanelActivityComments from "~community/crm/components/molecules/SidePanelActivityComments/SidePanelActivityComments";
 import SidePanelActivityDeal from "~community/crm/components/molecules/SidePanelActivityDeal/SidePanelActivityDeal";
 import SidePanelActivityTitle from "~community/crm/components/molecules/SidePanelActivityTitle/SidePanelActivityTitle";
@@ -97,6 +98,8 @@ const ActivitySidePanel: FC<Props> = ({
   const { isCrmSalesManager, isCrmAdmin, isSuperAdmin } = useSessionData();
   const isDeleteAllowed = isCrmSalesManager || isCrmAdmin || isSuperAdmin;
 
+  const [isAddDealModalOpen, setIsAddDealModalOpen] = useState(false);
+
   const deleteItem: MenuItemProps = {
     id: "delete",
     label: deleteLabel,
@@ -118,83 +121,97 @@ const ActivitySidePanel: FC<Props> = ({
     ...(isDeleteAllowed ? [deleteItem] : [])
   ];
 
+  const handleAddDealSave = (selectedDealId: number | null): void => {
+    setIsAddDealModalOpen(false);
+    onDealChange(selectedDealId);
+  };
+
   return (
-    <SidePanel
-      isOpen={isOpen}
-      onClose={onClose}
-      closeOnBackdropClick
-      header={
-        isLoading ? (
-          <SidePanelHeaderSkeleton isShowLastUpdate={false} />
+    <>
+      <SidePanel
+        isOpen={isOpen}
+        onClose={onClose}
+        closeOnBackdropClick
+        header={
+          isLoading ? (
+            <SidePanelHeaderSkeleton isShowLastUpdate={false} />
+          ) : (
+            <div className="flex items-center gap-4 pl-2">
+              {icon}
+              {title && (
+                <SidePanelActivityTitle
+                  key={activityId}
+                  id={id}
+                  title={title}
+                  onSave={onTitleSave}
+                />
+              )}
+            </div>
+          )
+        }
+        headerActions={
+          isLoading ? (
+            <SidePanelHeaderActionsSkeleton />
+          ) : (
+            actionItems.length > 0 && (
+              <KebabMenu
+                id={`${id}-actions`}
+                menuItems={actionItems}
+                anchorButton={{ "aria-label": menuAriaLabel }}
+                className={{
+                  anchorElement:
+                    "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
+                }}
+              />
+            )
+          )
+        }
+      >
+        {isLoading ? (
+          <div aria-busy="true">
+            <ActivitySidePanelSkeleton />
+          </div>
         ) : (
-          <div className="flex items-center gap-4 pl-2">
-            {icon}
-            {title && (
-              <SidePanelActivityTitle
+          <div className="flex gap-6 pb-4">
+            <div className="flex flex-col flex-1 gap-6 min-w-0">
+              <SidePanelActivityComments
                 key={activityId}
                 id={id}
-                title={title}
-                onSave={onTitleSave}
+                comments={comments}
+                onSave={onCommentsSave}
+                title={commentsTitle}
+                emptyText={emptyCommentsText}
+                ariaLabel={commentsAriaLabel}
+                editAriaLabel={editCommentsAriaLabel}
               />
-            )}
-          </div>
-        )
-      }
-      headerActions={
-        isLoading ? (
-          <SidePanelHeaderActionsSkeleton />
-        ) : (
-          actionItems.length > 0 && (
-            <KebabMenu
-              id={`${id}-actions`}
-              menuItems={actionItems}
-              anchorButton={{ "aria-label": menuAriaLabel }}
-              className={{
-                anchorElement:
-                  "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
-              }}
-            />
-          )
-        )
-      }
-    >
-      {isLoading ? (
-        <div aria-busy="true">
-          <ActivitySidePanelSkeleton />
-        </div>
-      ) : (
-        <div className="flex gap-6 pb-4">
-          <div className="flex flex-col flex-1 gap-6 min-w-0">
-            <SidePanelActivityComments
-              key={activityId}
-              id={id}
-              comments={comments}
-              onSave={onCommentsSave}
-              title={commentsTitle}
-              emptyText={emptyCommentsText}
-              ariaLabel={commentsAriaLabel}
-              editAriaLabel={editCommentsAriaLabel}
-            />
 
-            <div className="flex flex-col gap-3">
-              <h2 className="h2">{translateText(["dealsTitle"])}</h2>
-              <hr className="border-secondary-accent" />
-              <SidePanelActivityDeal
-                id={id}
-                dealId={linkedDealId}
-                filterCompanyId={dealFilterCompanyId}
-                emptyDescription={emptyDealsDescription}
-                onDealChange={onDealChange}
-              />
+              <div className="flex flex-col gap-3">
+                <h2 className="h2">{translateText(["dealsTitle"])}</h2>
+                <hr className="border-secondary-accent" />
+                <SidePanelActivityDeal
+                  dealId={linkedDealId}
+                  emptyDescription={emptyDealsDescription}
+                  onAddDeal={() => setIsAddDealModalOpen(true)}
+                  onDealChange={onDealChange}
+                />
+              </div>
+
+              {related}
             </div>
 
-            {related}
+            <div className="w-[18.438rem] shrink-0">{info}</div>
           </div>
-
-          <div className="w-[18.438rem] shrink-0">{info}</div>
-        </div>
+        )}
+      </SidePanel>
+      {isAddDealModalOpen && (
+        <AddActivityDealModal
+          id={id}
+          {...(dealFilterCompanyId && { filterCompanyId: dealFilterCompanyId })}
+          onSave={handleAddDealSave}
+          onClose={() => setIsAddDealModalOpen(false)}
+        />
       )}
-    </SidePanel>
+    </>
   );
 };
 

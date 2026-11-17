@@ -13,6 +13,7 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import RecordActivityActions from "~community/crm/activities/components/molecules/RecordActivityActions/RecordActivityActions";
 import RecordActivitiesTab from "~community/crm/activities/components/organisms/RecordActivitiesTab/RecordActivitiesTab";
 import {
   useGetCompanyById,
@@ -363,6 +364,16 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
                 recordId={companyId}
                 activeTab={activityTab}
                 onTabChange={setActivityTab}
+                actions={
+                  <RecordActivityActions
+                    id="company-activity-actions"
+                    prefill={{
+                      contactId: null,
+                      dealId: null,
+                      companyId
+                    }}
+                  />
+                }
               />
             )}
           </>
