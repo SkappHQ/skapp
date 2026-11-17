@@ -10,7 +10,7 @@ interface PriorityLabelProps {
 }
 
 const PriorityLabel: FC<PriorityLabelProps> = ({ priority }) => {
-  const translateText = useTranslator("crmModule");
+  const translateAria = useTranslator("crmAria");
 
   const { icon, bgColor, key } = getPriorityConfig(priority);
 
@@ -18,7 +18,7 @@ const PriorityLabel: FC<PriorityLabelProps> = ({ priority }) => {
     <PriorityIcon
       bgColor={bgColor}
       icon={icon}
-      ariaLabel={translateText(["common", "priorityOptions", key])}
+      ariaLabel={translateAria(["activities", "row", `${key}Priority`])}
     />
   );
 };
