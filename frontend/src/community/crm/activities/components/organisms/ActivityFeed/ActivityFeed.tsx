@@ -3,10 +3,12 @@ import {
   EmptyDataView,
   SearchIcon
 } from "@rootcodelabs/skapp-ui";
-import { FC, useMemo } from "react";
+import { FC, useEffect, useMemo } from "react";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import ActivityFeedSection from "~community/crm/activities/components/molecules/ActivityFeedSection/ActivityFeedSection";
 import ActivityFeedSkeleton from "~community/crm/activities/components/molecules/ActivityFeedSkeleton/ActivityFeedSkeleton";
 import { ACTIVITY_SECTION_LABEL_KEYS } from "~community/crm/activities/constants/activityConstants";
@@ -35,7 +37,6 @@ export interface ActivityFeedProps {
   taskCompletions: Record<number, boolean>;
   emptyStateButton?: ButtonV2Props | null;
   emptyStateText?: { title: string; description: string };
-  errorMessage?: string;
   isShowTaskCheckbox?: boolean;
   onLoadMore: () => void;
   onRowClick?: (row: ActivityRow) => void;
@@ -55,7 +56,6 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
   taskCompletions,
   emptyStateButton,
   emptyStateText,
-  errorMessage,
   isShowTaskCheckbox,
   onLoadMore,
   onRowClick,
@@ -63,6 +63,23 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
 }) => {
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
+  const { setToastMessage } = useToast();
+
+  useEffect(() => {
+    if (!isError) return;
+
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["activities", "feed", "errorToast", "title"]),
+      description: translateText([
+        "activities",
+        "feed",
+        "errorToast",
+        "description"
+      ])
+    });
+  }, [isError]);
 
   const sections = useMemo(
     () =>
@@ -110,13 +127,17 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
 
     if (isError) {
       return (
-        <div
-          id={`${id}-error`}
-          role="alert"
-          className="flex items-center justify-center p-6 rounded-lg bg-secondary-background body2 text-center"
-        >
-          {errorMessage || translateText(["activities", "feed", "loadError"])}
-        </div>
+        <EmptyDataView
+          icon={<SearchIcon />}
+          title={translateText(["activities", "feed", "errorState", "title"])}
+          description={translateText([
+            "activities",
+            "feed",
+            "errorState",
+            "description"
+          ])}
+          className={{ wrapper: "bg-secondary-background rounded-lg" }}
+        />
       );
     }
 

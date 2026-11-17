@@ -1,10 +1,8 @@
 import { Dropdown } from "@rootcodelabs/skapp-ui";
-import { FC, ReactNode, useEffect, useMemo, useState } from "react";
+import { FC, ReactNode, useMemo, useState } from "react";
 
-import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useToast } from "~community/common/providers/ToastProvider";
 import ActivitySearchField from "~community/crm/activities/components/molecules/ActivitySearchField/ActivitySearchField";
 import ActivityFeed from "~community/crm/activities/components/organisms/ActivityFeed/ActivityFeed";
 import {
@@ -37,7 +35,6 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
   const displayZone = useDisplayZone();
-  const { setToastMessage } = useToast();
 
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -75,16 +72,6 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
   const rows = useMemo(() => pages.flatMap((page) => page.items), [pages]);
 
   useActivityDeals(rows);
-
-  useEffect(() => {
-    if (!isError) return;
-
-    setToastMessage({
-      open: true,
-      toastType: ToastType.ERROR,
-      title: translateText(["activities", "recordTab", "loadErrorToast"])
-    });
-  }, [isError]);
 
   const typeOptions = [
     ActivityTab.ALL,
@@ -165,7 +152,6 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
             "description"
           ])
         }}
-        errorMessage={translateText(["activities", "recordTab", "loadError"])}
         isShowTaskCheckbox
         onLoadMore={fetchNextPage}
         onToggleComplete={handleToggleComplete}
