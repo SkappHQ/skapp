@@ -20,6 +20,7 @@ import ROUTES, {
   COMMUNITY_PAGES_BASE_PATH,
   employeeRestrictedRoutes,
   invoiceEmployeeRestrictedRoutes,
+  invoiceManagerRestrictedRoutes,
   leavePolicyManagementRestrictedRoutes,
   leaveReportRestrictedRoutes,
   managerRestrictedRoutes,
@@ -294,6 +295,10 @@ const RESTRICTED_ROUTE_RULES: RestrictedRouteRule[] = [
   {
     routes: invoiceEmployeeRestrictedRoutes,
     requiredRole: ManagerTypes.INVOICE_MANAGER
+  },
+  {
+    routes: invoiceManagerRestrictedRoutes,
+    requiredRole: AdminTypes.INVOICE_ADMIN
   },
   {
     routes: employeeRestrictedRoutes,
