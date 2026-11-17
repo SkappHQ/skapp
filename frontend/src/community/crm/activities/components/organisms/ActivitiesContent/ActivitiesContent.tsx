@@ -274,7 +274,7 @@ const ActivitiesContent: FC = () => {
       }
     : null;
 
-  const meetingsScheduleButton =
+  const meetingsScheduleButton: ButtonV2Props | null =
     activeTab === ActivityTab.MEETINGS ? scheduleMeetingButton : null;
 
   return (
