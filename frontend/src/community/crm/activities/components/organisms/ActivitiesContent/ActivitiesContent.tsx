@@ -41,6 +41,7 @@ import LogEmailModalContent from "~community/crm/components/molecules/LogEmailMo
 import LogMeetingModalContent from "~community/crm/components/molecules/LogMeetingModalContent/LogMeetingModalContent";
 import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useActivityDeals } from "~community/crm/hooks/useActivityDeals";
+import { useActivityLoadErrorToast } from "~community/crm/hooks/useActivityLoadErrorToast";
 import { useActivityTaskCompletion } from "~community/crm/hooks/useActivityTaskCompletion";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
 import { useCrmStore } from "~community/crm/store/store";
@@ -140,7 +141,7 @@ const ActivitiesContent: FC = () => {
     activeTab === ActivityTab.TASKS
   );
 
-  const { isLoading, isError } = {
+  const { isLoading, isError, errorUpdatedAt } = {
     [ActivityTab.ALL]: feed,
     [ActivityTab.CALLS]: calls,
     [ActivityTab.EMAILS]: emails,
@@ -172,6 +173,7 @@ const ActivitiesContent: FC = () => {
   const rows = useMemo(() => pages.flatMap((page) => page.items), [pages]);
 
   useActivityDeals(rows);
+  useActivityLoadErrorToast(isError, errorUpdatedAt);
 
   const resultCount =
     isAllTab && feed.data ? feed.data.pages[0].totalItems : rows.length;

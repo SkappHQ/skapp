@@ -3,12 +3,10 @@ import {
   EmptyDataView,
   SearchIcon
 } from "@rootcodelabs/skapp-ui";
-import { FC, useEffect, useMemo } from "react";
+import { FC, useMemo } from "react";
 
-import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useToast } from "~community/common/providers/ToastProvider";
 import ActivityFeedSection from "~community/crm/activities/components/molecules/ActivityFeedSection/ActivityFeedSection";
 import ActivityFeedSkeleton from "~community/crm/activities/components/molecules/ActivityFeedSkeleton/ActivityFeedSkeleton";
 import { ACTIVITY_SECTION_LABEL_KEYS } from "~community/crm/activities/constants/activityConstants";
@@ -63,23 +61,6 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
 }) => {
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
-  const { setToastMessage } = useToast();
-
-  useEffect(() => {
-    if (!isError) return;
-
-    setToastMessage({
-      open: true,
-      toastType: ToastType.ERROR,
-      title: translateText(["activities", "feed", "errorToast", "title"]),
-      description: translateText([
-        "activities",
-        "feed",
-        "errorToast",
-        "description"
-      ])
-    });
-  }, [isError]);
 
   const sections = useMemo(
     () =>
@@ -125,19 +106,21 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
       );
     }
 
-    if (isError) {
+    if (isError && pages.length === 0) {
       return (
-        <EmptyDataView
-          icon={<SearchIcon />}
-          title={translateText(["activities", "feed", "errorState", "title"])}
-          description={translateText([
-            "activities",
-            "feed",
-            "errorState",
-            "description"
-          ])}
-          className={{ wrapper: "bg-secondary-background rounded-lg" }}
-        />
+        <div id={`${id}-error`} role="alert">
+          <EmptyDataView
+            icon={<SearchIcon />}
+            title={translateText(["activities", "feed", "errorState", "title"])}
+            description={translateText([
+              "activities",
+              "feed",
+              "errorState",
+              "description"
+            ])}
+            className={{ wrapper: "bg-secondary-background rounded-lg" }}
+          />
+        </div>
       );
     }
 

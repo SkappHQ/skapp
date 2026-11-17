@@ -13,6 +13,7 @@ import {
 import { useGetRecordActivities } from "~community/crm/api/ActivityApi";
 import { CrmActivityAssociationEnum } from "~community/crm/enums/common";
 import { useActivityDeals } from "~community/crm/hooks/useActivityDeals";
+import { useActivityLoadErrorToast } from "~community/crm/hooks/useActivityLoadErrorToast";
 import { useActivityTaskCompletion } from "~community/crm/hooks/useActivityTaskCompletion";
 
 export interface RecordActivitiesTabProps {
@@ -62,6 +63,7 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
     data,
     isLoading,
     isError,
+    errorUpdatedAt,
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage
@@ -72,6 +74,7 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
   const rows = useMemo(() => pages.flatMap((page) => page.items), [pages]);
 
   useActivityDeals(rows);
+  useActivityLoadErrorToast(isError, errorUpdatedAt);
 
   const typeOptions = [
     ActivityTab.ALL,
