@@ -6,7 +6,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { ActivityType } from "~community/crm/activities/types/activityTypes";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmActivityPrefill } from "~community/crm/types/CrmCommonTypes";
-import ScheduleMeetingAction from "~enterprise/crm/components/organisms/ScheduleMeetingAction/ScheduleMeetingAction";
+import ScheduleMeetingModalController from "~enterprise/crm/components/organisms/ScheduleMeetingModalController/ScheduleMeetingModalController";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
@@ -47,7 +47,7 @@ const RecordActivityActions: FC<RecordActivityActionsProps> = ({
 
   return (
     <div className="flex items-center gap-2">
-      <ScheduleMeetingAction prefill={prefill} />
+      <ScheduleMeetingModalController prefill={prefill} />
       <ButtonV2
         id={`${id}-add`}
         type="button"

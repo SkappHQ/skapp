@@ -6,6 +6,6 @@ interface Props {
   prefill?: CrmActivityPrefill;
 }
 
-const ScheduleMeetingAction: FC<Props> = () => null;
+const ScheduleMeetingModalController: FC<Props> = () => null;
 
-export default ScheduleMeetingAction;
+export default ScheduleMeetingModalController;
