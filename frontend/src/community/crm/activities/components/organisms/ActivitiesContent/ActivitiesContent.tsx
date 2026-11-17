@@ -1,10 +1,12 @@
 import { ButtonV2, ButtonV2Props } from "@rootcodelabs/skapp-ui";
-import { FC, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import ActivityCallSidePanel from "~community/crm/activities/components/organisms/ActivityCallSidePanel/ActivityCallSidePanel";
 import ActivityEmailSidePanel from "~community/crm/activities/components/organisms/ActivityEmailSidePanel/ActivityEmailSidePanel";
 import ActivityFeed from "~community/crm/activities/components/organisms/ActivityFeed/ActivityFeed";
@@ -41,7 +43,6 @@ import LogEmailModalContent from "~community/crm/components/molecules/LogEmailMo
 import LogMeetingModalContent from "~community/crm/components/molecules/LogMeetingModalContent/LogMeetingModalContent";
 import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useActivityDeals } from "~community/crm/hooks/useActivityDeals";
-import { useActivityLoadErrorToast } from "~community/crm/hooks/useActivityLoadErrorToast";
 import { useActivityTaskCompletion } from "~community/crm/hooks/useActivityTaskCompletion";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
 import { useCrmStore } from "~community/crm/store/store";
@@ -53,6 +54,7 @@ import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 const ActivitiesContent: FC = () => {
   const translateText = useTranslator("crmModule");
   const displayZone = useDisplayZone();
+  const { setToastMessage } = useToast();
   const { isCrmSalesManager } = useSessionData();
   const isManager = Boolean(isCrmSalesManager);
 
@@ -173,7 +175,22 @@ const ActivitiesContent: FC = () => {
   const rows = useMemo(() => pages.flatMap((page) => page.items), [pages]);
 
   useActivityDeals(rows);
-  useActivityLoadErrorToast(isError, errorUpdatedAt);
+
+  useEffect(() => {
+    if (!isError) return;
+
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["activities", "feed", "errorToast", "title"]),
+      description: translateText([
+        "activities",
+        "feed",
+        "errorToast",
+        "description"
+      ])
+    });
+  }, [isError, errorUpdatedAt]);
 
   const resultCount =
     isAllTab && feed.data ? feed.data.pages[0].totalItems : rows.length;

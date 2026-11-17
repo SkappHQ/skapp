@@ -1,8 +1,10 @@
 import { Dropdown } from "@rootcodelabs/skapp-ui";
-import { FC, ReactNode, useMemo, useState } from "react";
+import { FC, ReactNode, useEffect, useMemo, useState } from "react";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import ActivitySearchField from "~community/crm/activities/components/molecules/ActivitySearchField/ActivitySearchField";
 import ActivityFeed from "~community/crm/activities/components/organisms/ActivityFeed/ActivityFeed";
 import {
@@ -13,7 +15,6 @@ import {
 import { useGetRecordActivities } from "~community/crm/api/ActivityApi";
 import { CrmActivityAssociationEnum } from "~community/crm/enums/common";
 import { useActivityDeals } from "~community/crm/hooks/useActivityDeals";
-import { useActivityLoadErrorToast } from "~community/crm/hooks/useActivityLoadErrorToast";
 import { useActivityTaskCompletion } from "~community/crm/hooks/useActivityTaskCompletion";
 
 export interface RecordActivitiesTabProps {
@@ -36,6 +37,7 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria");
   const displayZone = useDisplayZone();
+  const { setToastMessage } = useToast();
 
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -74,7 +76,22 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
   const rows = useMemo(() => pages.flatMap((page) => page.items), [pages]);
 
   useActivityDeals(rows);
-  useActivityLoadErrorToast(isError, errorUpdatedAt);
+
+  useEffect(() => {
+    if (!isError) return;
+
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["activities", "feed", "errorToast", "title"]),
+      description: translateText([
+        "activities",
+        "feed",
+        "errorToast",
+        "description"
+      ])
+    });
+  }, [isError, errorUpdatedAt]);
 
   const typeOptions = [
     ActivityTab.ALL,
