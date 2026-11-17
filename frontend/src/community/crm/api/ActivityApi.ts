@@ -419,6 +419,9 @@ export const useDeleteCall = (
   return useMutation({
     mutationFn: deleteCall,
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
       queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
       onSuccess();
     },
@@ -439,6 +442,9 @@ export const useDeleteMeeting = (
   return useMutation({
     mutationFn: deleteMeeting,
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
       queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
       onSuccess();
     },
@@ -459,6 +465,9 @@ export const useDeleteActivityTask = (
   return useMutation({
     mutationFn: deleteActivityTask,
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
       queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
       onSuccess();
     },
@@ -558,6 +567,9 @@ export const useDeleteEmail = (
   return useMutation({
     mutationFn: deleteEmail,
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
       queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
       onSuccess();
     },

@@ -34,6 +34,7 @@ export interface ActivityFeedProps {
   timeZone?: string;
   taskCompletions: Record<number, boolean>;
   emptyStateButton?: ButtonV2Props | null;
+  emptyStateSecondaryButton?: ButtonV2Props | null;
   emptyStateText?: { title: string; description: string };
   errorMessage?: string;
   isShowTaskCheckbox?: boolean;
@@ -54,6 +55,7 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
   timeZone,
   taskCompletions,
   emptyStateButton,
+  emptyStateSecondaryButton,
   emptyStateText,
   errorMessage,
   isShowTaskCheckbox,
@@ -143,6 +145,9 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
                 ])
           }
           {...(emptyStateButton ? { button: emptyStateButton } : {})}
+          {...(emptyStateSecondaryButton
+            ? { secondaryButton: emptyStateSecondaryButton }
+            : {})}
           className={{ wrapper: "bg-secondary-background rounded-lg" }}
         />
       );

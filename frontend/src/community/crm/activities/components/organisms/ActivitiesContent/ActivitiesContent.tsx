@@ -45,8 +45,8 @@ import { useActivityTaskCompletion } from "~community/crm/hooks/useActivityTaskC
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
-import ScheduleMeetingModalController from "~enterprise/crm/components/organisms/ScheduleMeetingModalController/ScheduleMeetingModalController";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
+import useScheduleMeeting from "~enterprise/crm/hooks/useScheduleMeeting";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 const ActivitiesContent: FC = () => {
@@ -65,6 +65,7 @@ const ActivitiesContent: FC = () => {
   const [isLogCallModalOpen, setIsLogCallModalOpen] = useState(false);
   const [isLogMeetingModalOpen, setIsLogMeetingModalOpen] = useState(false);
   const { guardCrmCreate } = useCrmLimitGuard();
+  const { scheduleMeetingButton, scheduleMeetingModals } = useScheduleMeeting();
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [isLogEmailModalOpen, setIsLogEmailModalOpen] = useState(false);
 
@@ -273,6 +274,9 @@ const ActivitiesContent: FC = () => {
       }
     : null;
 
+  const meetingsScheduleButton =
+    activeTab === ActivityTab.MEETINGS ? scheduleMeetingButton : null;
+
   return (
     <div className="flex flex-col w-full gap-4 pt-5.5 lg:pt-1">
       <ActivityToolbar
@@ -293,8 +297,8 @@ const ActivitiesContent: FC = () => {
           showControls &&
           actionButton && (
             <div className="flex items-center gap-2">
-              {activeTab === ActivityTab.MEETINGS && (
-                <ScheduleMeetingModalController />
+              {meetingsScheduleButton && (
+                <ButtonV2 {...meetingsScheduleButton} />
               )}
               <ButtonV2 {...actionButton} />
             </div>
@@ -325,6 +329,7 @@ const ActivitiesContent: FC = () => {
           onClose={() => setIsLogEmailModalOpen(false)}
         />
       )}
+      {scheduleMeetingModals}
       <ActivityFeed
         activeTab={activeTab}
         pages={pages}
@@ -336,6 +341,7 @@ const ActivitiesContent: FC = () => {
         timeZone={displayZone}
         taskCompletions={taskCompletions}
         emptyStateButton={showControls ? null : actionButton}
+        emptyStateSecondaryButton={showControls ? null : meetingsScheduleButton}
         onLoadMore={feed.fetchNextPage}
         onRowClick={handleRowClick}
         onToggleComplete={handleToggleComplete}
