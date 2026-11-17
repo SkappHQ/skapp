@@ -791,13 +791,7 @@
         "label": "Search activities",
         "resultCount_one": "{{count}} activity found",
         "resultCount_other": "{{count}} activities found",
-        "placeholders": {
-          "all": "Search by subject, contact and company",
-          "tasks": "Search by subject, contact and company",
-          "calls": "Search by subject, contact and company",
-          "meetings": "Search by subject, contact and company",
-          "emails": "Search by subject, contact and company"
-        }
+        "placeholder": "Search by subject, contact and company"
       },
       "filters": {
         "title": "Filters",

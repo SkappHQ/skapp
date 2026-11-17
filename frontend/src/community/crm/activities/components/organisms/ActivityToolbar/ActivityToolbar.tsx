@@ -95,8 +95,7 @@ const ActivityToolbar: FC<ActivityToolbarProps> = ({
                 "activities",
                 "toolbar",
                 "search",
-                "placeholders",
-                activeTab.toLowerCase()
+                "placeholder"
               ])}
               searchTerm={searchTerm}
               onSearchChange={onSearchChange}
