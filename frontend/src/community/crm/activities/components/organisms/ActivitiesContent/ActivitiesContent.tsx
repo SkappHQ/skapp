@@ -300,7 +300,7 @@ const ActivitiesContent: FC = () => {
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         resultCount={resultCount}
-        isResultCountReady={!isLoading && !isError}
+        isResultCountReady={!isLoading && (!isError || rows.length > 0)}
         isManager={isManager}
         filters={filters}
         onApplyFilters={setFilters}
@@ -350,7 +350,7 @@ const ActivitiesContent: FC = () => {
         searchTerm={searchTerm}
         isLoading={isLoading}
         isError={isError}
-        hasNextPage={isAllTab && feed.hasNextPage}
+        hasNextPage={isAllTab && feed.hasNextPage && !feed.isFetchNextPageError}
         isFetchingNextPage={isAllTab && feed.isFetchingNextPage}
         timeZone={displayZone}
         taskCompletions={taskCompletions}

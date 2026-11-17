@@ -68,6 +68,7 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
     errorUpdatedAt,
     hasNextPage,
     isFetchingNextPage,
+    isFetchNextPageError,
     fetchNextPage
   } = useGetRecordActivities(filters, recordId > 0);
 
@@ -131,7 +132,7 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           resultCount={resultCount}
-          isResultCountReady={!isLoading && !isError}
+          isResultCountReady={!isLoading && (!isError || rows.length > 0)}
         />
         <Dropdown
           id={`${id}-type`}
@@ -152,7 +153,7 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
         searchTerm={searchTerm}
         isLoading={isLoading}
         isError={isError}
-        hasNextPage={hasNextPage}
+        hasNextPage={hasNextPage && !isFetchNextPageError}
         isFetchingNextPage={isFetchingNextPage}
         timeZone={displayZone}
         taskCompletions={taskCompletions}
