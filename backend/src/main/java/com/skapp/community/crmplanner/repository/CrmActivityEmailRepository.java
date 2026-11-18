@@ -3,12 +3,12 @@ package com.skapp.community.crmplanner.repository;
 import com.skapp.community.crmplanner.model.CrmActivityEmail;
 import com.skapp.community.crmplanner.payload.response.CrmActivityEmailResponseDto;
 import com.skapp.community.crmplanner.type.CrmActivityEmailFilterParams;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface CrmActivityEmailRepository {
 
-	List<CrmActivityEmailResponseDto> findEmails(CrmActivityEmailFilterParams params);
+	Page<CrmActivityEmailResponseDto> findEmails(CrmActivityEmailFilterParams params, Pageable pageable);
 
 	CrmActivityEmail findEmailById(Long id);
 

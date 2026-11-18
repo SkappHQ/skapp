@@ -17,7 +17,6 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
-import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
@@ -27,6 +26,12 @@ import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Session;
+import org.hibernate.query.criteria.HibernateCriteriaBuilder;
+import org.hibernate.query.criteria.JpaCriteriaQuery;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
@@ -43,9 +48,9 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 	private final EntityManager entityManager;
 
 	@Override
-	public List<CrmActivityTaskResponseDto> findTasks(CrmActivityTaskFilterParams params) {
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Tuple> query = cb.createTupleQuery();
+	public Page<CrmActivityTaskResponseDto> findTasks(CrmActivityTaskFilterParams params, Pageable pageable) {
+		HibernateCriteriaBuilder cb = entityManager.unwrap(Session.class).getCriteriaBuilder();
+		JpaCriteriaQuery<Tuple> query = cb.createTupleQuery();
 		Root<CrmActivityTask> task = query.from(CrmActivityTask.class);
 		Join<CrmActivityTask, Employee> owner = task.join(CrmActivityTask_.owner, JoinType.LEFT);
 		Path<Long> ownerId = owner.get(Employee_.employeeId);
@@ -126,15 +131,16 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 					task.get(CrmActivityTask_.dueAt), task.get(CrmActivityTask_.priority),
 					task.get(CrmActivityTask_.isCompleted), task.get(CrmActivityTask_.completedAt),
 					task.get(CrmActivityTask_.notes), ownerId, task.get(CrmActivityTask_.contact).get(CrmContact_.id),
-					task.get(CrmActivityTask_.deal).get(CrmDeal_.id), company.get(CrmCompany_.id))
+					task.get(CrmActivityTask_.deal).get(CrmDeal_.id), company.get(CrmCompany_.id),
+					cb.count(task.get(CrmActivityTask_.id), cb.createWindow()))
 			.where(predicates.toArray(new Predicate[0]))
-			.orderBy(orders);
+			.orderBy(orders)
+			.offset(pageable.getOffset())
+			.fetch(pageable.getPageSize());
 
-		TypedQuery<Tuple> typedQuery = entityManager.createQuery(query);
-		if (params.getMaxResults() != null) {
-			typedQuery.setMaxResults(params.getMaxResults());
-		}
-		return typedQuery.getResultList().stream().map(row -> {
+		List<Tuple> results = entityManager.createQuery(query).getResultList();
+		long total = results.isEmpty() ? 0 : results.getFirst().get(11, Long.class);
+		List<CrmActivityTaskResponseDto> tasks = results.stream().map(row -> {
 			CrmActivityTaskResponseDto dto = new CrmActivityTaskResponseDto();
 			dto.setId(row.get(0, Long.class));
 			dto.setName(row.get(1, String.class));
@@ -149,6 +155,8 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 			dto.setCompanyId(row.get(10, Long.class));
 			return dto;
 		}).toList();
+
+		return new PageImpl<>(tasks, pageable, total);
 	}
 
 	@Override

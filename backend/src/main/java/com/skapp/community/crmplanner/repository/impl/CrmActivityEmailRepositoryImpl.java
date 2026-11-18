@@ -28,6 +28,12 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Session;
+import org.hibernate.query.criteria.HibernateCriteriaBuilder;
+import org.hibernate.query.criteria.JpaCriteriaQuery;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
@@ -43,9 +49,9 @@ public class CrmActivityEmailRepositoryImpl implements CrmActivityEmailRepositor
 	private final EntityManager entityManager;
 
 	@Override
-	public List<CrmActivityEmailResponseDto> findEmails(CrmActivityEmailFilterParams params) {
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Tuple> query = cb.createTupleQuery();
+	public Page<CrmActivityEmailResponseDto> findEmails(CrmActivityEmailFilterParams params, Pageable pageable) {
+		HibernateCriteriaBuilder cb = entityManager.unwrap(Session.class).getCriteriaBuilder();
+		JpaCriteriaQuery<Tuple> query = cb.createTupleQuery();
 		Root<CrmActivityEmail> email = query.from(CrmActivityEmail.class);
 		Join<CrmActivityEmail, Employee> owner = email.join(CrmActivityEmail_.owner, JoinType.LEFT);
 		Path<Long> ownerId = owner.get(Employee_.employeeId);
@@ -101,24 +107,24 @@ public class CrmActivityEmailRepositoryImpl implements CrmActivityEmailRepositor
 		query
 			.multiselect(email.get(CrmActivityEmail_.id), email.get(CrmActivityEmail_.subject),
 					email.get(CrmActivityEmail_.loggedAt), ownerId, email.get(CrmActivityEmail_.deal).get(CrmDeal_.id),
-					company.get(CrmCompany_.id))
+					company.get(CrmCompany_.id), cb.count(email.get(CrmActivityEmail_.id), cb.createWindow()))
 			.where(predicates.toArray(new Predicate[0]))
-			.orderBy(orders);
+			.orderBy(orders)
+			.offset(pageable.getOffset())
+			.fetch(pageable.getPageSize());
 
-		List<CrmActivityEmailResponseDto> emails = entityManager.createQuery(query)
-			.getResultList()
-			.stream()
-			.map(row -> {
-				CrmActivityEmailResponseDto dto = new CrmActivityEmailResponseDto();
-				dto.setId(row.get(0, Long.class));
-				dto.setSubject(row.get(1, String.class));
-				dto.setLoggedAt(row.get(2, Instant.class));
-				dto.setOwnerId(row.get(3, Long.class));
-				dto.setDealId(row.get(4, Long.class));
-				dto.setCompanyId(row.get(5, Long.class));
-				return dto;
-			})
-			.toList();
+		List<Tuple> results = entityManager.createQuery(query).getResultList();
+		long total = results.isEmpty() ? 0 : results.getFirst().get(6, Long.class);
+		List<CrmActivityEmailResponseDto> emails = results.stream().map(row -> {
+			CrmActivityEmailResponseDto dto = new CrmActivityEmailResponseDto();
+			dto.setId(row.get(0, Long.class));
+			dto.setSubject(row.get(1, String.class));
+			dto.setLoggedAt(row.get(2, Instant.class));
+			dto.setOwnerId(row.get(3, Long.class));
+			dto.setDealId(row.get(4, Long.class));
+			dto.setCompanyId(row.get(5, Long.class));
+			return dto;
+		}).toList();
 
 		CriteriaQuery<Tuple> contactQuery = cb.createTupleQuery();
 		Root<CrmActivityEmailContact> contactLink = contactQuery.from(CrmActivityEmailContact.class);
@@ -136,7 +142,7 @@ public class CrmActivityEmailRepositoryImpl implements CrmActivityEmailRepositor
 					Collectors.mapping(row -> row.get(1, Long.class), Collectors.toList())));
 		emails.forEach(e -> e.setContactIds(contactIdsByEmail.getOrDefault(e.getId(), List.of())));
 
-		return emails;
+		return new PageImpl<>(emails, pageable, total);
 	}
 
 	@Override

@@ -10,6 +10,7 @@ import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.type.CrmActivityTaskPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageColors;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.peopleplanner.util.Validations;
@@ -250,6 +251,12 @@ public class CrmValidations {
 	public static void validateTaskDueAt(Instant dueAt) {
 		if (dueAt == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_DUE_DATE_REQUIRED);
+		}
+	}
+
+	public static void validateActivityTaskPriority(CrmActivityTaskPriority priority) {
+		if (priority == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_PRIORITY_REQUIRED);
 		}
 	}
 

@@ -23,7 +23,6 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
-import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
@@ -34,6 +33,12 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Session;
+import org.hibernate.query.criteria.HibernateCriteriaBuilder;
+import org.hibernate.query.criteria.JpaCriteriaQuery;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
@@ -50,9 +55,9 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 	private final EntityManager entityManager;
 
 	@Override
-	public List<CrmActivityMeetingResponseDto> findMeetings(CrmActivityMeetingFilterParams params) {
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Tuple> query = cb.createTupleQuery();
+	public Page<CrmActivityMeetingResponseDto> findMeetings(CrmActivityMeetingFilterParams params, Pageable pageable) {
+		HibernateCriteriaBuilder cb = entityManager.unwrap(Session.class).getCriteriaBuilder();
+		JpaCriteriaQuery<Tuple> query = cb.createTupleQuery();
 		Root<CrmActivityMeeting> meeting = query.from(CrmActivityMeeting.class);
 		Join<CrmActivityMeeting, Employee> owner = meeting.join(CrmActivityMeeting_.owner, JoinType.LEFT);
 		Path<Long> ownerId = owner.get(Employee_.employeeId);
@@ -138,15 +143,16 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 					scheduledMeeting.get(CrmActivityScheduledMeeting_.meetingVenue),
 					scheduledMeeting.get(CrmActivityScheduledMeeting_.location),
 					scheduledMeeting.get(CrmActivityScheduledMeeting_.locationAddress),
-					scheduledMeeting.get(CrmActivityScheduledMeeting_.locationUrl))
+					scheduledMeeting.get(CrmActivityScheduledMeeting_.locationUrl),
+					cb.count(meeting.get(CrmActivityMeeting_.id), cb.createWindow()))
 			.where(predicates.toArray(new Predicate[0]))
-			.orderBy(orders);
+			.orderBy(orders)
+			.offset(pageable.getOffset())
+			.fetch(pageable.getPageSize());
 
-		TypedQuery<Tuple> typedQuery = entityManager.createQuery(query);
-		if (params.getMaxResults() != null) {
-			typedQuery.setMaxResults(params.getMaxResults());
-		}
-		List<CrmActivityMeetingResponseDto> meetings = typedQuery.getResultList().stream().map(row -> {
+		List<Tuple> results = entityManager.createQuery(query).getResultList();
+		long total = results.isEmpty() ? 0 : results.getFirst().get(14, Long.class);
+		List<CrmActivityMeetingResponseDto> meetings = results.stream().map(row -> {
 			CrmActivityMeetingResponseDto dto = new CrmActivityMeetingResponseDto();
 			dto.setId(row.get(0, Long.class));
 			dto.setName(row.get(1, String.class));
@@ -185,7 +191,7 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 					Collectors.mapping(row -> row.get(1, Long.class), Collectors.toList())));
 		meetings.forEach(m -> m.setContactIds(contactIdsByMeeting.getOrDefault(m.getId(), List.of())));
 
-		return meetings;
+		return new PageImpl<>(meetings, pageable, total);
 	}
 
 	@Override
