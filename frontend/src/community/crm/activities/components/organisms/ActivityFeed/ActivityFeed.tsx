@@ -131,12 +131,10 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
           title={
             customEmptyStateText
               ? customEmptyStateText.title
-              : translateText([
-                  "activities",
-                  "feed",
-                  ...emptyStateKeys,
-                  "title"
-                ])
+              : translateText(
+                  ["activities", "feed", ...emptyStateKeys, "title"],
+                  { term: trimmedSearchTerm }
+                )
           }
           description={
             customEmptyStateText
