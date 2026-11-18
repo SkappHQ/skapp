@@ -129,7 +129,7 @@ const DealCard: FC<DealCardProps> = ({
           </Badge>
         ) : null}
 
-        <PriorityLabel priority={priority} />
+        {priority && <PriorityLabel priority={priority} />}
       </div>
     </div>
   );
