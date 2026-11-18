@@ -22,7 +22,6 @@ import {
   ActivityFeedFilters,
   ActivityFeedResponse,
   ActivityListFilters,
-  ActivityListPage,
   ActivityMeetingCreatePayload,
   ActivityMeetingEditPayload,
   ActivityMeetingResponse,
@@ -85,62 +84,43 @@ export const useGetRecordActivities = (
     refetchOnWindowFocus: false
   });
 
-const getNextActivityListPage = (
-  lastPage?: ActivityListPage<unknown>
-): number | null =>
-  lastPage && lastPage.currentPage < lastPage.totalPages - 1
-    ? lastPage.currentPage + 1
-    : null;
-
 const fetchActivityCalls = async (
   params: ActivityListFilters
-): Promise<ActivityListPage<ActivityCallResponse>> => {
+): Promise<ActivityCallResponse[]> => {
   const response = await authFetch.get(crmActivityEndpoints.GET_CALLS, {
     params
   });
-  return response?.data?.results?.[0];
+  return response?.data?.results;
 };
 
 export const useGetActivityCalls = (
   params: ActivityListFilters,
   enabled: boolean
-): UseInfiniteQueryResult<
-  InfiniteData<ActivityListPage<ActivityCallResponse>>,
-  AxiosError
-> =>
-  useInfiniteQuery({
+): UseQueryResult<ActivityCallResponse[], AxiosError> =>
+  useQuery({
     queryKey: crmActivityQueryKeys.CALLS(params),
-    queryFn: ({ pageParam }) =>
-      fetchActivityCalls({ ...params, page: pageParam }),
+    queryFn: () => fetchActivityCalls(params),
     enabled,
-    initialPageParam: 0,
-    getNextPageParam: getNextActivityListPage,
     refetchOnWindowFocus: false
   });
 
 const fetchActivityEmails = async (
   params: ActivityListFilters
-): Promise<ActivityListPage<ActivityEmailResponse>> => {
+): Promise<ActivityEmailResponse[]> => {
   const response = await authFetch.get(crmActivityEndpoints.GET_EMAILS, {
     params
   });
-  return response?.data?.results?.[0];
+  return response?.data?.results;
 };
 
 export const useGetActivityEmails = (
   params: ActivityListFilters,
   enabled: boolean
-): UseInfiniteQueryResult<
-  InfiniteData<ActivityListPage<ActivityEmailResponse>>,
-  AxiosError
-> =>
-  useInfiniteQuery({
+): UseQueryResult<ActivityEmailResponse[], AxiosError> =>
+  useQuery({
     queryKey: crmActivityQueryKeys.EMAILS(params),
-    queryFn: ({ pageParam }) =>
-      fetchActivityEmails({ ...params, page: pageParam }),
+    queryFn: () => fetchActivityEmails(params),
     enabled,
-    initialPageParam: 0,
-    getNextPageParam: getNextActivityListPage,
     refetchOnWindowFocus: false
   });
 
@@ -171,53 +151,41 @@ export const useCreateEmail = (
 
 const fetchActivityMeetings = async (
   params: ActivityListFilters
-): Promise<ActivityListPage<ActivityMeetingResponse>> => {
+): Promise<ActivityMeetingResponse[]> => {
   const response = await authFetch.get(crmActivityEndpoints.GET_MEETINGS, {
     params
   });
-  return response?.data?.results?.[0];
+  return response?.data?.results;
 };
 
 export const useGetActivityMeetings = (
   params: ActivityListFilters,
   enabled: boolean
-): UseInfiniteQueryResult<
-  InfiniteData<ActivityListPage<ActivityMeetingResponse>>,
-  AxiosError
-> =>
-  useInfiniteQuery({
+): UseQueryResult<ActivityMeetingResponse[], AxiosError> =>
+  useQuery({
     queryKey: crmActivityQueryKeys.MEETINGS(params),
-    queryFn: ({ pageParam }) =>
-      fetchActivityMeetings({ ...params, page: pageParam }),
+    queryFn: () => fetchActivityMeetings(params),
     enabled,
-    initialPageParam: 0,
-    getNextPageParam: getNextActivityListPage,
     refetchOnWindowFocus: false
   });
 
 const fetchActivityTasks = async (
   params: ActivityListFilters
-): Promise<ActivityListPage<ActivityTaskResponse>> => {
+): Promise<ActivityTaskResponse[]> => {
   const response = await authFetch.get(crmActivityEndpoints.GET_TASKS, {
     params
   });
-  return response?.data?.results?.[0];
+  return response?.data?.results;
 };
 
 export const useGetActivityTasks = (
   params: ActivityListFilters,
   enabled: boolean
-): UseInfiniteQueryResult<
-  InfiniteData<ActivityListPage<ActivityTaskResponse>>,
-  AxiosError
-> =>
-  useInfiniteQuery({
+): UseQueryResult<ActivityTaskResponse[], AxiosError> =>
+  useQuery({
     queryKey: crmActivityQueryKeys.TASKS(params),
-    queryFn: ({ pageParam }) =>
-      fetchActivityTasks({ ...params, page: pageParam }),
+    queryFn: () => fetchActivityTasks(params),
     enabled,
-    initialPageParam: 0,
-    getNextPageParam: getNextActivityListPage,
     refetchOnWindowFocus: false
   });
 

@@ -14,7 +14,6 @@ import com.skapp.community.crmplanner.type.CrmActivityCallSort;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -25,9 +24,6 @@ import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
@@ -41,9 +37,9 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 	private final EntityManager entityManager;
 
 	@Override
-	public Page<CrmActivityCallResponseDto> findCalls(CrmActivityCallFilterParams params, Pageable pageable) {
+	public List<CrmActivityCallResponseDto> findCalls(CrmActivityCallFilterParams params) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Tuple> query = cb.createTupleQuery();
+		CriteriaQuery<CrmActivityCallResponseDto> query = cb.createQuery(CrmActivityCallResponseDto.class);
 		Root<CrmActivityCall> call = query.from(CrmActivityCall.class);
 		Join<CrmActivityCall, Employee> owner = call.join(CrmActivityCall_.owner, JoinType.LEFT);
 		Path<Long> ownerId = owner.get(Employee_.employeeId);
@@ -100,78 +96,18 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 			orders.add(ascending ? cb.asc(call.get(CrmActivityCall_.id)) : cb.desc(call.get(CrmActivityCall_.id)));
 		}
 
-		query
-			.multiselect(call.get(CrmActivityCall_.id), call.get(CrmActivityCall_.subject),
-					call.get(CrmActivityCall_.durationMinutes), call.get(CrmActivityCall_.loggedAt), ownerId,
-					call.get(CrmActivityCall_.contact).get(CrmContact_.id),
-					call.get(CrmActivityCall_.deal).get(CrmDeal_.id), company.get(CrmCompany_.id))
+		query.select(cb.construct(CrmActivityCallResponseDto.class, call.get(CrmActivityCall_.id),
+				call.get(CrmActivityCall_.subject), call.get(CrmActivityCall_.durationMinutes),
+				call.get(CrmActivityCall_.loggedAt), ownerId, call.get(CrmActivityCall_.contact).get(CrmContact_.id),
+				call.get(CrmActivityCall_.deal).get(CrmDeal_.id), company.get(CrmCompany_.id)))
 			.where(predicates.toArray(new Predicate[0]))
 			.orderBy(orders);
 
-		TypedQuery<Tuple> typedQuery = entityManager.createQuery(query);
-		typedQuery.setFirstResult((int) pageable.getOffset());
-		typedQuery.setMaxResults(pageable.getPageSize());
-		List<Tuple> results = typedQuery.getResultList();
-
-		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-		Root<CrmActivityCall> countRoot = countQuery.from(CrmActivityCall.class);
-		Join<CrmActivityCall, Employee> countOwner = countRoot.join(CrmActivityCall_.owner, JoinType.LEFT);
-		Path<Long> countOwnerId = countOwner.get(Employee_.employeeId);
-		Path<Instant> countLoggedAt = countRoot.get(CrmActivityCall_.loggedAt);
-		List<Predicate> countPredicates = new ArrayList<>();
-		if (Boolean.TRUE.equals(params.getIsRestrictedToOwner())) {
-			countPredicates.add(cb.equal(countOwnerId, params.getCurrentEmployeeId()));
+		TypedQuery<CrmActivityCallResponseDto> typedQuery = entityManager.createQuery(query);
+		if (params.getMaxResults() != null) {
+			typedQuery.setMaxResults(params.getMaxResults());
 		}
-		if (params.getOwnerId() != null) {
-			countPredicates.add(cb.equal(countOwnerId, params.getOwnerId()));
-		}
-		if (params.getRangeStart() != null) {
-			countPredicates.add(cb.greaterThanOrEqualTo(countLoggedAt, params.getRangeStart()));
-		}
-		if (params.getRangeEnd() != null) {
-			countPredicates.add(cb.lessThan(countLoggedAt, params.getRangeEnd()));
-		}
-		countPredicates.add(cb.isFalse(countRoot.get(CrmActivityCall_.isDeleted)));
-		if (params.getRelatedContactIds() != null) {
-			countPredicates
-				.add(countRoot.get(CrmActivityCall_.contact).get(CrmContact_.id).in(params.getRelatedContactIds()));
-		}
-		if (params.getRelatedDealId() != null) {
-			countPredicates
-				.add(cb.equal(countRoot.get(CrmActivityCall_.deal).get(CrmDeal_.id), params.getRelatedDealId()));
-		}
-		if (params.getExcludedId() != null) {
-			countPredicates.add(cb.notEqual(countRoot.get(CrmActivityCall_.id), params.getExcludedId()));
-		}
-
-		if (params.getSearchPattern() != null) {
-			Join<CrmActivityCall, CrmContact> contact = countRoot.join(CrmActivityCall_.contact, JoinType.LEFT);
-			contact.on(cb.isFalse(contact.get(CrmContact_.isDeleted)));
-			Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
-			contactCompany.on(cb.isFalse(contactCompany.get(CrmCompany_.isDeleted)));
-
-			countPredicates
-				.add(cb.or(cb.like(cb.lower(countRoot.get(CrmActivityCall_.subject)), params.getSearchPattern()),
-						cb.like(cb.lower(contact.get(CrmContact_.name)), params.getSearchPattern()),
-						cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), params.getSearchPattern())));
-		}
-
-		countQuery.select(cb.count(countRoot)).where(countPredicates.toArray(new Predicate[0]));
-		long total = entityManager.createQuery(countQuery).getSingleResult();
-		List<CrmActivityCallResponseDto> calls = results.stream().map(row -> {
-			CrmActivityCallResponseDto dto = new CrmActivityCallResponseDto();
-			dto.setId(row.get(0, Long.class));
-			dto.setSubject(row.get(1, String.class));
-			dto.setDurationMinutes(row.get(2, Integer.class));
-			dto.setLoggedAt(row.get(3, Instant.class));
-			dto.setOwnerId(row.get(4, Long.class));
-			dto.setContactId(row.get(5, Long.class));
-			dto.setDealId(row.get(6, Long.class));
-			dto.setCompanyId(row.get(7, Long.class));
-			return dto;
-		}).toList();
-
-		return new PageImpl<>(calls, pageable, total);
+		return typedQuery.getResultList();
 	}
 
 	@Override
