@@ -591,7 +591,7 @@
         },
         "notices": {
           "dealCleared": "Deal cleared — it doesn't match the selected contact's company.",
-          "relatedToMismatch": "Linked Deal's company doesn't match the linked Contact's company"
+          "relatedToMismatch": "This doesn't match the contact's company"
         },
         "toastMessages": {
           "addSuccessTitle": "Task added successfully",
