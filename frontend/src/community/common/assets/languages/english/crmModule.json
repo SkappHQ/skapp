@@ -751,7 +751,14 @@
         "title": "No activities match '{{term}}'",
         "description": "Try a different search term."
       },
-      "loadError": "Couldn't load your activities. Please refresh to try again."
+      "errorState": {
+        "title": "Oops! Something went wrong",
+        "description": "Couldn't load your activities. Please refresh to try again."
+      },
+      "errorToast": {
+        "title": "Oops! Something went wrong",
+        "description": "Failed to load activities"
+      }
     },
     "recordTab": {
       "tabLabel": "Activities",
@@ -779,9 +786,7 @@
           "title": "No emails yet",
           "description": "Emails linked to this record will show here."
         }
-      },
-      "loadError": "Couldn't load this record's activities. Please refresh to try again.",
-      "loadErrorToast": "Failed to load activities"
+      }
     },
     "toolbar": {
       "addTaskBtn": "Add task",

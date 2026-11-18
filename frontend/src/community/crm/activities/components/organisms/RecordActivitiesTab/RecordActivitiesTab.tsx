@@ -65,8 +65,10 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
     data,
     isLoading,
     isError,
+    errorUpdatedAt,
     hasNextPage,
     isFetchingNextPage,
+    isFetchNextPageError,
     fetchNextPage
   } = useGetRecordActivities(filters, recordId > 0);
 
@@ -82,9 +84,15 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["activities", "recordTab", "loadErrorToast"])
+      title: translateText(["activities", "feed", "errorToast", "title"]),
+      description: translateText([
+        "activities",
+        "feed",
+        "errorToast",
+        "description"
+      ])
     });
-  }, [isError]);
+  }, [isError, errorUpdatedAt]);
 
   const typeOptions = [
     ActivityTab.ALL,
@@ -124,7 +132,7 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           resultCount={resultCount}
-          isResultCountReady={!isLoading && !isError}
+          isResultCountReady={!isLoading && (!isError || rows.length > 0)}
         />
         <Dropdown
           id={`${id}-type`}
@@ -145,7 +153,7 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
         searchTerm={searchTerm}
         isLoading={isLoading}
         isError={isError}
-        hasNextPage={hasNextPage}
+        hasNextPage={hasNextPage && !isFetchNextPageError}
         isFetchingNextPage={isFetchingNextPage}
         timeZone={displayZone}
         taskCompletions={taskCompletions}
@@ -165,7 +173,6 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
             "description"
           ])
         }}
-        errorMessage={translateText(["activities", "recordTab", "loadError"])}
         isShowTaskCheckbox
         onLoadMore={fetchNextPage}
         onToggleComplete={handleToggleComplete}
