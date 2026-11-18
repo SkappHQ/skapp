@@ -23,6 +23,7 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
+import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
@@ -33,9 +34,6 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.Session;
-import org.hibernate.query.criteria.HibernateCriteriaBuilder;
-import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -56,8 +54,8 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 
 	@Override
 	public Page<CrmActivityMeetingResponseDto> findMeetings(CrmActivityMeetingFilterParams params, Pageable pageable) {
-		HibernateCriteriaBuilder cb = entityManager.unwrap(Session.class).getCriteriaBuilder();
-		JpaCriteriaQuery<Tuple> query = cb.createTupleQuery();
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Tuple> query = cb.createTupleQuery();
 		Root<CrmActivityMeeting> meeting = query.from(CrmActivityMeeting.class);
 		Join<CrmActivityMeeting, Employee> owner = meeting.join(CrmActivityMeeting_.owner, JoinType.LEFT);
 		Path<Long> ownerId = owner.get(Employee_.employeeId);
@@ -143,15 +141,73 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 					scheduledMeeting.get(CrmActivityScheduledMeeting_.meetingVenue),
 					scheduledMeeting.get(CrmActivityScheduledMeeting_.location),
 					scheduledMeeting.get(CrmActivityScheduledMeeting_.locationAddress),
-					scheduledMeeting.get(CrmActivityScheduledMeeting_.locationUrl),
-					cb.count(meeting.get(CrmActivityMeeting_.id), cb.createWindow()))
+					scheduledMeeting.get(CrmActivityScheduledMeeting_.locationUrl))
 			.where(predicates.toArray(new Predicate[0]))
-			.orderBy(orders)
-			.offset(pageable.getOffset())
-			.fetch(pageable.getPageSize());
+			.orderBy(orders);
 
-		List<Tuple> results = entityManager.createQuery(query).getResultList();
-		long total = results.isEmpty() ? 0 : results.getFirst().get(14, Long.class);
+		TypedQuery<Tuple> typedQuery = entityManager.createQuery(query);
+		typedQuery.setFirstResult((int) pageable.getOffset());
+		typedQuery.setMaxResults(pageable.getPageSize());
+		List<Tuple> results = typedQuery.getResultList();
+
+		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+		Root<CrmActivityMeeting> countRoot = countQuery.from(CrmActivityMeeting.class);
+		Join<CrmActivityMeeting, Employee> countOwner = countRoot.join(CrmActivityMeeting_.owner, JoinType.LEFT);
+		Path<Long> countOwnerId = countOwner.get(Employee_.employeeId);
+		List<Predicate> countPredicates = new ArrayList<>();
+		countPredicates.add(cb.isFalse(countRoot.get(CrmActivityMeeting_.isDeleted)));
+
+		if (params.getRelatedContactIds() != null) {
+			Subquery<Long> attendeeMatch = countQuery.subquery(Long.class);
+			Root<CrmActivityMeetingContact> attendee = attendeeMatch.from(CrmActivityMeetingContact.class);
+			Path<CrmActivityMeetingContactId> attendeeId = attendee.get(CrmActivityMeetingContact_.id);
+			attendeeMatch.select(attendeeId.get(CrmActivityMeetingContactId_.meetingId))
+				.where(cb.equal(attendeeId.get(CrmActivityMeetingContactId_.meetingId),
+						countRoot.get(CrmActivityMeeting_.id)),
+						attendeeId.get(CrmActivityMeetingContactId_.contactId).in(params.getRelatedContactIds()));
+			countPredicates.add(cb.exists(attendeeMatch));
+		}
+		if (params.getRelatedDealId() != null) {
+			countPredicates
+				.add(cb.equal(countRoot.get(CrmActivityMeeting_.deal).get(CrmDeal_.id), params.getRelatedDealId()));
+		}
+		if (params.getExcludedId() != null) {
+			countPredicates.add(cb.notEqual(countRoot.get(CrmActivityMeeting_.id), params.getExcludedId()));
+		}
+
+		if (Boolean.TRUE.equals(params.getIsRestrictedToOwner())) {
+			countPredicates.add(cb.equal(countOwnerId, params.getCurrentEmployeeId()));
+		}
+		if (params.getOwnerId() != null) {
+			countPredicates.add(cb.equal(countOwnerId, params.getOwnerId()));
+		}
+		if (params.getRangeStart() != null) {
+			countPredicates
+				.add(cb.greaterThanOrEqualTo(countRoot.get(CrmActivityMeeting_.startAt), params.getRangeStart()));
+		}
+		if (params.getRangeEnd() != null) {
+			countPredicates.add(cb.lessThan(countRoot.get(CrmActivityMeeting_.startAt), params.getRangeEnd()));
+		}
+
+		if (params.getSearchPattern() != null) {
+			Subquery<Long> contactMatch = countQuery.subquery(Long.class);
+			Root<CrmActivityMeetingContact> link = contactMatch.from(CrmActivityMeetingContact.class);
+			Join<CrmActivityMeetingContact, CrmContact> contact = link.join(CrmActivityMeetingContact_.contact);
+			Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
+			contactCompany.on(cb.isFalse(contactCompany.get(CrmCompany_.isDeleted)));
+			contactMatch.select(link.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId))
+				.where(cb.equal(link.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId),
+						countRoot.get(CrmActivityMeeting_.id)), cb.isFalse(contact.get(CrmContact_.isDeleted)),
+						cb.or(cb.like(cb.lower(contact.get(CrmContact_.name)), params.getSearchPattern()),
+								cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), params.getSearchPattern())));
+
+			countPredicates
+				.add(cb.or(cb.like(cb.lower(countRoot.get(CrmActivityMeeting_.name)), params.getSearchPattern()),
+						cb.exists(contactMatch)));
+		}
+
+		countQuery.select(cb.count(countRoot)).where(countPredicates.toArray(new Predicate[0]));
+		long total = entityManager.createQuery(countQuery).getSingleResult();
 		List<CrmActivityMeetingResponseDto> meetings = results.stream().map(row -> {
 			CrmActivityMeetingResponseDto dto = new CrmActivityMeetingResponseDto();
 			dto.setId(row.get(0, Long.class));

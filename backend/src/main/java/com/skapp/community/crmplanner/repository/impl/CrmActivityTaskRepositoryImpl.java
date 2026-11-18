@@ -17,6 +17,7 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
+import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
@@ -26,9 +27,6 @@ import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.Session;
-import org.hibernate.query.criteria.HibernateCriteriaBuilder;
-import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -49,8 +47,8 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 
 	@Override
 	public Page<CrmActivityTaskResponseDto> findTasks(CrmActivityTaskFilterParams params, Pageable pageable) {
-		HibernateCriteriaBuilder cb = entityManager.unwrap(Session.class).getCriteriaBuilder();
-		JpaCriteriaQuery<Tuple> query = cb.createTupleQuery();
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Tuple> query = cb.createTupleQuery();
 		Root<CrmActivityTask> task = query.from(CrmActivityTask.class);
 		Join<CrmActivityTask, Employee> owner = task.join(CrmActivityTask_.owner, JoinType.LEFT);
 		Path<Long> ownerId = owner.get(Employee_.employeeId);
@@ -131,15 +129,79 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 					task.get(CrmActivityTask_.dueAt), task.get(CrmActivityTask_.priority),
 					task.get(CrmActivityTask_.isCompleted), task.get(CrmActivityTask_.completedAt),
 					task.get(CrmActivityTask_.notes), ownerId, task.get(CrmActivityTask_.contact).get(CrmContact_.id),
-					task.get(CrmActivityTask_.deal).get(CrmDeal_.id), company.get(CrmCompany_.id),
-					cb.count(task.get(CrmActivityTask_.id), cb.createWindow()))
+					task.get(CrmActivityTask_.deal).get(CrmDeal_.id), company.get(CrmCompany_.id))
 			.where(predicates.toArray(new Predicate[0]))
-			.orderBy(orders)
-			.offset(pageable.getOffset())
-			.fetch(pageable.getPageSize());
+			.orderBy(orders);
 
-		List<Tuple> results = entityManager.createQuery(query).getResultList();
-		long total = results.isEmpty() ? 0 : results.getFirst().get(11, Long.class);
+		TypedQuery<Tuple> typedQuery = entityManager.createQuery(query);
+		typedQuery.setFirstResult((int) pageable.getOffset());
+		typedQuery.setMaxResults(pageable.getPageSize());
+		List<Tuple> results = typedQuery.getResultList();
+
+		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+		Root<CrmActivityTask> countRoot = countQuery.from(CrmActivityTask.class);
+		Join<CrmActivityTask, Employee> countOwner = countRoot.join(CrmActivityTask_.owner, JoinType.LEFT);
+		Path<Long> countOwnerId = countOwner.get(Employee_.employeeId);
+		Path<Instant> countDueAt = countRoot.get(CrmActivityTask_.dueAt);
+		List<Predicate> countPredicates = new ArrayList<>();
+		if (Boolean.TRUE.equals(params.getIsRestrictedToOwner())) {
+			countPredicates.add(cb.equal(countOwnerId, params.getCurrentEmployeeId()));
+		}
+		if (params.getOwnerId() != null) {
+			countPredicates.add(cb.equal(countOwnerId, params.getOwnerId()));
+		}
+		if (params.getRangeStart() != null) {
+			countPredicates.add(cb.greaterThanOrEqualTo(countDueAt, params.getRangeStart()));
+		}
+		if (params.getRangeEnd() != null) {
+			countPredicates.add(cb.lessThan(countDueAt, params.getRangeEnd()));
+		}
+		countPredicates.add(cb.isFalse(countRoot.get(CrmActivityTask_.isDeleted)));
+		if (params.getRelatedContactIds() != null) {
+			countPredicates
+				.add(countRoot.get(CrmActivityTask_.contact).get(CrmContact_.id).in(params.getRelatedContactIds()));
+		}
+		if (params.getRelatedDealId() != null) {
+			countPredicates
+				.add(cb.equal(countRoot.get(CrmActivityTask_.deal).get(CrmDeal_.id), params.getRelatedDealId()));
+		}
+		if (params.getExcludedId() != null) {
+			countPredicates.add(cb.notEqual(countRoot.get(CrmActivityTask_.id), params.getExcludedId()));
+		}
+		if (params.getPriority() != null) {
+			countPredicates.add(cb.equal(countRoot.get(CrmActivityTask_.priority), params.getPriority()));
+		}
+		if (params.getTaskStatus() == CrmActivityTaskStatus.COMPLETED) {
+			countPredicates.add(cb.isTrue(countRoot.get(CrmActivityTask_.isCompleted)));
+		}
+		if (params.getTaskStatus() == CrmActivityTaskStatus.OVERDUE) {
+			countPredicates.add(cb.isFalse(countRoot.get(CrmActivityTask_.isCompleted)));
+			countPredicates.add(cb.lessThan(countDueAt, params.getTodayStart()));
+		}
+		if (params.getTaskStatus() == CrmActivityTaskStatus.TODAY) {
+			countPredicates.add(cb.isFalse(countRoot.get(CrmActivityTask_.isCompleted)));
+			countPredicates.add(cb.greaterThanOrEqualTo(countDueAt, params.getTodayStart()));
+			countPredicates.add(cb.lessThan(countDueAt, params.getTodayEnd()));
+		}
+		if (params.getTaskStatus() == CrmActivityTaskStatus.UPCOMING) {
+			countPredicates.add(cb.isFalse(countRoot.get(CrmActivityTask_.isCompleted)));
+			countPredicates.add(cb.greaterThanOrEqualTo(countDueAt, params.getTodayEnd()));
+		}
+
+		if (params.getSearchPattern() != null) {
+			Join<CrmActivityTask, CrmContact> contact = countRoot.join(CrmActivityTask_.contact, JoinType.LEFT);
+			contact.on(cb.isFalse(contact.get(CrmContact_.isDeleted)));
+			Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
+			contactCompany.on(cb.isFalse(contactCompany.get(CrmCompany_.isDeleted)));
+
+			countPredicates
+				.add(cb.or(cb.like(cb.lower(countRoot.get(CrmActivityTask_.name)), params.getSearchPattern()),
+						cb.like(cb.lower(contact.get(CrmContact_.name)), params.getSearchPattern()),
+						cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), params.getSearchPattern())));
+		}
+
+		countQuery.select(cb.count(countRoot)).where(countPredicates.toArray(new Predicate[0]));
+		long total = entityManager.createQuery(countQuery).getSingleResult();
 		List<CrmActivityTaskResponseDto> tasks = results.stream().map(row -> {
 			CrmActivityTaskResponseDto dto = new CrmActivityTaskResponseDto();
 			dto.setId(row.get(0, Long.class));
