@@ -791,7 +791,8 @@
         "label": "Search activities",
         "resultCount_one": "{{count}} activity found",
         "resultCount_other": "{{count}} activities found",
-        "placeholder": "Search by subject, contact and company"
+        "placeholder": "Search by subject, contact and company",
+        "taskPlaceholder": "Search by task, contact and company"
       },
       "filters": {
         "title": "Filters",
