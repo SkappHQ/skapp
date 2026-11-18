@@ -1,14 +1,11 @@
-import { ButtonV2Props } from "@rootcodelabs/skapp-ui";
-import { ReactNode } from "react";
-
-import { CrmActivityPrefill } from "~community/crm/types/CrmCommonTypes";
+import {
+  CrmActivityPrefill,
+  UseScheduleMeetingResult
+} from "~community/crm/types/CrmCommonTypes";
 
 const useScheduleMeeting = (
   _prefill?: CrmActivityPrefill
-): {
-  scheduleMeetingButton: ButtonV2Props | null;
-  scheduleMeetingModals: ReactNode;
-} => ({
+): UseScheduleMeetingResult => ({
   scheduleMeetingButton: null,
   scheduleMeetingModals: null
 });
