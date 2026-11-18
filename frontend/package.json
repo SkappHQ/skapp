@@ -13,7 +13,7 @@
     "test": "jest --clearCache && jest",
     "test:coverage": "jest --coverage",
     "test-all": "npm run check-format & npm run check-lint & npm run test",
-    "prepare": "husky"
+    "prepare": "cd .. && husky frontend/.husky && node frontend/.husky/install-submodule-hooks.mjs"
   },
   "lint-staged": {
     "*.{js,ts,tsx,scss,css,json,md,yaml,yml}": [
