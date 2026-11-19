@@ -1,3 +1,6 @@
+import { ButtonV2Props } from "@rootcodelabs/skapp-ui";
+import { ReactNode } from "react";
+
 import { CrmMeetingVenueDetails } from "~enterprise/crm/types/ScheduleMeetingTypes";
 
 import {
@@ -149,6 +152,11 @@ export type CrmBoardRecord = Record<number, CrmBoardColumn>;
 export type CrmTaskRecord = Record<number, CrmTaskEntity>;
 export type CrmTaskTypeRecord = Record<number, CrmTaskTypeEntity>;
 export type CrmIndustryRecord = Record<number, CrmIndustryEntity>;
+
+export interface UseScheduleMeetingResult {
+  scheduleMeetingButton: ButtonV2Props | null;
+  scheduleMeetingModals: ReactNode;
+}
 
 export interface CrmActivityPrefill {
   contactId: number | null;
