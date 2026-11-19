@@ -909,13 +909,11 @@
         "dealMismatch": "This deal's company doesn't match any linked contact — add a contact from that company or choose a different deal"
       },
       "notices": {
-        "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
+        "dealCleared": "Deal cleared — it doesn't match the selected contact's company.",
+        "relatedToMismatch": "This doesn't match {{name}}'s company on file."
       },
       "toastMessages": {
         "errorTitle": "Oops! Something went wrong"
-      },
-      "tooltips": {
-        "relatedToMismatch": "This doesn't match {{name}}'s company on file."
       }
     },
     "activitySidePanel": {

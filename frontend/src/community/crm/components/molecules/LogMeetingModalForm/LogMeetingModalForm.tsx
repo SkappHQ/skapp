@@ -246,8 +246,8 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
           fieldAriaLabel={translateAria(["relatedTo"])}
           {...(isCompanyMismatch &&
             primaryAttendee && {
-              mismatchTooltip: translateText(
-                ["logActivity", "tooltips", "relatedToMismatch"],
+              mismatchMessage: translateText(
+                ["logActivity", "notices", "relatedToMismatch"],
                 { name: getContactDisplayName(primaryAttendee) }
               )
             })}

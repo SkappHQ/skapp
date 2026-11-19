@@ -334,8 +334,8 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
           {...(values.companyId &&
             values.toContactIds.length > 0 &&
             values.companyId !== contacts[values.toContactIds[0]].companyId && {
-              mismatchTooltip: translateText(
-                ["logActivity", "tooltips", "relatedToMismatch"],
+              mismatchMessage: translateText(
+                ["logActivity", "notices", "relatedToMismatch"],
                 {
                   name: getContactDisplayName(contacts[values.toContactIds[0]])
                 }

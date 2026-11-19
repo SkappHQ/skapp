@@ -37,14 +37,14 @@ interface Props {
     | FormikProps<CrmLogEmailFormValues>
     | FormikProps<CrmScheduleMeetingFormValues>;
   fieldAriaLabel: string;
-  mismatchTooltip?: string;
+  mismatchMessage?: string;
 }
 
 const ActivityRelatedToField: FC<Props> = ({
   id,
   formik,
   fieldAriaLabel,
-  mismatchTooltip
+  mismatchMessage
 }) => {
   const { values, setFieldValue } = formik;
 
@@ -140,7 +140,7 @@ const ActivityRelatedToField: FC<Props> = ({
         onClear={handleClear}
         clearAriaLabel={translateAria(["clearRelatedTo"])}
         fieldAriaLabel={fieldAriaLabel}
-        {...(mismatchTooltip && { describedById: `${id}-mismatch` })}
+        {...(mismatchMessage && { describedById: `${id}-mismatch` })}
         searchValue={searchTerm}
         onSearchChange={(event) => setSearchTerm(event.target.value)}
         items={dropdownItems}
@@ -151,12 +151,12 @@ const ActivityRelatedToField: FC<Props> = ({
           loadingMessage: translateText(["emptyStates", "searching"])
         })}
       />
-      {mismatchTooltip && (
+      {mismatchMessage && (
         <output
           id={`${id}-mismatch`}
           className="text-sm text-semantic-amber-text"
         >
-          {mismatchTooltip}
+          {mismatchMessage}
         </output>
       )}
     </div>

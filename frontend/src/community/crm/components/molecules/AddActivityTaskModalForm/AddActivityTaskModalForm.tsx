@@ -211,7 +211,7 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
           formik={formik}
           fieldAriaLabel={translateAria(["relatedTo"])}
           {...(isCompanyMismatch && {
-            mismatchTooltip: translateText([
+            mismatchMessage: translateText([
               "addTask",
               "modal",
               "notices",
