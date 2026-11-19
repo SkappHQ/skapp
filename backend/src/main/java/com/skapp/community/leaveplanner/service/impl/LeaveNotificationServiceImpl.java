@@ -5,10 +5,12 @@ import com.skapp.community.common.service.NotificationService;
 import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.type.NotificationCategory;
 import com.skapp.community.common.type.NotificationType;
+import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy;
 import com.skapp.community.leaveplanner.model.LeaveEntitlement;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.leaveplanner.payload.email.LeaveEmailDynamicFields;
 import com.skapp.community.leaveplanner.service.LeaveNotificationService;
+import com.skapp.community.leaveplanner.util.EmployeeLeavePolicyUtil;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.repository.EmployeeManagerDao;
@@ -367,6 +369,17 @@ public class LeaveNotificationServiceImpl implements LeaveNotificationService {
 				leaveEntitlement.getEntitlementId().toString(), NotificationType.LEAVE_ENTITLEMENT,
 				EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_CUSTOM_ALLOCATION, leaveEmailDynamicFields,
 				NotificationCategory.LEAVE);
+	}
+
+	@Override
+	public void sendPolicyAssignedEmployeeNotification(EmployeeLeavePolicy employeeLeavePolicy) {
+		LeaveEmailDynamicFields leaveEmailDynamicFields = new LeaveEmailDynamicFields();
+		leaveEmailDynamicFields.setPolicyName(employeeLeavePolicy.getPolicy().getName());
+
+		notificationService.createNotification(employeeLeavePolicy.getEmployee(),
+				employeeLeavePolicy.getId().toString(), NotificationType.LEAVE_ENTITLEMENT,
+				EmployeeLeavePolicyUtil.getPolicyAssignedTemplate(employeeLeavePolicy.getPolicy().getPolicyType()),
+				leaveEmailDynamicFields, NotificationCategory.LEAVE);
 	}
 
 	@Override

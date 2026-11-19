@@ -170,6 +170,12 @@ en:
     - id: leave-module-employee-custom-allocation
       subject: Custom leave allocation added!
 
+    - id: leave-module-employee-accrual-policy-assigned
+      subject: Leave policy assigned!
+
+    - id: leave-module-employee-flexible-policy-assigned
+      subject: Leave policy assigned!
+
     - id: leave-module-employee-declined-multi-day-leave
       subject: Your supervisor has declined leave request!
 

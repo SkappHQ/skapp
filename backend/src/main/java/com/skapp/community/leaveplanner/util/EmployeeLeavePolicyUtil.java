@@ -1,10 +1,12 @@
 package com.skapp.community.leaveplanner.util;
 
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
 import com.skapp.community.leaveplanner.payload.request.AssignLeavePolicyRequestDto;
 import com.skapp.community.leaveplanner.payload.request.UnassignLeavePolicyRequestDto;
 import com.skapp.community.leaveplanner.type.EffectiveDateType;
+import com.skapp.community.leaveplanner.type.PolicyType;
 import com.skapp.community.peopleplanner.model.Employee;
 import lombok.experimental.UtilityClass;
 
@@ -46,6 +48,11 @@ public class EmployeeLeavePolicyUtil {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_JOIN_DATE_UNAVAILABLE);
 		}
 		return employee.getJoinDate();
+	}
+
+	public static EmailBodyTemplates getPolicyAssignedTemplate(PolicyType policyType) {
+		return policyType == PolicyType.FLEXIBLE ? EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_FLEXIBLE_POLICY_ASSIGNED
+				: EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_ACCRUAL_POLICY_ASSIGNED;
 	}
 
 }

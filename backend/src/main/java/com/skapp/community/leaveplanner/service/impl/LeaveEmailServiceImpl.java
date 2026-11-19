@@ -3,10 +3,14 @@ package com.skapp.community.leaveplanner.service.impl;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.service.EmailService;
 import com.skapp.community.common.type.EmailBodyTemplates;
+import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy;
 import com.skapp.community.leaveplanner.model.LeaveEntitlement;
+import com.skapp.community.leaveplanner.model.LeavePolicy;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.leaveplanner.payload.email.LeaveEmailDynamicFields;
 import com.skapp.community.leaveplanner.service.LeaveEmailService;
+import com.skapp.community.leaveplanner.util.EmployeeLeavePolicyUtil;
+import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.repository.EmployeeManagerDao;
 import com.skapp.community.peopleplanner.util.PeopleUtil;
@@ -474,6 +478,20 @@ public class LeaveEmailServiceImpl implements LeaveEmailService {
 
 		emailService.sendEmail(EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_CUSTOM_ALLOCATION, leaveEmailDynamicFields,
 				leaveEntitlement.getEmployee().getUser().getEmail());
+	}
+
+	@Override
+	public void sendPolicyAssignedEmployeeEmail(EmployeeLeavePolicy employeeLeavePolicy) {
+		Employee employee = employeeLeavePolicy.getEmployee();
+		LeavePolicy policy = employeeLeavePolicy.getPolicy();
+
+		LeaveEmailDynamicFields leaveEmailDynamicFields = new LeaveEmailDynamicFields();
+		leaveEmailDynamicFields.setEmployeeOrManagerName(employee.getFullName());
+		leaveEmailDynamicFields.setPolicyName(policy.getName());
+		leaveEmailDynamicFields.setLeaveType(policy.getLeaveType().getName());
+
+		emailService.sendEmail(EmployeeLeavePolicyUtil.getPolicyAssignedTemplate(policy.getPolicyType()),
+				leaveEmailDynamicFields, employee.getUser().getEmail());
 	}
 
 	private List<EmployeeManager> getOtherManagers(List<EmployeeManager> allManagers, User currentManager) {

@@ -25,10 +25,13 @@ import com.skapp.community.leaveplanner.payload.response.EmployeeLeavePolicyResp
 import com.skapp.community.leaveplanner.repository.EmployeeLeavePolicyDao;
 import com.skapp.community.leaveplanner.repository.LeavePolicyDao;
 import com.skapp.community.leaveplanner.service.EmployeeLeavePolicyService;
+import com.skapp.community.leaveplanner.service.LeaveEmailService;
+import com.skapp.community.leaveplanner.service.LeaveNotificationService;
 import com.skapp.community.leaveplanner.service.PolicyLeaveService;
 import com.skapp.community.leaveplanner.type.EffectiveDateType;
 import com.skapp.community.leaveplanner.type.PolicyType;
 import com.skapp.community.leaveplanner.util.EmployeeLeavePolicyUtil;
+import com.skapp.community.leaveplanner.util.LeaveModuleUtil;
 import com.skapp.community.leaveplanner.type.EmployeeLeavePolicyStatus;
 import com.skapp.community.leaveplanner.type.LeavePolicyStatus;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -69,6 +72,10 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 	private final MessageUtil messageUtil;
 
 	private final PlatformTransactionManager transactionManager;
+
+	private final LeaveEmailService leaveEmailService;
+
+	private final LeaveNotificationService leaveNotificationService;
 
 	@Override
 	@Transactional
@@ -190,6 +197,8 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 			.orElseThrow(() -> new ModuleException(LeaveMessageConstant.LEAVE_ERROR_EMPLOYEE_LEAVE_POLICY_NOT_FOUND));
 
 		markEmployeeLeavePolicyEnded(activeEmployeeLeavePolicy);
+		addLeavePolicyRemovedTimelineRecord(activeEmployeeLeavePolicy.getEmployee(),
+				activeEmployeeLeavePolicy.getPolicy());
 
 		log.info("unassignLeavePolicy: execution ended");
 		return new ResponseEntityDto(false,
@@ -317,7 +326,21 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		employeeLeavePolicy.setEffectiveDateType(effectiveDateType);
 		employeeLeavePolicy.setEffectiveFrom(effectiveFrom);
 		employeeLeavePolicy.setStatus(EmployeeLeavePolicyStatus.ACTIVE);
-		return employeeLeavePolicyDao.save(employeeLeavePolicy);
+		EmployeeLeavePolicy savedEmployeeLeavePolicy = employeeLeavePolicyDao.save(employeeLeavePolicy);
+
+		addLeavePolicyAssignedTimelineRecord(employee,
+				currentActiveAssignment != null ? currentActiveAssignment.getPolicy() : null, policy);
+		leaveNotificationService.sendPolicyAssignedEmployeeNotification(savedEmployeeLeavePolicy);
+		LeaveModuleUtil
+			.runAfterCommit(() -> leaveEmailService.sendPolicyAssignedEmployeeEmail(savedEmployeeLeavePolicy));
+		return savedEmployeeLeavePolicy;
+	}
+
+	protected void addLeavePolicyAssignedTimelineRecord(Employee employee, LeavePolicy previousPolicy,
+			LeavePolicy newPolicy) {
+	}
+
+	protected void addLeavePolicyRemovedTimelineRecord(Employee employee, LeavePolicy policy) {
 	}
 
 	private void markEmployeeLeavePolicyEnded(EmployeeLeavePolicy employeeLeavePolicy) {

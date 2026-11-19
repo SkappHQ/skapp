@@ -96,6 +96,8 @@ public enum EmailBodyTemplates implements EmailTemplates {
 	LEAVE_MODULE_EMPLOYEE_AUTO_APPROVED_MULTI_DAY_LEAVE("leave-module-employee-auto-approved-multi-day-leave"),
 	LEAVE_MODULE_EMPLOYEE_LEAVE_CARRY_FORWARD("leave-module-employee-leave-carry-forward"),
 	LEAVE_MODULE_EMPLOYEE_CUSTOM_ALLOCATION("leave-module-employee-custom-allocation"),
+	LEAVE_MODULE_EMPLOYEE_ACCRUAL_POLICY_ASSIGNED("leave-module-employee-accrual-policy-assigned"),
+	LEAVE_MODULE_EMPLOYEE_FLEXIBLE_POLICY_ASSIGNED("leave-module-employee-flexible-policy-assigned"),
 	LEAVE_MODULE_MANAGER_APPROVED_SINGLE_DAY_LEAVE("leave-module-manager-approved-single-day-leave"),
 	LEAVE_MODULE_MANAGER_APPROVED_MULTI_DAY_LEAVE("leave-module-manager-approved-multi-day-leave"),
 	LEAVE_MODULE_MANAGER_REVOKED_SINGLE_DAY_LEAVE("leave-module-manager-revoked-single-day-leave"),
