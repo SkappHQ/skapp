@@ -330,6 +330,7 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
           fieldAriaLabel={translateAria(["relatedTo"])}
           {...(values.companyId &&
             values.toContactIds.length > 0 &&
+            contacts[values.toContactIds[0]]?.companyId &&
             values.companyId !== contacts[values.toContactIds[0]].companyId && {
               mismatchMessage: translateText([
                 "logActivity",

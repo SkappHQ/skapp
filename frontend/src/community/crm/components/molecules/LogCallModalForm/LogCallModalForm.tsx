@@ -51,14 +51,6 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
     ? contacts[values.contactId]?.companyId
     : null;
 
-  const selectedContact = values.contactId ? contacts[values.contactId] : null;
-
-  const isCompanyMismatch = Boolean(
-    values.companyId &&
-    selectedContact &&
-    values.companyId !== selectedContact.companyId
-  );
-
   const [isDealClearedNoticeVisible, setIsDealClearedNoticeVisible] =
     useState(false);
 
@@ -194,13 +186,15 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
           id="log-call-related-to"
           formik={formik}
           fieldAriaLabel={translateAria(["relatedTo"])}
-          {...(isCompanyMismatch && {
-            mismatchMessage: translateText([
-              "logActivity",
-              "notices",
-              "relatedToMismatch"
-            ])
-          })}
+          {...(values.companyId &&
+            contactCompanyId &&
+            values.companyId !== contactCompanyId && {
+              mismatchMessage: translateText([
+                "logActivity",
+                "notices",
+                "relatedToMismatch"
+              ])
+            })}
         />
       </ActivityAssociations>
     </div>

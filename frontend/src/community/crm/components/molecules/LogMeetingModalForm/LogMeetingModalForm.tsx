@@ -87,6 +87,7 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
   const isCompanyMismatch = Boolean(
     values.companyId &&
     primaryAttendee &&
+    primaryAttendee.companyId &&
     values.companyId !== primaryAttendee.companyId
   );
 
