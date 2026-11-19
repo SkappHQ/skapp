@@ -137,8 +137,8 @@ const OwnerPopupSearch: FC<Props> = ({
       clearable
       ariaInvalid={ariaInvalid}
       width="w-full"
-      {...(popupWidth && { popupWidth })}
-      {...(popupAlignment && { popupAlignment })}
+      popupWidth={popupWidth}
+      popupAlignment={popupAlignment}
       renderTrigger={(option, _a, _b, triggerProps) =>
         handleRenderTrigger(option as DropdownOption, triggerProps)
       }
