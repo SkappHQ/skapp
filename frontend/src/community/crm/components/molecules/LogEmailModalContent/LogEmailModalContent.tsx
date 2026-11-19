@@ -104,7 +104,7 @@ const LogEmailModalContent: FC<Props> = ({
     enableReinitialize: true
   });
 
-  const { dirty, isSubmitting, setSubmitting, submitForm } = formik;
+  const { dirty, isSubmitting, setSubmitting, setStatus, submitForm } = formik;
 
   const handleSuccess = (): void => {
     setSubmitting(false);
@@ -137,6 +137,14 @@ const LogEmailModalContent: FC<Props> = ({
     if (
       messageKey === CrmErrorMessageKeyEnum.ACTIVITY_EMAIL_DEAL_COMPANY_MISMATCH
     ) {
+      setStatus({
+        mismatchedDealId: formik.values.dealId,
+        mismatchedContactIds: [
+          ...formik.values.toContactIds,
+          ...formik.values.ccContactIds,
+          ...formik.values.bccContactIds
+        ].join()
+      });
       requestAnimationFrame(() => {
         document.getElementById("log-email-deal-input")?.focus();
       });

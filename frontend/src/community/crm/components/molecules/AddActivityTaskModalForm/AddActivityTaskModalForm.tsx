@@ -7,7 +7,6 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import { FC, useState } from "react";
-import { useShallow } from "zustand/react/shallow";
 
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
@@ -27,7 +26,6 @@ import {
   CrmAddTaskFormErrorField,
   CrmAddTaskFormValues
 } from "~community/crm/types/CrmCommonTypes";
-import { isDealMatchingCompany } from "~community/crm/utils/dealUtil";
 
 interface Props {
   formik: FormikProps<CrmAddTaskFormValues>;
@@ -46,12 +44,7 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
   const displayZone = useDisplayZone();
   const priorityOptions = useGetPriorityOptions();
 
-  const { contacts, deals } = useCrmStore(
-    useShallow((state) => ({
-      contacts: state.contacts,
-      deals: state.deals
-    }))
-  );
+  const contacts = useCrmStore((state) => state.contacts);
 
   const [isDealClearedNoticeVisible, setIsDealClearedNoticeVisible] =
     useState(false);
@@ -60,17 +53,10 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
     ? contacts[values.contactId]?.companyId
     : null;
 
-  const selectedDeal = values.dealId ? deals[values.dealId] : null;
-
   const isDealMismatch =
-    Boolean(
-      selectedDeal &&
-      values.contactId &&
-      !isDealMatchingCompany(selectedDeal, contactCompanyId)
-    ) ||
-    (Boolean(status) &&
-      status.mismatchedDealId === values.dealId &&
-      status.mismatchedContactId === values.contactId);
+    Boolean(status) &&
+    status.mismatchedDealId === values.dealId &&
+    status.mismatchedContactId === values.contactId;
 
   const isCompanyMismatch = Boolean(
     values.companyId &&
