@@ -8,6 +8,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.StringUtils;
+import com.skapp.community.common.util.TransactionUtil;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
 import com.skapp.community.leaveplanner.constant.LeavePolicyConstant;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
@@ -31,7 +32,6 @@ import com.skapp.community.leaveplanner.service.PolicyLeaveService;
 import com.skapp.community.leaveplanner.type.EffectiveDateType;
 import com.skapp.community.leaveplanner.type.PolicyType;
 import com.skapp.community.leaveplanner.util.EmployeeLeavePolicyUtil;
-import com.skapp.community.leaveplanner.util.LeaveModuleUtil;
 import com.skapp.community.leaveplanner.type.EmployeeLeavePolicyStatus;
 import com.skapp.community.leaveplanner.type.LeavePolicyStatus;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -328,11 +328,13 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		employeeLeavePolicy.setStatus(EmployeeLeavePolicyStatus.ACTIVE);
 		EmployeeLeavePolicy savedEmployeeLeavePolicy = employeeLeavePolicyDao.save(employeeLeavePolicy);
 
-		addLeavePolicyAssignedTimelineRecord(employee,
-				currentActiveAssignment != null ? currentActiveAssignment.getPolicy() : null, policy);
-		leaveNotificationService.sendPolicyAssignedEmployeeNotification(savedEmployeeLeavePolicy);
-		LeaveModuleUtil
-			.runAfterCommit(() -> leaveEmailService.sendPolicyAssignedEmployeeEmail(savedEmployeeLeavePolicy));
+		LeavePolicy previousPolicy = currentActiveAssignment != null ? currentActiveAssignment.getPolicy() : null;
+		if (previousPolicy == null || !previousPolicy.getId().equals(policy.getId())) {
+			addLeavePolicyAssignedTimelineRecord(employee, previousPolicy, policy);
+			leaveNotificationService.sendPolicyAssignedEmployeeNotification(savedEmployeeLeavePolicy);
+			TransactionUtil
+				.runAfterCommit(() -> leaveEmailService.sendPolicyAssignedEmployeeEmail(savedEmployeeLeavePolicy));
+		}
 		return savedEmployeeLeavePolicy;
 	}
 

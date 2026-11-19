@@ -17,6 +17,7 @@ import com.skapp.community.peopleplanner.util.PeopleUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.HtmlUtils;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -482,16 +483,20 @@ public class LeaveEmailServiceImpl implements LeaveEmailService {
 
 	@Override
 	public void sendPolicyAssignedEmployeeEmail(EmployeeLeavePolicy employeeLeavePolicy) {
+		log.info("sendPolicyAssignedEmployeeEmail: execution started");
+
 		Employee employee = employeeLeavePolicy.getEmployee();
 		LeavePolicy policy = employeeLeavePolicy.getPolicy();
 
 		LeaveEmailDynamicFields leaveEmailDynamicFields = new LeaveEmailDynamicFields();
 		leaveEmailDynamicFields.setEmployeeOrManagerName(employee.getFullName());
-		leaveEmailDynamicFields.setPolicyName(policy.getName());
-		leaveEmailDynamicFields.setLeaveType(policy.getLeaveType().getName());
+		leaveEmailDynamicFields.setPolicyName(HtmlUtils.htmlEscape(policy.getName()));
+		leaveEmailDynamicFields.setLeaveType(HtmlUtils.htmlEscape(policy.getLeaveType().getName()));
 
 		emailService.sendEmail(EmployeeLeavePolicyUtil.getPolicyAssignedTemplate(policy.getPolicyType()),
 				leaveEmailDynamicFields, employee.getUser().getEmail());
+
+		log.info("sendPolicyAssignedEmployeeEmail: execution ended");
 	}
 
 	private List<EmployeeManager> getOtherManagers(List<EmployeeManager> allManagers, User currentManager) {

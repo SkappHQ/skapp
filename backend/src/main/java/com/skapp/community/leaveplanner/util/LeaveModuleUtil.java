@@ -15,8 +15,6 @@ import com.skapp.community.peopleplanner.util.PeopleUtil;
 import com.skapp.community.timeplanner.model.TimeConfig;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -177,20 +175,6 @@ public class LeaveModuleUtil {
 	public static boolean isUserSuperAdminOrLeaveAdmin(User user) {
 		EmployeeRole role = user.getEmployee().getEmployeeRole();
 		return role.getIsSuperAdmin() || Role.LEAVE_ADMIN.equals(role.getLeaveRole());
-	}
-
-	public static void runAfterCommit(Runnable action) {
-		if (!TransactionSynchronizationManager.isSynchronizationActive()) {
-			action.run();
-			return;
-		}
-
-		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-			@Override
-			public void afterCommit() {
-				action.run();
-			}
-		});
 	}
 
 }

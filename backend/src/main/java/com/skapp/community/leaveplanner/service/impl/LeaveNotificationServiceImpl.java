@@ -405,6 +405,8 @@ public class LeaveNotificationServiceImpl implements LeaveNotificationService {
 
 	@Override
 	public void sendPolicyAssignedEmployeeNotification(EmployeeLeavePolicy employeeLeavePolicy) {
+		log.info("sendPolicyAssignedEmployeeNotification: execution started");
+
 		LeaveEmailDynamicFields leaveEmailDynamicFields = new LeaveEmailDynamicFields();
 		leaveEmailDynamicFields.setPolicyName(employeeLeavePolicy.getPolicy().getName());
 
@@ -412,6 +414,8 @@ public class LeaveNotificationServiceImpl implements LeaveNotificationService {
 				employeeLeavePolicy.getId().toString(), NotificationType.LEAVE_ENTITLEMENT,
 				EmployeeLeavePolicyUtil.getPolicyAssignedTemplate(employeeLeavePolicy.getPolicy().getPolicyType()),
 				leaveEmailDynamicFields, NotificationCategory.LEAVE);
+
+		log.info("sendPolicyAssignedEmployeeNotification: execution ended");
 	}
 
 	private List<EmployeeManager> getOtherManagers(List<EmployeeManager> allManagers, User currentManager) {

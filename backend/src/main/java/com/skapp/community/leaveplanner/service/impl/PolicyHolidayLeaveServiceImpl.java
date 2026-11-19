@@ -5,6 +5,7 @@ import com.skapp.community.common.model.WorkLocation;
 import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.util.CommonModuleUtils;
+import com.skapp.community.common.util.TransactionUtil;
 import com.skapp.community.leaveplanner.constant.LeaveModuleConstant;
 import com.skapp.community.leaveplanner.constant.PolicyLeaveConstant;
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
@@ -26,8 +27,6 @@ import com.skapp.community.timeplanner.repository.TimeConfigDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -200,17 +199,7 @@ public class PolicyHolidayLeaveServiceImpl implements PolicyHolidayLeaveService 
 			});
 		};
 
-		if (TransactionSynchronizationManager.isSynchronizationActive()) {
-			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-				@Override
-				public void afterCommit() {
-					sendAll.run();
-				}
-			});
-		}
-		else {
-			sendAll.run();
-		}
+		TransactionUtil.runAfterCommit(sendAll);
 	}
 
 	private enum Adjustment {
