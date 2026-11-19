@@ -72,6 +72,12 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
       status.mismatchedDealId === values.dealId &&
       status.mismatchedContactId === values.contactId);
 
+  const isCompanyMismatch = Boolean(
+    values.companyId &&
+    contactCompanyId &&
+    values.companyId !== contactCompanyId
+  );
+
   const dueDate = values.dueAt
     ? instantToPickedDay(values.dueAt, displayZone)
     : null;
@@ -155,7 +161,7 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
           </DatePicker>
         </div>
         <div className="flex-1">
-          <ActivityOwnerField id="add-task-ownerId" formik={formik} />
+          <ActivityOwnerField id="add-task-ownerId" formik={formik} required />
         </div>
       </div>
 
@@ -187,7 +193,9 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
       />
 
       <ActivityAssociations
-        isForcedOpen={isDealClearedNoticeVisible || isDealMismatch}
+        isForcedOpen={
+          isDealClearedNoticeVisible || isDealMismatch || isCompanyMismatch
+        }
       >
         <ActivityDealField
           id="add-task-deal"
@@ -202,6 +210,14 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
           id="add-task-related-to"
           formik={formik}
           fieldAriaLabel={translateAria(["relatedTo"])}
+          {...(isCompanyMismatch && {
+            mismatchMessage: translateText([
+              "addTask",
+              "modal",
+              "notices",
+              "relatedToMismatch"
+            ])
+          })}
         />
       </ActivityAssociations>
     </div>
