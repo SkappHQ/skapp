@@ -24,10 +24,7 @@ import {
   CrmContactEntity,
   CrmLogEmailFormValues
 } from "~community/crm/types/CrmCommonTypes";
-import {
-  getContactCompanyIds,
-  getContactDisplayName
-} from "~community/crm/utils/contactUtil";
+import { getContactCompanyIds } from "~community/crm/utils/contactUtil";
 import { isDealMatchingContacts } from "~community/crm/utils/dealUtil";
 
 interface Props {
@@ -334,12 +331,11 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
           {...(values.companyId &&
             values.toContactIds.length > 0 &&
             values.companyId !== contacts[values.toContactIds[0]].companyId && {
-              mismatchMessage: translateText(
-                ["logActivity", "notices", "relatedToMismatch"],
-                {
-                  name: getContactDisplayName(contacts[values.toContactIds[0]])
-                }
-              )
+              mismatchMessage: translateText([
+                "logActivity",
+                "notices",
+                "relatedToMismatch"
+              ])
             })}
         />
       </ActivityAssociations>

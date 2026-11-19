@@ -21,7 +21,6 @@ import ActivityOwnerField from "~community/crm/components/molecules/ActivityOwne
 import ActivityRelatedToField from "~community/crm/components/molecules/ActivityRelatedToField/ActivityRelatedToField";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmLogCallFormValues } from "~community/crm/types/CrmCommonTypes";
-import { getContactDisplayName } from "~community/crm/utils/contactUtil";
 
 interface Props {
   formik: FormikProps<CrmLogCallFormValues>;
@@ -195,13 +194,13 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
           id="log-call-related-to"
           formik={formik}
           fieldAriaLabel={translateAria(["relatedTo"])}
-          {...(isCompanyMismatch &&
-            selectedContact && {
-              mismatchMessage: translateText(
-                ["logActivity", "notices", "relatedToMismatch"],
-                { name: getContactDisplayName(selectedContact) }
-              )
-            })}
+          {...(isCompanyMismatch && {
+            mismatchMessage: translateText([
+              "logActivity",
+              "notices",
+              "relatedToMismatch"
+            ])
+          })}
         />
       </ActivityAssociations>
     </div>

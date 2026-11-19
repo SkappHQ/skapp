@@ -25,10 +25,7 @@ import {
   CrmContactEntity,
   CrmLogMeetingFormValues
 } from "~community/crm/types/CrmCommonTypes";
-import {
-  getContactCompanyIds,
-  getContactDisplayName
-} from "~community/crm/utils/contactUtil";
+import { getContactCompanyIds } from "~community/crm/utils/contactUtil";
 import { isDealMatchingContacts } from "~community/crm/utils/dealUtil";
 
 interface Props {
@@ -244,13 +241,13 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
           id="log-meeting-related-to"
           formik={formik}
           fieldAriaLabel={translateAria(["relatedTo"])}
-          {...(isCompanyMismatch &&
-            primaryAttendee && {
-              mismatchMessage: translateText(
-                ["logActivity", "notices", "relatedToMismatch"],
-                { name: getContactDisplayName(primaryAttendee) }
-              )
-            })}
+          {...(isCompanyMismatch && {
+            mismatchMessage: translateText([
+              "logActivity",
+              "notices",
+              "relatedToMismatch"
+            ])
+          })}
         />
       </ActivityAssociations>
     </div>
