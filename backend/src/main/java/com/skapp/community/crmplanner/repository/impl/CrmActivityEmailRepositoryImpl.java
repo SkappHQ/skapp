@@ -18,6 +18,7 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
+import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
@@ -28,6 +29,9 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
@@ -43,7 +47,7 @@ public class CrmActivityEmailRepositoryImpl implements CrmActivityEmailRepositor
 	private final EntityManager entityManager;
 
 	@Override
-	public List<CrmActivityEmailResponseDto> findEmails(CrmActivityEmailFilterParams params) {
+	public Page<CrmActivityEmailResponseDto> findEmails(CrmActivityEmailFilterParams params, Pageable pageable) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Tuple> query = cb.createTupleQuery();
 		Root<CrmActivityEmail> email = query.from(CrmActivityEmail.class);
@@ -105,20 +109,60 @@ public class CrmActivityEmailRepositoryImpl implements CrmActivityEmailRepositor
 			.where(predicates.toArray(new Predicate[0]))
 			.orderBy(orders);
 
-		List<CrmActivityEmailResponseDto> emails = entityManager.createQuery(query)
-			.getResultList()
-			.stream()
-			.map(row -> {
-				CrmActivityEmailResponseDto dto = new CrmActivityEmailResponseDto();
-				dto.setId(row.get(0, Long.class));
-				dto.setSubject(row.get(1, String.class));
-				dto.setLoggedAt(row.get(2, Instant.class));
-				dto.setOwnerId(row.get(3, Long.class));
-				dto.setDealId(row.get(4, Long.class));
-				dto.setCompanyId(row.get(5, Long.class));
-				return dto;
-			})
-			.toList();
+		TypedQuery<Tuple> typedQuery = entityManager.createQuery(query);
+		typedQuery.setFirstResult((int) pageable.getOffset());
+		typedQuery.setMaxResults(pageable.getPageSize());
+		List<Tuple> results = typedQuery.getResultList();
+
+		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+		Root<CrmActivityEmail> countRoot = countQuery.from(CrmActivityEmail.class);
+		Join<CrmActivityEmail, Employee> countOwner = countRoot.join(CrmActivityEmail_.owner, JoinType.LEFT);
+		Path<Long> countOwnerId = countOwner.get(Employee_.employeeId);
+		Path<Instant> countLoggedAt = countRoot.get(CrmActivityEmail_.loggedAt);
+		List<Predicate> countPredicates = new ArrayList<>();
+		if (Boolean.TRUE.equals(params.getIsRestrictedToOwner())) {
+			countPredicates.add(cb.equal(countOwnerId, params.getCurrentEmployeeId()));
+		}
+		if (params.getOwnerId() != null) {
+			countPredicates.add(cb.equal(countOwnerId, params.getOwnerId()));
+		}
+		if (params.getRangeStart() != null) {
+			countPredicates.add(cb.greaterThanOrEqualTo(countLoggedAt, params.getRangeStart()));
+		}
+		if (params.getRangeEnd() != null) {
+			countPredicates.add(cb.lessThan(countLoggedAt, params.getRangeEnd()));
+		}
+		countPredicates.add(cb.isFalse(countRoot.get(CrmActivityEmail_.isDeleted)));
+
+		if (params.getSearchPattern() != null) {
+			Subquery<Long> contactMatch = countQuery.subquery(Long.class);
+			Root<CrmActivityEmailContact> link = contactMatch.from(CrmActivityEmailContact.class);
+			Join<CrmActivityEmailContact, CrmContact> contact = link.join(CrmActivityEmailContact_.contact);
+			Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
+			contactCompany.on(cb.isFalse(contactCompany.get(CrmCompany_.isDeleted)));
+			contactMatch.select(link.get(CrmActivityEmailContact_.id).get(CrmActivityEmailContactId_.emailId))
+				.where(cb.equal(link.get(CrmActivityEmailContact_.id).get(CrmActivityEmailContactId_.emailId),
+						countRoot.get(CrmActivityEmail_.id)), cb.isFalse(contact.get(CrmContact_.isDeleted)),
+						cb.or(cb.like(cb.lower(contact.get(CrmContact_.name)), params.getSearchPattern()),
+								cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), params.getSearchPattern())));
+
+			countPredicates
+				.add(cb.or(cb.like(cb.lower(countRoot.get(CrmActivityEmail_.subject)), params.getSearchPattern()),
+						cb.exists(contactMatch)));
+		}
+
+		countQuery.select(cb.count(countRoot)).where(countPredicates.toArray(new Predicate[0]));
+		long total = entityManager.createQuery(countQuery).getSingleResult();
+		List<CrmActivityEmailResponseDto> emails = results.stream().map(row -> {
+			CrmActivityEmailResponseDto dto = new CrmActivityEmailResponseDto();
+			dto.setId(row.get(0, Long.class));
+			dto.setSubject(row.get(1, String.class));
+			dto.setLoggedAt(row.get(2, Instant.class));
+			dto.setOwnerId(row.get(3, Long.class));
+			dto.setDealId(row.get(4, Long.class));
+			dto.setCompanyId(row.get(5, Long.class));
+			return dto;
+		}).toList();
 
 		CriteriaQuery<Tuple> contactQuery = cb.createTupleQuery();
 		Root<CrmActivityEmailContact> contactLink = contactQuery.from(CrmActivityEmailContact.class);
@@ -136,7 +180,7 @@ public class CrmActivityEmailRepositoryImpl implements CrmActivityEmailRepositor
 					Collectors.mapping(row -> row.get(1, Long.class), Collectors.toList())));
 		emails.forEach(e -> e.setContactIds(contactIdsByEmail.getOrDefault(e.getId(), List.of())));
 
-		return emails;
+		return new PageImpl<>(emails, pageable, total);
 	}
 
 	@Override

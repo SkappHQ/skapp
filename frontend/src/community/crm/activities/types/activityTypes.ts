@@ -65,6 +65,13 @@ export interface ActivityFeedResponse {
   totalPages: number;
 }
 
+export interface ActivityListPage<T> {
+  items: T[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
 export enum ActivityTaskStatus {
   OVERDUE = "OVERDUE",
   TODAY = "TODAY",
@@ -123,6 +130,8 @@ export interface ActivityListFilters {
   endDate?: string;
   taskStatus?: ActivityTaskStatus;
   priority?: CrmPriorityEnum;
+  page?: number;
+  size?: number;
 }
 
 interface ActivityListItemBase {

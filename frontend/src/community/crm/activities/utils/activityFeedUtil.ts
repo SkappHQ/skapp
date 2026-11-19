@@ -16,6 +16,7 @@ import {
   ActivityCallResponse,
   ActivityEmailResponse,
   ActivityFeedResponse,
+  ActivityListPage,
   ActivityMeetingResponse,
   ActivityRow,
   ActivitySection,
@@ -234,8 +235,8 @@ export const toTaskRow = (task: ActivityTaskResponse): ActivityRow => ({
   canComplete: false
 });
 
-export const toSingleFeedPage = (
-  rows: ActivityRow[]
-): ActivityFeedResponse[] => [
-  { items: rows, currentPage: 0, totalItems: rows.length, totalPages: 1 }
-];
+export const toFeedPages = <T>(
+  pages: ActivityListPage<T>[],
+  toRow: (item: T) => ActivityRow
+): ActivityFeedResponse[] =>
+  pages.map((page) => ({ ...page, items: page.items.map(toRow) }));
