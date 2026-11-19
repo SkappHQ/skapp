@@ -201,7 +201,7 @@ const ActivitiesContent: FC = () => {
     });
   }, [isError, errorUpdatedAt]);
 
-  const resultCount = pages[0]?.totalItems ?? rows.length;
+  const resultCount = pages.length > 0 ? pages[0].totalItems : rows.length;
   const hasActiveFilters =
     searchTerm.length > 0 || Object.keys(filters).length > 0;
   const showControls =

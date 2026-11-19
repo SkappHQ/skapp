@@ -42,6 +42,14 @@ import {
 } from "~community/crm/types/CrmCommonTypes";
 import useActivityLimitCount from "~enterprise/crm/hooks/useActivityLimitCount";
 
+const getNextActivityListPage = (lastPage?: {
+  currentPage: number;
+  totalPages: number;
+}): number | null =>
+  lastPage && lastPage.currentPage < lastPage.totalPages - 1
+    ? lastPage.currentPage + 1
+    : null;
+
 const fetchActivityFeed = async (
   params: ActivityFeedFilters | RecordActivityFilters
 ): Promise<ActivityFeedResponse> => {
@@ -61,10 +69,7 @@ export const useGetActivityFeed = (
       fetchActivityFeed({ ...params, page: pageParam }),
     enabled,
     initialPageParam: 0,
-    getNextPageParam: (lastPage) =>
-      lastPage && lastPage.currentPage < lastPage.totalPages - 1
-        ? lastPage.currentPage + 1
-        : null,
+    getNextPageParam: getNextActivityListPage,
     refetchOnWindowFocus: false
   });
 
@@ -78,19 +83,9 @@ export const useGetRecordActivities = (
       fetchActivityFeed({ ...params, page: pageParam }),
     enabled,
     initialPageParam: 0,
-    getNextPageParam: (lastPage) =>
-      lastPage && lastPage.currentPage < lastPage.totalPages - 1
-        ? lastPage.currentPage + 1
-        : null,
+    getNextPageParam: getNextActivityListPage,
     refetchOnWindowFocus: false
   });
-
-const getNextActivityListPage = (
-  lastPage?: ActivityListPage<unknown>
-): number | null =>
-  lastPage && lastPage.currentPage < lastPage.totalPages - 1
-    ? lastPage.currentPage + 1
-    : null;
 
 const fetchActivityCalls = async (
   params: ActivityListFilters
