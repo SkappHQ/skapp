@@ -372,17 +372,6 @@ public class LeaveNotificationServiceImpl implements LeaveNotificationService {
 	}
 
 	@Override
-	public void sendPolicyAssignedEmployeeNotification(EmployeeLeavePolicy employeeLeavePolicy) {
-		LeaveEmailDynamicFields leaveEmailDynamicFields = new LeaveEmailDynamicFields();
-		leaveEmailDynamicFields.setPolicyName(employeeLeavePolicy.getPolicy().getName());
-
-		notificationService.createNotification(employeeLeavePolicy.getEmployee(),
-				employeeLeavePolicy.getId().toString(), NotificationType.LEAVE_ENTITLEMENT,
-				EmployeeLeavePolicyUtil.getPolicyAssignedTemplate(employeeLeavePolicy.getPolicy().getPolicyType()),
-				leaveEmailDynamicFields, NotificationCategory.LEAVE);
-	}
-
-	@Override
 	public void sendNudgeSingleDayLeaveRequestManagerNotification(LeaveRequest leaveRequest) {
 		LeaveEmailDynamicFields leaveEmailDynamicFields = new LeaveEmailDynamicFields();
 
@@ -411,6 +400,17 @@ public class LeaveNotificationServiceImpl implements LeaveNotificationService {
 
 		notificationService.createNotification(leaveRequest.getEmployee(), leaveRequest.getLeaveRequestId().toString(),
 				NotificationType.LEAVE_REQUEST_NUDGE, EmailBodyTemplates.LEAVE_MODULE_MANAGER_NUDGE_MULTI_DAY_LEAVE,
+				leaveEmailDynamicFields, NotificationCategory.LEAVE);
+	}
+
+	@Override
+	public void sendPolicyAssignedEmployeeNotification(EmployeeLeavePolicy employeeLeavePolicy) {
+		LeaveEmailDynamicFields leaveEmailDynamicFields = new LeaveEmailDynamicFields();
+		leaveEmailDynamicFields.setPolicyName(employeeLeavePolicy.getPolicy().getName());
+
+		notificationService.createNotification(employeeLeavePolicy.getEmployee(),
+				employeeLeavePolicy.getId().toString(), NotificationType.LEAVE_ENTITLEMENT,
+				EmployeeLeavePolicyUtil.getPolicyAssignedTemplate(employeeLeavePolicy.getPolicy().getPolicyType()),
 				leaveEmailDynamicFields, NotificationCategory.LEAVE);
 	}
 

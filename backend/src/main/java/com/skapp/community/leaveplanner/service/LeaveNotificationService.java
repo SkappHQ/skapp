@@ -58,10 +58,10 @@ public interface LeaveNotificationService {
 
 	void sendCustomAllocationEmployeeNotification(LeaveEntitlement leaveEntitlement);
 
-	void sendPolicyAssignedEmployeeNotification(EmployeeLeavePolicy employeeLeavePolicy);
-
 	void sendNudgeSingleDayLeaveRequestManagerNotification(LeaveRequest leaveRequest);
 
 	void sendNudgeMultiDayLeaveRequestManagerNotification(LeaveRequest leaveRequest);
+
+	void sendPolicyAssignedEmployeeNotification(EmployeeLeavePolicy employeeLeavePolicy);
 
 }
