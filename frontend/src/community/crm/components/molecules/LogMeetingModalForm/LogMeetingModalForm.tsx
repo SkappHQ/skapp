@@ -200,10 +200,10 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
             groupAriaLabel={translateAria(["attendees"])}
             fillsRelatedTo
             {...(attendeeCompanyIds.length > 1 && {
-              warningTooltip: translateText([
+              warningMessage: translateText([
                 "logMeeting",
                 "modal",
-                "tooltips",
+                "notices",
                 "differentCompanies"
               ])
             })}
@@ -246,8 +246,8 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
           fieldAriaLabel={translateAria(["relatedTo"])}
           {...(isCompanyMismatch &&
             primaryAttendee && {
-              mismatchTooltip: translateText(
-                ["logActivity", "tooltips", "relatedToMismatch"],
+              mismatchMessage: translateText(
+                ["logActivity", "notices", "relatedToMismatch"],
                 { name: getContactDisplayName(primaryAttendee) }
               )
             })}

@@ -117,6 +117,8 @@ const SidePanelActivityInfo: FC<Props> = ({
             selectedUser={owner || null}
             onChange={handleOwnerChange}
             placeholder={noValue}
+            popupWidth="w-64"
+            popupAlignment="right"
             searchPlaceholder={translateText([
               "deals",
               "common",

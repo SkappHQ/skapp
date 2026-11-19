@@ -31,9 +31,10 @@ interface Props {
     | FormikProps<CrmLogMeetingFormValues>
     | FormikProps<CrmAddTaskFormValues>
     | FormikProps<CrmScheduleMeetingFormValues>;
+  required?: boolean;
 }
 
-const ActivityOwnerField: FC<Props> = ({ id, formik }) => {
+const ActivityOwnerField: FC<Props> = ({ id, formik, required = false }) => {
   const { values, errors, setFieldValue } = formik;
 
   const translateText = useTranslator("crmModule", "activities", "logActivity");
@@ -103,6 +104,7 @@ const ActivityOwnerField: FC<Props> = ({ id, formik }) => {
       onRemove={handleClear}
       showRemoveButton={canChangeOwner}
       ariaLabel={translateAria(["removeOwner"])}
+      required={required}
     />
   ) : (
     <SearchableDropdown
@@ -112,6 +114,7 @@ const ActivityOwnerField: FC<Props> = ({ id, formik }) => {
       onSelect={handleSelect}
       label={translateText(["labels", "activityOwner"])}
       placeholder={translateText(["placeholders", "activityOwner"])}
+      required={required}
       value={searchTerm}
       state={errors.ownerId ? "error" : "default"}
       errorMessage={errors.ownerId}

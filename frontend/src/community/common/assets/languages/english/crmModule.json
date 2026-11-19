@@ -590,7 +590,8 @@
           "priority": "Priority is required"
         },
         "notices": {
-          "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
+          "dealCleared": "Deal cleared — it doesn't match the selected contact's company.",
+          "relatedToMismatch": "This doesn't match the contact's company"
         },
         "toastMessages": {
           "addSuccessTitle": "Task added successfully",
@@ -860,7 +861,7 @@
         "placeholders": {
           "attendees": "Select attendees"
         },
-        "tooltips": {
+        "notices": {
           "differentCompanies": "These contacts are linked to different companies. This activity will still be saved against all of them."
         }
       }
@@ -903,13 +904,11 @@
         "dealMismatch": "This deal's company doesn't match any linked contact — add a contact from that company or choose a different deal"
       },
       "notices": {
-        "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
+        "dealCleared": "Deal cleared — it doesn't match the selected contact's company.",
+        "relatedToMismatch": "This doesn't match {{name}}'s company on file."
       },
       "toastMessages": {
         "errorTitle": "Oops! Something went wrong"
-      },
-      "tooltips": {
-        "relatedToMismatch": "This doesn't match {{name}}'s company on file."
       }
     },
     "activitySidePanel": {
