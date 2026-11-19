@@ -54,6 +54,7 @@ const SelectableSearchField: FC<Props> = ({
   if (selectedValue) {
     return (
       <InputField
+        id={`${id}-input`}
         label={label}
         value={selectedValue}
         title={selectedValue}
@@ -61,6 +62,8 @@ const SelectableSearchField: FC<Props> = ({
         readOnly
         fullWidth
         variant="md"
+        state={errorMessage ? "error" : "default"}
+        errorMessage={errorMessage}
         aria-label={fieldAriaLabel}
         {...(describedById && { "aria-describedby": describedById })}
         rightIcon={
