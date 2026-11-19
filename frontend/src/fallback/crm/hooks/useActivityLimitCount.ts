@@ -1,9 +1,9 @@
 const useActivityLimitCount = () => {
-  const adjustActivityLimitCount = (_change: number): void => {
+  const updateActivityLimitCount = (_change: number): void => {
     return;
   };
 
-  return { adjustActivityLimitCount };
+  return { updateActivityLimitCount };
 };
 
 export default useActivityLimitCount;

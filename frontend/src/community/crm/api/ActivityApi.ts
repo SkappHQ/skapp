@@ -135,12 +135,12 @@ export const useCreateEmail = (
   onError: (error: ErrorResponse) => void
 ): UseMutationResult<void, ErrorResponse, ActivityEmailCreatePayload> => {
   const queryClient = useQueryClient();
-  const { adjustActivityLimitCount } = useActivityLimitCount();
+  const { updateActivityLimitCount } = useActivityLimitCount();
 
   return useMutation({
     mutationFn: createEmail,
     onSuccess: () => {
-      adjustActivityLimitCount(1);
+      updateActivityLimitCount(1);
       queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
       onSuccess();
     },
@@ -214,12 +214,12 @@ export const useCreateCall = (
   onError: (error: ErrorResponse) => void
 ): UseMutationResult<void, ErrorResponse, ActivityCallCreatePayload> => {
   const queryClient = useQueryClient();
-  const { adjustActivityLimitCount } = useActivityLimitCount();
+  const { updateActivityLimitCount } = useActivityLimitCount();
 
   return useMutation({
     mutationFn: createCall,
     onSuccess: () => {
-      adjustActivityLimitCount(1);
+      updateActivityLimitCount(1);
       queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
       onSuccess();
     },
@@ -271,12 +271,12 @@ export const useCreateMeeting = (
   onError: (error: ErrorResponse) => void
 ): UseMutationResult<void, ErrorResponse, ActivityMeetingCreatePayload> => {
   const queryClient = useQueryClient();
-  const { adjustActivityLimitCount } = useActivityLimitCount();
+  const { updateActivityLimitCount } = useActivityLimitCount();
 
   return useMutation({
     mutationFn: createMeeting,
     onSuccess: () => {
-      adjustActivityLimitCount(1);
+      updateActivityLimitCount(1);
       queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
       onSuccess();
     },
@@ -295,12 +295,12 @@ export const useCreateTask = (
   onError: (error: ErrorResponse) => void
 ): UseMutationResult<void, ErrorResponse, ActivityTaskCreatePayload> => {
   const queryClient = useQueryClient();
-  const { adjustActivityLimitCount } = useActivityLimitCount();
+  const { updateActivityLimitCount } = useActivityLimitCount();
 
   return useMutation({
     mutationFn: createTask,
     onSuccess: () => {
-      adjustActivityLimitCount(1);
+      updateActivityLimitCount(1);
       queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
       onSuccess();
     },
@@ -411,12 +411,12 @@ export const useDeleteCall = (
   onError: (error: ErrorResponse) => void
 ): UseMutationResult<void, ErrorResponse, number> => {
   const queryClient = useQueryClient();
-  const { adjustActivityLimitCount } = useActivityLimitCount();
+  const { updateActivityLimitCount } = useActivityLimitCount();
 
   return useMutation({
     mutationFn: deleteCall,
     onSuccess: () => {
-      adjustActivityLimitCount(-1);
+      updateActivityLimitCount(-1);
       queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
       onSuccess();
     },
@@ -433,12 +433,12 @@ export const useDeleteMeeting = (
   onError: (error: ErrorResponse) => void
 ): UseMutationResult<void, ErrorResponse, number> => {
   const queryClient = useQueryClient();
-  const { adjustActivityLimitCount } = useActivityLimitCount();
+  const { updateActivityLimitCount } = useActivityLimitCount();
 
   return useMutation({
     mutationFn: deleteMeeting,
     onSuccess: () => {
-      adjustActivityLimitCount(-1);
+      updateActivityLimitCount(-1);
       queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
       onSuccess();
     },
@@ -455,12 +455,12 @@ export const useDeleteActivityTask = (
   onError: (error: ErrorResponse) => void
 ): UseMutationResult<void, ErrorResponse, number> => {
   const queryClient = useQueryClient();
-  const { adjustActivityLimitCount } = useActivityLimitCount();
+  const { updateActivityLimitCount } = useActivityLimitCount();
 
   return useMutation({
     mutationFn: deleteActivityTask,
     onSuccess: () => {
-      adjustActivityLimitCount(-1);
+      updateActivityLimitCount(-1);
       queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
       onSuccess();
     },
@@ -556,12 +556,12 @@ export const useDeleteEmail = (
   onError: (error: ErrorResponse) => void
 ): UseMutationResult<void, ErrorResponse, number> => {
   const queryClient = useQueryClient();
-  const { adjustActivityLimitCount } = useActivityLimitCount();
+  const { updateActivityLimitCount } = useActivityLimitCount();
 
   return useMutation({
     mutationFn: deleteEmail,
     onSuccess: () => {
-      adjustActivityLimitCount(-1);
+      updateActivityLimitCount(-1);
       queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
       onSuccess();
     },
