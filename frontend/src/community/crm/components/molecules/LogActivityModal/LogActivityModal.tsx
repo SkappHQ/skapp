@@ -1,5 +1,5 @@
 import { ButtonV2, CloseIcon, SmallModal } from "@rootcodelabs/skapp-ui";
-import { FC, ReactNode, useState } from "react";
+import { FC, ReactNode, useLayoutEffect, useRef, useState } from "react";
 
 import AreYouSureModal from "~community/common/components/molecules/AreYouSureModal/AreYouSureModal";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -39,7 +39,32 @@ const LogActivityModal: FC<Props> = ({
     "unsavedChangesModal"
   );
 
+  const translateCommonAria = useTranslator(
+    "commonAria",
+    "components",
+    "modal"
+  );
+
   const [isDiscardPromptOpen, setIsDiscardPromptOpen] = useState(false);
+
+  const restoreFocusRef = useRef<HTMLElement | null>(null);
+
+  useLayoutEffect(() => {
+    restoreFocusRef.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+
+    return () => {
+      const elementToRestore = restoreFocusRef.current;
+
+      requestAnimationFrame(() => {
+        if (elementToRestore && document.contains(elementToRestore)) {
+          elementToRestore.focus();
+        }
+      });
+    };
+  }, []);
 
   const handleRequestClose = (): void => {
     if (isPending) return;
@@ -57,6 +82,7 @@ const LogActivityModal: FC<Props> = ({
       isOpen
       onClose={handleRequestClose}
       modalHeader={isDiscardPromptOpen ? translateCommon(["title"]) : title}
+      closeButtonAriaLabel={translateCommonAria(["closeIconBtn"], { title })}
       content={
         <>
           {isDiscardPromptOpen && (

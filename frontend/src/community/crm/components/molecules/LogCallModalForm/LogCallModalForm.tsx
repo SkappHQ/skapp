@@ -59,6 +59,12 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
     status.mismatchedDealId === values.dealId &&
     status.mismatchedContactId === values.contactId;
 
+  const errorInputClasses =
+    "text-semantic-red-text! placeholder:text-semantic-red-text!";
+
+  const isSubjectInvalid = Boolean(touched.subject && errors.subject);
+  const isDurationInvalid = Boolean(touched.duration && errors.duration);
+
   const pickedDate = values.date ? toPickerDate(values.date) : null;
 
   const handleDateSelect = (date?: Date): void => {
@@ -74,7 +80,10 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
         label={translateText(["logActivity", "labels", "subject"])}
         placeholder={translateText(["logActivity", "placeholders", "subject"])}
         errorMessage={touched.subject ? errors.subject : ""}
-        state={touched.subject && errors.subject ? "error" : "default"}
+        state={isSubjectInvalid ? "error" : "default"}
+        {...(isSubjectInvalid && {
+          styleOverrides: { input: errorInputClasses }
+        })}
         onChange={handleChange}
         onBlur={handleBlur}
         aria-label={translateAria(["subject"])}
@@ -90,7 +99,7 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
             onSelect={handleDateSelect}
             popperProps={{ position: "bottom-start", isFlip: true }}
           >
-            <div>
+            <div role="combobox" aria-label={translateAria(["date"])}>
               <InputField
                 name="date"
                 value={pickedDate ? pickedDate.toLocaleDateString() : ""}
@@ -136,7 +145,10 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
           "duration"
         ])}
         errorMessage={touched.duration ? errors.duration : ""}
-        state={touched.duration && errors.duration ? "error" : "default"}
+        state={isDurationInvalid ? "error" : "default"}
+        {...(isDurationInvalid && {
+          styleOverrides: { input: errorInputClasses }
+        })}
         onChange={handleChange}
         onBlur={handleBlur}
         aria-label={translateAria(["duration"])}
