@@ -6,6 +6,7 @@ import { SearchableDropdownItem } from "~community/common/components/molecules/S
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import SelectableSearchField from "~community/crm/components/molecules/SelectableSearchField/SelectableSearchField";
 import { useContactLookup } from "~community/crm/hooks/useContactLookup";
+import { useRelatedToAutoFill } from "~community/crm/hooks/useRelatedToAutoFill";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmAddTaskFormValues,
@@ -52,10 +53,11 @@ const ActivityContactField: FC<Props> = ({
   );
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [hasFilledRelatedTo, setHasFilledRelatedTo] = useState(false);
 
   const { isSearchActive, isLoading, lookupItems, dropdownItems } =
     useContactLookup(searchTerm);
+
+  const fillRelatedToFromContact = useRelatedToAutoFill(formik, fillsRelatedTo);
 
   const selectedContact = values.contactId ? contacts[values.contactId] : null;
 
@@ -70,15 +72,7 @@ const ActivityContactField: FC<Props> = ({
     setContacts(updateContactRecord(contacts, [contact]));
     setFieldValue("contactId", contact.id);
 
-    if (
-      fillsRelatedTo &&
-      !hasFilledRelatedTo &&
-      !values.companyId &&
-      contact.companyId
-    ) {
-      setFieldValue("companyId", contact.companyId);
-      setHasFilledRelatedTo(true);
-    }
+    fillRelatedToFromContact(contact);
 
     const selectedDeal = values.dealId ? deals[values.dealId] : null;
     const isDealMismatch =
