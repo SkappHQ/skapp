@@ -47,24 +47,32 @@ const updateActivityLimitCount = (
   queryClient: QueryClient,
   change: number
 ): void => {
+  const limitation = queryClient.getQueryData<CrmLimitationResponse>(
+    crmLimitationQueryKeys.GET_CRM_LIMITATION
+  );
+  if (!limitation) return;
+
+  const activities = limitation.activities;
+  const usedCount = Math.max(0, activities.usedCount + change);
+  const limitReached =
+    !activities.unlimited && usedCount >= activities.allocatedCount;
+
+  if (limitReached !== Boolean(activities.limitReached)) {
+    queryClient.invalidateQueries({
+      queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+    });
+    return;
+  }
+
   queryClient.setQueryData<CrmLimitationResponse>(
     crmLimitationQueryKeys.GET_CRM_LIMITATION,
-    (limitation) => {
-      if (!limitation) return limitation;
-
-      const activities = limitation.activities;
-      const usedCount = Math.max(0, activities.usedCount + change);
-
-      return {
-        ...limitation,
-        activities: {
-          ...activities,
-          usedCount,
-          remainingCount: Math.max(0, activities.allocatedCount - usedCount),
-          limitReached:
-            !activities.unlimited && usedCount >= activities.allocatedCount
-        }
-      };
+    {
+      ...limitation,
+      activities: {
+        ...activities,
+        usedCount,
+        remainingCount: Math.max(0, activities.allocatedCount - usedCount)
+      }
     }
   );
 };
