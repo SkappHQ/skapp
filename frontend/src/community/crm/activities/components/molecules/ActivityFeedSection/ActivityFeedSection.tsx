@@ -25,13 +25,19 @@ const ActivityFeedSection: FC<ActivityFeedSectionProps> = ({
   onRowClick,
   onToggleComplete
 }) => (
-  <section id={id} aria-labelledby={`${id}-heading`} className="flex flex-col">
-    <h2
-      id={`${id}-heading`}
-      className="subtitle1 mb-2 sticky top-0 bg-white z-10"
-    >
-      {title}
-    </h2>
+  <section
+    id={id}
+    {...(title ? { "aria-labelledby": `${id}-heading` } : {})}
+    className="flex flex-col"
+  >
+    {title && (
+      <h2
+        id={`${id}-heading`}
+        className="subtitle1 mb-2 sticky top-0 bg-white z-10"
+      >
+        {title}
+      </h2>
+    )}
     <ul className="border border-secondary-accent rounded-lg overflow-hidden divide-y divide-secondary-accent">
       {rows.map((row) => (
         <li key={getActivityRowKey(row)}>
