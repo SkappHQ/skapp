@@ -1,9 +1,6 @@
 package com.skapp.community.crmplanner.controller.v1;
 
-import com.skapp.community.common.constant.CommonMessageConstant;
-import com.skapp.community.common.payload.response.ErrorResponse;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.payload.request.CrmActivityTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmActivityTaskEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmActivityTaskFilterDto;
@@ -13,10 +10,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,18 +29,6 @@ public class CrmActivityTaskController {
 	private final CrmActivityTaskListService crmActivityTaskListService;
 
 	private final CrmActivityTaskService crmActivityTaskService;
-
-	private final MessageUtil messageUtil;
-
-	@ExceptionHandler(HttpMessageNotReadableException.class)
-	public ResponseEntity<ResponseEntityDto> handleUnreadableRequestBody() {
-		HttpStatus status = HttpStatus.BAD_REQUEST;
-		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR);
-		return new ResponseEntity<>(
-				new ResponseEntityDto(true,
-						new ErrorResponse(status, message, CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR)),
-				status);
-	}
 
 	@PostMapping
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
