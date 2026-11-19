@@ -590,7 +590,8 @@
           "priority": "Priority is required"
         },
         "notices": {
-          "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
+          "dealCleared": "Deal cleared — it doesn't match the selected contact's company.",
+          "relatedToMismatch": "This doesn't match the contact's company"
         },
         "toastMessages": {
           "addSuccessTitle": "Task added successfully",
@@ -748,10 +749,17 @@
         }
       },
       "noResults": {
-        "title": "No activities match '{{term}}'",
-        "description": "Try a different search term."
+        "title": "No results found.",
+        "description": "We couldn't find any results for your search. Please try a different term."
       },
-      "loadError": "Couldn't load your activities. Please refresh to try again."
+      "errorState": {
+        "title": "Oops! Something went wrong",
+        "description": "Couldn't load your activities. Please refresh to try again."
+      },
+      "errorToast": {
+        "title": "Oops! Something went wrong",
+        "description": "Failed to load activities"
+      }
     },
     "recordTab": {
       "tabLabel": "Activities",
@@ -779,9 +787,7 @@
           "title": "No emails yet",
           "description": "Emails linked to this record will show here."
         }
-      },
-      "loadError": "Couldn't load this record's activities. Please refresh to try again.",
-      "loadErrorToast": "Failed to load activities"
+      }
     },
     "toolbar": {
       "addTaskBtn": "Add task",
@@ -791,13 +797,8 @@
         "label": "Search activities",
         "resultCount_one": "{{count}} activity found",
         "resultCount_other": "{{count}} activities found",
-        "placeholders": {
-          "all": "Search activities",
-          "tasks": "Search tasks",
-          "calls": "Search calls",
-          "meetings": "Search meetings",
-          "emails": "Search emails"
-        }
+        "placeholder": "Search by subject, contact and company",
+        "taskPlaceholder": "Search by task, contact and company"
       },
       "filters": {
         "title": "Filters",
@@ -860,7 +861,7 @@
         "placeholders": {
           "attendees": "Select attendees"
         },
-        "tooltips": {
+        "notices": {
           "differentCompanies": "These contacts are linked to different companies. This activity will still be saved against all of them."
         }
       }
@@ -903,13 +904,11 @@
         "dealMismatch": "This deal's company doesn't match any linked contact — add a contact from that company or choose a different deal"
       },
       "notices": {
-        "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
+        "dealCleared": "Deal cleared — it doesn't match the selected contact's company.",
+        "relatedToMismatch": "This doesn't match {{name}}'s company on file."
       },
       "toastMessages": {
         "errorTitle": "Oops! Something went wrong"
-      },
-      "tooltips": {
-        "relatedToMismatch": "This doesn't match {{name}}'s company on file."
       }
     },
     "activitySidePanel": {

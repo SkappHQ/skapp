@@ -71,6 +71,8 @@ const SidePanelLinkPopupField: FC<Props> = ({
         searchPlaceholder={searchPlaceholder}
         searchable
         width="w-full"
+        popupWidth="w-64"
+        popupAlignment="right"
         renderTrigger={(_value, _isOpen, _disabled, triggerProps) =>
           handleRenderTrigger(triggerProps)
         }

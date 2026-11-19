@@ -1,10 +1,12 @@
 import { ButtonV2, ButtonV2Props } from "@rootcodelabs/skapp-ui";
-import { FC, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import ActivityCallSidePanel from "~community/crm/activities/components/organisms/ActivityCallSidePanel/ActivityCallSidePanel";
 import ActivityEmailSidePanel from "~community/crm/activities/components/organisms/ActivityEmailSidePanel/ActivityEmailSidePanel";
 import ActivityFeed from "~community/crm/activities/components/organisms/ActivityFeed/ActivityFeed";
@@ -52,6 +54,7 @@ import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 const ActivitiesContent: FC = () => {
   const translateText = useTranslator("crmModule");
   const displayZone = useDisplayZone();
+  const { setToastMessage } = useToast();
   const { isCrmSalesManager } = useSessionData();
   const isManager = Boolean(isCrmSalesManager);
 
@@ -141,7 +144,7 @@ const ActivitiesContent: FC = () => {
     activeTab === ActivityTab.TASKS
   );
 
-  const { isLoading, isError } = {
+  const { isLoading, isError, errorUpdatedAt } = {
     [ActivityTab.ALL]: feed,
     [ActivityTab.CALLS]: calls,
     [ActivityTab.EMAILS]: emails,
@@ -173,6 +176,22 @@ const ActivitiesContent: FC = () => {
   const rows = useMemo(() => pages.flatMap((page) => page.items), [pages]);
 
   useActivityDeals(rows);
+
+  useEffect(() => {
+    if (!isError) return;
+
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["activities", "feed", "errorToast", "title"]),
+      description: translateText([
+        "activities",
+        "feed",
+        "errorToast",
+        "description"
+      ])
+    });
+  }, [isError, errorUpdatedAt]);
 
   const resultCount =
     isAllTab && feed.data ? feed.data.pages[0].totalItems : rows.length;
@@ -285,7 +304,7 @@ const ActivitiesContent: FC = () => {
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         resultCount={resultCount}
-        isResultCountReady={!isLoading && !isError}
+        isResultCountReady={!isLoading && (!isError || rows.length > 0)}
         isManager={isManager}
         filters={filters}
         onApplyFilters={setFilters}
@@ -336,7 +355,7 @@ const ActivitiesContent: FC = () => {
         searchTerm={searchTerm}
         isLoading={isLoading}
         isError={isError}
-        hasNextPage={isAllTab && feed.hasNextPage}
+        hasNextPage={isAllTab && feed.hasNextPage && !feed.isFetchNextPageError}
         isFetchingNextPage={isAllTab && feed.isFetchingNextPage}
         timeZone={displayZone}
         taskCompletions={taskCompletions}
