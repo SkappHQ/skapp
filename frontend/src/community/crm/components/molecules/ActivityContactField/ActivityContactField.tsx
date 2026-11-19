@@ -24,6 +24,7 @@ interface Props {
   fieldAriaLabel: string;
   onDealCleared: () => void;
   required?: boolean;
+  fillsRelatedTo?: boolean;
   errorMessage?: string;
 }
 
@@ -34,6 +35,7 @@ const ActivityContactField: FC<Props> = ({
   fieldAriaLabel,
   onDealCleared,
   required,
+  fillsRelatedTo,
   errorMessage
 }) => {
   const { values, setFieldValue } = formik;
@@ -50,6 +52,7 @@ const ActivityContactField: FC<Props> = ({
   );
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [hasFilledRelatedTo, setHasFilledRelatedTo] = useState(false);
 
   const { isSearchActive, isLoading, lookupItems, dropdownItems } =
     useContactLookup(searchTerm);
@@ -66,6 +69,16 @@ const ActivityContactField: FC<Props> = ({
 
     setContacts(updateContactRecord(contacts, [contact]));
     setFieldValue("contactId", contact.id);
+
+    if (
+      fillsRelatedTo &&
+      !hasFilledRelatedTo &&
+      !values.companyId &&
+      contact.companyId
+    ) {
+      setFieldValue("companyId", contact.companyId);
+      setHasFilledRelatedTo(true);
+    }
 
     const selectedDeal = values.dealId ? deals[values.dealId] : null;
     const isDealMismatch =
