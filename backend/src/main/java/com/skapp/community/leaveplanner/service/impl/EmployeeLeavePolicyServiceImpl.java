@@ -8,7 +8,6 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.StringUtils;
-import com.skapp.community.common.util.TransactionUtil;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
 import com.skapp.community.leaveplanner.constant.LeavePolicyConstant;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
@@ -44,6 +43,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDate;
@@ -332,10 +333,32 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		if (previousPolicy == null || !previousPolicy.getId().equals(policy.getId())) {
 			addLeavePolicyAssignedTimelineRecord(employee, previousPolicy, policy);
 			leaveNotificationService.sendPolicyAssignedEmployeeNotification(savedEmployeeLeavePolicy);
-			TransactionUtil
-				.runAfterCommit(() -> leaveEmailService.sendPolicyAssignedEmployeeEmail(savedEmployeeLeavePolicy));
+			sendPolicyAssignedEmailAfterCommit(savedEmployeeLeavePolicy);
 		}
 		return savedEmployeeLeavePolicy;
+	}
+
+	private void sendPolicyAssignedEmailAfterCommit(EmployeeLeavePolicy employeeLeavePolicy) {
+		if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+			sendPolicyAssignedEmail(employeeLeavePolicy);
+			return;
+		}
+
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCommit() {
+				sendPolicyAssignedEmail(employeeLeavePolicy);
+			}
+		});
+	}
+
+	private void sendPolicyAssignedEmail(EmployeeLeavePolicy employeeLeavePolicy) {
+		try {
+			leaveEmailService.sendPolicyAssignedEmployeeEmail(employeeLeavePolicy);
+		}
+		catch (Exception e) {
+			log.error("sendPolicyAssignedEmail: failed to send the policy assigned email", e);
+		}
 	}
 
 	protected void addLeavePolicyAssignedTimelineRecord(Employee employee, LeavePolicy previousPolicy,

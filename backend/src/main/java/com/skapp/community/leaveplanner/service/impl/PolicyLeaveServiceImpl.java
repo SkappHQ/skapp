@@ -15,7 +15,6 @@ import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.type.NotificationCategory;
 import com.skapp.community.common.type.NotificationType;
 import com.skapp.community.common.util.MessageUtil;
-import com.skapp.community.common.util.TransactionUtil;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
 import com.skapp.community.leaveplanner.constant.LeaveModuleConstant;
 import com.skapp.community.leaveplanner.constant.PolicyLeaveConstant;
@@ -86,6 +85,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.util.CollectionUtils;
 
 import java.time.DayOfWeek;
@@ -1191,7 +1192,17 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 	private void sendEmailAfterCommit(EmailBodyTemplates template, LeaveEmailDynamicFields dynamicFields,
 			String recipient) {
-		TransactionUtil.runAfterCommit(() -> emailService.sendEmail(template, dynamicFields, recipient));
+		if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+			emailService.sendEmail(template, dynamicFields, recipient);
+			return;
+		}
+
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCommit() {
+				emailService.sendEmail(template, dynamicFields, recipient);
+			}
+		});
 	}
 
 	private void notifySupervisors(List<EmployeeManager> supervisors, PolicyLeaveRequest leaveRequest,
