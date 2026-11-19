@@ -161,7 +161,7 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
           </DatePicker>
         </div>
         <div className="flex-1">
-          <ActivityOwnerField id="add-task-ownerId" formik={formik} />
+          <ActivityOwnerField id="add-task-ownerId" formik={formik} required />
         </div>
       </div>
 
