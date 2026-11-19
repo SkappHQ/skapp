@@ -126,8 +126,7 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
             "activities",
             "toolbar",
             "search",
-            "placeholders",
-            "all"
+            activeTab === ActivityTab.TASKS ? "taskPlaceholder" : "placeholder"
           ])}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}

@@ -48,7 +48,7 @@ const ActivitySearchField: FC<ActivitySearchFieldProps> = ({
           "clearSearch"
         ])}
         placeholder={placeholder}
-        className="w-82"
+        className="w-96"
         leftIcon={<SearchIcon />}
         value={inputValue}
         onChange={(event: ChangeEvent<HTMLInputElement>) =>
