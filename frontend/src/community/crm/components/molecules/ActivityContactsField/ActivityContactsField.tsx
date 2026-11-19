@@ -4,7 +4,6 @@ import { FC, ReactNode, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import ActivityWarningTooltip from "~community/crm/components/atoms/ActivityWarningTooltip/ActivityWarningTooltip";
 import { useContactLookup } from "~community/crm/hooks/useContactLookup";
 import { useCrmStore } from "~community/crm/store/store";
 import {
@@ -29,7 +28,7 @@ interface Props {
   placeholder: string;
   groupAriaLabel: string;
   hiddenContactIds?: number[];
-  warningTooltip?: string;
+  warningMessage?: string;
   required?: boolean;
   fillsRelatedTo?: boolean;
   actions?: ReactNode;
@@ -44,7 +43,7 @@ const ActivityContactsField: FC<Props> = ({
   placeholder,
   groupAriaLabel,
   hiddenContactIds,
-  warningTooltip,
+  warningMessage,
   required,
   fillsRelatedTo,
   actions,
@@ -162,8 +161,13 @@ const ActivityContactsField: FC<Props> = ({
         </p>
       )}
 
-      {warningTooltip && (
-        <ActivityWarningTooltip id={`${id}-warning`} text={warningTooltip} />
+      {warningMessage && (
+        <output
+          id={`${id}-warning`}
+          className="text-sm text-semantic-amber-text"
+        >
+          {warningMessage}
+        </output>
       )}
     </div>
   );

@@ -866,7 +866,7 @@
         "placeholders": {
           "attendees": "Select attendees"
         },
-        "tooltips": {
+        "notices": {
           "differentCompanies": "These contacts are linked to different companies. This activity will still be saved against all of them."
         }
       }
