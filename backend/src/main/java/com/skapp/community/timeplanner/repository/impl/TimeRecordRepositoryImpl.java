@@ -25,7 +25,6 @@ import com.skapp.community.timeplanner.repository.TimeRecordRepository;
 import com.skapp.community.timeplanner.repository.projection.EmployeeTimeRecord;
 import com.skapp.community.timeplanner.repository.projection.EmployeeTimeRecordImpl;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
 import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -122,41 +121,6 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 
 		TypedQuery<TimeRecord> typedQuery = entityManager.createQuery(criteriaQuery);
 		return typedQuery.getResultList().stream().findFirst();
-	}
-
-	@Override
-	public AttendanceSummaryDto findManagerAssignUsersAttendanceSummary(Long managerId, List<Long> teamIds,
-			LocalDate startDate, LocalDate endDate, List<Long> employeeIds) {
-		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-
-		CriteriaQuery<AttendanceSummaryDto> criteriaQuery = criteriaBuilder.createQuery(AttendanceSummaryDto.class);
-		Root<TimeRecord> root = criteriaQuery.from(TimeRecord.class);
-
-		// Predicates for the main query
-		List<Predicate> predicates = new ArrayList<>();
-		predicates.add(criteriaBuilder.between(root.get(TimeRecord_.date), startDate, endDate));
-		if (!employeeIds.isEmpty()) {
-
-			CriteriaBuilder.In<Long> inClause = criteriaBuilder
-				.in(root.get(TimeRecord_.employee).get(Employee_.employeeId));
-			for (Long employeeID : employeeIds) {
-				inClause.value(employeeID);
-			}
-			predicates.add(inClause);
-		}
-
-		criteriaQuery.select(criteriaBuilder.construct(AttendanceSummaryDto.class,
-				criteriaBuilder.coalesce(criteriaBuilder.sum(root.get(TimeRecord_.workedHours)), 0.0),
-				criteriaBuilder.coalesce(criteriaBuilder.sum(root.get(TimeRecord_.breakHours)), 0.0)));
-		criteriaQuery.where(predicates.toArray(new Predicate[0]));
-
-		TypedQuery<AttendanceSummaryDto> typedQuery = entityManager.createQuery(criteriaQuery);
-		try {
-			return typedQuery.getSingleResult();
-		}
-		catch (NoResultException e) {
-			return new AttendanceSummaryDto(0.0F, 0.0F);
-		}
 	}
 
 	@Override
