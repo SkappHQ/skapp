@@ -37,7 +37,6 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_TASK_NAME_TOO_LONG("api.error.crm.task-name-too-long"),
 	CRM_ERROR_TASK_TARGET_REQUIRED("api.error.crm.task-target-required"),
 	CRM_ERROR_TASK_DUE_DATE_REQUIRED("api.error.crm.task-due-date-required"),
-	CRM_ERROR_ACTIVITY_TASK_PRIORITY_REQUIRED("api.error.crm.activity.task-priority-required"),
 	CRM_ERROR_TASK_NOTES_TOO_LONG("api.error.crm.task-notes-too-long"),
 	CRM_ERROR_PRIORITY_NOT_FOUND("api.error.crm.priority-not-found"),
 	CRM_ERROR_DEAL_STAGE_NOT_FOUND("api.error.crm.deal-stage-not-found"),
@@ -120,6 +119,7 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_ACTIVITY_MEETING_TIME_DATE_MISMATCH("api.error.crm.activity.meeting-time-date-mismatch"),
 	CRM_ERROR_ACTIVITY_DEAL_REMOVAL_CONFLICT("api.error.crm.activity.deal-removal-conflict"),
 	CRM_ERROR_ACTIVITY_COMPANY_REMOVAL_CONFLICT("api.error.crm.activity.company-removal-conflict"),
+	CRM_ERROR_ACTIVITY_TASK_PRIORITY_REQUIRED("api.error.crm.activity.task-priority-required"),
 	CRM_SUCCESS_ACTIVITY_DELETED("api.success.crm.activity-deleted");
 
 	private final String messageKey;
