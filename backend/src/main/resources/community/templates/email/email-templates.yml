@@ -182,6 +182,12 @@ en:
     - id: leave-module-manager-declined-single-day-leave
       subject: A leave request has been declined!
 
+    - id: leave-module-employee-accrual-policy-assigned
+      subject: Leave policy assigned!
+
+    - id: leave-module-employee-flexible-policy-assigned
+      subject: Leave policy assigned!
+
   esignature:
     - id: esignature-module-document-signer-email
       subject: "Complete via Skapp: "

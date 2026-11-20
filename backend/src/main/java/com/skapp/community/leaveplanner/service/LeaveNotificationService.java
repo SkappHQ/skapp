@@ -1,5 +1,6 @@
 package com.skapp.community.leaveplanner.service;
 
+import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy;
 import com.skapp.community.leaveplanner.model.LeaveEntitlement;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -60,5 +61,7 @@ public interface LeaveNotificationService {
 	void sendNudgeSingleDayLeaveRequestManagerNotification(LeaveRequest leaveRequest);
 
 	void sendNudgeMultiDayLeaveRequestManagerNotification(LeaveRequest leaveRequest);
+
+	void sendPolicyAssignedEmployeeNotification(EmployeeLeavePolicy employeeLeavePolicy);
 
 }
