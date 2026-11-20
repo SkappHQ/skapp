@@ -24,6 +24,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.io.IOException;
@@ -57,6 +58,17 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(HttpMessageNotReadableException.class)
 	public ResponseEntity<ResponseEntityDto> handleHttpMessageNotReadableException() {
+		HttpStatus status = HttpStatus.BAD_REQUEST;
+		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR);
+
+		return new ResponseEntity<>(
+				new ResponseEntityDto(true,
+						new ErrorResponse(status, message, CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR)),
+				status);
+	}
+
+	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
+	public ResponseEntity<ResponseEntityDto> handleMethodArgumentTypeMismatchException() {
 		HttpStatus status = HttpStatus.BAD_REQUEST;
 		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR);
 
