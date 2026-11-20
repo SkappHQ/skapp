@@ -151,7 +151,7 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
             onSelect={handleDateSelect}
             popperProps={{ position: "bottom-start", isFlip: true }}
           >
-            <div>
+            <div role="combobox" aria-label={translateAria(["date"])}>
               <InputField
                 id="log-email-date-input"
                 name="date"

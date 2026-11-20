@@ -162,7 +162,10 @@ const TaskModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
               onSelect={handleDueDateSelect}
               popperProps={{ position: "bottom-start", isFlip: true }}
             >
-              <div>
+              <div
+                role="combobox"
+                aria-label={translateAria(["tasks", "modal", "dueDate"])}
+              >
                 <InputField
                   name="dueAt"
                   value={dueDate ? dueDate.toLocaleDateString() : ""}

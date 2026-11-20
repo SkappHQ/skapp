@@ -137,7 +137,7 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
             onSelect={handleDueDateSelect}
             popperProps={{ position: "bottom-start", isFlip: true }}
           >
-            <div>
+            <div role="combobox" aria-label={translateAria(["dueDate"])}>
               <InputField
                 id="add-task-dueAt-input"
                 name="dueAt"
