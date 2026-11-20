@@ -111,7 +111,7 @@ const ActivityContactField: FC<Props> = ({
         loadingMessage: translateText(["emptyStates", "searching"])
       })}
       required={required}
-      errorMessage={errorMessage}
+      {...(!selectedContact && { errorMessage })}
     />
   );
 };
