@@ -884,7 +884,8 @@
         "activityOwner": "Search owner",
         "contact": "Enter name",
         "deal": "Search deals",
-        "relatedTo": "Search companies"
+        "relatedTo": "Search companies",
+        "selectedCount": "{count} selected"
       },
       "buttons": {
         "cancel": "Cancel",
@@ -899,7 +900,6 @@
         "noCompanies": "No companies found",
         "searching": "Searching..."
       },
-      "selectedCount": "{count} selected",
       "validations": {
         "subject": "Subject is required",
         "owner": "Activity owner is required",

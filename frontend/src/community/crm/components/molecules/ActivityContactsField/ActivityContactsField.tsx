@@ -1,4 +1,7 @@
-import { MultiSelectSearchDropdown } from "@rootcodelabs/skapp-ui";
+import {
+  MultiSelectSearchDropdown,
+  MultiSelectSearchDropdownOption
+} from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import { FC, ReactNode, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -71,7 +74,7 @@ const ActivityContactsField: FC<Props> = ({
   const [hasMenuOpened, setHasMenuOpened] = useState(false);
   const [pinnedContactIds, setPinnedContactIds] = useState<number[]>([]);
 
-  const { isLoading, lookupItems } = useContactLookup(
+  const { isSearchActive, isLoading, lookupItems } = useContactLookup(
     searchTerm,
     hasMenuOpened
   );
@@ -87,21 +90,28 @@ const ActivityContactsField: FC<Props> = ({
     (contact) => contact.id && !hiddenContactIds?.includes(contact.id)
   );
 
-  const pinnedContacts = searchTerm.trim()
-    ? lookupContacts.filter((contact) =>
-        pinnedContactIds.includes(Number(contact.id))
-      )
-    : pinnedContactIds.map((contactId) => contacts[contactId]);
+  const toContactOption = (
+    contactId: number,
+    contact: CrmContactEntity
+  ): MultiSelectSearchDropdownOption => ({
+    value: String(contactId),
+    label: getContactDisplayName(contact)
+  });
+
+  const pinnedOptions = isSearchActive
+    ? lookupContacts
+        .filter((contact) => pinnedContactIds.includes(Number(contact.id)))
+        .map((contact) => toContactOption(Number(contact.id), contact))
+    : pinnedContactIds.map((contactId) =>
+        toContactOption(contactId, contacts[contactId])
+      );
 
   const options = [
-    ...pinnedContacts,
-    ...lookupContacts.filter(
-      (contact) => !pinnedContactIds.includes(Number(contact.id))
-    )
-  ].map((contact) => ({
-    value: String(contact.id),
-    label: getContactDisplayName(contact)
-  }));
+    ...pinnedOptions,
+    ...lookupContacts
+      .filter((contact) => !pinnedContactIds.includes(Number(contact.id)))
+      .map((contact) => toContactOption(Number(contact.id), contact))
+  ];
 
   const handleContactsChange = (nextContactIds: number[]): void => {
     const addedContact = lookupItems.find(
@@ -159,7 +169,7 @@ const ActivityContactsField: FC<Props> = ({
             ariaLabel={groupAriaLabel}
             texts={{
               placeholder,
-              selectedCount: translateText(["selectedCount"]),
+              selectedCount: translateText(["placeholders", "selectedCount"]),
               noOptions: translateText([
                 "emptyStates",
                 isLoading ? "searching" : "noContacts"
