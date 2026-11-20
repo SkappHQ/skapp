@@ -205,6 +205,12 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
           "placeholders",
           "recipients"
         ])}
+        searchPlaceholder={translateText([
+          "logEmail",
+          "modal",
+          "placeholders",
+          "recipients"
+        ])}
         groupAriaLabel={translateAria(["to"])}
         hiddenContactIds={[...values.ccContactIds, ...values.bccContactIds]}
         onContactsChange={(nextContacts) =>
@@ -256,6 +262,12 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
                   "placeholders",
                   "recipients"
                 ])}
+                searchPlaceholder={translateText([
+                  "logEmail",
+                  "modal",
+                  "placeholders",
+                  "recipients"
+                ])}
                 groupAriaLabel={translateAria(["bcc"])}
                 hiddenContactIds={[
                   ...values.toContactIds,
@@ -278,6 +290,12 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
                 name="ccContactIds"
                 label={translateText(["logEmail", "modal", "labels", "cc"])}
                 placeholder={translateText([
+                  "logEmail",
+                  "modal",
+                  "placeholders",
+                  "recipients"
+                ])}
+                searchPlaceholder={translateText([
                   "logEmail",
                   "modal",
                   "placeholders",

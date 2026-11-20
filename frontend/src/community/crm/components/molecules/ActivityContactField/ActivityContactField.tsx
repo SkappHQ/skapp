@@ -55,7 +55,7 @@ const ActivityContactField: FC<Props> = ({
   const [searchTerm, setSearchTerm] = useState("");
 
   const { isSearchActive, isLoading, lookupItems, dropdownItems } =
-    useContactLookup(searchTerm);
+    useContactLookup(searchTerm, false);
 
   const fillRelatedToFromContact = useRelatedToAutoFill(formik, fillsRelatedTo);
 

@@ -859,7 +859,8 @@
           "errorDescription": "Failed to save meeting"
         },
         "placeholders": {
-          "attendees": "Select attendees"
+          "attendees": "Select attendees",
+          "searchAttendees": "Search attendees"
         },
         "notices": {
           "differentCompanies": "These contacts are linked to different companies. This activity will still be saved against all of them."
@@ -898,6 +899,7 @@
         "noCompanies": "No companies found",
         "searching": "Searching..."
       },
+      "selectedCount": "{count} selected",
       "validations": {
         "subject": "Subject is required",
         "owner": "Activity owner is required",

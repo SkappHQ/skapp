@@ -1,4 +1,4 @@
-import { MultiSelectSearch } from "@rootcodelabs/skapp-ui";
+import { MultiSelectSearchDropdown } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import { FC, ReactNode, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -27,6 +27,7 @@ interface Props {
   name: string;
   label: string;
   placeholder: string;
+  searchPlaceholder: string;
   groupAriaLabel: string;
   hiddenContactIds?: number[];
   warningMessage?: string;
@@ -42,6 +43,7 @@ const ActivityContactsField: FC<Props> = ({
   name,
   label,
   placeholder,
+  searchPlaceholder,
   groupAriaLabel,
   hiddenContactIds,
   warningMessage,
@@ -66,21 +68,39 @@ const ActivityContactsField: FC<Props> = ({
   );
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [hasMenuOpened, setHasMenuOpened] = useState(false);
+  const [pinnedContactIds, setPinnedContactIds] = useState<number[]>([]);
 
-  const { isLoading, lookupItems } = useContactLookup(searchTerm);
+  const { isLoading, lookupItems } = useContactLookup(
+    searchTerm,
+    hasMenuOpened
+  );
 
   const fillRelatedToFromContact = useRelatedToAutoFill(formik, fillsRelatedTo);
 
-  const options = lookupItems
-    .filter((contact) => contact.id && !hiddenContactIds?.includes(contact.id))
-    .map((contact) => ({
-      id: Number(contact.id),
-      label: getContactDisplayName(contact)
-    }));
+  const handleMenuOpen = (): void => {
+    setPinnedContactIds(contactIds);
+    setHasMenuOpened(true);
+  };
 
-  const selectedOptions = contactIds.map((contactId) => ({
-    id: contactId,
-    label: getContactDisplayName(contacts[contactId])
+  const lookupContacts = lookupItems.filter(
+    (contact) => contact.id && !hiddenContactIds?.includes(contact.id)
+  );
+
+  const pinnedContacts = searchTerm.trim()
+    ? lookupContacts.filter((contact) =>
+        pinnedContactIds.includes(Number(contact.id))
+      )
+    : pinnedContactIds.map((contactId) => contacts[contactId]);
+
+  const options = [
+    ...pinnedContacts,
+    ...lookupContacts.filter(
+      (contact) => !pinnedContactIds.includes(Number(contact.id))
+    )
+  ].map((contact) => ({
+    value: String(contact.id),
+    label: getContactDisplayName(contact)
   }));
 
   const handleContactsChange = (nextContactIds: number[]): void => {
@@ -109,8 +129,7 @@ const ActivityContactsField: FC<Props> = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <label
-        htmlFor={`${id}-input`}
+      <span
         className={`subtitle1 leading-normal ${isError ? "text-semantic-red-accent" : "text-black"}`}
       >
         {label}
@@ -119,28 +138,33 @@ const ActivityContactsField: FC<Props> = ({
             *
           </span>
         )}
-      </label>
+      </span>
 
       <div className="flex flex-row items-center gap-6">
         <div className="min-w-0 flex-1">
-          <MultiSelectSearch
-            searchInputId={`${id}-input`}
+          <MultiSelectSearchDropdown
+            id={id}
             options={options}
-            selectedOptions={selectedOptions}
-            onOptionSelect={(nextOptions) =>
-              handleContactsChange(
-                nextOptions.map((option) => Number(option.id))
-              )
+            selectedValues={contactIds.map(String)}
+            onChange={(nextValues) =>
+              handleContactsChange(nextValues.map(Number))
             }
-            searchText={searchTerm}
             onSearchChange={setSearchTerm}
-            placeholder={placeholder}
+            onOpen={handleMenuOpen}
+            searchInputProps={{
+              id: `${id}-search`,
+              placeholder: searchPlaceholder
+            }}
+            isSearchVisible
             ariaLabel={groupAriaLabel}
-            emptyResultsMessage={translateText([
-              "emptyStates",
-              isLoading ? "searching" : "noContacts"
-            ])}
-            showClearAllButton={false}
+            texts={{
+              placeholder,
+              selectedCount: translateText(["selectedCount"]),
+              noOptions: translateText([
+                "emptyStates",
+                isLoading ? "searching" : "noContacts"
+              ])
+            }}
           />
         </div>
         {actions}
