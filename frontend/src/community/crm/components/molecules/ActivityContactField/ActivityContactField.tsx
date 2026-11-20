@@ -6,6 +6,7 @@ import { SearchableDropdownItem } from "~community/common/components/molecules/S
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import SelectableSearchField from "~community/crm/components/molecules/SelectableSearchField/SelectableSearchField";
 import { useContactLookup } from "~community/crm/hooks/useContactLookup";
+import { useRelatedToAutoFill } from "~community/crm/hooks/useRelatedToAutoFill";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmAddTaskFormValues,
@@ -24,6 +25,7 @@ interface Props {
   fieldAriaLabel: string;
   onDealCleared: () => void;
   required?: boolean;
+  fillsRelatedTo?: boolean;
   errorMessage?: string;
 }
 
@@ -34,6 +36,7 @@ const ActivityContactField: FC<Props> = ({
   fieldAriaLabel,
   onDealCleared,
   required,
+  fillsRelatedTo,
   errorMessage
 }) => {
   const { values, setFieldValue } = formik;
@@ -54,6 +57,8 @@ const ActivityContactField: FC<Props> = ({
   const { isSearchActive, isLoading, lookupItems, dropdownItems } =
     useContactLookup(searchTerm);
 
+  const fillRelatedToFromContact = useRelatedToAutoFill(formik, fillsRelatedTo);
+
   const selectedContact = values.contactId ? contacts[values.contactId] : null;
 
   const handleSelect = (item: SearchableDropdownItem): void => {
@@ -66,6 +71,8 @@ const ActivityContactField: FC<Props> = ({
 
     setContacts(updateContactRecord(contacts, [contact]));
     setFieldValue("contactId", contact.id);
+
+    fillRelatedToFromContact(contact);
 
     const selectedDeal = values.dealId ? deals[values.dealId] : null;
     const isDealMismatch =
@@ -104,7 +111,7 @@ const ActivityContactField: FC<Props> = ({
         loadingMessage: translateText(["emptyStates", "searching"])
       })}
       required={required}
-      errorMessage={errorMessage}
+      {...(!selectedContact && { errorMessage })}
     />
   );
 };

@@ -107,7 +107,7 @@ const LogMeetingModalContent: FC<Props> = ({
     enableReinitialize: true
   });
 
-  const { dirty, isSubmitting, setSubmitting, submitForm } = formik;
+  const { dirty, isSubmitting, setSubmitting, setStatus, submitForm } = formik;
 
   const handleSuccess = (): void => {
     setSubmitting(false);
@@ -139,6 +139,10 @@ const LogMeetingModalContent: FC<Props> = ({
       error.response?.data?.results?.[0]?.messageKey ===
       CrmErrorMessageKeyEnum.ACTIVITY_MEETING_DEAL_COMPANY_MISMATCH
     ) {
+      setStatus({
+        mismatchedDealId: formik.values.dealId,
+        mismatchedContactIds: formik.values.contactIds.join()
+      });
       requestAnimationFrame(() => {
         document.getElementById("log-meeting-deal-input")?.focus();
       });

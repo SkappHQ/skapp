@@ -163,6 +163,7 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
             fieldAriaLabel={translateAria(["contact"])}
             onDealCleared={() => setIsDealClearedNoticeVisible(true)}
             errorMessage={touched.contactId ? errors.contactId : ""}
+            fillsRelatedTo
             required
           />
         </div>
@@ -197,6 +198,15 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
           id="log-call-related-to"
           formik={formik}
           fieldAriaLabel={translateAria(["relatedTo"])}
+          {...(values.companyId &&
+            contactCompanyId &&
+            values.companyId !== contactCompanyId && {
+              mismatchMessage: translateText([
+                "logActivity",
+                "notices",
+                "relatedToMismatch"
+              ])
+            })}
         />
       </ActivityAssociations>
     </div>

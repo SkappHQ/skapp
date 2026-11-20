@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -52,6 +53,17 @@ public class GlobalExceptionHandler {
 		handleException(e, CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR.name(), status);
 
 		return new ResponseEntity<>(new ResponseEntityDto(true, errorResponse), status);
+	}
+
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	public ResponseEntity<ResponseEntityDto> handleHttpMessageNotReadableException() {
+		HttpStatus status = HttpStatus.BAD_REQUEST;
+		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR);
+
+		return new ResponseEntity<>(
+				new ResponseEntityDto(true,
+						new ErrorResponse(status, message, CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR)),
+				status);
 	}
 
 	@ExceptionHandler(AccessDeniedException.class)

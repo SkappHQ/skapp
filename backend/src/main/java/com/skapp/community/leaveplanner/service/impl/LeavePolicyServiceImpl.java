@@ -311,8 +311,12 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		assignments.forEach(assignment -> assignment.setStatus(EmployeeLeavePolicyStatus.ENDED));
 		employeeLeavePolicyDao.saveAll(assignments);
+		addLeavePolicyRemovedTimelineRecords(assignments);
 
 		return assignments.size();
+	}
+
+	protected void addLeavePolicyRemovedTimelineRecords(List<EmployeeLeavePolicy> endedAssignments) {
 	}
 
 	private int voidPolicyLeaveRequests(List<PolicyLeaveRequest> policyLeaveRequests, LeaveRequestStatus status) {
