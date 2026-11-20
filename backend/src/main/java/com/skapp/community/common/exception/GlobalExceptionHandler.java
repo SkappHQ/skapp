@@ -68,9 +68,11 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
-	public ResponseEntity<ResponseEntityDto> handleMethodArgumentTypeMismatchException() {
+	public ResponseEntity<ResponseEntityDto> handleMethodArgumentTypeMismatchException(
+			MethodArgumentTypeMismatchException e) {
 		HttpStatus status = HttpStatus.BAD_REQUEST;
 		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR);
+		handleException(e, CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR.name(), status);
 
 		return new ResponseEntity<>(
 				new ResponseEntityDto(true,
