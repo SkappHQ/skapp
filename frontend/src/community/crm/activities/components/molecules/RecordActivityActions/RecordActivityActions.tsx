@@ -26,12 +26,14 @@ const RecordActivityActions: FC<RecordActivityActionsProps> = ({
   const {
     setIsRecordActivityModalOpen,
     setRecordActivityModalType,
-    setRecordActivityPrefill
+    setRecordActivityPrefill,
+    setRecordActivityTriggerId
   } = useCrmStore(
     useShallow((store) => ({
       setIsRecordActivityModalOpen: store.setIsRecordActivityModalOpen,
       setRecordActivityModalType: store.setRecordActivityModalType,
-      setRecordActivityPrefill: store.setRecordActivityPrefill
+      setRecordActivityPrefill: store.setRecordActivityPrefill,
+      setRecordActivityTriggerId: store.setRecordActivityTriggerId
     }))
   );
 
@@ -40,6 +42,7 @@ const RecordActivityActions: FC<RecordActivityActionsProps> = ({
   const handleAddActivity = (): void => {
     guardCrmCreate(CrmLimitResource.ACTIVITIES, () => {
       setRecordActivityPrefill(prefill);
+      setRecordActivityTriggerId(`${id}-add`);
       setRecordActivityModalType(ActivityType.TASK);
       setIsRecordActivityModalOpen(true);
     });

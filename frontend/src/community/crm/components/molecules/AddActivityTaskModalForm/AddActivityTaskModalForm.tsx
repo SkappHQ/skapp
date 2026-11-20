@@ -123,27 +123,26 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
             onSelect={handleDueDateSelect}
             popperProps={{ position: "bottom-start", isFlip: true }}
           >
-            <div>
-              <InputField
-                id="add-task-dueAt-input"
-                name="dueAt"
-                value={dueDate ? dueDate.toLocaleDateString() : ""}
-                label={translateText(["addTask", "modal", "labels", "dueDate"])}
-                placeholder={translateText([
-                  "addTask",
-                  "modal",
-                  "placeholders",
-                  "dueDate"
-                ])}
-                errorMessage={getFieldError("dueAt")}
-                state={getFieldError("dueAt") ? "error" : "default"}
-                aria-label={translateAria(["dueDate"])}
-                rightIcon={<CalendarIcon />}
-                fullWidth
-                readOnly
-                required
-              />
-            </div>
+            <InputField
+              role="combobox"
+              id="add-task-dueAt-input"
+              name="dueAt"
+              value={dueDate ? dueDate.toLocaleDateString() : ""}
+              label={translateText(["addTask", "modal", "labels", "dueDate"])}
+              placeholder={translateText([
+                "addTask",
+                "modal",
+                "placeholders",
+                "dueDate"
+              ])}
+              errorMessage={getFieldError("dueAt")}
+              state={getFieldError("dueAt") ? "error" : "default"}
+              aria-label={translateAria(["dueDate"])}
+              rightIcon={<CalendarIcon />}
+              fullWidth
+              readOnly
+              required
+            />
           </DatePicker>
         </div>
         <div className="flex-1">

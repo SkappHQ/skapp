@@ -59,6 +59,15 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
     status.mismatchedDealId === values.dealId &&
     status.mismatchedContactId === values.contactId;
 
+  const errorInputClasses =
+    "text-semantic-red-text! placeholder:text-semantic-red-text!";
+
+  const subjectError = touched.subject ? errors.subject : "";
+  const durationError = touched.duration ? errors.duration : "";
+
+  const isSubjectInvalid = Boolean(subjectError);
+  const isDurationInvalid = Boolean(durationError);
+
   const pickedDate = values.date ? toPickerDate(values.date) : null;
 
   const handleDateSelect = (date?: Date): void => {
@@ -73,8 +82,11 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
         value={values.subject}
         label={translateText(["logActivity", "labels", "subject"])}
         placeholder={translateText(["logActivity", "placeholders", "subject"])}
-        errorMessage={touched.subject ? errors.subject : ""}
-        state={touched.subject && errors.subject ? "error" : "default"}
+        errorMessage={subjectError}
+        state={isSubjectInvalid ? "error" : "default"}
+        {...(isSubjectInvalid && {
+          styleOverrides: { input: errorInputClasses }
+        })}
         onChange={handleChange}
         onBlur={handleBlur}
         aria-label={translateAria(["subject"])}
@@ -90,22 +102,21 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
             onSelect={handleDateSelect}
             popperProps={{ position: "bottom-start", isFlip: true }}
           >
-            <div>
-              <InputField
-                name="date"
-                value={pickedDate ? pickedDate.toLocaleDateString() : ""}
-                label={translateText(["logActivity", "labels", "date"])}
-                placeholder={translateText([
-                  "logActivity",
-                  "placeholders",
-                  "date"
-                ])}
-                aria-label={translateAria(["date"])}
-                rightIcon={<CalendarIcon />}
-                fullWidth
-                readOnly
-              />
-            </div>
+            <InputField
+              role="combobox"
+              name="date"
+              value={pickedDate ? pickedDate.toLocaleDateString() : ""}
+              label={translateText(["logActivity", "labels", "date"])}
+              placeholder={translateText([
+                "logActivity",
+                "placeholders",
+                "date"
+              ])}
+              aria-label={translateAria(["date"])}
+              rightIcon={<CalendarIcon />}
+              fullWidth
+              readOnly
+            />
           </DatePicker>
         </div>
         <div className="flex-1">
@@ -135,8 +146,11 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
           "placeholders",
           "duration"
         ])}
-        errorMessage={touched.duration ? errors.duration : ""}
-        state={touched.duration && errors.duration ? "error" : "default"}
+        errorMessage={durationError}
+        state={isDurationInvalid ? "error" : "default"}
+        {...(isDurationInvalid && {
+          styleOverrides: { input: errorInputClasses }
+        })}
         onChange={handleChange}
         onBlur={handleBlur}
         aria-label={translateAria(["duration"])}
@@ -157,7 +171,7 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
           />
         </div>
         <div className="flex-1">
-          <ActivityOwnerField id="log-call-ownerId" formik={formik} />
+          <ActivityOwnerField id="log-call-ownerId" formik={formik} required />
         </div>
       </div>
 

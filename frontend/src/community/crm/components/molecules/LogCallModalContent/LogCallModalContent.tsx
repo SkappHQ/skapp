@@ -102,8 +102,26 @@ const LogCallModalContent: FC<Props> = ({
     enableReinitialize: true
   });
 
-  const { values, dirty, isSubmitting, setSubmitting, setStatus, submitForm } =
-    formik;
+  const {
+    values,
+    dirty,
+    isSubmitting,
+    setSubmitting,
+    setStatus,
+    submitForm,
+    validateForm
+  } = formik;
+
+  const handleSave = async (): Promise<void> => {
+    const validationErrors = await validateForm();
+    const [firstInvalidField] = Object.keys(validationErrors);
+
+    await submitForm();
+
+    if (firstInvalidField) {
+      document.getElementById(`log-call-${firstInvalidField}-input`)?.focus();
+    }
+  };
 
   const handleSuccess = (): void => {
     setSubmitting(false);
@@ -178,7 +196,7 @@ const LogCallModalContent: FC<Props> = ({
       isSubmitting={isSubmitting}
       cancelAriaLabel={translateAria(["cancel"])}
       saveAriaLabel={translateAria(["save"])}
-      onSave={submitForm}
+      onSave={handleSave}
       onClose={onClose}
     >
       {typeField?.(isPending || isSubmitting)}
