@@ -26,7 +26,11 @@ const LeaveApprovalSettings: FC = () => {
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState<boolean>(false);
 
-  const { data: leaveApprovalConfig, isLoading } = useGetLeaveApprovalConfig();
+  const {
+    data: leaveApprovalConfig,
+    isLoading,
+    isError
+  } = useGetLeaveApprovalConfig();
 
   const handleSuccess = (): void => {
     setIsConfirmModalOpen(false);
@@ -61,7 +65,10 @@ const LeaveApprovalSettings: FC = () => {
     values: LeaveApprovalConfigType,
     { resetForm }: FormikHelpers<LeaveApprovalConfigType>
   ): void => {
-    updateLeaveApprovalConfig(values, { onError: () => resetForm() });
+    updateLeaveApprovalConfig(values, {
+      onSuccess: () => resetForm({ values }),
+      onError: () => resetForm()
+    });
   };
 
   const formik = useFormik<LeaveApprovalConfigType>({
@@ -118,6 +125,7 @@ const LeaveApprovalSettings: FC = () => {
           labelId="multi-level-leave-approval"
           checked={formik.values.isMultiLevelApprovalEnabled}
           onChange={handleMultiLevelApprovalToggle}
+          disabled={isError || isPending}
         />
       )}
       <div className="flex flex-row gap-3">
