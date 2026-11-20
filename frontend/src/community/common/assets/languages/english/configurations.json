@@ -466,6 +466,15 @@
         "successDescription": "Leave approval settings were saved.",
         "errorTitle": "Could not save",
         "errorDescription": "Leave approval settings were not saved. Try again."
+      },
+      "enableConfirmModal": {
+        "title": "Are you sure?",
+        "consequencesTitle": "Switching on multi-level leave approval will:",
+        "consequenceAuthorizerField": "Add a Request authorizer field to every employee profile",
+        "consequenceApprovalOrder": "Require approval from the Primary Supervisor first, then the employee’s Request authorizer",
+        "consequenceOtherSupervisorsRemoved": "Other supervisors will be removed from every employee profile",
+        "cancelButton": "Cancel",
+        "confirmButton": "Enable multi-level approval"
       }
     }
   },

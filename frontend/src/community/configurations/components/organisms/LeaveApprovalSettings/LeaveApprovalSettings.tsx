@@ -1,6 +1,6 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FormikHelpers, useFormik } from "formik";
-import { FC } from "react";
+import { FC, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import SwitchRow from "~community/common/components/atoms/SwitchRow/SwitchRow";
@@ -8,6 +8,7 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
+import EnableMultiLevelApprovalConfirmModal from "~community/configurations/components/molecules/EnableMultiLevelApprovalConfirmModal/EnableMultiLevelApprovalConfirmModal";
 import useConfigurationUnsavedChanges from "~community/configurations/hooks/useConfigurationUnsavedChanges";
 import {
   useGetLeaveApprovalConfig,
@@ -23,9 +24,12 @@ const LeaveApprovalSettings: FC = () => {
   );
   const { setToastMessage } = useToast();
 
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState<boolean>(false);
+
   const { data: leaveApprovalConfig, isLoading } = useGetLeaveApprovalConfig();
 
   const handleSuccess = (): void => {
+    setIsConfirmModalOpen(false);
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
@@ -35,6 +39,7 @@ const LeaveApprovalSettings: FC = () => {
   };
 
   const handleError = (): void => {
+    setIsConfirmModalOpen(false);
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
@@ -76,6 +81,21 @@ const LeaveApprovalSettings: FC = () => {
   };
 
   const handleSave = (): void => {
+    if (
+      formik.values.isMultiLevelApprovalEnabled &&
+      !formik.initialValues.isMultiLevelApprovalEnabled
+    ) {
+      setIsConfirmModalOpen(true);
+      return;
+    }
+    formik.submitForm();
+  };
+
+  const handleConfirmModalClose = (): void => {
+    setIsConfirmModalOpen(false);
+  };
+
+  const handleConfirmEnable = (): void => {
     formik.submitForm();
   };
 
@@ -120,6 +140,12 @@ const LeaveApprovalSettings: FC = () => {
           {translateText(["buttons", "save"])}
         </ButtonV2>
       </div>
+      <EnableMultiLevelApprovalConfirmModal
+        isOpen={isConfirmModalOpen}
+        isEnabling={isPending}
+        onClose={handleConfirmModalClose}
+        onConfirm={handleConfirmEnable}
+      />
     </div>
   );
 };
