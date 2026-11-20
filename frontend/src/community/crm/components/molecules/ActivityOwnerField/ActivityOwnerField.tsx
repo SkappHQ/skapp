@@ -101,7 +101,7 @@ const ActivityOwnerField: FC<Props> = ({ id, formik, required = false }) => {
     <div
       {...(!canChangeOwner && {
         role: "group",
-        "aria-label": translateText(["labels", "activityOwner"]),
+        "aria-labelledby": `${id}-label`,
         "aria-describedby": `${id}-description`
       })}
     >
@@ -112,11 +112,12 @@ const ActivityOwnerField: FC<Props> = ({ id, formik, required = false }) => {
         showRemoveButton={canChangeOwner}
         ariaLabel={translateAria(["removeOwner"])}
         required={required}
+        labelId={`${id}-label`}
       />
       {!canChangeOwner && (
-        <span id={`${id}-description`} className="sr-only">
-          {translateAria(["ownerReadOnly"])}
-        </span>
+        <p id={`${id}-description`} className="body3 text-secondary-text">
+          {translateText(["notices", "ownerReadOnly"])}
+        </p>
       )}
     </div>
   ) : (

@@ -17,18 +17,23 @@ const RecordActivityModalController: FC = () => {
     isRecordActivityModalOpen,
     recordActivityModalType,
     recordActivityPrefill,
+    recordActivityTriggerId,
     setIsRecordActivityModalOpen
   } = useCrmStore(
     useShallow((store) => ({
       isRecordActivityModalOpen: store.isRecordActivityModalOpen,
       recordActivityModalType: store.recordActivityModalType,
       recordActivityPrefill: store.recordActivityPrefill,
+      recordActivityTriggerId: store.recordActivityTriggerId,
       setIsRecordActivityModalOpen: store.setIsRecordActivityModalOpen
     }))
   );
 
   const handleModalClose = (): void => {
     setIsRecordActivityModalOpen(false);
+    requestAnimationFrame(() => {
+      document.getElementById(recordActivityTriggerId)?.focus();
+    });
   };
 
   if (!isRecordActivityModalOpen) return null;

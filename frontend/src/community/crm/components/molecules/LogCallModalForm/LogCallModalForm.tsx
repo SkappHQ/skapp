@@ -99,22 +99,21 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
             onSelect={handleDateSelect}
             popperProps={{ position: "bottom-start", isFlip: true }}
           >
-            <div role="combobox" aria-label={translateAria(["date"])}>
-              <InputField
-                name="date"
-                value={pickedDate ? pickedDate.toLocaleDateString() : ""}
-                label={translateText(["logActivity", "labels", "date"])}
-                placeholder={translateText([
-                  "logActivity",
-                  "placeholders",
-                  "date"
-                ])}
-                aria-label={translateAria(["date"])}
-                rightIcon={<CalendarIcon />}
-                fullWidth
-                readOnly
-              />
-            </div>
+            <InputField
+              role="combobox"
+              name="date"
+              value={pickedDate ? pickedDate.toLocaleDateString() : ""}
+              label={translateText(["logActivity", "labels", "date"])}
+              placeholder={translateText([
+                "logActivity",
+                "placeholders",
+                "date"
+              ])}
+              aria-label={translateAria(["date"])}
+              rightIcon={<CalendarIcon />}
+              fullWidth
+              readOnly
+            />
           </DatePicker>
         </div>
         <div className="flex-1">

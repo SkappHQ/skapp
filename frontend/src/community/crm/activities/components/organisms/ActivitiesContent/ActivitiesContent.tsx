@@ -1,5 +1,5 @@
 import { ButtonV2, ButtonV2Props } from "@rootcodelabs/skapp-ui";
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -71,6 +71,14 @@ const ActivitiesContent: FC = () => {
   const { scheduleMeetingButton, scheduleMeetingModals } = useScheduleMeeting();
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [isLogEmailModalOpen, setIsLogEmailModalOpen] = useState(false);
+
+  const actionButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  const focusActionButton = (): void => {
+    requestAnimationFrame(() => {
+      actionButtonRef.current?.focus();
+    });
+  };
 
   const isAllTab = activeTab === ActivityTab.ALL;
 
@@ -280,11 +288,17 @@ const ActivitiesContent: FC = () => {
 
   const toolbarAction = toolbarActions[activeTab];
 
+  const handleActionButtonClick = (
+    event: MouseEvent<HTMLButtonElement>
+  ): void => {
+    actionButtonRef.current = event.currentTarget;
+    toolbarAction?.onClick();
+  };
+
   const actionButton: ButtonV2Props | null = toolbarAction
     ? {
         variant: "primary",
         type: "button",
-        onClick: toolbarAction.onClick,
         children: translateText([
           "activities",
           "toolbar",
@@ -319,7 +333,7 @@ const ActivitiesContent: FC = () => {
               {meetingsScheduleButton && (
                 <ButtonV2 {...meetingsScheduleButton} />
               )}
-              <ButtonV2 {...actionButton} />
+              <ButtonV2 {...actionButton} onClick={handleActionButtonClick} />
             </div>
           )
         }
@@ -327,25 +341,37 @@ const ActivitiesContent: FC = () => {
       {isLogCallModalOpen && (
         <LogCallModalContent
           title={translateText(["activities", "logCall", "modal", "title"])}
-          onClose={() => setIsLogCallModalOpen(false)}
+          onClose={() => {
+            setIsLogCallModalOpen(false);
+            focusActionButton();
+          }}
         />
       )}
       {isLogMeetingModalOpen && (
         <LogMeetingModalContent
           title={translateText(["activities", "logMeeting", "modal", "title"])}
-          onClose={() => setIsLogMeetingModalOpen(false)}
+          onClose={() => {
+            setIsLogMeetingModalOpen(false);
+            focusActionButton();
+          }}
         />
       )}
       {isAddTaskModalOpen && (
         <AddActivityTaskModalContent
           title={translateText(["activities", "addTask", "modal", "title"])}
-          onClose={() => setIsAddTaskModalOpen(false)}
+          onClose={() => {
+            setIsAddTaskModalOpen(false);
+            focusActionButton();
+          }}
         />
       )}
       {isLogEmailModalOpen && (
         <LogEmailModalContent
           title={translateText(["activities", "logEmail", "modal", "title"])}
-          onClose={() => setIsLogEmailModalOpen(false)}
+          onClose={() => {
+            setIsLogEmailModalOpen(false);
+            focusActionButton();
+          }}
         />
       )}
       {scheduleMeetingModals}

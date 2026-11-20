@@ -905,6 +905,7 @@
       },
       "notices": {
         "dealCleared": "Deal cleared — it doesn't match the selected contact's company.",
+        "ownerReadOnly": "Read only. Only admins and sales managers can change the activity owner.",
         "relatedToMismatch": "This doesn't match {{name}}'s company on file."
       },
       "toastMessages": {

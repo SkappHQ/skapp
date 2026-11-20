@@ -235,7 +235,6 @@
     "logActivity": {
       "close": "Close modal",
       "removeOwner": "Remove activity owner",
-      "ownerReadOnly": "Read only. Only admins and sales managers can change the activity owner.",
       "clearContact": "Clear selected contact",
       "clearDeal": "Clear selected deal",
       "clearRelatedTo": "Clear selected company"

@@ -11,6 +11,7 @@ interface SelectedOwnerFieldProps {
   showRemoveButton: boolean;
   ariaLabel: string;
   required?: boolean;
+  labelId?: string;
 }
 
 const SelectedOwnerField: FC<SelectedOwnerFieldProps> = ({
@@ -19,10 +20,14 @@ const SelectedOwnerField: FC<SelectedOwnerFieldProps> = ({
   onRemove,
   showRemoveButton,
   ariaLabel,
-  required = false
+  required = false,
+  labelId
 }) => (
   <div className="flex w-full flex-col gap-1">
-    <span className="subtitle1 leading-normal inline-flex h-6 items-center">
+    <span
+      {...(labelId && { id: labelId })}
+      className="subtitle1 leading-normal inline-flex h-6 items-center"
+    >
       {label}
       {required && (
         <span className="text-semantic-red-accent ml-1" aria-hidden="true">
