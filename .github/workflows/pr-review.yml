@@ -1,0 +1,30 @@
+# Asks rootcodelabs/skapp-ep to review this pull request. The review runs there and comes
+# back here as inline review comments and a `pr-review` status. Source of truth:
+# rootcodelabs/skapp-ep .github/scripts/pr-review/caller.yml
+#
+# Needs the secret PR_REVIEW_DISPATCH_TOKEN: a token that can send repository dispatches
+# to rootcodelabs/skapp-ep (fine-grained: Contents: write on that repository only).
+name: pr review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches-ignore: [main]
+
+permissions: {}
+
+jobs:
+  request:
+    name: Request review
+    # Drafts wait for ready_for_review; forks don't get the secret.
+    if: >-
+      !github.event.pull_request.draft &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Send to skapp-ep
+        env:
+          GH_TOKEN: ${{ secrets.PR_REVIEW_DISPATCH_TOKEN }}
+          PULL: ${{ github.event.pull_request.html_url }}
+        run: gh api repos/rootcodelabs/skapp-ep/dispatches -f event_type=pr-review -f "client_payload[pull]=$PULL"
