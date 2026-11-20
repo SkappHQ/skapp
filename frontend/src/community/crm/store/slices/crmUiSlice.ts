@@ -30,7 +30,6 @@ const CrmUiSlice: StateCreator<
   isRecordActivityModalOpen: false,
   recordActivityModalType: ActivityType.TASK,
   recordActivityPrefill: { contactId: null, dealId: null, companyId: null },
-  recordActivityTriggerId: "",
   isDealStageModalOpen: false,
   dealStageModalType: CrmModalTypes.ADD_DEAL_STAGE_MODAL,
 

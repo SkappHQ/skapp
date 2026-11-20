@@ -54,7 +54,7 @@ export interface CrmUiSliceTypes {
   isRecordActivityModalOpen: boolean;
   recordActivityModalType: ActivityType;
   recordActivityPrefill: CrmActivityPrefill;
-  recordActivityTriggerId: string;
+  recordActivityTriggerId?: string;
   isDealStageModalOpen: boolean;
   dealStageModalType: CrmModalTypes;
 

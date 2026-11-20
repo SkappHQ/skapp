@@ -32,7 +32,9 @@ const RecordActivityModalController: FC = () => {
   const handleModalClose = (): void => {
     setIsRecordActivityModalOpen(false);
     requestAnimationFrame(() => {
-      document.getElementById(recordActivityTriggerId)?.focus();
+      if (recordActivityTriggerId) {
+        document.getElementById(recordActivityTriggerId)?.focus();
+      }
     });
   };
 

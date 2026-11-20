@@ -25,7 +25,7 @@ const SelectedOwnerField: FC<SelectedOwnerFieldProps> = ({
 }) => (
   <div className="flex w-full flex-col gap-1">
     <span
-      {...(labelId && { id: labelId })}
+      id={labelId}
       className="subtitle1 leading-normal inline-flex h-6 items-center"
     >
       {label}

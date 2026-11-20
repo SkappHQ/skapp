@@ -307,6 +307,26 @@ const ActivitiesContent: FC = () => {
       }
     : null;
 
+  const handleLogCallModalClose = (): void => {
+    setIsLogCallModalOpen(false);
+    focusActionButton();
+  };
+
+  const handleLogMeetingModalClose = (): void => {
+    setIsLogMeetingModalOpen(false);
+    focusActionButton();
+  };
+
+  const handleAddTaskModalClose = (): void => {
+    setIsAddTaskModalOpen(false);
+    focusActionButton();
+  };
+
+  const handleLogEmailModalClose = (): void => {
+    setIsLogEmailModalOpen(false);
+    focusActionButton();
+  };
+
   const meetingsScheduleButton: ButtonV2Props | null =
     activeTab === ActivityTab.MEETINGS ? scheduleMeetingButton : null;
 
@@ -341,37 +361,25 @@ const ActivitiesContent: FC = () => {
       {isLogCallModalOpen && (
         <LogCallModalContent
           title={translateText(["activities", "logCall", "modal", "title"])}
-          onClose={() => {
-            setIsLogCallModalOpen(false);
-            focusActionButton();
-          }}
+          onClose={handleLogCallModalClose}
         />
       )}
       {isLogMeetingModalOpen && (
         <LogMeetingModalContent
           title={translateText(["activities", "logMeeting", "modal", "title"])}
-          onClose={() => {
-            setIsLogMeetingModalOpen(false);
-            focusActionButton();
-          }}
+          onClose={handleLogMeetingModalClose}
         />
       )}
       {isAddTaskModalOpen && (
         <AddActivityTaskModalContent
           title={translateText(["activities", "addTask", "modal", "title"])}
-          onClose={() => {
-            setIsAddTaskModalOpen(false);
-            focusActionButton();
-          }}
+          onClose={handleAddTaskModalClose}
         />
       )}
       {isLogEmailModalOpen && (
         <LogEmailModalContent
           title={translateText(["activities", "logEmail", "modal", "title"])}
-          onClose={() => {
-            setIsLogEmailModalOpen(false);
-            focusActionButton();
-          }}
+          onClose={handleLogEmailModalClose}
         />
       )}
       {scheduleMeetingModals}
