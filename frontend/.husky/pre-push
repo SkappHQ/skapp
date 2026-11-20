@@ -5,8 +5,10 @@ pushed_files() {
   while read -r local_ref local_sha remote_ref remote_sha; do
     case "$remote_ref" in refs/heads/*) ;; *) continue ;; esac
     case "$local_sha" in *[!0]*) ;; *) continue ;; esac
-    base=$remote_sha
-    git cat-file -e "$base^{commit}" 2>/dev/null || base=$(git merge-base "$local_sha" refs/remotes/origin/develop 2>/dev/null || true)
+    base=$(git merge-base "$local_sha" refs/remotes/origin/develop 2>/dev/null || true)
+    if [ -z "$base" ] && git cat-file -e "$remote_sha^{commit}" 2>/dev/null; then
+      base=$remote_sha
+    fi
     if [ -n "$base" ]; then
       git -c core.quotePath=false diff --name-only --diff-filter=d "$base" "$local_sha"
     else
@@ -25,9 +27,10 @@ pushed_typescript() {
 }
 
 check_pushed_files() {
+  echo "pre-push: type checking the frontend" >&2
   output=$(cd "$1" && npx --no-install tsc --noEmit --pretty false 2>&1) && return 0
-  errors=$(printf '%s\n' "$output" | awk -v patterns="$2" '
-    BEGIN { count = split(patterns, pattern, "\n") }
+  errors=$(printf '%s\n' "$output" | PUSHED_PATTERNS=$2 awk '
+    BEGIN { count = split(ENVIRON["PUSHED_PATTERNS"], pattern, "\n") }
     /^[ \t]/ { if (keep) print; next }
     {
       keep = index($0, "error TS") == 1 || $0 ~ /^[^ (]*\.json\(/
