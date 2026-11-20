@@ -1,10 +1,13 @@
 package com.skapp.community.leaveplanner.service.impl;
 
+import com.skapp.community.common.constant.CommonMessageConstant;
+import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.OrganizationConfig;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.OrganizationConfigDao;
 import com.skapp.community.common.type.OrganizationConfigType;
-import com.skapp.community.leaveplanner.payload.LeaveApprovalConfigDto;
+import com.skapp.community.leaveplanner.payload.request.LeaveApprovalConfigRequestDto;
+import com.skapp.community.leaveplanner.payload.response.LeaveApprovalConfigResponseDto;
 import com.skapp.community.leaveplanner.service.LeaveApprovalConfigService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,26 +29,27 @@ public class LeaveApprovalConfigServiceImpl implements LeaveApprovalConfigServic
 	public ResponseEntityDto getLeaveApprovalConfig() {
 		log.info("getLeaveApprovalConfig: execution started");
 
-		boolean isEnabled = isMultiLevelApprovalEnabled();
+		LeaveApprovalConfigResponseDto response = buildLeaveApprovalConfigResponse(isMultiLevelApprovalEnabled());
 
 		log.info("getLeaveApprovalConfig: execution ended");
-		return new ResponseEntityDto(false, new LeaveApprovalConfigDto(isEnabled));
+		return new ResponseEntityDto(false, response);
 	}
 
 	@Override
 	@Transactional
-	public ResponseEntityDto updateLeaveApprovalConfig(LeaveApprovalConfigDto leaveApprovalConfigDto) {
+	public ResponseEntityDto updateLeaveApprovalConfig(LeaveApprovalConfigRequestDto leaveApprovalConfigRequestDto) {
 		log.info("updateLeaveApprovalConfig: execution started");
 
-		String jsonValue = jsonMapper.writeValueAsString(leaveApprovalConfigDto);
-		OrganizationConfig organizationConfig = organizationConfigDao
-			.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.LEAVE_APPROVAL.name())
-			.orElseGet(() -> new OrganizationConfig(OrganizationConfigType.LEAVE_APPROVAL.name(), jsonValue));
-		organizationConfig.setOrganizationConfigValue(jsonValue);
-		organizationConfigDao.save(organizationConfig);
+		if (leaveApprovalConfigRequestDto.getIsMultiLevelApprovalEnabled() == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR);
+		}
+
+		LeaveApprovalConfigResponseDto response = buildLeaveApprovalConfigResponse(
+				leaveApprovalConfigRequestDto.getIsMultiLevelApprovalEnabled());
+		saveLeaveApprovalConfig(jsonMapper.writeValueAsString(response));
 
 		log.info("updateLeaveApprovalConfig: execution ended");
-		return new ResponseEntityDto(false, leaveApprovalConfigDto);
+		return new ResponseEntityDto(false, response);
 	}
 
 	@Override
@@ -55,12 +59,27 @@ public class LeaveApprovalConfigServiceImpl implements LeaveApprovalConfigServic
 
 		boolean isEnabled = organizationConfigDao
 			.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.LEAVE_APPROVAL.name())
-			.map(config -> jsonMapper.readValue(config.getOrganizationConfigValue(), LeaveApprovalConfigDto.class))
+			.map(config -> jsonMapper.readValue(config.getOrganizationConfigValue(),
+					LeaveApprovalConfigResponseDto.class))
 			.map(config -> Boolean.TRUE.equals(config.getIsMultiLevelApprovalEnabled()))
 			.orElse(false);
 
 		log.info("isMultiLevelApprovalEnabled: execution ended");
 		return isEnabled;
+	}
+
+	private LeaveApprovalConfigResponseDto buildLeaveApprovalConfigResponse(Boolean isMultiLevelApprovalEnabled) {
+		LeaveApprovalConfigResponseDto response = new LeaveApprovalConfigResponseDto();
+		response.setIsMultiLevelApprovalEnabled(isMultiLevelApprovalEnabled);
+		return response;
+	}
+
+	private void saveLeaveApprovalConfig(String configValue) {
+		OrganizationConfig organizationConfig = organizationConfigDao
+			.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.LEAVE_APPROVAL.name())
+			.orElseGet(() -> new OrganizationConfig(OrganizationConfigType.LEAVE_APPROVAL.name(), configValue));
+		organizationConfig.setOrganizationConfigValue(configValue);
+		organizationConfigDao.save(organizationConfig);
 	}
 
 }

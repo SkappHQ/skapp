@@ -1,11 +1,10 @@
 package com.skapp.community.leaveplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.leaveplanner.payload.LeaveApprovalConfigDto;
+import com.skapp.community.leaveplanner.payload.request.LeaveApprovalConfigRequestDto;
 import com.skapp.community.leaveplanner.service.LeaveApprovalConfigService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,8 +37,9 @@ public class LeaveApprovalConfigController {
 	@PatchMapping
 	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> updateLeaveApprovalConfig(
-			@Valid @RequestBody LeaveApprovalConfigDto leaveApprovalConfigDto) {
-		ResponseEntityDto response = leaveApprovalConfigService.updateLeaveApprovalConfig(leaveApprovalConfigDto);
+			@RequestBody LeaveApprovalConfigRequestDto leaveApprovalConfigRequestDto) {
+		ResponseEntityDto response = leaveApprovalConfigService
+			.updateLeaveApprovalConfig(leaveApprovalConfigRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
