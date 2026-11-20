@@ -5,6 +5,7 @@ import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useContactLookup } from "~community/crm/hooks/useContactLookup";
+import { useRelatedToAutoFill } from "~community/crm/hooks/useRelatedToAutoFill";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactEntity,
@@ -49,7 +50,7 @@ const ActivityContactsField: FC<Props> = ({
   actions,
   onContactsChange
 }) => {
-  const { values, getFieldProps, getFieldMeta, setFieldValue } = formik;
+  const { getFieldProps, getFieldMeta, setFieldValue } = formik;
 
   const contactIds: number[] = getFieldProps(name).value;
   const { touched, error } = getFieldMeta(name);
@@ -65,9 +66,10 @@ const ActivityContactsField: FC<Props> = ({
   );
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [hasFilledRelatedTo, setHasFilledRelatedTo] = useState(false);
 
   const { isLoading, lookupItems } = useContactLookup(searchTerm);
+
+  const fillRelatedToFromContact = useRelatedToAutoFill(formik, fillsRelatedTo);
 
   const options = lookupItems
     .filter((contact) => contact.id && !hiddenContactIds?.includes(contact.id))
@@ -100,15 +102,8 @@ const ActivityContactsField: FC<Props> = ({
       )
     );
 
-    if (
-      fillsRelatedTo &&
-      addedContact &&
-      !hasFilledRelatedTo &&
-      !values.companyId &&
-      addedContact.companyId
-    ) {
-      setFieldValue("companyId", addedContact.companyId);
-      setHasFilledRelatedTo(true);
+    if (addedContact) {
+      fillRelatedToFromContact(addedContact);
     }
   };
 

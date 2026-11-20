@@ -24,10 +24,7 @@ import {
   CrmContactEntity,
   CrmLogEmailFormValues
 } from "~community/crm/types/CrmCommonTypes";
-import {
-  getContactCompanyIds,
-  getContactDisplayName
-} from "~community/crm/utils/contactUtil";
+import { getContactCompanyIds } from "~community/crm/utils/contactUtil";
 import { isDealMatchingContacts } from "~community/crm/utils/dealUtil";
 
 interface Props {
@@ -35,8 +32,15 @@ interface Props {
 }
 
 const LogEmailModalForm: FC<Props> = ({ formik }) => {
-  const { values, errors, touched, handleChange, handleBlur, setFieldValue } =
-    formik;
+  const {
+    values,
+    errors,
+    status,
+    touched,
+    handleChange,
+    handleBlur,
+    setFieldValue
+  } = formik;
 
   const translateText = useTranslator("crmModule", "activities");
   const translateAria = useTranslator(
@@ -71,12 +75,10 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
     new Set(getContactCompanyIds(contacts, recipientIds))
   );
 
-  const isDealMismatch = Boolean(
-    values.dealId &&
-    deals[values.dealId] &&
-    recipients.length > 0 &&
-    !isDealMatchingContacts(deals[values.dealId], recipients)
-  );
+  const isDealMismatch =
+    Boolean(status) &&
+    status.mismatchedDealId === values.dealId &&
+    status.mismatchedContactIds === recipientIds.join();
 
   const handleRecipientsChange = (
     nextFieldContacts: CrmContactEntity[],
@@ -332,14 +334,13 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
           formik={formik}
           fieldAriaLabel={translateAria(["relatedTo"])}
           {...(values.companyId &&
-            values.toContactIds.length > 0 &&
+            contacts[values.toContactIds[0]]?.companyId &&
             values.companyId !== contacts[values.toContactIds[0]].companyId && {
-              mismatchMessage: translateText(
-                ["logActivity", "notices", "relatedToMismatch"],
-                {
-                  name: getContactDisplayName(contacts[values.toContactIds[0]])
-                }
-              )
+              mismatchMessage: translateText([
+                "logActivity",
+                "notices",
+                "relatedToMismatch"
+              ])
             })}
         />
       </ActivityAssociations>
