@@ -141,6 +141,7 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
             onChange={handleTypeChange}
             variant="secondary"
             size="sm"
+            className="rounded-lg"
             width="9rem"
             ariaLabel={translateAria(["activities", "recordTab", "typeFilter"])}
           />
