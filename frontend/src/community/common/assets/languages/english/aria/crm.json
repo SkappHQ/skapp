@@ -194,11 +194,11 @@
       "markComplete": "Mark '{{name}}' complete",
       "markIncomplete": "Mark '{{name}}' incomplete",
       "owner": "Owner: {{name}}",
-      "moreContacts_one": "and {{count}} more contact",
-      "moreContacts_other": "and {{count}} more contacts",
       "highPriority": "High priority",
       "mediumPriority": "Medium priority",
-      "lowPriority": "Low priority"
+      "lowPriority": "Low priority",
+      "moreContacts_one": "and {{count}} more contact",
+      "moreContacts_other": "and {{count}} more contacts"
     },
     "feed": {
       "loading": "Loading activities",
