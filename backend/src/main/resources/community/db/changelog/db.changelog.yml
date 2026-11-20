@@ -106,3 +106,7 @@ databaseChangeLog:
       file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-create-table-ppl-employee-billable-rate.sql
   - include:
       file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-alter-table-user-add-column-temp-password-expires-at.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-alter-table-employee-add-leave-authorizer-id.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/leave-ddl-script-v1-alter-table-lv-leave-request-add-multi-level-approval-columns.sql
