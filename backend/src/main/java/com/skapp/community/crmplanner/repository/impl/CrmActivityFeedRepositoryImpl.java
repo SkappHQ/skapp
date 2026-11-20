@@ -367,6 +367,8 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			.value(activity.<Instant>get(CrmActivityMeeting_.START_AT))
 			.value(taskAt);
 		Path<Long> activityId = activity.get(CrmActivityTask_.ID);
+		Order openTasksFirst = cb.asc(
+				cb.selectCase().when(cb.isFalse(activity.<Boolean>get(CrmActivityTask_.IS_COMPLETED)), 0).otherwise(1));
 		query
 			.multiselect(activityId, activity.get(CrmActivityTask_.NAME), activity.get(CrmActivityTask_.DUE_AT),
 					activity.get(CrmActivityTask_.COMPLETED_AT), activity.get(CrmActivityTask_.IS_COMPLETED),
@@ -376,9 +378,9 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					activity.get(CrmActivityCall_.LOGGED_AT), activity.get(CrmConstants.ACTIVITY_FEED_TYPE_ALIAS),
 					cb.count(activityId, cb.createWindow()))
 			.orderBy(params.getSortOrder().isAscending()
-					? List.<Order>of(cb.asc(feedAt, false), cb.asc(activityId),
+					? List.<Order>of(openTasksFirst, cb.asc(feedAt, false), cb.asc(activityId),
 							cb.asc(activity.get(CrmConstants.ACTIVITY_FEED_TYPE_ALIAS)))
-					: List.<Order>of(cb.desc(feedAt, false), cb.desc(activityId),
+					: List.<Order>of(openTasksFirst, cb.desc(feedAt, false), cb.desc(activityId),
 							cb.desc(activity.get(CrmConstants.ACTIVITY_FEED_TYPE_ALIAS))))
 			.offset(pageable.getOffset())
 			.fetch(pageable.getPageSize());
