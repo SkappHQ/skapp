@@ -140,8 +140,7 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 
 		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
 		Root<CrmActivityTask> countRoot = countQuery.from(CrmActivityTask.class);
-		Join<CrmActivityTask, Employee> countOwner = countRoot.join(CrmActivityTask_.owner, JoinType.LEFT);
-		Path<Long> countOwnerId = countOwner.get(Employee_.employeeId);
+		Path<Long> countOwnerId = countRoot.get(CrmActivityTask_.owner).get(Employee_.employeeId);
 		Path<Instant> countDueAt = countRoot.get(CrmActivityTask_.dueAt);
 		List<Predicate> countPredicates = new ArrayList<>();
 		if (Boolean.TRUE.equals(params.getIsRestrictedToOwner())) {

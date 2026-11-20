@@ -112,8 +112,7 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 
 		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
 		Root<CrmActivityCall> countRoot = countQuery.from(CrmActivityCall.class);
-		Join<CrmActivityCall, Employee> countOwner = countRoot.join(CrmActivityCall_.owner, JoinType.LEFT);
-		Path<Long> countOwnerId = countOwner.get(Employee_.employeeId);
+		Path<Long> countOwnerId = countRoot.get(CrmActivityCall_.owner).get(Employee_.employeeId);
 		Path<Instant> countLoggedAt = countRoot.get(CrmActivityCall_.loggedAt);
 		List<Predicate> countPredicates = new ArrayList<>();
 		if (Boolean.TRUE.equals(params.getIsRestrictedToOwner())) {

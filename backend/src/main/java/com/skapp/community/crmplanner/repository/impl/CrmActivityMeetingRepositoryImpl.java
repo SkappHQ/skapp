@@ -152,8 +152,7 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 
 		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
 		Root<CrmActivityMeeting> countRoot = countQuery.from(CrmActivityMeeting.class);
-		Join<CrmActivityMeeting, Employee> countOwner = countRoot.join(CrmActivityMeeting_.owner, JoinType.LEFT);
-		Path<Long> countOwnerId = countOwner.get(Employee_.employeeId);
+		Path<Long> countOwnerId = countRoot.get(CrmActivityMeeting_.owner).get(Employee_.employeeId);
 		List<Predicate> countPredicates = new ArrayList<>();
 		countPredicates.add(cb.isFalse(countRoot.get(CrmActivityMeeting_.isDeleted)));
 

@@ -116,8 +116,7 @@ public class CrmActivityEmailRepositoryImpl implements CrmActivityEmailRepositor
 
 		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
 		Root<CrmActivityEmail> countRoot = countQuery.from(CrmActivityEmail.class);
-		Join<CrmActivityEmail, Employee> countOwner = countRoot.join(CrmActivityEmail_.owner, JoinType.LEFT);
-		Path<Long> countOwnerId = countOwner.get(Employee_.employeeId);
+		Path<Long> countOwnerId = countRoot.get(CrmActivityEmail_.owner).get(Employee_.employeeId);
 		Path<Instant> countLoggedAt = countRoot.get(CrmActivityEmail_.loggedAt);
 		List<Predicate> countPredicates = new ArrayList<>();
 		if (Boolean.TRUE.equals(params.getIsRestrictedToOwner())) {
