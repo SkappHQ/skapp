@@ -29,6 +29,7 @@ import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -284,9 +285,10 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 			params.setRelatedDealId(task.getDeal().getId());
 		}
 		params.setExcludedId(id);
-		params.setMaxResults(CrmConstants.RELATED_ACTIVITY_LIMIT);
 
-		List<CrmActivityTaskResponseDto> tasks = crmActivityTaskDao.findTasks(params);
+		List<CrmActivityTaskResponseDto> tasks = crmActivityTaskDao
+			.findTasks(params, PageRequest.of(0, CrmConstants.RELATED_ACTIVITY_LIMIT))
+			.getContent();
 
 		log.info("getRelatedTasks: execution ended");
 		return new ResponseEntityDto(false, tasks);

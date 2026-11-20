@@ -26,8 +26,8 @@ import {
 import {
   toCallRow,
   toEmailRow,
+  toFeedPages,
   toMeetingRow,
-  toSingleFeedPage,
   toTaskRow
 } from "~community/crm/activities/utils/activityFeedUtil";
 import {
@@ -151,7 +151,15 @@ const ActivitiesContent: FC = () => {
     activeTab === ActivityTab.TASKS
   );
 
-  const { isLoading, isError, errorUpdatedAt } = {
+  const {
+    isLoading,
+    isError,
+    errorUpdatedAt,
+    hasNextPage,
+    isFetchNextPageError,
+    isFetchingNextPage,
+    fetchNextPage
+  } = {
     [ActivityTab.ALL]: feed,
     [ActivityTab.CALLS]: calls,
     [ActivityTab.EMAILS]: emails,
@@ -162,13 +170,13 @@ const ActivitiesContent: FC = () => {
   const pages: ActivityFeedResponse[] = useMemo(() => {
     if (isAllTab && feed.data) return feed.data.pages;
     if (activeTab === ActivityTab.CALLS && calls.data)
-      return toSingleFeedPage(calls.data.map(toCallRow));
+      return toFeedPages(calls.data.pages, toCallRow);
     if (activeTab === ActivityTab.EMAILS && emails.data)
-      return toSingleFeedPage(emails.data.map(toEmailRow));
+      return toFeedPages(emails.data.pages, toEmailRow);
     if (activeTab === ActivityTab.MEETINGS && meetings.data)
-      return toSingleFeedPage(meetings.data.map(toMeetingRow));
+      return toFeedPages(meetings.data.pages, toMeetingRow);
     if (activeTab === ActivityTab.TASKS && tasks.data)
-      return toSingleFeedPage(tasks.data.map(toTaskRow));
+      return toFeedPages(tasks.data.pages, toTaskRow);
     return [];
   }, [
     activeTab,
@@ -198,8 +206,7 @@ const ActivitiesContent: FC = () => {
     });
   }, [isError, errorUpdatedAt]);
 
-  const resultCount =
-    isAllTab && feed.data ? feed.data.pages[0].totalItems : rows.length;
+  const resultCount = pages.length > 0 ? pages[0].totalItems : rows.length;
   const hasActiveFilters =
     searchTerm.length > 0 || Object.keys(filters).length > 0;
   const showControls =
@@ -386,13 +393,13 @@ const ActivitiesContent: FC = () => {
         searchTerm={searchTerm}
         isLoading={isLoading}
         isError={isError}
-        hasNextPage={isAllTab && feed.hasNextPage && !feed.isFetchNextPageError}
-        isFetchingNextPage={isAllTab && feed.isFetchingNextPage}
+        hasNextPage={hasNextPage && !isFetchNextPageError}
+        isFetchingNextPage={isFetchingNextPage}
         timeZone={displayZone}
         taskCompletions={taskCompletions}
         emptyStateButton={showControls ? null : actionButton}
         emptyStateSecondaryButton={showControls ? null : meetingsScheduleButton}
-        onLoadMore={feed.fetchNextPage}
+        onLoadMore={fetchNextPage}
         onRowClick={handleRowClick}
         onToggleComplete={handleToggleComplete}
       />

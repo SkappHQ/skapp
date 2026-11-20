@@ -367,6 +367,20 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 			.value(activity.<Instant>get(CrmActivityMeeting_.START_AT))
 			.value(taskAt);
 		Path<Long> activityId = activity.get(CrmActivityTask_.ID);
+		boolean ascending = params.getSortOrder().isAscending();
+		List<Order> orders = new ArrayList<>();
+		if (params.getRecordId() == null) {
+			orders.add(cb.asc(cb.selectCase()
+				.when(cb.isFalse(activity.<Boolean>get(CrmActivityTask_.IS_COMPLETED)), 0)
+				.otherwise(1)));
+			orders.add(cb.asc(cb.<Instant>selectCase()
+				.when(cb.isFalse(activity.<Boolean>get(CrmActivityTask_.IS_COMPLETED)),
+						activity.<Instant>get(CrmActivityTask_.DUE_AT))));
+		}
+		orders.add(ascending ? cb.asc(feedAt, false) : cb.desc(feedAt, false));
+		orders.add(ascending ? cb.asc(activityId) : cb.desc(activityId));
+		orders.add(ascending ? cb.asc(activity.get(CrmConstants.ACTIVITY_FEED_TYPE_ALIAS))
+				: cb.desc(activity.get(CrmConstants.ACTIVITY_FEED_TYPE_ALIAS)));
 		query
 			.multiselect(activityId, activity.get(CrmActivityTask_.NAME), activity.get(CrmActivityTask_.DUE_AT),
 					activity.get(CrmActivityTask_.COMPLETED_AT), activity.get(CrmActivityTask_.IS_COMPLETED),
@@ -375,11 +389,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					activity.get(CrmActivityTask_.CONTACT), activity.get(CrmActivityMeeting_.START_AT),
 					activity.get(CrmActivityCall_.LOGGED_AT), activity.get(CrmConstants.ACTIVITY_FEED_TYPE_ALIAS),
 					cb.count(activityId, cb.createWindow()))
-			.orderBy(params.getSortOrder().isAscending()
-					? List.<Order>of(cb.asc(feedAt, false), cb.asc(activityId),
-							cb.asc(activity.get(CrmConstants.ACTIVITY_FEED_TYPE_ALIAS)))
-					: List.<Order>of(cb.desc(feedAt, false), cb.desc(activityId),
-							cb.desc(activity.get(CrmConstants.ACTIVITY_FEED_TYPE_ALIAS))))
+			.orderBy(orders)
 			.offset(pageable.getOffset())
 			.fetch(pageable.getPageSize());
 
