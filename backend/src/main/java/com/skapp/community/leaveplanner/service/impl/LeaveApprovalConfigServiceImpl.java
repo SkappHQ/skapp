@@ -9,11 +9,16 @@ import com.skapp.community.common.type.OrganizationConfigType;
 import com.skapp.community.leaveplanner.payload.request.LeaveApprovalConfigRequestDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveApprovalConfigResponseDto;
 import com.skapp.community.leaveplanner.service.LeaveApprovalConfigService;
+import com.skapp.community.leaveplanner.type.ManagerType;
+import com.skapp.community.peopleplanner.model.EmployeeManager;
+import com.skapp.community.peopleplanner.repository.EmployeeManagerDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -23,6 +28,8 @@ public class LeaveApprovalConfigServiceImpl implements LeaveApprovalConfigServic
 	private final OrganizationConfigDao organizationConfigDao;
 
 	private final JsonMapper jsonMapper;
+
+	private final EmployeeManagerDao employeeManagerDao;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -42,6 +49,11 @@ public class LeaveApprovalConfigServiceImpl implements LeaveApprovalConfigServic
 
 		if (leaveApprovalConfigRequestDto.getIsMultiLevelApprovalEnabled() == null) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR);
+		}
+
+		if (Boolean.TRUE.equals(leaveApprovalConfigRequestDto.getIsMultiLevelApprovalEnabled())
+				&& !isMultiLevelApprovalEnabled()) {
+			removeOtherSupervisors();
 		}
 
 		LeaveApprovalConfigResponseDto response = buildLeaveApprovalConfigResponse(
@@ -66,6 +78,15 @@ public class LeaveApprovalConfigServiceImpl implements LeaveApprovalConfigServic
 
 		log.info("isMultiLevelApprovalEnabled: execution ended");
 		return isEnabled;
+	}
+
+	protected void addOtherSupervisorsRemovedTimelineRecords(List<EmployeeManager> removedSupervisors) {
+	}
+
+	private void removeOtherSupervisors() {
+		List<EmployeeManager> otherSupervisors = employeeManagerDao.findByManagerType(ManagerType.SECONDARY);
+		addOtherSupervisorsRemovedTimelineRecords(otherSupervisors);
+		employeeManagerDao.deleteAll(otherSupervisors);
 	}
 
 	private LeaveApprovalConfigResponseDto buildLeaveApprovalConfigResponse(Boolean isMultiLevelApprovalEnabled) {
