@@ -165,12 +165,7 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
           <ActivityFeedSection
             key={group.id}
             id={`${id}-section-${group.id}`}
-            title={
-              group.section === ActivitySection.BY_MONTH &&
-              activeTab !== ActivityTab.ALL
-                ? ""
-                : getSectionTitle(group)
-            }
+            title={getSectionTitle(group)}
             rows={group.rows}
             timeZone={timeZone}
             isShowCheckbox={isShowCheckbox}
