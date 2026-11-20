@@ -42,10 +42,9 @@ import {
 } from "~community/crm/types/CrmCommonTypes";
 import useActivityLimitCount from "~enterprise/crm/hooks/useActivityLimitCount";
 
-const getNextActivityListPage = (lastPage?: {
-  currentPage: number;
-  totalPages: number;
-}): number | null =>
+const getNextActivityListPage = <T>(
+  lastPage: ActivityListPage<T>
+): number | null =>
   lastPage && lastPage.currentPage < lastPage.totalPages - 1
     ? lastPage.currentPage + 1
     : null;
