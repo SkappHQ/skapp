@@ -1,4 +1,3 @@
-import { Tooltip } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -17,11 +16,9 @@ const ActivityTypeIcon: FC<ActivityTypeIconProps> = ({ id, type }) => {
   const label = translateText(["activities", "types", type.toLowerCase()]);
 
   return (
-    <Tooltip id={`${id}-tooltip`} content={label}>
-      <span id={id} className="inline-flex shrink-0">
-        <Icon role="img" aria-label={label} />
-      </span>
-    </Tooltip>
+    <span id={id} className="flex shrink-0">
+      <Icon role="img" aria-label={label} />
+    </span>
   );
 };
 
