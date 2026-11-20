@@ -119,6 +119,7 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_ACTIVITY_MEETING_TIME_DATE_MISMATCH("api.error.crm.activity.meeting-time-date-mismatch"),
 	CRM_ERROR_ACTIVITY_DEAL_REMOVAL_CONFLICT("api.error.crm.activity.deal-removal-conflict"),
 	CRM_ERROR_ACTIVITY_COMPANY_REMOVAL_CONFLICT("api.error.crm.activity.company-removal-conflict"),
+	CRM_ERROR_ACTIVITY_TASK_PRIORITY_REQUIRED("api.error.crm.activity.task-priority-required"),
 	CRM_SUCCESS_ACTIVITY_DELETED("api.success.crm.activity-deleted");
 
 	private final String messageKey;
