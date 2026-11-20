@@ -45,7 +45,7 @@ import useActivityLimitCount from "~enterprise/crm/hooks/useActivityLimitCount";
 const getNextActivityListPage = <T>(
   lastPage: ActivityListPage<T>
 ): number | null =>
-  lastPage && lastPage.currentPage < lastPage.totalPages - 1
+  lastPage.currentPage < lastPage.totalPages - 1
     ? lastPage.currentPage + 1
     : null;
 
