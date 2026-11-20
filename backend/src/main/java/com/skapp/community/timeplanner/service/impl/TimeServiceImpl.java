@@ -779,12 +779,7 @@ public class TimeServiceImpl implements TimeService {
 		}
 
 		List<Long> teamIds = managerAttendanceSummaryFilterDto.getTeamIds();
-		if (teamIds.getFirst() == -1) {
-			teamIds = user.getEmployee().getEmployeeRole().getAttendanceRole() == Role.ATTENDANCE_MANAGER
-					? teamDao.findLeadingTeamIdsByManagerId(user.getUserId())
-					: teamDao.findAllByIsActive(true).stream().map(Team::getTeamId).toList();
-		}
-		else {
+		if (!teamIds.contains(-1L)) {
 			Set<Long> activeTeamIds = teamDao.findByTeamIdIn(teamIds)
 				.stream()
 				.filter(Team::isActive)
@@ -797,26 +792,14 @@ public class TimeServiceImpl implements TimeService {
 			}
 		}
 
-		Pageable pageable = PageRequest.of(0, Integer.MAX_VALUE);
+		List<Long> employeeIds = teamDao
+			.findEmployeesInManagerLeadingTeams(teamIds, PageRequest.of(0, Integer.MAX_VALUE), user)
+			.stream()
+			.map(Employee::getEmployeeId)
+			.toList();
 
-		List<Long> employeeList = new ArrayList<>();
-		if (managerAttendanceSummaryFilterDto.getTeamIds().contains(-1L)) {
-
-			List<Employee> employeePage = teamDao.findEmployeesInManagerLeadingTeams(teamIds, pageable, user)
-				.getContent();
-
-			if (!employeePage.isEmpty()) {
-				employeePage.forEach(employee -> employeeList.add(employee.getEmployeeId()));
-			}
-
-			if (user.getEmployee().getEmployeeRole().getAttendanceRole() == Role.ATTENDANCE_MANAGER) {
-				employeeList.addAll(employeeManagerDao.findManagerSupervisingEmployee(user.getUserId()));
-			}
-		}
-
-		AttendanceSummaryDto attendanceSummaryDto = timeRecordDao.findManagerAssignUsersAttendanceSummary(
-				user.getUserId(), teamIds, managerAttendanceSummaryFilterDto.getStartDate(),
-				managerAttendanceSummaryFilterDto.getEndDate(), employeeList);
+		AttendanceSummaryDto attendanceSummaryDto = timeRecordDao.getEmployeeAttendanceSummary(employeeIds,
+				managerAttendanceSummaryFilterDto.getStartDate(), managerAttendanceSummaryFilterDto.getEndDate());
 
 		log.info("getManagerAttendanceSummary: execution ended");
 		return new ResponseEntityDto(false,
