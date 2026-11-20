@@ -256,7 +256,7 @@ public class CrmValidations {
 
 	public static void validateActivityTaskPriority(CrmActivityTaskPriority priority) {
 		if (priority == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_PRIORITY_REQUIRED);
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_TASK_PRIORITY_REQUIRED);
 		}
 	}
 
