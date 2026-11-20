@@ -107,6 +107,6 @@ databaseChangeLog:
   - include:
       file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-alter-table-user-add-column-temp-password-expires-at.sql
   - include:
-      file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-alter-table-employee-add-leave-authorizer-id.sql
+      file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-alter-table-employee-add-request-authorizer-id.sql
   - include:
       file: classpath:community/db/changelog/ddl-script/leave-ddl-script-v1-alter-table-lv-leave-request-add-multi-level-approval-columns.sql
