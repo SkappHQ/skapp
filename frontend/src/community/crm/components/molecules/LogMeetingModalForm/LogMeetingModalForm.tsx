@@ -212,7 +212,11 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
           />
         </div>
         <div className="flex-1">
-          <ActivityOwnerField id="log-meeting-ownerId" formik={formik} />
+          <ActivityOwnerField
+            id="log-meeting-ownerId"
+            formik={formik}
+            required
+          />
         </div>
       </div>
 

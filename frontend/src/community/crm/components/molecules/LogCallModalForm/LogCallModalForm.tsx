@@ -168,7 +168,7 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
           />
         </div>
         <div className="flex-1">
-          <ActivityOwnerField id="log-call-ownerId" formik={formik} />
+          <ActivityOwnerField id="log-call-ownerId" formik={formik} required />
         </div>
       </div>
 
