@@ -1,7 +1,4 @@
-import {
-  MultiSelectSearchDropdown,
-  MultiSelectSearchDropdownOption
-} from "@rootcodelabs/skapp-ui";
+import { MultiSelectSearchDropdown } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import { FC, ReactNode, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -16,7 +13,7 @@ import {
   CrmLogMeetingFormValues
 } from "~community/crm/types/CrmCommonTypes";
 import {
-  getContactDisplayName,
+  toContactOption,
   updateContactRecord
 } from "~community/crm/utils/contactUtil";
 import { CrmScheduleMeetingFormValues } from "~enterprise/crm/types/ScheduleMeetingTypes";
@@ -90,14 +87,6 @@ const ActivityContactsField: FC<Props> = ({
     (contact) => contact.id && !hiddenContactIds?.includes(contact.id)
   );
 
-  const toContactOption = (
-    contactId: number,
-    contact: CrmContactEntity
-  ): MultiSelectSearchDropdownOption => ({
-    value: String(contactId),
-    label: getContactDisplayName(contact)
-  });
-
   const pinnedOptions = isSearchActive
     ? lookupContacts
         .filter((contact) => pinnedContactIds.includes(Number(contact.id)))
@@ -113,7 +102,9 @@ const ActivityContactsField: FC<Props> = ({
       .map((contact) => toContactOption(Number(contact.id), contact))
   ];
 
-  const handleContactsChange = (nextContactIds: number[]): void => {
+  const handleContactsChange = (nextValues: string[]): void => {
+    const nextContactIds = nextValues.map(Number);
+
     const addedContact = lookupItems.find(
       (contact) =>
         contact.id &&
@@ -156,9 +147,7 @@ const ActivityContactsField: FC<Props> = ({
             id={id}
             options={options}
             selectedValues={contactIds.map(String)}
-            onChange={(nextValues) =>
-              handleContactsChange(nextValues.map(Number))
-            }
+            onChange={handleContactsChange}
             onSearchChange={setSearchTerm}
             onOpen={handleMenuOpen}
             searchInputProps={{
