@@ -171,6 +171,7 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
         label={translateText(["addTask", "modal", "labels", "contact"])}
         fieldAriaLabel={translateAria(["contact"])}
         onDealCleared={() => setIsDealClearedNoticeVisible(true)}
+        fillsRelatedTo
       />
 
       <TextArea

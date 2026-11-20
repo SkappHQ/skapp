@@ -152,6 +152,7 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
             fieldAriaLabel={translateAria(["contact"])}
             onDealCleared={() => setIsDealClearedNoticeVisible(true)}
             errorMessage={touched.contactId ? errors.contactId : ""}
+            fillsRelatedTo
             required
           />
         </div>
