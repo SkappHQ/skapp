@@ -62,8 +62,11 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
   const errorInputClasses =
     "text-semantic-red-text! placeholder:text-semantic-red-text!";
 
-  const isSubjectInvalid = Boolean(touched.subject && errors.subject);
-  const isDurationInvalid = Boolean(touched.duration && errors.duration);
+  const subjectError = touched.subject ? errors.subject : "";
+  const durationError = touched.duration ? errors.duration : "";
+
+  const isSubjectInvalid = Boolean(subjectError);
+  const isDurationInvalid = Boolean(durationError);
 
   const pickedDate = values.date ? toPickerDate(values.date) : null;
 
@@ -79,7 +82,7 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
         value={values.subject}
         label={translateText(["logActivity", "labels", "subject"])}
         placeholder={translateText(["logActivity", "placeholders", "subject"])}
-        errorMessage={touched.subject ? errors.subject : ""}
+        errorMessage={subjectError}
         state={isSubjectInvalid ? "error" : "default"}
         {...(isSubjectInvalid && {
           styleOverrides: { input: errorInputClasses }
@@ -143,7 +146,7 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
           "placeholders",
           "duration"
         ])}
-        errorMessage={touched.duration ? errors.duration : ""}
+        errorMessage={durationError}
         state={isDurationInvalid ? "error" : "default"}
         {...(isDurationInvalid && {
           styleOverrides: { input: errorInputClasses }
