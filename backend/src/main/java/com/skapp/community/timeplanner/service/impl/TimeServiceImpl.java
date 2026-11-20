@@ -761,7 +761,7 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	@Override
-	@Transactional
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getManagerAttendanceSummary(
 			ManagerAttendanceSummaryFilterDto managerAttendanceSummaryFilterDto) {
 		User user = userService.getCurrentUser();
@@ -774,12 +774,16 @@ public class TimeServiceImpl implements TimeService {
 			managerAttendanceSummaryFilterDto.setTeamIds(longArrayList);
 		}
 
-		if (managerAttendanceSummaryFilterDto.getStartDate().isAfter(managerAttendanceSummaryFilterDto.getEndDate())) {
+		if (CommonModuleUtils.validateStartDateAndEndDate(managerAttendanceSummaryFilterDto.getStartDate(),
+				managerAttendanceSummaryFilterDto.getEndDate(), timeZoneService.currentOrganizationYear())) {
 			throw new ModuleException(TimeMessageConstant.TIME_ERROR_START_DATE_END_DATE_NOT_VALID);
 		}
 
 		List<Long> teamIds = managerAttendanceSummaryFilterDto.getTeamIds();
-		if (!teamIds.contains(-1L)) {
+		if (user.getEmployee().getEmployeeRole().getAttendanceRole() != Role.ATTENDANCE_ADMIN) {
+			teamIds = validateFilteringTeamsByManager(teamIds, user.getEmployee().getEmployeeId());
+		}
+		else if (!teamIds.contains(-1L)) {
 			Set<Long> activeTeamIds = teamDao.findByTeamIdIn(teamIds)
 				.stream()
 				.filter(Team::isActive)
