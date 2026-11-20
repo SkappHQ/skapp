@@ -183,5 +183,6 @@ export const analyticAPIs = {
 };
 
 export const leaveApprovalConfigEndPoints = {
-  LEAVE_APPROVAL_CONFIG: `${moduleAPIPath.LEAVE}/approval-config`
+  GET_LEAVE_APPROVAL_CONFIG: `${moduleAPIPath.LEAVE}/approval-config`,
+  UPDATE_LEAVE_APPROVAL_CONFIG: `${moduleAPIPath.LEAVE}/approval-config`
 };

@@ -449,5 +449,5 @@ export const leavePolicyAssignmentQueryKeys = {
 };
 
 export const leaveApprovalConfigQueryKeys = {
-  LEAVE_APPROVAL_CONFIG: ["leave-approval-config"]
+  GET_LEAVE_APPROVAL_CONFIG: ["leave-approval-config"]
 };

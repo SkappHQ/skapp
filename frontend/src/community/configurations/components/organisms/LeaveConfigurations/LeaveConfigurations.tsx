@@ -11,7 +11,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 import EnableLeavePoliciesConfirmModal from "~community/configurations/components/molecules/EnableLeavePoliciesConfirmModal/EnableLeavePoliciesConfirmModal";
-import LeaveApprovalSettings from "~community/configurations/components/molecules/LeaveApprovalSettings/LeaveApprovalSettings";
+import LeaveApprovalSettings from "~community/configurations/components/organisms/LeaveApprovalSettings/LeaveApprovalSettings";
 import { useEnableLeavePolicies } from "~community/leave/api/LeavePolicyApi";
 import useCanManageLeavePolicies from "~community/leave/hooks/useCanManageLeavePolicies";
 import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
@@ -22,8 +22,7 @@ const LeaveConfigurations: FC = () => {
   const { setToastMessage } = useToast();
 
   const canManageLeavePolicies = useCanManageLeavePolicies();
-  const { isSuperAdmin, isPeopleAdmin } = useSessionData();
-  const canManageLeaveApproval = Boolean(isSuperAdmin || isPeopleAdmin);
+  const { isPeopleAdmin } = useSessionData();
   const { isLeavePoliciesEnabled, isLoading, isError } =
     useLeavePoliciesEnabled();
 
@@ -144,9 +143,7 @@ const LeaveConfigurations: FC = () => {
         </div>
       )}
 
-      {canManageLeaveApproval && isLeavePoliciesEnabled && (
-        <LeaveApprovalSettings />
-      )}
+      {isPeopleAdmin && isLeavePoliciesEnabled && <LeaveApprovalSettings />}
 
       <EnableLeavePoliciesConfirmModal
         isOpen={isConfirmModalOpen}

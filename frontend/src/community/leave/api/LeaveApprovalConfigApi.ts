@@ -17,7 +17,7 @@ import {
 
 const getLeaveApprovalConfig = async (): Promise<LeaveApprovalConfigType> => {
   const response = await authFetch.get<LeaveApprovalConfigResponse>(
-    leaveApprovalConfigEndPoints.LEAVE_APPROVAL_CONFIG
+    leaveApprovalConfigEndPoints.GET_LEAVE_APPROVAL_CONFIG
   );
   return response.data.results[0];
 };
@@ -25,9 +25,8 @@ const getLeaveApprovalConfig = async (): Promise<LeaveApprovalConfigType> => {
 export const useGetLeaveApprovalConfig =
   (): UseQueryResult<LeaveApprovalConfigType> => {
     return useQuery({
-      queryKey: leaveApprovalConfigQueryKeys.LEAVE_APPROVAL_CONFIG,
-      queryFn: getLeaveApprovalConfig,
-      refetchOnWindowFocus: false
+      queryKey: leaveApprovalConfigQueryKeys.GET_LEAVE_APPROVAL_CONFIG,
+      queryFn: getLeaveApprovalConfig
     });
   };
 
@@ -35,7 +34,7 @@ const updateLeaveApprovalConfig = (
   config: LeaveApprovalConfigType
 ): Promise<AxiosResponse<LeaveApprovalConfigResponse>> =>
   authFetch.patch<LeaveApprovalConfigResponse>(
-    leaveApprovalConfigEndPoints.LEAVE_APPROVAL_CONFIG,
+    leaveApprovalConfigEndPoints.UPDATE_LEAVE_APPROVAL_CONFIG,
     config
   );
 
@@ -53,7 +52,7 @@ export const useUpdateLeaveApprovalConfig = (
     mutationFn: updateLeaveApprovalConfig,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: leaveApprovalConfigQueryKeys.LEAVE_APPROVAL_CONFIG
+        queryKey: leaveApprovalConfigQueryKeys.GET_LEAVE_APPROVAL_CONFIG
       });
       onSuccess();
     },

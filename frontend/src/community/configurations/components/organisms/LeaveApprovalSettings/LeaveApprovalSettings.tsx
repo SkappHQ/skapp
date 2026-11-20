@@ -1,5 +1,5 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { useFormik } from "formik";
+import { FormikHelpers, useFormik } from "formik";
 import { FC } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -23,11 +23,7 @@ const LeaveApprovalSettings: FC = () => {
   );
   const { setToastMessage } = useToast();
 
-  const {
-    data: leaveApprovalConfig,
-    isLoading,
-    isError
-  } = useGetLeaveApprovalConfig();
+  const { data: leaveApprovalConfig, isLoading } = useGetLeaveApprovalConfig();
 
   const handleSuccess = (): void => {
     setToastMessage({
@@ -50,23 +46,26 @@ const LeaveApprovalSettings: FC = () => {
   const { mutate: updateLeaveApprovalConfig, isPending } =
     useUpdateLeaveApprovalConfig(handleSuccess, handleError);
 
+  const initialValues: LeaveApprovalConfigType = {
+    isMultiLevelApprovalEnabled: Boolean(
+      leaveApprovalConfig?.isMultiLevelApprovalEnabled
+    )
+  };
+
+  const handleSubmit = (
+    values: LeaveApprovalConfigType,
+    { resetForm }: FormikHelpers<LeaveApprovalConfigType>
+  ): void => {
+    updateLeaveApprovalConfig(values, { onError: () => resetForm() });
+  };
+
   const formik = useFormik<LeaveApprovalConfigType>({
     enableReinitialize: true,
-    initialValues: {
-      isMultiLevelApprovalEnabled: Boolean(
-        leaveApprovalConfig?.isMultiLevelApprovalEnabled
-      )
-    },
-    onSubmit: (values, { resetForm }) => {
-      updateLeaveApprovalConfig(values, { onError: () => resetForm() });
-    }
+    initialValues,
+    onSubmit: handleSubmit
   });
 
   useConfigurationUnsavedChanges(formik.dirty);
-
-  if (isLoading || isError) {
-    return null;
-  }
 
   const handleMultiLevelApprovalToggle = (checked: boolean): void => {
     formik.setFieldValue("isMultiLevelApprovalEnabled", checked);
@@ -88,12 +87,19 @@ const LeaveApprovalSettings: FC = () => {
           {translateText(["description"])}
         </p>
       </div>
-      <SwitchRow
-        label={translateText(["multiLevelApprovalLabel"])}
-        labelId="multi-level-leave-approval"
-        checked={formik.values.isMultiLevelApprovalEnabled}
-        onChange={handleMultiLevelApprovalToggle}
-      />
+      {isLoading ? (
+        <div className="flex animate-pulse items-center justify-between">
+          <div className="h-5 w-64 rounded-lg bg-secondary-accent" />
+          <div className="h-7 w-14 rounded-full bg-secondary-accent" />
+        </div>
+      ) : (
+        <SwitchRow
+          label={translateText(["multiLevelApprovalLabel"])}
+          labelId="multi-level-leave-approval"
+          checked={formik.values.isMultiLevelApprovalEnabled}
+          onChange={handleMultiLevelApprovalToggle}
+        />
+      )}
       <div className="flex flex-row gap-3">
         <ButtonV2
           variant="tertiary"
