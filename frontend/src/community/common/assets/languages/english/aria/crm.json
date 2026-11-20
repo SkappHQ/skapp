@@ -122,7 +122,8 @@
       "clearDeal": "Clear selected deal",
       "notes": "Notes",
       "save": "Save task",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "close": "Close modal"
     },
     "deleteModal": {
       "confirm": "Confirm delete task",
@@ -196,7 +197,9 @@
       "owner": "Owner: {{name}}",
       "highPriority": "High priority",
       "mediumPriority": "Medium priority",
-      "lowPriority": "Low priority"
+      "lowPriority": "Low priority",
+      "moreContacts_one": "and {{count}} more contact",
+      "moreContacts_other": "and {{count}} more contacts"
     },
     "feed": {
       "loading": "Loading activities",
@@ -232,6 +235,7 @@
       }
     },
     "logActivity": {
+      "close": "Close modal",
       "removeOwner": "Remove activity owner",
       "clearContact": "Clear selected contact",
       "clearDeal": "Clear selected deal",

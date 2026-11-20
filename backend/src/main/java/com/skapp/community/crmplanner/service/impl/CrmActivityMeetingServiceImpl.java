@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
@@ -35,6 +36,8 @@ import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -99,10 +102,17 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 			params.setRangeEnd(filterDto.getEndDate().plusDays(1).atStartOfDay(zone).toInstant());
 		}
 
-		List<CrmActivityMeetingResponseDto> meetings = crmActivityMeetingDao.findMeetings(params);
+		PageRequest pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
+		Page<CrmActivityMeetingResponseDto> meetingPage = crmActivityMeetingDao.findMeetings(params, pageable);
+
+		PageDto pageDto = new PageDto();
+		pageDto.setItems(meetingPage.getContent());
+		pageDto.setCurrentPage(meetingPage.getNumber());
+		pageDto.setTotalItems(meetingPage.getTotalElements());
+		pageDto.setTotalPages(meetingPage.getTotalPages());
 
 		log.info("getMeetings: execution ended");
-		return new ResponseEntityDto(false, meetings);
+		return new ResponseEntityDto(false, pageDto);
 	}
 
 	@Override
@@ -404,9 +414,10 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 			params.setRelatedDealId(meeting.getDeal().getId());
 		}
 		params.setExcludedId(id);
-		params.setMaxResults(CrmConstants.RELATED_ACTIVITY_LIMIT);
 
-		List<CrmActivityMeetingResponseDto> meetings = crmActivityMeetingDao.findMeetings(params);
+		List<CrmActivityMeetingResponseDto> meetings = crmActivityMeetingDao
+			.findMeetings(params, PageRequest.of(0, CrmConstants.RELATED_ACTIVITY_LIMIT))
+			.getContent();
 
 		log.info("getRelatedMeetings: execution ended");
 		return new ResponseEntityDto(false, meetings);

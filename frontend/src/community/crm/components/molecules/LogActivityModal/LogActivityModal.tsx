@@ -39,6 +39,8 @@ const LogActivityModal: FC<Props> = ({
     "unsavedChangesModal"
   );
 
+  const translateAria = useTranslator("crmAria", "activities", "logActivity");
+
   const [isDiscardPromptOpen, setIsDiscardPromptOpen] = useState(false);
 
   const handleRequestClose = (): void => {
@@ -57,6 +59,7 @@ const LogActivityModal: FC<Props> = ({
       isOpen
       onClose={handleRequestClose}
       modalHeader={isDiscardPromptOpen ? translateCommon(["title"]) : title}
+      closeButtonAriaLabel={translateAria(["close"])}
       content={
         <>
           {isDiscardPromptOpen && (

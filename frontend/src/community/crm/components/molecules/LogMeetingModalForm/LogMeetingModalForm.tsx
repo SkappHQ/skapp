@@ -124,22 +124,21 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
         onSelect={handleDateSelect}
         popperProps={{ position: "bottom-start", isFlip: true }}
       >
-        <div>
-          <InputField
-            id="log-meeting-date-input"
-            name="date"
-            value={pickedDate ? pickedDate.toLocaleDateString() : ""}
-            label={translateText(["logActivity", "labels", "date"])}
-            placeholder={translateText(["logActivity", "placeholders", "date"])}
-            errorMessage={errors.date}
-            state={errors.date ? "error" : "default"}
-            aria-label={translateAria(["date"])}
-            rightIcon={<CalendarIcon />}
-            fullWidth
-            readOnly
-            required
-          />
-        </div>
+        <InputField
+          role="combobox"
+          id="log-meeting-date-input"
+          name="date"
+          value={pickedDate ? pickedDate.toLocaleDateString() : ""}
+          label={translateText(["logActivity", "labels", "date"])}
+          placeholder={translateText(["logActivity", "placeholders", "date"])}
+          errorMessage={errors.date}
+          state={errors.date ? "error" : "default"}
+          aria-label={translateAria(["date"])}
+          rightIcon={<CalendarIcon />}
+          fullWidth
+          readOnly
+          required
+        />
       </DatePicker>
 
       <div className="flex flex-row items-start gap-[0.625rem]">
@@ -214,7 +213,11 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
           />
         </div>
         <div className="flex-1">
-          <ActivityOwnerField id="log-meeting-ownerId" formik={formik} />
+          <ActivityOwnerField
+            id="log-meeting-ownerId"
+            formik={formik}
+            required
+          />
         </div>
       </div>
 

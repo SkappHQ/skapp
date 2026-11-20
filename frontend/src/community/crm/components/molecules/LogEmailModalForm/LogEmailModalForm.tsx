@@ -153,26 +153,25 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
             onSelect={handleDateSelect}
             popperProps={{ position: "bottom-start", isFlip: true }}
           >
-            <div>
-              <InputField
-                id="log-email-date-input"
-                name="date"
-                value={pickedDate ? pickedDate.toLocaleDateString() : ""}
-                label={translateText(["logActivity", "labels", "date"])}
-                placeholder={translateText([
-                  "logActivity",
-                  "placeholders",
-                  "date"
-                ])}
-                errorMessage={errors.date}
-                state={errors.date ? "error" : "default"}
-                aria-label={translateAria(["date"])}
-                rightIcon={<CalendarIcon />}
-                fullWidth
-                readOnly
-                required
-              />
-            </div>
+            <InputField
+              role="combobox"
+              id="log-email-date-input"
+              name="date"
+              value={pickedDate ? pickedDate.toLocaleDateString() : ""}
+              label={translateText(["logActivity", "labels", "date"])}
+              placeholder={translateText([
+                "logActivity",
+                "placeholders",
+                "date"
+              ])}
+              errorMessage={errors.date}
+              state={errors.date ? "error" : "default"}
+              aria-label={translateAria(["date"])}
+              rightIcon={<CalendarIcon />}
+              fullWidth
+              readOnly
+              required
+            />
           </DatePicker>
         </div>
         <div className="flex-1">

@@ -1,5 +1,5 @@
 import { ButtonV2, ButtonV2Props } from "@rootcodelabs/skapp-ui";
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -26,8 +26,8 @@ import {
 import {
   toCallRow,
   toEmailRow,
+  toFeedPages,
   toMeetingRow,
-  toSingleFeedPage,
   toTaskRow
 } from "~community/crm/activities/utils/activityFeedUtil";
 import {
@@ -42,7 +42,6 @@ import LogCallModalContent from "~community/crm/components/molecules/LogCallModa
 import LogEmailModalContent from "~community/crm/components/molecules/LogEmailModalContent/LogEmailModalContent";
 import LogMeetingModalContent from "~community/crm/components/molecules/LogMeetingModalContent/LogMeetingModalContent";
 import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
-import { useActivityDeals } from "~community/crm/hooks/useActivityDeals";
 import { useActivityTaskCompletion } from "~community/crm/hooks/useActivityTaskCompletion";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
 import { useCrmStore } from "~community/crm/store/store";
@@ -71,6 +70,14 @@ const ActivitiesContent: FC = () => {
   const { scheduleMeetingButton, scheduleMeetingModals } = useScheduleMeeting();
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [isLogEmailModalOpen, setIsLogEmailModalOpen] = useState(false);
+
+  const actionButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  const focusActionButton = (): void => {
+    requestAnimationFrame(() => {
+      actionButtonRef.current?.focus();
+    });
+  };
 
   const isAllTab = activeTab === ActivityTab.ALL;
 
@@ -144,7 +151,15 @@ const ActivitiesContent: FC = () => {
     activeTab === ActivityTab.TASKS
   );
 
-  const { isLoading, isError, errorUpdatedAt } = {
+  const {
+    isLoading,
+    isError,
+    errorUpdatedAt,
+    hasNextPage,
+    isFetchNextPageError,
+    isFetchingNextPage,
+    fetchNextPage
+  } = {
     [ActivityTab.ALL]: feed,
     [ActivityTab.CALLS]: calls,
     [ActivityTab.EMAILS]: emails,
@@ -155,13 +170,13 @@ const ActivitiesContent: FC = () => {
   const pages: ActivityFeedResponse[] = useMemo(() => {
     if (isAllTab && feed.data) return feed.data.pages;
     if (activeTab === ActivityTab.CALLS && calls.data)
-      return toSingleFeedPage(calls.data.map(toCallRow));
+      return toFeedPages(calls.data.pages, toCallRow);
     if (activeTab === ActivityTab.EMAILS && emails.data)
-      return toSingleFeedPage(emails.data.map(toEmailRow));
+      return toFeedPages(emails.data.pages, toEmailRow);
     if (activeTab === ActivityTab.MEETINGS && meetings.data)
-      return toSingleFeedPage(meetings.data.map(toMeetingRow));
+      return toFeedPages(meetings.data.pages, toMeetingRow);
     if (activeTab === ActivityTab.TASKS && tasks.data)
-      return toSingleFeedPage(tasks.data.map(toTaskRow));
+      return toFeedPages(tasks.data.pages, toTaskRow);
     return [];
   }, [
     activeTab,
@@ -174,8 +189,6 @@ const ActivitiesContent: FC = () => {
   ]);
 
   const rows = useMemo(() => pages.flatMap((page) => page.items), [pages]);
-
-  useActivityDeals(rows);
 
   useEffect(() => {
     if (!isError) return;
@@ -193,8 +206,7 @@ const ActivitiesContent: FC = () => {
     });
   }, [isError, errorUpdatedAt]);
 
-  const resultCount =
-    isAllTab && feed.data ? feed.data.pages[0].totalItems : rows.length;
+  const resultCount = pages.length > 0 ? pages[0].totalItems : rows.length;
   const hasActiveFilters =
     searchTerm.length > 0 || Object.keys(filters).length > 0;
   const showControls =
@@ -280,11 +292,17 @@ const ActivitiesContent: FC = () => {
 
   const toolbarAction = toolbarActions[activeTab];
 
+  const handleActionButtonClick = (
+    event: MouseEvent<HTMLButtonElement>
+  ): void => {
+    actionButtonRef.current = event.currentTarget;
+    toolbarAction?.onClick();
+  };
+
   const actionButton: ButtonV2Props | null = toolbarAction
     ? {
         variant: "primary",
         type: "button",
-        onClick: toolbarAction.onClick,
         children: translateText([
           "activities",
           "toolbar",
@@ -292,6 +310,26 @@ const ActivitiesContent: FC = () => {
         ])
       }
     : null;
+
+  const handleLogCallModalClose = (): void => {
+    setIsLogCallModalOpen(false);
+    focusActionButton();
+  };
+
+  const handleLogMeetingModalClose = (): void => {
+    setIsLogMeetingModalOpen(false);
+    focusActionButton();
+  };
+
+  const handleAddTaskModalClose = (): void => {
+    setIsAddTaskModalOpen(false);
+    focusActionButton();
+  };
+
+  const handleLogEmailModalClose = (): void => {
+    setIsLogEmailModalOpen(false);
+    focusActionButton();
+  };
 
   const meetingsScheduleButton: ButtonV2Props | null =
     activeTab === ActivityTab.MEETINGS ? scheduleMeetingButton : null;
@@ -319,7 +357,7 @@ const ActivitiesContent: FC = () => {
               {meetingsScheduleButton && (
                 <ButtonV2 {...meetingsScheduleButton} />
               )}
-              <ButtonV2 {...actionButton} />
+              <ButtonV2 {...actionButton} onClick={handleActionButtonClick} />
             </div>
           )
         }
@@ -327,25 +365,25 @@ const ActivitiesContent: FC = () => {
       {isLogCallModalOpen && (
         <LogCallModalContent
           title={translateText(["activities", "logCall", "modal", "title"])}
-          onClose={() => setIsLogCallModalOpen(false)}
+          onClose={handleLogCallModalClose}
         />
       )}
       {isLogMeetingModalOpen && (
         <LogMeetingModalContent
           title={translateText(["activities", "logMeeting", "modal", "title"])}
-          onClose={() => setIsLogMeetingModalOpen(false)}
+          onClose={handleLogMeetingModalClose}
         />
       )}
       {isAddTaskModalOpen && (
         <AddActivityTaskModalContent
           title={translateText(["activities", "addTask", "modal", "title"])}
-          onClose={() => setIsAddTaskModalOpen(false)}
+          onClose={handleAddTaskModalClose}
         />
       )}
       {isLogEmailModalOpen && (
         <LogEmailModalContent
           title={translateText(["activities", "logEmail", "modal", "title"])}
-          onClose={() => setIsLogEmailModalOpen(false)}
+          onClose={handleLogEmailModalClose}
         />
       )}
       {scheduleMeetingModals}
@@ -355,13 +393,13 @@ const ActivitiesContent: FC = () => {
         searchTerm={searchTerm}
         isLoading={isLoading}
         isError={isError}
-        hasNextPage={isAllTab && feed.hasNextPage && !feed.isFetchNextPageError}
-        isFetchingNextPage={isAllTab && feed.isFetchingNextPage}
+        hasNextPage={hasNextPage && !isFetchNextPageError}
+        isFetchingNextPage={isFetchingNextPage}
         timeZone={displayZone}
         taskCompletions={taskCompletions}
         emptyStateButton={showControls ? null : actionButton}
         emptyStateSecondaryButton={showControls ? null : meetingsScheduleButton}
-        onLoadMore={feed.fetchNextPage}
+        onLoadMore={fetchNextPage}
         onRowClick={handleRowClick}
         onToggleComplete={handleToggleComplete}
       />

@@ -3,6 +3,7 @@ package com.skapp.community.crmplanner.service.impl;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
@@ -34,6 +35,8 @@ import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -105,10 +108,17 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 			params.setRangeEnd(filterDto.getEndDate().plusDays(1).atStartOfDay(zone).toInstant());
 		}
 
-		List<CrmActivityCallResponseDto> calls = crmActivityCallDao.findCalls(params);
+		PageRequest pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
+		Page<CrmActivityCallResponseDto> callPage = crmActivityCallDao.findCalls(params, pageable);
+
+		PageDto pageDto = new PageDto();
+		pageDto.setItems(callPage.getContent());
+		pageDto.setCurrentPage(callPage.getNumber());
+		pageDto.setTotalItems(callPage.getTotalElements());
+		pageDto.setTotalPages(callPage.getTotalPages());
 
 		log.info("getCalls: execution ended");
-		return new ResponseEntityDto(false, calls);
+		return new ResponseEntityDto(false, pageDto);
 	}
 
 	@Override
@@ -319,9 +329,10 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 			params.setRelatedDealId(call.getDeal().getId());
 		}
 		params.setExcludedId(id);
-		params.setMaxResults(CrmConstants.RELATED_ACTIVITY_LIMIT);
 
-		List<CrmActivityCallResponseDto> calls = crmActivityCallDao.findCalls(params);
+		List<CrmActivityCallResponseDto> calls = crmActivityCallDao
+			.findCalls(params, PageRequest.of(0, CrmConstants.RELATED_ACTIVITY_LIMIT))
+			.getContent();
 
 		log.info("getRelatedCalls: execution ended");
 		return new ResponseEntityDto(false, calls);

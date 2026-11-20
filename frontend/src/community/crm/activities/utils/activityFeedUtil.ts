@@ -16,6 +16,7 @@ import {
   ActivityCallResponse,
   ActivityEmailResponse,
   ActivityFeedResponse,
+  ActivityListPage,
   ActivityMeetingResponse,
   ActivityRow,
   ActivitySection,
@@ -24,7 +25,6 @@ import {
   ActivityType
 } from "~community/crm/activities/types/activityTypes";
 import { isDueToday, isOverdue } from "~community/crm/utils/taskValidations";
-import { getMeetingVenueRowFields } from "~enterprise/crm/utils/meetingVenueUtil";
 
 export const getActivityRowKey = (row: ActivityRow): string =>
   `${row.type}-${row.id}`;
@@ -213,8 +213,7 @@ export const toMeetingRow = (
   dealId: meeting.dealId,
   companyId: meeting.companyId,
   contactIds: meeting.contactIds,
-  canComplete: false,
-  ...getMeetingVenueRowFields(meeting)
+  canComplete: false
 });
 
 export const toTaskRow = (task: ActivityTaskResponse): ActivityRow => ({
@@ -234,8 +233,8 @@ export const toTaskRow = (task: ActivityTaskResponse): ActivityRow => ({
   canComplete: false
 });
 
-export const toSingleFeedPage = (
-  rows: ActivityRow[]
-): ActivityFeedResponse[] => [
-  { items: rows, currentPage: 0, totalItems: rows.length, totalPages: 1 }
-];
+export const toFeedPages = <T>(
+  pages: ActivityListPage<T>[],
+  toRow: (item: T) => ActivityRow
+): ActivityFeedResponse[] =>
+  pages.map((page) => ({ ...page, items: page.items.map(toRow) }));

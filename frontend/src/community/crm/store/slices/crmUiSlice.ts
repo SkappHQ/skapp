@@ -72,6 +72,8 @@ const CrmUiSlice: StateCreator<
     set({ recordActivityModalType }),
   setRecordActivityPrefill: (recordActivityPrefill: CrmActivityPrefill) =>
     set({ recordActivityPrefill }),
+  setRecordActivityTriggerId: (recordActivityTriggerId: string) =>
+    set({ recordActivityTriggerId }),
   setIsDealStageModalOpen: (isDealStageModalOpen: boolean) =>
     set({ isDealStageModalOpen }),
   setDealStageModalType: (dealStageModalType: CrmModalTypes) =>

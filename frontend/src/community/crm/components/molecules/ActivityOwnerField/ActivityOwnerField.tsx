@@ -98,14 +98,28 @@ const ActivityOwnerField: FC<Props> = ({ id, formik, required = false }) => {
   };
 
   return selectedOwner ? (
-    <SelectedOwnerField
-      label={translateText(["labels", "activityOwner"])}
-      owner={selectedOwner}
-      onRemove={handleClear}
-      showRemoveButton={canChangeOwner}
-      ariaLabel={translateAria(["removeOwner"])}
-      required={required}
-    />
+    <div
+      {...(!canChangeOwner && {
+        role: "group",
+        "aria-labelledby": `${id}-label`,
+        "aria-describedby": `${id}-description`
+      })}
+    >
+      <SelectedOwnerField
+        label={translateText(["labels", "activityOwner"])}
+        owner={selectedOwner}
+        onRemove={handleClear}
+        showRemoveButton={canChangeOwner}
+        ariaLabel={translateAria(["removeOwner"])}
+        required={required}
+        labelId={`${id}-label`}
+      />
+      {!canChangeOwner && (
+        <p id={`${id}-description`} className="body3 text-secondary-text">
+          {translateText(["notices", "ownerReadOnly"])}
+        </p>
+      )}
+    </div>
   ) : (
     <SearchableDropdown
       positionStrategy="fixed"
