@@ -905,7 +905,7 @@
       },
       "notices": {
         "dealCleared": "Deal cleared. It doesn't match the selected contact's company.",
-        "relatedToMismatch": "This doesn't match {{name}}'s company on file."
+        "relatedToMismatch": "This doesn't match the contact's company"
       },
       "toastMessages": {
         "errorTitle": "Oops! Something went wrong"

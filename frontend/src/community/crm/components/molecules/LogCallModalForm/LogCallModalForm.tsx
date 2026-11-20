@@ -187,6 +187,15 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
           id="log-call-related-to"
           formik={formik}
           fieldAriaLabel={translateAria(["relatedTo"])}
+          {...(values.companyId &&
+            contactCompanyId &&
+            values.companyId !== contactCompanyId && {
+              mismatchMessage: translateText([
+                "logActivity",
+                "notices",
+                "relatedToMismatch"
+              ])
+            })}
         />
       </ActivityAssociations>
     </div>
