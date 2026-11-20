@@ -13,6 +13,7 @@ import { replaceTabQueryParam } from "~community/common/utils/commonUtil";
 import UnsavedConfigChangesModal from "~community/configurations/components/molecules/UnsavedConfigChangesModal/UnsavedConfigChangesModal";
 import { useConfigurationStore } from "~community/configurations/stores/configurationStore";
 import { getConfigurationTabs } from "~community/configurations/utils/configurationTabsUtil";
+import useCanManageLeavePolicies from "~community/leave/hooks/useCanManageLeavePolicies";
 import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { getEnterpriseConfigurationTabs } from "~enterprise/configurations/utils/configurationTabsUtil";
@@ -23,6 +24,7 @@ const Configurations: NextPage = () => {
   const translateText = useTranslator("configurations");
   const environment = useGetEnvironment();
   const isEnterprise = environment === appModes.ENTERPRISE;
+  const canManageLeavePolicies = useCanManageLeavePolicies();
   const { isLeavePoliciesEnabled } = useLeavePoliciesEnabled();
 
   const allTabs = useMemo(
@@ -38,9 +40,13 @@ const Configurations: NextPage = () => {
     return allTabs.filter(
       (tab) =>
         tab.requiredRoles.some((role) => userRoles.includes(role)) &&
-        !(tab.id === "leave" && isLeavePoliciesEnabled)
+        !(
+          tab.id === "leave" &&
+          !canManageLeavePolicies &&
+          !isLeavePoliciesEnabled
+        )
     );
-  }, [allTabs, user?.roles, isLeavePoliciesEnabled]);
+  }, [allTabs, user?.roles, canManageLeavePolicies, isLeavePoliciesEnabled]);
 
   const [activeTab, setActiveTab] = useState(visibleTabs[0]?.id);
 

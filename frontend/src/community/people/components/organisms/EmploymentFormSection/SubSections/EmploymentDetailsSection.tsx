@@ -29,6 +29,7 @@ import {
   convertDateToFormat,
   getTimeZoneLabel
 } from "~community/common/utils/dateTimeUtils";
+import { useGetLeaveApprovalConfig } from "~community/leave/api/LeaveApprovalConfigApi";
 import SupervisorSelector from "~community/people/components/molecules/SupervisorSelector/SupervisorSelector";
 import { AccountStatusTypes } from "~community/people/enums/PeopleEnums";
 import useEmployeeDetailsFormHandler from "~community/people/hooks/useEmployeeDetailsFormHandler";
@@ -92,6 +93,11 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
       useSessionData();
 
     const canEditBusinessUnit = isSuperAdmin || isPeopleAdmin;
+
+    const { data: leaveApprovalConfig } = useGetLeaveApprovalConfig();
+    const isMultiLevelApprovalEnabled = Boolean(
+      leaveApprovalConfig?.isMultiLevelApprovalEnabled
+    );
 
     const { employee, setTeamModalType, setIsTeamModalOpen } = usePeopleStore(
       (state) => state
@@ -426,7 +432,10 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
 
             <Grid
               size={{ xs: 12, md: 6, xl: 4 }}
-              sx={{ display: isEmployee ? "none" : "block" }}
+              sx={{
+                display:
+                  isEmployee || isMultiLevelApprovalEnabled ? "none" : "block"
+              }}
             >
               {!isProTier ? (
                 <AvatarSearch

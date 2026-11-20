@@ -40,7 +40,11 @@ export const getConfigurationTabs = (
     {
       id: "leave",
       label: translateText(["tabs", "leave"]),
-      requiredRoles: [AdminTypes.SUPER_ADMIN, AdminTypes.LEAVE_ADMIN],
+      requiredRoles: [
+        AdminTypes.SUPER_ADMIN,
+        AdminTypes.LEAVE_ADMIN,
+        AdminTypes.PEOPLE_ADMIN
+      ],
       component: <LeaveConfigurations />,
       position: 1.5
     },
