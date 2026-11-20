@@ -6,6 +6,7 @@ import com.skapp.community.common.model.OrganizationConfig;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.OrganizationConfigDao;
 import com.skapp.community.common.type.OrganizationConfigType;
+import com.skapp.community.leaveplanner.payload.LeaveApprovalConfigDto;
 import com.skapp.community.leaveplanner.payload.request.LeaveApprovalConfigRequestDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveApprovalConfigResponseDto;
 import com.skapp.community.leaveplanner.service.LeaveApprovalConfigService;
@@ -58,7 +59,8 @@ public class LeaveApprovalConfigServiceImpl implements LeaveApprovalConfigServic
 
 		LeaveApprovalConfigResponseDto response = buildLeaveApprovalConfigResponse(
 				leaveApprovalConfigRequestDto.getIsMultiLevelApprovalEnabled());
-		saveLeaveApprovalConfig(jsonMapper.writeValueAsString(response));
+		saveLeaveApprovalConfig(
+				buildLeaveApprovalConfigValue(leaveApprovalConfigRequestDto.getIsMultiLevelApprovalEnabled()));
 
 		log.info("updateLeaveApprovalConfig: execution ended");
 		return new ResponseEntityDto(false, response);
@@ -71,8 +73,7 @@ public class LeaveApprovalConfigServiceImpl implements LeaveApprovalConfigServic
 
 		boolean isEnabled = organizationConfigDao
 			.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.LEAVE_APPROVAL.name())
-			.map(config -> jsonMapper.readValue(config.getOrganizationConfigValue(),
-					LeaveApprovalConfigResponseDto.class))
+			.map(config -> jsonMapper.readValue(config.getOrganizationConfigValue(), LeaveApprovalConfigDto.class))
 			.map(config -> Boolean.TRUE.equals(config.getIsMultiLevelApprovalEnabled()))
 			.orElse(false);
 
@@ -93,6 +94,12 @@ public class LeaveApprovalConfigServiceImpl implements LeaveApprovalConfigServic
 		LeaveApprovalConfigResponseDto response = new LeaveApprovalConfigResponseDto();
 		response.setIsMultiLevelApprovalEnabled(isMultiLevelApprovalEnabled);
 		return response;
+	}
+
+	private String buildLeaveApprovalConfigValue(Boolean isMultiLevelApprovalEnabled) {
+		LeaveApprovalConfigDto config = new LeaveApprovalConfigDto();
+		config.setIsMultiLevelApprovalEnabled(isMultiLevelApprovalEnabled);
+		return jsonMapper.writeValueAsString(config);
 	}
 
 	private void saveLeaveApprovalConfig(String configValue) {
