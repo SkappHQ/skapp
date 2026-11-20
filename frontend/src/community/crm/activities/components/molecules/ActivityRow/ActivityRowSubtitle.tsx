@@ -40,7 +40,7 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
     0,
     MAX_VISIBLE_ACTIVITY_ROW_CONTACTS
   );
-  const hiddenContactCount = contactLinks.length - visibleContactLinks.length;
+  const hiddenContactCount = row.contactIds.length - visibleContactLinks.length;
 
   const isRowOverdue =
     row.type === ActivityType.TASK &&
