@@ -33,8 +33,15 @@ interface Props {
 }
 
 const LogMeetingModalForm: FC<Props> = ({ formik }) => {
-  const { values, errors, touched, handleChange, handleBlur, setFieldValue } =
-    formik;
+  const {
+    values,
+    errors,
+    status,
+    touched,
+    handleChange,
+    handleBlur,
+    setFieldValue
+  } = formik;
 
   const translateText = useTranslator("crmModule", "activities");
   const translateAria = useTranslator(
@@ -60,12 +67,10 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
     new Set(getContactCompanyIds(contacts, values.contactIds))
   );
 
-  const isDealMismatch = Boolean(
-    values.dealId &&
-    deals[values.dealId] &&
-    attendees.length > 0 &&
-    !isDealMatchingContacts(deals[values.dealId], attendees)
-  );
+  const isDealMismatch =
+    Boolean(status) &&
+    status.mismatchedDealId === values.dealId &&
+    status.mismatchedContactIds === values.contactIds.join();
 
   const handleAttendeesChange = (nextAttendees: CrmContactEntity[]): void => {
     const selectedDeal = values.dealId ? deals[values.dealId] : null;

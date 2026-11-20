@@ -20,4 +20,6 @@ public class LeaveEmailDynamicFields extends CommonEmailDynamicFields {
 
 	private String validTo;
 
+	private String policyName;
+
 }

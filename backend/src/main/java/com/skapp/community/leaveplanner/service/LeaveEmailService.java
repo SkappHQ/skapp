@@ -1,5 +1,6 @@
 package com.skapp.community.leaveplanner.service;
 
+import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy;
 import com.skapp.community.leaveplanner.model.LeaveEntitlement;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
@@ -58,5 +59,7 @@ public interface LeaveEmailService {
 	void sendAutoApprovedMultiDayLeaveRequestManagerEmail(LeaveRequest leaveRequest);
 
 	void sendCustomAllocationEmployeeEmail(LeaveEntitlement leaveEntitlement);
+
+	void sendPolicyAssignedEmployeeEmail(EmployeeLeavePolicy employeeLeavePolicy);
 
 }
