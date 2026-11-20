@@ -452,6 +452,21 @@
       "successDescription": "Leave policies have been enabled successfully. You can now create and assign policies.",
       "errorTitle": "Oops! Something went wrong",
       "errorDescription": "Failed to enable Leave Policies. Please try again or contact support."
+    },
+    "leaveApprovalSection": {
+      "title": "Leave Approval",
+      "description": "Control how leave requests are approved across the organization",
+      "multiLevelApprovalLabel": "Multi-level leave approval",
+      "buttons": {
+        "cancel": "Cancel",
+        "save": "Save changes"
+      },
+      "toasts": {
+        "successTitle": "Settings updated",
+        "successDescription": "Leave approval settings were saved.",
+        "errorTitle": "Could not save",
+        "errorDescription": "Leave approval settings were not saved. Try again."
+      }
     }
   },
   "people": {
