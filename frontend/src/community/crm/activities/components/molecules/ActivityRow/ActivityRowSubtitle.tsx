@@ -1,7 +1,7 @@
 import { FC, Fragment } from "react";
-import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { MAX_VISIBLE_ACTIVITY_ROW_CONTACTS } from "~community/crm/activities/constants/activityConstants";
 import {
   ActivityRow,
   ActivityRowSubtitlePart,
@@ -11,7 +11,6 @@ import { getRowSubtitle } from "~community/crm/activities/utils/activityFeedUtil
 import { useCrmStore } from "~community/crm/store/store";
 import { getContactDisplayName } from "~community/crm/utils/contactUtil";
 import { isOverdue } from "~community/crm/utils/taskValidations";
-import { getMeetingVenueSubtitleParts } from "~enterprise/crm/utils/meetingVenueUtil";
 
 interface ActivityRowSubtitleProps {
   id: string;
@@ -29,19 +28,19 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
   timeZone
 }) => {
   const translateText = useTranslator("crmModule");
-  const { contacts, deals } = useCrmStore(
-    useShallow((state) => ({
-      contacts: state.contacts,
-      deals: state.deals
-    }))
-  );
+  const translateAria = useTranslator("crmAria");
+  const contacts = useCrmStore((state) => state.contacts);
 
   const contactLinks = row.contactIds.flatMap((contactId) => {
     const name = getContactDisplayName(contacts[contactId]);
 
     return name ? [{ id: contactId, name }] : [];
   });
-  const dealName = deals[row.dealId ?? 0]?.name ?? "";
+  const visibleContactLinks = contactLinks.slice(
+    0,
+    MAX_VISIBLE_ACTIVITY_ROW_CONTACTS
+  );
+  const hiddenContactCount = contactLinks.length - visibleContactLinks.length;
 
   const isRowOverdue =
     row.type === ActivityType.TASK &&
@@ -78,17 +77,12 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
         </span>
       )
     },
-    ...getMeetingVenueSubtitleParts({
-      id,
-      row,
-      className: `min-w-0 truncate ${nameColor} ${strikeClass}`
-    }),
     {
       key: "contacts",
       isVisible: contactLinks.length > 0,
       content: (
         <span className="flex min-w-0 items-center gap-1">
-          {contactLinks.map((contact, index) => (
+          {visibleContactLinks.map((contact, index) => (
             <Fragment key={contact.id}>
               {index > 0 && (
                 <span className={`${nameColor} ${strikeClass}`}>,</span>
@@ -96,13 +90,21 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
               {renderLink(contact.name, `${id}-contact-${contact.id}`)}
             </Fragment>
           ))}
+          {hiddenContactCount > 0 && (
+            <span
+              id={`${id}-contact-more`}
+              className={`shrink-0 ${nameColor} ${strikeClass}`}
+            >
+              <span aria-hidden="true">{`+${hiddenContactCount}`}</span>
+              <span className="sr-only">
+                {translateAria(["activities", "row", "moreContacts"], {
+                  count: hiddenContactCount
+                })}
+              </span>
+            </span>
+          )}
         </span>
       )
-    },
-    {
-      key: "deal",
-      isVisible: Boolean(dealName),
-      content: renderLink(dealName, `${id}-deal-${row.dealId}`)
     }
   ];
   const visibleParts = parts.filter((part) => part.isVisible);

@@ -194,6 +194,7 @@
       "markComplete": "Mark '{{name}}' complete",
       "markIncomplete": "Mark '{{name}}' incomplete",
       "owner": "Owner: {{name}}",
+      "moreContacts": "and {{count}} more contacts",
       "highPriority": "High priority",
       "mediumPriority": "Medium priority",
       "lowPriority": "Low priority"
