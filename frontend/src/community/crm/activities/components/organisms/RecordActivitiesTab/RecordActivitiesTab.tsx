@@ -14,7 +14,6 @@ import {
 } from "~community/crm/activities/types/activityTypes";
 import { useGetRecordActivities } from "~community/crm/api/ActivityApi";
 import { CrmActivityAssociationEnum } from "~community/crm/enums/common";
-import { useActivityDeals } from "~community/crm/hooks/useActivityDeals";
 import { useActivityTaskCompletion } from "~community/crm/hooks/useActivityTaskCompletion";
 
 export interface RecordActivitiesTabProps {
@@ -75,8 +74,6 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
   const pages = useMemo(() => (data ? data.pages : []), [data]);
 
   const rows = useMemo(() => pages.flatMap((page) => page.items), [pages]);
-
-  useActivityDeals(rows);
 
   useEffect(() => {
     if (!isError) return;

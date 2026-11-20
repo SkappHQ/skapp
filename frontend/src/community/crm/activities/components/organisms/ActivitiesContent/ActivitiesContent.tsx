@@ -42,7 +42,6 @@ import LogCallModalContent from "~community/crm/components/molecules/LogCallModa
 import LogEmailModalContent from "~community/crm/components/molecules/LogEmailModalContent/LogEmailModalContent";
 import LogMeetingModalContent from "~community/crm/components/molecules/LogMeetingModalContent/LogMeetingModalContent";
 import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
-import { useActivityDeals } from "~community/crm/hooks/useActivityDeals";
 import { useActivityTaskCompletion } from "~community/crm/hooks/useActivityTaskCompletion";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
 import { useCrmStore } from "~community/crm/store/store";
@@ -182,8 +181,6 @@ const ActivitiesContent: FC = () => {
   ]);
 
   const rows = useMemo(() => pages.flatMap((page) => page.items), [pages]);
-
-  useActivityDeals(rows);
 
   useEffect(() => {
     if (!isError) return;

@@ -55,3 +55,5 @@ export const ACTIVITY_TYPE_ICON_MAP: Record<
 };
 
 export const ACTIVITY_TIME_SLOT_MINUTES = 30;
+
+export const MAX_VISIBLE_ACTIVITY_ROW_CONTACTS = 2;
