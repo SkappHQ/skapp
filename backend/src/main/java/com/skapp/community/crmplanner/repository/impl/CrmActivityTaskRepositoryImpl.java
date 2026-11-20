@@ -121,6 +121,8 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 		}
 		else {
 			orders.add(cb.asc(task.get(CrmActivityTask_.isCompleted)));
+			orders
+				.add(cb.asc(cb.<Instant>selectCase().when(cb.isFalse(task.get(CrmActivityTask_.isCompleted)), dueAt)));
 			orders.add(ascending ? cb.asc(dueAt) : cb.desc(dueAt));
 			orders.add(ascending ? cb.asc(task.get(CrmActivityTask_.id)) : cb.desc(task.get(CrmActivityTask_.id)));
 		}
