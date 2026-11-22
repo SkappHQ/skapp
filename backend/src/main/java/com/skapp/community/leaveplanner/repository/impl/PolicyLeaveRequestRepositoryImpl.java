@@ -17,8 +17,8 @@ import com.skapp.community.leaveplanner.payload.PolicyLeaveUsageDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveHistoryFilterDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.repository.PolicyLeaveRequestRepository;
-import com.skapp.community.leaveplanner.type.ManagerType;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
+import com.skapp.community.leaveplanner.type.ManagerType;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.EmployeeManager_;
@@ -57,10 +57,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -79,6 +79,8 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
 		fetchPolicy(root);
 		root.fetch(PolicyLeaveRequest_.reviewer, JoinType.LEFT);
+		root.fetch(PolicyLeaveRequest_.requestAuthorizer, JoinType.LEFT);
+		root.fetch(PolicyLeaveRequest_.primaryReviewer, JoinType.LEFT);
 
 		criteriaQuery.select(root)
 			.where(buildPredicates(criteriaBuilder, root, employeeId, cycleStart, cycleEnd, filterDto)
@@ -123,6 +125,8 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		fetchPolicy(root);
 		root.fetch(PolicyLeaveRequest_.employee, JoinType.INNER);
 		root.fetch(PolicyLeaveRequest_.reviewer, JoinType.LEFT);
+		root.fetch(PolicyLeaveRequest_.requestAuthorizer, JoinType.LEFT);
+		root.fetch(PolicyLeaveRequest_.primaryReviewer, JoinType.LEFT);
 
 		criteriaQuery.select(root)
 			.distinct(true)
@@ -320,6 +324,8 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		fetchPolicy(root);
 		root.fetch(PolicyLeaveRequest_.employee, JoinType.INNER);
 		root.fetch(PolicyLeaveRequest_.reviewer, JoinType.LEFT);
+		root.fetch(PolicyLeaveRequest_.requestAuthorizer, JoinType.LEFT);
+		root.fetch(PolicyLeaveRequest_.primaryReviewer, JoinType.LEFT);
 		Join<PolicyLeaveRequest, Employee> employee = root.join(PolicyLeaveRequest_.employee);
 
 		List<Predicate> predicates = employeeDao.buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee,
