@@ -88,6 +88,17 @@ export interface PolicyManagerLeaveRequestType {
   requestAuthorizer: PolicyLeaveReviewEmployeeType | null;
   primaryReviewer: PolicyLeaveReviewEmployeeType | null;
   primaryReviewedDate: string | null;
+  isCurrentApprover?: boolean | null;
+}
+
+export interface PolicyLeaveRecipientType {
+  person: {
+    employeeId: number;
+    firstName: string;
+    lastName: string;
+    authPic: string | null;
+  };
+  hasApproved: boolean;
 }
 
 export interface PolicyLeaveRequestDetailType extends PolicyManagerLeaveRequestType {

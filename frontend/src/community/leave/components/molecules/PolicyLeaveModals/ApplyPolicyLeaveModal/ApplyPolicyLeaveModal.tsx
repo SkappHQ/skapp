@@ -16,7 +16,6 @@ import CalendarDateRangePicker from "~community/common/components/molecules/Cale
 import DurationSelector from "~community/common/components/molecules/DurationSelector/DurationSelector";
 import { appModes } from "~community/common/constants/configs";
 import { ToastType } from "~community/common/enums/ComponentEnums";
-import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import {
@@ -76,7 +75,6 @@ import {
   toResourceAvailabilityPayloads
 } from "~community/leave/utils/policyLeave/policyLeaveUtils";
 import { useGetAllHolidays } from "~community/people/api/HolidayApi";
-import { useGetEmployee } from "~community/people/api/PeopleApi";
 import {
   useGetEmployeeById,
   useGetUserPersonalDetails
@@ -134,16 +132,7 @@ const ApplyPolicyLeaveModal = () => {
     setModalType
   } = usePolicyLeaveStore();
 
-  const { userId } = useSessionData();
   const { data: leaveApprovalConfig } = useGetLeaveApprovalConfig();
-  const { data: employeeProfile } = useGetEmployee(userId);
-  const requestAuthorizer =
-    employeeProfile?.data?.results?.[0]?.employment?.employmentDetails
-      ?.requestAuthorizer ?? undefined;
-  const isMultiLevelLeave =
-    !!leaveApprovalConfig?.isMultiLevelApprovalEnabled &&
-    !!selectedPolicyBalance &&
-    !selectedPolicyBalance.leaveType.isAutoApproval;
 
   const isCalendarSelectionInvalid = useLeaveStore(
     (state) => state.isApplyLeaveModalBtnDisabled
@@ -643,7 +632,11 @@ const ApplyPolicyLeaveModal = () => {
                 resourceAvailability={resourceAvailability}
                 workingDays={workingDays}
                 requestAuthorizer={
-                  isMultiLevelLeave ? requestAuthorizer : undefined
+                  leaveApprovalConfig?.isMultiLevelApprovalEnabled &&
+                  !selectedPolicyBalance.leaveType.isAutoApproval
+                    ? employeeData?.employment?.employmentDetails
+                        ?.requestAuthorizer
+                    : undefined
                 }
               />
             )}

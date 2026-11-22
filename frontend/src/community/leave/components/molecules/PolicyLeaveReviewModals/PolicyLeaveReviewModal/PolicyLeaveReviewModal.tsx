@@ -1,7 +1,6 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import { DAY_MONTH_YEAR_FORMAT } from "~community/attendance/constants/constants";
 import CheckIcon from "~community/common/assets/Icons/CheckIcon";
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import CopyIcon from "~community/common/assets/Icons/CopyIcon";
@@ -12,12 +11,12 @@ import AvatarChip from "~community/common/components/molecules/AvatarChip/Avatar
 import { FileTypes } from "~community/common/enums/CommonEnums";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
-import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { formatInstant } from "~community/common/utils/dateTimeUtils";
 import { useReviewPolicyLeaveRequest } from "~community/leave/api/PolicyLeaveReviewApi";
 import LeaveStatusPopupColumn from "~community/leave/components/molecules/ManagerLeaveModalContents/LeaveStatusPopupColumn/LeaveStatusPopupColumn";
+import { APPROVED_BY_DATE_TIME_FORMAT } from "~community/leave/constants/policyLeaveReviewConstants";
 import { PolicyLeaveReviewModalEnums } from "~community/leave/enums/PolicyLeaveReviewEnums";
 import { useDownloadAttachment } from "~community/leave/hooks/useDownloadAttachment";
 import {
@@ -51,7 +50,6 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
 
   const { setToastMessage } = useToast();
   const { sendEvent } = useGoogleAnalyticsEvent();
-  const { userId } = useSessionData();
   const displayZone = useDisplayZone();
 
   const primaryReviewer = request.primaryReviewer;
@@ -59,9 +57,7 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
     !!request.isMultiLevel &&
     !!primaryReviewer &&
     request.status === PolicyLeaveRequestStatus.PENDING;
-  const canReview =
-    !isWithRequestAuthorizer ||
-    request.requestAuthorizer?.employeeId === userId;
+  const canReview = request.isCurrentApprover !== false;
 
   const { handleDownloadAttachment } = useDownloadAttachment({
     fileType: FileTypes.LEAVE_ATTACHMENTS
@@ -186,9 +182,9 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
               <div className="flex flex-row items-center gap-2">
                 <span className="body1">
                   {formatInstant(
-                    request.primaryReviewedDate ?? "",
+                    request.primaryReviewedDate,
                     displayZone,
-                    `HH : mm  ${DAY_MONTH_YEAR_FORMAT}`
+                    APPROVED_BY_DATE_TIME_FORMAT
                   )}
                 </span>
                 <AvatarChip
@@ -239,36 +235,37 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
         </div>
       </div>
 
-      {!canReview && (
+      {canReview ? (
+        <div className="flex flex-row gap-4 mt-4 justify-end">
+          <ButtonV2
+            variant={"error"}
+            onClick={handleDeclineModel}
+            disabled={isPending}
+            aria-label={translateText(["cancelAreaLabel"])}
+            icon={<CloseIcon fill="var(--color-primary-text)" />}
+            iconPosition="end"
+          >
+            {translateText(["declineLeave"])}
+          </ButtonV2>
+          <ButtonV2
+            onClick={handleApprove}
+            isLoading={isPending}
+            aria-label={translateText(["approveAreaLabel"])}
+            icon={<CheckIcon />}
+            iconPosition="end"
+          >
+            {translateText(["approveLeave"])}
+          </ButtonV2>
+        </div>
+      ) : (
         <p className="body1 text-secondary-text mt-4">
-          {translateText(["waitingForRequestAuthorizer"])}
+          {translateText([
+            isWithRequestAuthorizer
+              ? "waitingForRequestAuthorizer"
+              : "waitingForPrimarySupervisor"
+          ])}
         </p>
       )}
-      <div
-        className={
-          canReview ? "flex flex-row gap-4 mt-4 justify-end" : "hidden"
-        }
-      >
-        <ButtonV2
-          variant={"error"}
-          onClick={handleDeclineModel}
-          disabled={isPending}
-          aria-label={translateText(["cancelAreaLabel"])}
-          icon={<CloseIcon fill="var(--color-primary-text)" />}
-          iconPosition="end"
-        >
-          {translateText(["declineLeave"])}
-        </ButtonV2>
-        <ButtonV2
-          onClick={handleApprove}
-          isLoading={isPending}
-          aria-label={translateText(["approveAreaLabel"])}
-          icon={<CheckIcon />}
-          iconPosition="end"
-        >
-          {translateText(["approveLeave"])}
-        </ButtonV2>
-      </div>
     </div>
   );
 };
