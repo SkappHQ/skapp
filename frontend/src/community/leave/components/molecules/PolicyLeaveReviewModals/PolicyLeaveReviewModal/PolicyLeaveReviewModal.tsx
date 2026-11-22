@@ -1,16 +1,21 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
+import { DAY_MONTH_YEAR_FORMAT } from "~community/attendance/constants/constants";
 import CheckIcon from "~community/common/assets/Icons/CheckIcon";
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import CopyIcon from "~community/common/assets/Icons/CopyIcon";
 import ReadOnlyChip from "~community/common/components/atoms/Chips/BasicChip/ReadOnlyChip";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
+import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import { FileTypes } from "~community/common/enums/CommonEnums";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { formatInstant } from "~community/common/utils/dateTimeUtils";
 import { useReviewPolicyLeaveRequest } from "~community/leave/api/PolicyLeaveReviewApi";
 import LeaveStatusPopupColumn from "~community/leave/components/molecules/ManagerLeaveModalContents/LeaveStatusPopupColumn/LeaveStatusPopupColumn";
 import { PolicyLeaveReviewModalEnums } from "~community/leave/enums/PolicyLeaveReviewEnums";
@@ -46,13 +51,35 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
 
   const { setToastMessage } = useToast();
   const { sendEvent } = useGoogleAnalyticsEvent();
+  const { userId } = useSessionData();
+  const displayZone = useDisplayZone();
+
+  const primaryReviewer = request.primaryReviewer;
+  const isWithRequestAuthorizer =
+    !!request.isMultiLevel &&
+    !!primaryReviewer &&
+    request.status === PolicyLeaveRequestStatus.PENDING;
+  const canReview =
+    !isWithRequestAuthorizer ||
+    request.requestAuthorizer?.employeeId === userId;
 
   const { handleDownloadAttachment } = useDownloadAttachment({
     fileType: FileTypes.LEAVE_ATTACHMENTS
   });
 
   const { mutate, isPending } = useReviewPolicyLeaveRequest(
-    () => {
+    (reviewedRequest) => {
+      if (reviewedRequest.status === PolicyLeaveRequestStatus.PENDING) {
+        setToastMessage({
+          open: true,
+          toastType: ToastType.SUCCESS,
+          title: translateText(["forwardedToAuthorizerTitle"]),
+          description: translateText(["forwardedToAuthorizerDesc"]),
+          isIcon: true
+        });
+        setPopupType(PolicyLeaveReviewModalEnums.NONE);
+        return;
+      }
       setToastMessage({
         open: true,
         toastType: ToastType.SUCCESS,
@@ -153,6 +180,26 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
               />
             </div>
           </div>
+          {isWithRequestAuthorizer && primaryReviewer && (
+            <div className="flex flex-row justify-between items-center pb-4">
+              <span className="body1">{translateText(["approvedBy"])}:</span>
+              <div className="flex flex-row items-center gap-2">
+                <span className="body1">
+                  {formatInstant(
+                    request.primaryReviewedDate ?? "",
+                    displayZone,
+                    `HH : mm  ${DAY_MONTH_YEAR_FORMAT}`
+                  )}
+                </span>
+                <AvatarChip
+                  firstName={primaryReviewer.firstName}
+                  lastName={primaryReviewer.lastName}
+                  avatarUrl={primaryReviewer.authPic ?? undefined}
+                  chipStyles={{ backgroundColor: "grey.100" }}
+                />
+              </div>
+            </div>
+          )}
           <LeaveStatusPopupColumn
             label={translateText(["reason"])}
             text={
@@ -192,7 +239,16 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
         </div>
       </div>
 
-      <div className="flex flex-row gap-4 mt-4 justify-end">
+      {!canReview && (
+        <p className="body1 text-secondary-text mt-4">
+          {translateText(["waitingForRequestAuthorizer"])}
+        </p>
+      )}
+      <div
+        className={
+          canReview ? "flex flex-row gap-4 mt-4 justify-end" : "hidden"
+        }
+      >
         <ButtonV2
           variant={"error"}
           onClick={handleDeclineModel}

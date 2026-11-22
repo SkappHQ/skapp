@@ -84,6 +84,10 @@ export interface PolicyManagerLeaveRequestType {
   reviewedDate: string | null;
   isAutoApproved: boolean;
   createdDate: string;
+  isMultiLevel: boolean | null;
+  requestAuthorizer: PolicyLeaveReviewEmployeeType | null;
+  primaryReviewer: PolicyLeaveReviewEmployeeType | null;
+  primaryReviewedDate: string | null;
 }
 
 export interface PolicyLeaveRequestDetailType extends PolicyManagerLeaveRequestType {

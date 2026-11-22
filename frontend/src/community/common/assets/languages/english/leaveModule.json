@@ -104,6 +104,8 @@
       "cancelBtn": "Cancel"
     },
     "myLeaveRequests": {
+      "recipientApproved": "{{name}} approved",
+      "recipientPending": "Waiting for {{name}}",
       "filters": "Filters",
       "requestTitle": "My Leave Requests",
       "duration": "Duration",
@@ -811,6 +813,10 @@
       "cancelledModalTitle": "Leave request cancelled"
     },
     "leaveManagerEmployee": {
+      "approvedBy": "Approved by",
+      "waitingForRequestAuthorizer": "Approved by the Primary Supervisor. Waiting for the Request authorizer.",
+      "forwardedToAuthorizerTitle": "Sent to the Request authorizer",
+      "forwardedToAuthorizerDesc": "The request now needs the Request authorizer's approval.",
       "declineModalTitle": "Decline Leave",
       "EnterWhyDecline": "Please enter why you are declining this leave request.",
       "reasonToDecline": "Reason to decline",
