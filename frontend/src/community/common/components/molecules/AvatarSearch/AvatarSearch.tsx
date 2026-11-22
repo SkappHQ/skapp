@@ -49,6 +49,7 @@ interface Props {
   isDisabled: boolean;
   isMultiSelect?: boolean;
   tooltip?: string;
+  helperText?: string;
   inputName: string;
   componentStyle?: SxProps;
   required?: boolean;
@@ -75,6 +76,7 @@ const AvatarSearch = ({
   errors,
   isDisabled,
   isMultiSelect = false,
+  helperText,
   inputName,
   componentStyle,
   required,
@@ -344,6 +346,19 @@ const AvatarSearch = ({
             }}
           >
             {errors}
+          </Typography>
+        )}
+        {!errors && !!helperText && (
+          <Typography
+            variant="body2"
+            sx={{
+              color: theme.palette.text.secondary,
+              fontSize: "0.875rem",
+              mt: "0.5rem",
+              lineHeight: "1rem"
+            }}
+          >
+            {helperText}
           </Typography>
         )}
       </Box>

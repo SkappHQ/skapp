@@ -95,11 +95,17 @@ const useUserBulkValidation = () => {
     return userArray?.every(validateUser);
   };
 
-  const isCsvValid = (userArray: BulkUploadUser[]) => {
+  const isCsvValid = (
+    userArray: BulkUploadUser[],
+    isMultiLevelApprovalEnabled = false
+  ) => {
     const headerList = Object.keys(userArray?.[0]).filter(Boolean);
+    const expectedHeaders = isMultiLevelApprovalEnabled
+      ? [...USER_BULK_HEADERS, "requestAuthorizerEmail"]
+      : USER_BULK_HEADERS;
     return (
-      headerList?.length === USER_BULK_HEADERS?.length &&
-      USER_BULK_HEADERS?.every((header) => headerList?.includes(header))
+      headerList?.length === expectedHeaders?.length &&
+      expectedHeaders?.every((header) => headerList?.includes(header))
     );
   };
 

@@ -465,8 +465,8 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
                     !hasPrimarySupervisor
                   }
                   isDisabledLabel={isInputsDisabled || !hasPrimarySupervisor}
-                  tooltip={
-                    hasPrimarySupervisor
+                  helperText={
+                    hasPrimarySupervisor || isReadOnly || isProfileView
                       ? undefined
                       : translateText(["requestAuthorizerPrimaryRequired"])
                   }
