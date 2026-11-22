@@ -6,9 +6,13 @@ import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { getBlinkClass } from "~community/common/utils/commonUtil";
+import { useGetLeaveApprovalConfig } from "~community/leave/api/LeaveApprovalConfigApi";
 import { usePeopleStore } from "~community/people/store/store";
 import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
-import { userBulkTemplate } from "~community/people/utils/getConstants";
+import {
+  userBulkMultiLevelApprovalTemplate,
+  userBulkTemplate
+} from "~community/people/utils/getConstants";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
 const UserBulkCsvDownload = () => {
@@ -16,6 +20,11 @@ const UserBulkCsvDownload = () => {
     (state) => state
   );
   const translateText = useTranslator("peopleModule", "peoples");
+
+  const { data: leaveApprovalConfig } = useGetLeaveApprovalConfig();
+  const template = leaveApprovalConfig?.isMultiLevelApprovalEnabled
+    ? userBulkMultiLevelApprovalTemplate
+    : userBulkTemplate;
 
   const handleNextBtn = () => {
     setIsDirectoryModalOpen(true);
@@ -50,8 +59,8 @@ const UserBulkCsvDownload = () => {
         <p className=" font-normal pb-6">{translateText(["downloadCsvDes"])}</p>
         <div className="flex flex-row justify-end gap-3 mb-4">
           <a
-            href={userBulkTemplate.url}
-            download={userBulkTemplate.fileName}
+            href={template.url}
+            download={template.fileName}
             target="_blank"
             rel="noreferrer"
             onClick={handleDownloadClick}

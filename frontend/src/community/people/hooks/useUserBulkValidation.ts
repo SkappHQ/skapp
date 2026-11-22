@@ -66,6 +66,8 @@ const useUserBulkValidation = () => {
       user?.joinedDate &&
       dateValidation(user?.joinedDate) &&
       (!user?.primaryManager || isEmailInputValid(user?.primaryManager)) &&
+      (!user?.requestAuthorizerEmail ||
+        isEmailInputValid(user?.requestAuthorizerEmail)) &&
       (!user?.probationStartDate || dateValidation(user?.probationStartDate)) &&
       (!user?.probationEndDate || dateValidation(user?.probationEndDate)) &&
       (!user?.careerProgressionStartDate ||
