@@ -168,6 +168,7 @@ export interface L3EmploymentDetailsType {
   workTimeZone?: string;
   workLocationId?: number;
   businessUnitId?: number;
+  requestAuthorizer?: L4ManagerType;
 }
 
 export interface L3CareerProgressionDetailsType {

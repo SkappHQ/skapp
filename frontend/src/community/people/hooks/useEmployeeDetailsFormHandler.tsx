@@ -65,6 +65,8 @@ const useEmployeeDetailsFormHandler = ({
     useState<boolean>(false);
   const [isSecondaryManagerPopperOpen, setIsSecondaryManagerPopperOpen] =
     useState<boolean>(false);
+  const [isRequestAuthorizerPopperOpen, setIsRequestAuthorizerPopperOpen] =
+    useState<boolean>(false);
 
   const [primaryManagerSearchTerm, setPrimaryManagerSearchTerm] =
     useState<string>(
@@ -74,6 +76,11 @@ const useEmployeeDetailsFormHandler = ({
   const [secondaryManagerSearchTerm, setSecondaryManagerSearchTerm] =
     useState<string>(
       employee?.employment?.employmentDetails?.otherSupervisors?.[0]
+        ?.firstName as string
+    );
+  const [requestAuthorizerSearchTerm, setRequestAuthorizerSearchTerm] =
+    useState<string>(
+      employee?.employment?.employmentDetails?.requestAuthorizer
         ?.firstName as string
     );
 
@@ -97,6 +104,11 @@ const useEmployeeDetailsFormHandler = ({
   const getSearchedEmployeesBySecondaryManager = useGetSearchedEmployees(
     secondaryManagerSearchTerm || "",
     SystemPermissionTypes.MANAGERS
+  );
+
+  const getSearchedEmployeesByRequestAuthorizer = useGetSearchedEmployees(
+    requestAuthorizerSearchTerm || "",
+    SystemPermissionTypes.EMPLOYEES
   );
 
   const { isProTier } = useSessionData();
@@ -285,10 +297,25 @@ const useEmployeeDetailsFormHandler = ({
     });
   };
 
+  const onRequestAuthorizerSearchChange = async (
+    e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+  ): Promise<void> => {
+    await onManagerSearchChange({
+      managerType: "requestAuthorizer",
+      searchTerm: e.target.value.trimStart(),
+      setManagerSearchTerm: setRequestAuthorizerSearchTerm,
+      formik,
+      setSupervisor: setEmploymentDetails,
+      isProTier
+    });
+  };
+
   let primaryManagers: EmployeeDataType[] = [];
   let secondaryManagers: EmployeeDataType[] = [];
+  let requestAuthorizers: EmployeeDataType[] = [];
   let isPrimaryManagersLoading: boolean = false;
   let isSecondaryManagersLoading: boolean = false;
+  let isRequestAuthorizersLoading: boolean = false;
 
   if (!isManager && !isProfileView) {
     ({ data: primaryManagers as any, isLoading: isPrimaryManagersLoading } =
@@ -300,11 +327,28 @@ const useEmployeeDetailsFormHandler = ({
       getSearchedEmployeesBySecondaryManager);
   }
 
+  if (!isManager && !isProfileView) {
+    ({
+      data: requestAuthorizers as any,
+      isLoading: isRequestAuthorizersLoading
+    } = getSearchedEmployeesByRequestAuthorizer);
+  }
+
   const getSuggestions = (managerList: EmployeeDataType[]) => {
     let newManagerList = managerList;
 
     if (id) {
       newManagerList = filterByValue(newManagerList, id, "employeeId");
+    }
+
+    if (
+      employee?.employment?.employmentDetails?.requestAuthorizer?.employeeId
+    ) {
+      newManagerList = filterByValue(
+        newManagerList,
+        employee?.employment?.employmentDetails?.requestAuthorizer?.employeeId,
+        "employeeId"
+      );
     }
 
     if (
@@ -354,6 +398,32 @@ const useEmployeeDetailsFormHandler = ({
   const secondaryManagerSuggestions: EmployeeDataType[] = getSuggestions(
     !isSecondaryManagersLoading ? secondaryManagers : []
   );
+
+  const requestAuthorizerSuggestions: EmployeeDataType[] = getSuggestions(
+    !isRequestAuthorizersLoading ? requestAuthorizers : []
+  );
+
+  const handleRequestAuthorizerSelect = async (
+    user: EmployeeDataType
+  ): Promise<void> => {
+    await handleManagerSelect({
+      user,
+      fieldName: "requestAuthorizer",
+      formik,
+      searchTermSetter: setRequestAuthorizerSearchTerm,
+      setSupervisor: setEmploymentDetails,
+      setIsPopperOpen: setIsRequestAuthorizerPopperOpen
+    });
+  };
+
+  const handleRequestAuthorizerRemove = async (): Promise<void> => {
+    await onManagerRemove({
+      fieldName: "requestAuthorizer",
+      formik,
+      searchTermSetter: setRequestAuthorizerSearchTerm,
+      setSupervisor: setEmploymentDetails
+    });
+  };
 
   const handlePrimaryManagerSelect = async (
     user: EmployeeDataType
@@ -521,6 +591,20 @@ const useEmployeeDetailsFormHandler = ({
     }
   };
 
+  const handleBackspacePressRequestAuthorizer = async (
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (e.key === "Backspace") {
+      setRequestAuthorizerSearchTerm("");
+      setEmploymentDetails({
+        employmentDetails: {
+          ...employee?.employment?.employmentDetails,
+          requestAuthorizer: {}
+        }
+      });
+    }
+  };
+
   const handleBackspacePressSecondary = async (
     e: React.KeyboardEvent<HTMLInputElement>
   ) => {
@@ -573,7 +657,15 @@ const useEmployeeDetailsFormHandler = ({
     refetch,
     handleBackspacePressPrimary,
     handleBackspacePressSecondary,
-    setSecondaryManagerSearchTerm
+    setSecondaryManagerSearchTerm,
+    isRequestAuthorizerPopperOpen,
+    setIsRequestAuthorizerPopperOpen,
+    requestAuthorizerSearchTerm,
+    requestAuthorizerSuggestions,
+    onRequestAuthorizerSearchChange,
+    handleRequestAuthorizerSelect,
+    handleRequestAuthorizerRemove,
+    handleBackspacePressRequestAuthorizer
   };
 };
 

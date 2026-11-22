@@ -102,6 +102,9 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
     const { employee, setTeamModalType, setIsTeamModalOpen } = usePeopleStore(
       (state) => state
     );
+    const hasPrimarySupervisor = Boolean(
+      employee?.employment?.employmentDetails?.primarySupervisor?.employeeId
+    );
 
     const [isUniqueEmail, setIsUniqueEmail] = useState<boolean>(false);
     const [isUniqueEmployeeNo, setIsUniqueEmployeeNo] =
@@ -179,6 +182,14 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
       handleSecondaryManagerRemove,
       refetch,
       handleBackspacePressPrimary,
+      isRequestAuthorizerPopperOpen,
+      setIsRequestAuthorizerPopperOpen,
+      requestAuthorizerSearchTerm,
+      requestAuthorizerSuggestions,
+      onRequestAuthorizerSearchChange,
+      handleRequestAuthorizerSelect,
+      handleRequestAuthorizerRemove,
+      handleBackspacePressRequestAuthorizer,
       handleBackspacePressSecondary,
       setSecondaryManagerSearchTerm
     } = useEmployeeDetailsFormHandler({
@@ -429,6 +440,50 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
                 onKeyDown={handleBackspacePressPrimary}
               />
             </Grid>
+
+            {isMultiLevelApprovalEnabled && !isEmployee && (
+              <Grid size={{ xs: 12, md: 6, xl: 4 }}>
+                <AvatarSearch
+                  id="request-authorizer-search"
+                  title={translateText(["requestAuthorizer"])}
+                  newResourceManager={
+                    employee?.employment?.employmentDetails?.requestAuthorizer
+                  }
+                  isManagerPopperOpen={isRequestAuthorizerPopperOpen}
+                  managerSuggestions={requestAuthorizerSuggestions}
+                  managerSearchTerm={requestAuthorizerSearchTerm}
+                  handleManagerRemove={handleRequestAuthorizerRemove}
+                  handleManagerSelect={handleRequestAuthorizerSelect}
+                  setIsManagerPopperOpen={setIsRequestAuthorizerPopperOpen}
+                  onManagerSearchChange={onRequestAuthorizerSearchChange}
+                  errors={errors?.requestAuthorizer ?? ""}
+                  inputName={"requestAuthorizer"}
+                  isDisabled={
+                    isReadOnly ||
+                    isProfileView ||
+                    isInputsDisabled ||
+                    !hasPrimarySupervisor
+                  }
+                  isDisabledLabel={isInputsDisabled || !hasPrimarySupervisor}
+                  tooltip={
+                    hasPrimarySupervisor
+                      ? undefined
+                      : translateText(["requestAuthorizerPrimaryRequired"])
+                  }
+                  placeholder={
+                    !isReadOnly && !isProfileView
+                      ? translateText(["selectRequestAuthorizer"])
+                      : ""
+                  }
+                  needSearchIcon={!isReadOnly && !isProfileView}
+                  noSearchResultTexts={translateText(["noSearchResults"])}
+                  componentStyle={{
+                    width: "100%"
+                  }}
+                  onKeyDown={handleBackspacePressRequestAuthorizer}
+                />
+              </Grid>
+            )}
 
             <Grid
               size={{ xs: 12, md: 6, xl: 4 }}
