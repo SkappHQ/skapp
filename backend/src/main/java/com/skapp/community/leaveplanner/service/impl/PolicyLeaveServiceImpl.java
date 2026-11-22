@@ -59,6 +59,8 @@ import com.skapp.community.leaveplanner.type.LeaveRequestSort;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.leaveplanner.type.LeaveState;
 import com.skapp.community.leaveplanner.type.ManagerType;
+import com.skapp.community.leaveplanner.service.LeaveApprovalConfigService;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.leaveplanner.type.PolicyBalanceDisabledReason;
 import com.skapp.community.leaveplanner.type.PolicyLeaveValidationFailure;
 import com.skapp.community.leaveplanner.type.PolicyType;
@@ -141,6 +143,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 	private final NotificationDao notificationDao;
 
 	private final MessageUtil messageUtil;
+
+	private final LeaveApprovalConfigService leaveApprovalConfigService;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -237,13 +241,22 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		leaveRequest.setIsAutoApproved(Boolean.FALSE);
 		attachSupportingDocuments(leaveRequest, policyLeaveRequestDto.getAttachments());
 
+		List<EmployeeManager> requestRecipients = employeeManagers;
 		if (Boolean.TRUE.equals(policy.getLeaveType().getIsAutoApproval())) {
 			autoApprove(leaveRequest, employeeManagers);
+		}
+		else if (leaveApprovalConfigService.isMultiLevelApprovalEnabled()) {
+			requestRecipients = primarySupervisorLinks(employeeManagers);
+			if (requestRecipients.isEmpty()) {
+				throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_NO_MANAGER_FOUND);
+			}
+			leaveRequest.setIsMultiLevel(Boolean.TRUE);
+			leaveRequest.setRequestAuthorizer(employee.getRequestAuthorizer());
 		}
 
 		PolicyLeaveRequest savedLeaveRequest = policyLeaveRequestDao.save(leaveRequest);
 
-		notifyParticipants(currentUser, savedLeaveRequest, employeeManagers);
+		notifyParticipants(currentUser, savedLeaveRequest, requestRecipients);
 
 		PolicyLeaveRequestResponseDto responseDto = leaveMapper
 			.policyLeaveRequestToPolicyLeaveRequestResponseDto(savedLeaveRequest);
@@ -323,7 +336,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 		if (!isOwnRequest(leaveRequest, currentEmployee)
 				&& !employeeManagerDao.existsByManagerEmployeeIdAndEmployeeEmployeeId(currentEmployee.getEmployeeId(),
-						leaveRequest.getEmployee().getEmployeeId())) {
+						leaveRequest.getEmployee().getEmployeeId())
+				&& !isForwardedToRequestAuthorizer(leaveRequest, currentEmployee)) {
 			throw new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_REQUEST_NOT_FOUND);
 		}
 
@@ -353,14 +367,21 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 			leaveRequest.setStatus(targetStatus);
 
 			PolicyLeaveRequest cancelledLeaveRequest = policyLeaveRequestDao.save(leaveRequest);
-			notifyCancelledLeaveRequest(cancelledLeaveRequest);
+			if (!isMultiLevel(cancelledLeaveRequest)) {
+				notifyCancelledLeaveRequest(cancelledLeaveRequest);
+			}
 
 			log.info("updatePolicyLeaveRequest: execution ended for request: {}", id);
 			return new ResponseEntityDto(false,
 					leaveMapper.policyLeaveRequestToPolicyLeaveRequestResponseDto(cancelledLeaveRequest));
 		}
 
-		authorizeReviewer(leaveRequest, currentEmployee);
+		if (isMultiLevel(leaveRequest)) {
+			authorizeMultiLevelReviewer(leaveRequest, currentEmployee);
+		}
+		else {
+			authorizeReviewer(leaveRequest, currentEmployee);
+		}
 		validateTransition(PolicyLeaveConstant.REVIEWER_STATUS_TRANSITIONS, leaveRequest.getStatus(), targetStatus,
 				LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INVALID_STATUS_TRANSITION_MANAGER);
 		validateReviewerComment(updateDto.getReviewerComment());
@@ -368,6 +389,22 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		if (StringUtils.isNotBlank(updateDto.getReviewerComment())) {
 			leaveRequest.setReviewerComment(updateDto.getReviewerComment().trim());
 		}
+
+		if (isMultiLevel(leaveRequest) && targetStatus == LeaveRequestStatus.APPROVED
+				&& leaveRequest.getPrimaryReviewer() == null) {
+			leaveRequest.setPrimaryReviewer(currentEmployee);
+			leaveRequest.setPrimaryReviewedDate(Instant.now());
+
+			if (leaveRequest.getRequestAuthorizer() != null) {
+				PolicyLeaveRequest forwardedLeaveRequest = policyLeaveRequestDao.save(leaveRequest);
+				notifyRequestAuthorizer(forwardedLeaveRequest);
+
+				log.info("updatePolicyLeaveRequest: execution ended for request: {}", id);
+				return new ResponseEntityDto(false,
+						leaveMapper.policyLeaveRequestToPolicyLeaveRequestResponseDto(forwardedLeaveRequest));
+			}
+		}
+
 		leaveRequest.setStatus(targetStatus);
 		leaveRequest.setReviewer(currentEmployee);
 		leaveRequest.setReviewedDate(Instant.now());
@@ -629,6 +666,52 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 			.anyMatch(employeeManager -> employeeManager.getManagerType() != ManagerType.INFORMANT);
 		if (!hasActionableLink) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INFORMANT_CANNOT_REVIEW);
+		}
+	}
+
+	private boolean isMultiLevel(PolicyLeaveRequest leaveRequest) {
+		return Boolean.TRUE.equals(leaveRequest.getIsMultiLevel());
+	}
+
+	private boolean isSameEmployee(Employee employee, Employee other) {
+		return employee != null && other != null && employee.getEmployeeId().equals(other.getEmployeeId());
+	}
+
+	private boolean isForwardedToRequestAuthorizer(PolicyLeaveRequest leaveRequest, Employee currentEmployee) {
+		return isMultiLevel(leaveRequest) && leaveRequest.getPrimaryReviewer() != null
+				&& isSameEmployee(leaveRequest.getRequestAuthorizer(), currentEmployee);
+	}
+
+	private List<EmployeeManager> primarySupervisorLinks(List<EmployeeManager> employeeManagers) {
+		return employeeManagers.stream()
+			.filter(employeeManager -> employeeManager.getManagerType() == ManagerType.PRIMARY)
+			.toList();
+	}
+
+	private boolean hasLeaveApproverRole(Employee employee) {
+		Role leaveRole = employee.getEmployeeRole() != null ? employee.getEmployeeRole().getLeaveRole() : null;
+		return leaveRole == Role.LEAVE_ADMIN || leaveRole == Role.LEAVE_MANAGER;
+	}
+
+	private void authorizeMultiLevelReviewer(PolicyLeaveRequest leaveRequest, Employee currentEmployee) {
+		boolean isPrimarySupervisor = employeeManagerDao.existsByManagerAndEmployeeAndManagerTypeIn(currentEmployee,
+				leaveRequest.getEmployee(), Set.of(ManagerType.PRIMARY));
+		boolean isRequestAuthorizer = isSameEmployee(leaveRequest.getRequestAuthorizer(), currentEmployee)
+				&& hasLeaveApproverRole(currentEmployee);
+
+		boolean isCurrentApprover;
+		if (leaveRequest.getStatus() != LeaveRequestStatus.PENDING) {
+			isCurrentApprover = isPrimarySupervisor || isRequestAuthorizer;
+		}
+		else if (leaveRequest.getPrimaryReviewer() == null) {
+			isCurrentApprover = isPrimarySupervisor;
+		}
+		else {
+			isCurrentApprover = isRequestAuthorizer;
+		}
+
+		if (!isCurrentApprover) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_NOT_CURRENT_APPROVER);
 		}
 	}
 
@@ -1229,12 +1312,58 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 				? EmailBodyTemplates.LEAVE_MODULE_MANAGER_NUDGE_SINGLE_DAY_LEAVE
 				: EmailBodyTemplates.LEAVE_MODULE_MANAGER_NUDGE_MULTI_DAY_LEAVE;
 
-		notifySupervisors(employeeManagerDao.findByEmployee(employee), leaveRequest, () -> {
+		notifyApprovers(currentApprovers(leaveRequest), leaveRequest, () -> {
 			LeaveEmailDynamicFields dynamicFields = leaveRequestEmailFields(leaveRequest);
 			dynamicFields.setEmployeeName(fullName(employee));
 			dynamicFields.setEmployeesName(fullName(employee));
 			return dynamicFields;
 		}, template, NotificationType.LEAVE_REQUEST_NUDGE);
+	}
+
+	private List<Employee> currentApprovers(PolicyLeaveRequest leaveRequest) {
+		List<EmployeeManager> employeeManagers = employeeManagerDao.findByEmployee(leaveRequest.getEmployee());
+		if (!isMultiLevel(leaveRequest)) {
+			return PeopleUtil.filterManagersByLeaveRoles(employeeManagers)
+				.stream()
+				.map(EmployeeManager::getManager)
+				.toList();
+		}
+
+		if (leaveRequest.getPrimaryReviewer() != null) {
+			Employee requestAuthorizer = leaveRequest.getRequestAuthorizer();
+			return requestAuthorizer != null && hasLeaveApproverRole(requestAuthorizer) ? List.of(requestAuthorizer)
+					: List.of();
+		}
+
+		return PeopleUtil.filterManagersByLeaveRoles(primarySupervisorLinks(employeeManagers))
+			.stream()
+			.map(EmployeeManager::getManager)
+			.toList();
+	}
+
+	private void notifyRequestAuthorizer(PolicyLeaveRequest leaveRequest) {
+		Employee employee = leaveRequest.getEmployee();
+		boolean isSingleDay = leaveRequest.getStartDate().equals(leaveRequest.getEndDate());
+
+		notifyApprovers(currentApprovers(leaveRequest), leaveRequest, () -> {
+			LeaveEmailDynamicFields dynamicFields = leaveRequestEmailFields(leaveRequest);
+			dynamicFields.setEmployeeName(fullName(employee));
+			dynamicFields.setEmployeesName(fullName(employee));
+			return dynamicFields;
+		}, isSingleDay ? EmailBodyTemplates.LEAVE_MODULE_MANAGER_RECEIVED_SINGLE_DAY_LEAVE
+				: EmailBodyTemplates.LEAVE_MODULE_MANAGER_RECEIVED_MULTIPLE_DAY_LEAVE, NotificationType.LEAVE_REQUEST);
+	}
+
+	private void notifyApprovers(List<Employee> approvers, PolicyLeaveRequest leaveRequest,
+			Supplier<LeaveEmailDynamicFields> fieldsSupplier, EmailBodyTemplates template,
+			NotificationType notificationType) {
+		approvers.forEach(approver -> {
+			LeaveEmailDynamicFields dynamicFields = fieldsSupplier.get();
+			dynamicFields.setEmployeeOrManagerName(fullName(approver));
+			sendEmailAfterCommit(template, dynamicFields, approver.getUser().getEmail());
+			notificationService.createNotification(approver, leaveRequest.getId().toString(), notificationType,
+					template, dynamicFields, NotificationCategory.LEAVE);
+		});
 	}
 
 	private LeaveEmailDynamicFields leaveRequestEmailFields(PolicyLeaveRequest leaveRequest) {

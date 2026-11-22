@@ -84,6 +84,20 @@ public class PolicyLeaveRequest extends Auditable<String> {
 	@Column(name = "event_id")
 	private String eventId;
 
+	@Column(name = "is_multi_level")
+	private Boolean isMultiLevel = Boolean.FALSE;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "request_authorizer_id")
+	private Employee requestAuthorizer;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "primary_reviewer_id")
+	private Employee primaryReviewer;
+
+	@Column(name = "primary_reviewed_date")
+	private Instant primaryReviewedDate;
+
 	@OneToMany(mappedBy = "leaveRequest", cascade = CascadeType.ALL)
 	private List<PolicyLeaveRequestAttachment> attachments;
 
