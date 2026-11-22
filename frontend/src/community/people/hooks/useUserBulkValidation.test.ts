@@ -121,11 +121,11 @@ describe("useUserBulkValidation", () => {
 
   it("should validate a CSV with correct headers", () => {
     const validCsv = [validUser];
-    expect(isCsvValid(validCsv)).toBe(false);
+    expect(isCsvValid(validCsv, false)).toBe(false);
   });
 
   it("should invalidate a CSV with incorrect headers", () => {
     const invalidCsv = [{ invalidHeader: "value" }];
-    expect(isCsvValid(invalidCsv as any)).toBe(false);
+    expect(isCsvValid(invalidCsv as any, false)).toBe(false);
   });
 });

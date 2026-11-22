@@ -5,5 +5,5 @@ export const userBulkTemplate = {
 
 export const userBulkMultiLevelApprovalTemplate = {
   url: "/UserBulkUploadCsvTemplate/UserBulkUploadCsvTemplateMultiLevel.xlsx",
-  fileName: "UserBulkUploadCsvTemplate.xlsx"
+  fileName: "UserBulkUploadCsvTemplateMultiLevel.xlsx"
 };

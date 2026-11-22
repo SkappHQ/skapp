@@ -15,7 +15,10 @@ import {
 } from "~community/people/constants/stringConstants";
 import { BulkUploadUser } from "~community/people/types/UserBulkUploadTypes";
 
-import { USER_BULK_HEADERS } from "../utils/constants/constants";
+import {
+  USER_BULK_HEADERS,
+  USER_BULK_MULTI_LEVEL_HEADERS
+} from "../utils/constants/constants";
 
 const useUserBulkValidation = () => {
   const validateUser = (user: BulkUploadUser) => {
@@ -97,11 +100,11 @@ const useUserBulkValidation = () => {
 
   const isCsvValid = (
     userArray: BulkUploadUser[],
-    isMultiLevelApprovalEnabled = false
+    isMultiLevelApprovalEnabled: boolean
   ) => {
     const headerList = Object.keys(userArray?.[0]).filter(Boolean);
     const expectedHeaders = isMultiLevelApprovalEnabled
-      ? [...USER_BULK_HEADERS, "requestAuthorizerEmail"]
+      ? USER_BULK_MULTI_LEVEL_HEADERS
       : USER_BULK_HEADERS;
     return (
       headerList?.length === expectedHeaders?.length &&

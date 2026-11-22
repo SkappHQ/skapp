@@ -75,7 +75,7 @@ const UserBulkCsvUpload: FC<Props> = ({ setBulkUploadData, setPopupType }) => {
           } else if (
             isCsvValid(
               results?.data as BulkUploadUser[],
-              leaveApprovalConfig?.isMultiLevelApprovalEnabled
+              Boolean(leaveApprovalConfig?.isMultiLevelApprovalEnabled)
             ) &&
             results?.data?.length > 0
           ) {

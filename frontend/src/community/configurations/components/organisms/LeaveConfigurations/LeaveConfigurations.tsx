@@ -86,7 +86,7 @@ const LeaveConfigurations: FC = () => {
   return (
     <div className="flex w-196 flex-col gap-6">
       {canManageLeavePolicies && (
-        <div className="flex flex-col gap-6">
+        <>
           <div className="flex flex-col gap-3">
             <h2 className="subtitle2 text-black">
               {translateText(["leavePoliciesSection", "title"])}
@@ -140,7 +140,7 @@ const LeaveConfigurations: FC = () => {
               </Tooltip>
             )}
           </div>
-        </div>
+        </>
       )}
 
       {isPeopleAdmin && isLeavePoliciesEnabled && <LeaveApprovalSettings />}

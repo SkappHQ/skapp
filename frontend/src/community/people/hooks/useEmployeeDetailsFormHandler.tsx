@@ -320,14 +320,8 @@ const useEmployeeDetailsFormHandler = ({
   if (!isManager && !isProfileView) {
     ({ data: primaryManagers as any, isLoading: isPrimaryManagersLoading } =
       getSearchedEmployeesByPrimaryManager);
-  }
-
-  if (!isManager && !isProfileView) {
     ({ data: secondaryManagers as any, isLoading: isSecondaryManagersLoading } =
       getSearchedEmployeesBySecondaryManager);
-  }
-
-  if (!isManager && !isProfileView) {
     ({
       data: requestAuthorizers as any,
       isLoading: isRequestAuthorizersLoading
