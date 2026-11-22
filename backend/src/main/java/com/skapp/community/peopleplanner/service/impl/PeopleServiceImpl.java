@@ -2121,6 +2121,25 @@ public class PeopleServiceImpl implements PeopleService {
 
 	}
 
+	private void setBulkRequestAuthorizer(EmployeeBulkDto employeeBulkDto, EmployeeDetailsDto employeeDetailsDto,
+			Employee employee) {
+		String requestAuthorizerEmail = employeeBulkDto.getRequestAuthorizerEmail();
+		if (requestAuthorizerEmail == null || requestAuthorizerEmail.isBlank()) {
+			return;
+		}
+
+		if (requestAuthorizerEmail.equalsIgnoreCase(employeeBulkDto.getWorkEmail())) {
+			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_SELF);
+		}
+
+		Long requestAuthorizerId = userDao.findByEmail(requestAuthorizerEmail)
+			.map(User::getUserId)
+			.orElseThrow(() -> new ValidationException(
+					PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_EMPLOYEE_NOT_FOUND));
+		employee.setRequestAuthorizer(employeeValidationService.validateRequestAuthorizerAssignment(requestAuthorizerId,
+				null, employeeDetailsDto.getPrimaryManager()));
+	}
+
 	public void setBulkEmployeeProgression(EmployeeBulkDto employeeBulkDto, Employee employee) {
 		if (employeeBulkDto.getEmployeeProgression() != null) {
 			if (employeeBulkDto.getEmployeeProgression().getEmploymentType() != null) {
@@ -2542,6 +2561,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 		Set<EmployeeManager> managers = addNewManagers(employeeDetailsDto, employee);
 		employee.setEmployeeManagers(managers);
+		setBulkRequestAuthorizer(employeeBulkDto, employeeDetailsDto, employee);
 
 		if (employeeBulkDto.getEmployeeEmergency() != null && (employeeBulkDto.getEmployeeEmergency().getName() != null
 				|| employeeBulkDto.getEmployeeEmergency().getContactNo() != null)) {

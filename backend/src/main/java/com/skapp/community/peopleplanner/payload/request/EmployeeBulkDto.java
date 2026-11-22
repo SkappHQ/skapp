@@ -35,6 +35,8 @@ public class EmployeeBulkDto {
 
 	private String primaryManager;
 
+	private String requestAuthorizerEmail;
+
 	private Set<String> teams;
 
 	private String jobFamily;

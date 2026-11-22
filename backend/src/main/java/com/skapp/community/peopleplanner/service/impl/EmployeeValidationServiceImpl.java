@@ -606,19 +606,23 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 			return;
 		}
 
-		Long requestAuthorizerId = requestAuthorizer.getEmployeeId();
-		if (requestAuthorizerId == null) {
-			return;
+		if (requestAuthorizer.getEmployeeId() != null) {
+			validateRequestAuthorizerAssignment(requestAuthorizer.getEmployeeId(), user.getUserId(),
+					primarySupervisorId);
 		}
+	}
 
-		if (Objects.equals(requestAuthorizerId, user.getUserId())) {
+	@Override
+	public Employee validateRequestAuthorizerAssignment(Long requestAuthorizerId, Long employeeId,
+			Long primarySupervisorId) {
+		if (Objects.equals(requestAuthorizerId, employeeId)) {
 			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_SELF);
 		}
 
 		Employee authorizer = employeeDao.findById(requestAuthorizerId)
 			.orElseThrow(() -> new ValidationException(
 					PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_EMPLOYEE_NOT_FOUND));
-		if (!isActiveMember(authorizer)) {
+		if (!isAssignableMember(authorizer)) {
 			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_NOT_ACTIVE);
 		}
 
@@ -631,6 +635,8 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 			throw new ValidationException(
 					PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_SAME_AS_PRIMARY_SUPERVISOR);
 		}
+
+		return authorizer;
 	}
 
 	private void validatePrimarySupervisorNotRequestAuthorizer(EmployeeEmploymentBasicDetailsDto employmentDetails,
@@ -663,10 +669,12 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 			.orElse(null);
 	}
 
-	private boolean isActiveMember(Employee employee) {
+	private boolean isAssignableMember(Employee employee) {
 		User user = employee.getUser();
 		return user != null && Boolean.TRUE.equals(user.getIsActive())
-				&& employee.getAccountStatus() == AccountStatus.ACTIVE && !CommonModuleUtils.isGuestEmployee(employee);
+				&& (employee.getAccountStatus() == AccountStatus.ACTIVE
+						|| employee.getAccountStatus() == AccountStatus.PENDING)
+				&& !CommonModuleUtils.isGuestEmployee(employee);
 	}
 
 }
