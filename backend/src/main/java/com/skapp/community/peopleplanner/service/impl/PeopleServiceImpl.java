@@ -463,6 +463,12 @@ public class PeopleServiceImpl implements PeopleService {
 		return new ResponseEntityDto(false, requestDto);
 	}
 
+	protected void clearRequestAuthorizerAssignments(Employee requestAuthorizer) {
+		List<Employee> authorizedEmployees = employeeDao.findByRequestAuthorizer(requestAuthorizer);
+		authorizedEmployees.forEach(authorizedEmployee -> authorizedEmployee.setRequestAuthorizer(null));
+		employeeDao.saveAll(authorizedEmployees);
+	}
+
 	protected void invalidateUserCache() {
 		// This method is a placeholder for enterprise cache invalidation logic
 	}
@@ -3107,6 +3113,7 @@ public class PeopleServiceImpl implements PeopleService {
 		if (!employee.getEmployeeManagers().isEmpty()) {
 			employee.getEmployeeManagers().clear();
 		}
+		employee.setRequestAuthorizer(null);
 
 		// deletes other manager relationships
 		List<EmployeeManager> managedEmployees = employeeManagerDao.findByManager(employee);
@@ -3114,9 +3121,7 @@ public class PeopleServiceImpl implements PeopleService {
 			employeeManagerDao.deleteAll(managedEmployees);
 		}
 
-		List<Employee> authorizedEmployees = employeeDao.findByRequestAuthorizer(employee);
-		authorizedEmployees.forEach(authorizedEmployee -> authorizedEmployee.setRequestAuthorizer(null));
-		employeeDao.saveAll(authorizedEmployees);
+		clearRequestAuthorizerAssignments(employee);
 
 		employee.setJobTitle(null);
 		employee.setJobFamily(null);

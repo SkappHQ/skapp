@@ -3,7 +3,7 @@
 -- changeset HasalaAbhilasha:leave-ddl-script-v1-alter-table-lv-leave-request-add-multi-level-approval-columns
 ALTER TABLE `lv_leave_request`
     ADD COLUMN `is_multi_level`        boolean,
-    ADD COLUMN `request_authorizer_id`   bigint,
+    ADD COLUMN `request_authorizer_id` bigint,
     ADD COLUMN `primary_reviewer_id`   bigint,
     ADD COLUMN `primary_reviewed_date` datetime(6),
     ADD CONSTRAINT `FK_lv_leave_request_employee_request_authorizer_id` FOREIGN KEY (`request_authorizer_id`) REFERENCES `employee` (`employee_id`),

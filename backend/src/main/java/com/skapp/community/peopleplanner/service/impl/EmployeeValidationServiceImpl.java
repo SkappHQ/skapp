@@ -587,7 +587,8 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 	private void validateOtherSupervisorsAllowed(EmployeeEmploymentBasicDetailsDto employmentDetails) {
 		List<EmployeeEmploymentBasicDetailsManagerDetailsDto> otherSupervisors = employmentDetails
 			.getOtherSupervisors();
-		if (otherSupervisors == null || otherSupervisors.stream().noneMatch(s -> s.getEmployeeId() != null)) {
+		if (otherSupervisors == null
+				|| otherSupervisors.stream().noneMatch(supervisor -> supervisor.getEmployeeId() != null)) {
 			return;
 		}
 
