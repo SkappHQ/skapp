@@ -610,6 +610,11 @@ public class PeopleServiceImpl implements PeopleService {
 			processEmployeeManagers(requestDto.getEmployment(), employee);
 		}
 
+		if (requestDto != null && requestDto.getEmployment() != null
+				&& requestDto.getEmployment().getEmploymentDetails() != null) {
+			processRequestAuthorizer(requestDto.getEmployment().getEmploymentDetails(), employee);
+		}
+
 		// Emergency Contacts
 		processEmergencyContacts(requestDto, employee);
 
@@ -647,6 +652,22 @@ public class PeopleServiceImpl implements PeopleService {
 		employee.setBusinessUnit(businessUnitDao.findById(businessUnitId)
 			.orElseThrow(
 					() -> new EntityNotFoundException(CommonMessageConstant.COMMON_ERROR_BUSINESS_UNIT_NOT_FOUND)));
+	}
+
+	private void processRequestAuthorizer(EmployeeEmploymentBasicDetailsDto employmentDetails, Employee employee) {
+		EmployeeEmploymentBasicDetailsManagerDetailsDto requestAuthorizer = employmentDetails.getRequestAuthorizer();
+		if (requestAuthorizer == null) {
+			return;
+		}
+
+		if (requestAuthorizer.getEmployeeId() == null) {
+			employee.setRequestAuthorizer(null);
+			return;
+		}
+
+		employee.setRequestAuthorizer(employeeDao.findById(requestAuthorizer.getEmployeeId())
+			.orElseThrow(() -> new EntityNotFoundException(
+					PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_EMPLOYEE_NOT_FOUND)));
 	}
 
 	private void processPayrollIdAndTin(CreateEmployeeRequestDto requestDto, Employee employee) {
@@ -3072,6 +3093,10 @@ public class PeopleServiceImpl implements PeopleService {
 		if (!managedEmployees.isEmpty()) {
 			employeeManagerDao.deleteAll(managedEmployees);
 		}
+
+		List<Employee> authorizedEmployees = employeeDao.findByRequestAuthorizer(employee);
+		authorizedEmployees.forEach(authorizedEmployee -> authorizedEmployee.setRequestAuthorizer(null));
+		employeeDao.saveAll(authorizedEmployees);
 
 		employee.setJobTitle(null);
 		employee.setJobFamily(null);
