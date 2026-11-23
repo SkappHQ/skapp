@@ -6,7 +6,7 @@ import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { getBlinkClass } from "~community/common/utils/commonUtil";
-import { useGetLeaveApprovalConfig } from "~community/leave/api/LeaveApprovalConfigApi";
+import useMultiLevelApprovalEnabled from "~community/leave/hooks/useMultiLevelApprovalEnabled";
 import { usePeopleStore } from "~community/people/store/store";
 import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
 import {
@@ -21,8 +21,8 @@ const UserBulkCsvDownload = () => {
   );
   const translateText = useTranslator("peopleModule", "peoples");
 
-  const { data: leaveApprovalConfig } = useGetLeaveApprovalConfig();
-  const template = leaveApprovalConfig?.isMultiLevelApprovalEnabled
+  const { isMultiLevelApprovalEnabled } = useMultiLevelApprovalEnabled();
+  const template = isMultiLevelApprovalEnabled
     ? userBulkMultiLevelApprovalTemplate
     : userBulkTemplate;
 

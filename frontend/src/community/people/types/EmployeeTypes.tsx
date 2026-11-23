@@ -152,7 +152,7 @@ export interface BulkEmployeeDetails {
   phone: string | null;
   teams: (string | number)[] | null;
   primaryManager: string | null;
-  requestAuthorizerEmail?: string | null;
+  requestAuthorizerEmail?: string;
   timeZone: string | null;
   workLocation: string | null;
   businessUnit: string | null;

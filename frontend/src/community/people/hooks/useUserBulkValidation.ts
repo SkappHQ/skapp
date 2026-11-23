@@ -103,12 +103,16 @@ const useUserBulkValidation = () => {
     isMultiLevelApprovalEnabled: boolean
   ) => {
     const headerList = Object.keys(userArray?.[0]).filter(Boolean);
-    const expectedHeaders = isMultiLevelApprovalEnabled
-      ? USER_BULK_MULTI_LEVEL_HEADERS
-      : USER_BULK_HEADERS;
-    return (
+    const matchesHeaders = (expectedHeaders: string[]): boolean =>
       headerList?.length === expectedHeaders?.length &&
-      expectedHeaders?.every((header) => headerList?.includes(header))
+      expectedHeaders?.every((header) => headerList?.includes(header));
+
+    // The Request authorizer column is optional, so a file from the normal
+    // template is still accepted while multi-level approval is on.
+    return (
+      matchesHeaders(USER_BULK_HEADERS) ||
+      (isMultiLevelApprovalEnabled &&
+        matchesHeaders(USER_BULK_MULTI_LEVEL_HEADERS))
     );
   };
 

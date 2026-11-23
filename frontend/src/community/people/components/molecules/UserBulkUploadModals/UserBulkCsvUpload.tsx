@@ -16,7 +16,7 @@ import {
 } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
 import { getBlinkClass } from "~community/common/utils/commonUtil";
-import { useGetLeaveApprovalConfig } from "~community/leave/api/LeaveApprovalConfigApi";
+import useMultiLevelApprovalEnabled from "~community/leave/hooks/useMultiLevelApprovalEnabled";
 import { useAddBulkUsers } from "~community/people/api/PeopleApi";
 import useUserBulkConvert from "~community/people/hooks/useUserBulkConvert";
 import useUserBulkValidation from "~community/people/hooks/useUserBulkValidation";
@@ -58,7 +58,7 @@ const UserBulkCsvUpload: FC<Props> = ({ setBulkUploadData, setPopupType }) => {
   const translateText = useTranslator("peopleModule", "peoples");
   const translateAria = useTranslator("peopleAria", "directory");
   const { isCsvValid } = useUserBulkValidation();
-  const { data: leaveApprovalConfig } = useGetLeaveApprovalConfig();
+  const { isMultiLevelApprovalEnabled } = useMultiLevelApprovalEnabled();
   const { convertUsers } = useUserBulkConvert();
 
   const setAttachment = (acceptedFiles: FileUploadType[]): void => {
@@ -75,7 +75,7 @@ const UserBulkCsvUpload: FC<Props> = ({ setBulkUploadData, setPopupType }) => {
           } else if (
             isCsvValid(
               results?.data as BulkUploadUser[],
-              Boolean(leaveApprovalConfig?.isMultiLevelApprovalEnabled)
+              isMultiLevelApprovalEnabled
             ) &&
             results?.data?.length > 0
           ) {

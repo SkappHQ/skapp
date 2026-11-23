@@ -38,7 +38,7 @@ import {
   getTimeZoneLabel
 } from "~community/common/utils/dateTimeUtils";
 import { isValidEmailPattern } from "~community/common/utils/validation";
-import { useGetLeaveApprovalConfig } from "~community/leave/api/LeaveApprovalConfigApi";
+import useMultiLevelApprovalEnabled from "~community/leave/hooks/useMultiLevelApprovalEnabled";
 import {
   useCheckEmailAndIdentificationNo,
   useGetSearchedEmployees
@@ -113,10 +113,7 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
 
     const isAdmin = user?.roles?.includes(ManagerTypes.PEOPLE_MANAGER);
 
-    const { data: leaveApprovalConfig } = useGetLeaveApprovalConfig();
-    const isMultiLevelApprovalEnabled = Boolean(
-      leaveApprovalConfig?.isMultiLevelApprovalEnabled
-    );
+    const { isMultiLevelApprovalEnabled } = useMultiLevelApprovalEnabled();
 
     const [isUniqueEmail, setIsUniqueEmail] = useState<boolean>(false);
     const [isUniqueEmployeeNo, setIsUniqueEmployeeNo] =
