@@ -1,4 +1,4 @@
-import { MultiSelectSearch } from "@rootcodelabs/skapp-ui";
+import { MultiSelectSearchDropdown } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import { FC, ReactNode, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -13,7 +13,7 @@ import {
   CrmLogMeetingFormValues
 } from "~community/crm/types/CrmCommonTypes";
 import {
-  getContactDisplayName,
+  toContactOption,
   updateContactRecord
 } from "~community/crm/utils/contactUtil";
 import { CrmScheduleMeetingFormValues } from "~enterprise/crm/types/ScheduleMeetingTypes";
@@ -27,6 +27,7 @@ interface Props {
   name: string;
   label: string;
   placeholder: string;
+  searchPlaceholder: string;
   groupAriaLabel: string;
   hiddenContactIds?: number[];
   warningMessage?: string;
@@ -42,6 +43,7 @@ const ActivityContactsField: FC<Props> = ({
   name,
   label,
   placeholder,
+  searchPlaceholder,
   groupAriaLabel,
   hiddenContactIds,
   warningMessage,
@@ -66,24 +68,43 @@ const ActivityContactsField: FC<Props> = ({
   );
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [hasMenuOpened, setHasMenuOpened] = useState(false);
+  const [pinnedContactIds, setPinnedContactIds] = useState<number[]>([]);
 
-  const { isLoading, lookupItems } = useContactLookup(searchTerm);
+  const { isSearchActive, isLoading, lookupItems } = useContactLookup(
+    searchTerm,
+    hasMenuOpened
+  );
 
   const fillRelatedToFromContact = useRelatedToAutoFill(formik, fillsRelatedTo);
 
-  const options = lookupItems
-    .filter((contact) => contact.id && !hiddenContactIds?.includes(contact.id))
-    .map((contact) => ({
-      id: Number(contact.id),
-      label: getContactDisplayName(contact)
-    }));
+  const handleMenuOpen = (): void => {
+    setPinnedContactIds(contactIds);
+    setHasMenuOpened(true);
+  };
 
-  const selectedOptions = contactIds.map((contactId) => ({
-    id: contactId,
-    label: getContactDisplayName(contacts[contactId])
-  }));
+  const lookupContacts = lookupItems.filter(
+    (contact) => contact.id && !hiddenContactIds?.includes(contact.id)
+  );
 
-  const handleContactsChange = (nextContactIds: number[]): void => {
+  const pinnedOptions = isSearchActive
+    ? lookupContacts
+        .filter((contact) => pinnedContactIds.includes(Number(contact.id)))
+        .map((contact) => toContactOption(Number(contact.id), contact))
+    : pinnedContactIds.map((contactId) =>
+        toContactOption(contactId, contacts[contactId])
+      );
+
+  const options = [
+    ...pinnedOptions,
+    ...lookupContacts
+      .filter((contact) => !pinnedContactIds.includes(Number(contact.id)))
+      .map((contact) => toContactOption(Number(contact.id), contact))
+  ];
+
+  const handleContactsChange = (nextValues: string[]): void => {
+    const nextContactIds = nextValues.map(Number);
+
     const addedContact = lookupItems.find(
       (contact) =>
         contact.id &&
@@ -109,8 +130,7 @@ const ActivityContactsField: FC<Props> = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <label
-        htmlFor={`${id}-input`}
+      <span
         className={`subtitle1 leading-normal ${isError ? "text-semantic-red-accent" : "text-black"}`}
       >
         {label}
@@ -119,28 +139,32 @@ const ActivityContactsField: FC<Props> = ({
             *
           </span>
         )}
-      </label>
+      </span>
 
       <div className="flex flex-row items-center gap-6">
         <div className="min-w-0 flex-1">
-          <MultiSelectSearch
-            searchInputId={`${id}-input`}
+          <MultiSelectSearchDropdown
+            id={id}
             options={options}
-            selectedOptions={selectedOptions}
-            onOptionSelect={(nextOptions) =>
-              handleContactsChange(
-                nextOptions.map((option) => Number(option.id))
-              )
-            }
-            searchText={searchTerm}
+            selectedValues={contactIds.map(String)}
+            onChange={handleContactsChange}
             onSearchChange={setSearchTerm}
-            placeholder={placeholder}
+            onOpen={handleMenuOpen}
+            searchInputProps={{
+              id: `${id}-search`,
+              placeholder: searchPlaceholder
+            }}
+            isSearchVisible
             ariaLabel={groupAriaLabel}
-            emptyResultsMessage={translateText([
-              "emptyStates",
-              isLoading ? "searching" : "noContacts"
-            ])}
-            showClearAllButton={false}
+            ariaRequired={required}
+            texts={{
+              placeholder,
+              selectedCount: translateText(["placeholders", "selectedCount"]),
+              noOptions: translateText([
+                "emptyStates",
+                isLoading ? "searching" : "noContacts"
+              ])
+            }}
           />
         </div>
         {actions}

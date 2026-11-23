@@ -53,6 +53,13 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
     "modal"
   );
 
+  const recipientsPlaceholder = translateText([
+    "logEmail",
+    "modal",
+    "placeholders",
+    "recipients"
+  ]);
+
   const [isBccOpen, setIsBccOpen] = useState(values.bccContactIds.length > 0);
   const [isCcOpen, setIsCcOpen] = useState(values.ccContactIds.length > 0);
 
@@ -201,12 +208,8 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
         formik={formik}
         name="toContactIds"
         label={translateText(["logEmail", "modal", "labels", "to"])}
-        placeholder={translateText([
-          "logEmail",
-          "modal",
-          "placeholders",
-          "recipients"
-        ])}
+        placeholder={recipientsPlaceholder}
+        searchPlaceholder={recipientsPlaceholder}
         groupAriaLabel={translateAria(["to"])}
         hiddenContactIds={[...values.ccContactIds, ...values.bccContactIds]}
         {...(recipientCompanyIds.length > 1 && {
@@ -260,12 +263,8 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
                 formik={formik}
                 name="bccContactIds"
                 label={translateText(["logEmail", "modal", "labels", "bcc"])}
-                placeholder={translateText([
-                  "logEmail",
-                  "modal",
-                  "placeholders",
-                  "recipients"
-                ])}
+                placeholder={recipientsPlaceholder}
+                searchPlaceholder={recipientsPlaceholder}
                 groupAriaLabel={translateAria(["bcc"])}
                 hiddenContactIds={[
                   ...values.toContactIds,
@@ -287,12 +286,8 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
                 formik={formik}
                 name="ccContactIds"
                 label={translateText(["logEmail", "modal", "labels", "cc"])}
-                placeholder={translateText([
-                  "logEmail",
-                  "modal",
-                  "placeholders",
-                  "recipients"
-                ])}
+                placeholder={recipientsPlaceholder}
+                searchPlaceholder={recipientsPlaceholder}
                 groupAriaLabel={translateAria(["cc"])}
                 hiddenContactIds={[
                   ...values.toContactIds,

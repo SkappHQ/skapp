@@ -198,6 +198,12 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
               "placeholders",
               "attendees"
             ])}
+            searchPlaceholder={translateText([
+              "logMeeting",
+              "modal",
+              "placeholders",
+              "searchAttendees"
+            ])}
             groupAriaLabel={translateAria(["attendees"])}
             fillsRelatedTo
             {...(attendeeCompanyIds.length > 1 && {

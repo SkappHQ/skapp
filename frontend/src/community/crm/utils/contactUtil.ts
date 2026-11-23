@@ -1,4 +1,7 @@
-import { DropdownOption } from "@rootcodelabs/skapp-ui";
+import {
+  DropdownOption,
+  MultiSelectSearchDropdownOption
+} from "@rootcodelabs/skapp-ui";
 
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
@@ -146,6 +149,14 @@ export const getContactDisplayName = (
   if (contact.name) return contact.name;
   return [contact.firstName, contact.lastName].filter(Boolean).join(" ");
 };
+
+export const toContactOption = (
+  contactId: number,
+  contact: CrmContactEntity
+): MultiSelectSearchDropdownOption => ({
+  value: String(contactId),
+  label: getContactDisplayName(contact)
+});
 
 export const getContactNameParts = (contact: CrmContactEntity) => {
   const [firstName, lastName] = getContactDisplayName(contact).split(" ");
