@@ -44,7 +44,7 @@ const SidePanelLinkPopupField: FC<Props> = ({
   };
 
   const handleRenderTrigger = (triggerProps: TriggerProps) => (
-    <div className="flex w-full min-w-0 items-center gap-1">
+    <div className="flex w-full min-w-0 items-center gap-1 px-1 rounded-lg border border-transparent hover:border-secondary-accent">
       {selectedId && (
         <SidePanelLinkButton label={linkLabel} onClick={onLinkClick} />
       )}
@@ -54,7 +54,7 @@ const SidePanelLinkPopupField: FC<Props> = ({
         {...triggerProps}
         ref={triggerProps.ref as RefObject<HTMLButtonElement>}
         aria-label={editAriaLabel}
-        className="body2 flex-1 self-stretch min-h-8 px-1 rounded-lg text-left cursor-pointer hover:bg-secondary-background"
+        className="body2 flex-1 self-stretch min-h-8 text-left cursor-pointer"
       >
         {!selectedId && emptyLabel}
       </button>
