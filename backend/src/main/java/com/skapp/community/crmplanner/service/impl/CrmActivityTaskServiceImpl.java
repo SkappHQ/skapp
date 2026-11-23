@@ -65,6 +65,7 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 		validateActivityCreationLimit();
 
 		CrmValidations.validateTaskName(requestDto.getName());
+		CrmValidations.validateActivityTaskPriority(requestDto.getPriority());
 		CrmValidations.validateTaskDueAt(requestDto.getDueAt());
 		CrmValidations.validateTaskNotes(requestDto.getNotes());
 
@@ -74,8 +75,7 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 
 		CrmActivityTask task = new CrmActivityTask();
 		task.setName(requestDto.getName());
-		task.setPriority(requestDto.getPriority() != null ? requestDto.getPriority()
-				: CrmConstants.DEFAULT_ACTIVITY_TASK_PRIORITY);
+		task.setPriority(requestDto.getPriority());
 		task.setDueAt(requestDto.getDueAt());
 		task.setNotes(requestDto.getNotes());
 		task.setIsCompleted(false);

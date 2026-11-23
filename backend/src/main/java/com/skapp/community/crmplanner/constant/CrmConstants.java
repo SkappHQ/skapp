@@ -2,7 +2,6 @@ package com.skapp.community.crmplanner.constant;
 
 import com.skapp.community.common.type.Role;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
-import com.skapp.community.crmplanner.type.CrmActivityTaskPriority;
 import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import lombok.experimental.UtilityClass;
 
@@ -56,8 +55,6 @@ public class CrmConstants {
 	public static final int TASK_NOTES_MAX_LENGTH = 1000;
 
 	public static final CrmTaskPriority DEFAULT_TASK_PRIORITY = CrmTaskPriority.MEDIUM;
-
-	public static final CrmActivityTaskPriority DEFAULT_ACTIVITY_TASK_PRIORITY = CrmActivityTaskPriority.MEDIUM;
 
 	public static final int RELATED_ACTIVITY_LIMIT = 5;
 
