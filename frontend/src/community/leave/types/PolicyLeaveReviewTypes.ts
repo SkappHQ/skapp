@@ -87,7 +87,6 @@ export interface PolicyManagerLeaveRequestType {
   isMultiLevel: boolean | null;
   requestAuthorizer: PolicyLeaveReviewEmployeeType | null;
   primaryReviewer: PolicyLeaveReviewEmployeeType | null;
-  primaryReviewedDate: string | null;
   isCurrentApprover?: boolean | null;
 }
 
