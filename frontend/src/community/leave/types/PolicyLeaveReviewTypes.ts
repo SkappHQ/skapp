@@ -90,11 +90,15 @@ export interface PolicyManagerLeaveRequestType {
   isCurrentApprover: boolean | null;
 }
 
+export interface PolicyLeaveRecipientPersonType {
+  employeeId: number;
+  firstName: string;
+  lastName: string;
+  authPic: string | null;
+}
+
 export interface PolicyLeaveRecipientType {
-  person: Pick<
-    PolicyLeaveReviewEmployeeType,
-    "employeeId" | "firstName" | "lastName" | "authPic"
-  >;
+  person: PolicyLeaveRecipientPersonType;
   hasApproved: boolean;
 }
 

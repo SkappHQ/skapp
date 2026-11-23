@@ -30,7 +30,6 @@ import {
 } from "~community/common/utils/dateTimeUtils";
 import { NINETY_PERCENT } from "~community/common/utils/getConstants";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
-import { useGetLeaveApprovalConfig } from "~community/leave/api/LeaveApprovalConfigApi";
 import {
   useApplyPolicyLeave,
   useCheckPolicyLeaveAvailability,
@@ -52,6 +51,7 @@ import {
   PolicyLeaveModalEnums,
   PolicyLeaveToastEnums
 } from "~community/leave/enums/PolicyLeaveEnums";
+import useMultiLevelApprovalEnabled from "~community/leave/hooks/useMultiLevelApprovalEnabled";
 import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 import { useLeaveStore } from "~community/leave/store/store";
 import { MyLeaveRequestPayloadType } from "~community/leave/types/MyRequests";
@@ -132,7 +132,7 @@ const ApplyPolicyLeaveModal = () => {
     setModalType
   } = usePolicyLeaveStore();
 
-  const { data: leaveApprovalConfig } = useGetLeaveApprovalConfig();
+  const { isMultiLevelApprovalEnabled } = useMultiLevelApprovalEnabled();
 
   const isCalendarSelectionInvalid = useLeaveStore(
     (state) => state.isApplyLeaveModalBtnDisabled
@@ -543,6 +543,11 @@ const ApplyPolicyLeaveModal = () => {
     );
   };
 
+  const isMultiLevelRequest =
+    isMultiLevelApprovalEnabled &&
+    !!selectedPolicyBalance &&
+    !selectedPolicyBalance.leaveType.isAutoApproval;
+
   return (
     <div className="flex h-full flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto">
@@ -631,10 +636,7 @@ const ApplyPolicyLeaveModal = () => {
                 endDate={selectedDates[1]}
                 resourceAvailability={resourceAvailability}
                 workingDays={workingDays}
-                isMultiLevel={
-                  !!leaveApprovalConfig?.isMultiLevelApprovalEnabled &&
-                  !selectedPolicyBalance.leaveType.isAutoApproval
-                }
+                isMultiLevel={isMultiLevelRequest}
                 requestAuthorizer={
                   employeeData?.employment?.employmentDetails?.requestAuthorizer
                 }

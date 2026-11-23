@@ -108,6 +108,10 @@ const PolicyLeaveReviewResultModal: FC<Props> = ({
     popupType === PolicyLeaveRequestStatus.APPROVED ||
     popupType === PolicyLeaveReviewModalEnums.APPROVED_STATUS;
 
+  const isForwarded =
+    !!request.isMultiLevel &&
+    request.status === PolicyLeaveRequestStatus.PENDING;
+
   const isDenied =
     popupType === PolicyLeaveRequestStatus.DENIED ||
     popupType === PolicyLeaveReviewModalEnums.DECLINE_STATUS;
@@ -176,7 +180,7 @@ const PolicyLeaveReviewResultModal: FC<Props> = ({
         />
       </div>
       <div className="flex flex-row gap-4 justify-end">
-        {isApproved && (
+        {isApproved && !isForwarded && (
           <ButtonV2
             variant={"tertiary"}
             onClick={handleUndo}

@@ -2,10 +2,14 @@ import { DAY_MONTH_YEAR_FORMAT } from "~community/attendance/constants/constants
 import { formatInstant } from "~community/common/utils/dateTimeUtils";
 import { EmployeeLeaveRequestType } from "~community/leave/types/EmployeeLeaveRequestTypes";
 import {
+  PolicyLeaveRecipientPersonType,
+  PolicyLeaveRecipientType,
+  PolicyLeaveRequestDetailType,
   PolicyLeaveReviewEmployeeType,
   PolicyLeaveReviewRequestParams,
   PolicyManagerLeaveRequestQueryParams
 } from "~community/leave/types/PolicyLeaveReviewTypes";
+import { PolicyLeaveRequestStatus } from "~community/leave/types/PolicyLeaveTypes";
 
 export const getPolicyManagerLeaveRequestQueryParams = (
   params: PolicyLeaveReviewRequestParams
@@ -43,3 +47,27 @@ export const toStatusPopupReviewer = (
         authPic: reviewer.authPic ?? ""
       }
     : undefined;
+
+export const getMultiLevelRecipients = (
+  request: PolicyLeaveRequestDetailType,
+  primarySupervisor?: PolicyLeaveRecipientPersonType
+): PolicyLeaveRecipientType[] => {
+  const isApproved = request.status === PolicyLeaveRequestStatus.APPROVED;
+  const primaryRecipient = request.primaryReviewer ?? primarySupervisor;
+  const recipients: PolicyLeaveRecipientType[] = [];
+
+  if (primaryRecipient) {
+    recipients.push({
+      person: primaryRecipient,
+      hasApproved: !!request.primaryReviewer || isApproved
+    });
+  }
+  if (request.requestAuthorizer) {
+    recipients.push({
+      person: request.requestAuthorizer,
+      hasApproved: isApproved
+    });
+  }
+
+  return recipients;
+};
