@@ -74,5 +74,3 @@ export const SUMMARY_LAYOUTS: Record<string, PolicyLeaveSummaryLayout> = {
 export const SUMMARY_POPUP_TYPES = Object.keys(
   SUMMARY_LAYOUTS
 ) as PolicyLeavePopupType[];
-
-export const APPROVED_BY_DATE_TIME_FORMAT = "HH : mm dd MMM yyyy";

@@ -1,7 +1,8 @@
+import { Box, Stack, Typography } from "@mui/material";
+import { AvatarChip } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
-import Avatar from "~community/common/components/molecules/Avatar/Avatar";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import {
@@ -45,45 +46,66 @@ const PolicyMultiLevelRecipientsRow: FC<Props> = ({ request }) => {
   ];
 
   return (
-    <div className="flex flex-row items-center gap-3.5">
-      <span className="body1 whitespace-nowrap">
+    <Box
+      component="div"
+      sx={{
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "flex-start",
+        gap: "14px"
+      }}
+    >
+      <Typography
+        component="div"
+        sx={{
+          fontWeight: "400",
+          fontSize: "16px",
+          lineHeight: "16px",
+          whiteSpace: "nowrap",
+          mt: "0.75rem"
+        }}
+      >
         {translateText(["recipient"])} :
-      </span>
-      <ol className="flex flex-row flex-wrap gap-2">
-        {recipients.map(({ person, hasApproved }) => (
-          <li
-            key={person.employeeId}
-            className="flex flex-row items-center gap-2 rounded-full bg-secondary-background py-1 pl-1 pr-3"
-          >
-            <Avatar
-              firstName={person.firstName}
-              lastName={person.lastName}
-              src={person.authPic ?? ""}
-            />
-            <span className="body2 text-secondary-text">
-              {person.firstName}
-            </span>
-            {(hasApproved || isPending) && (
-              <span
-                role="img"
-                aria-label={translateAria(
+      </Typography>
+      <Stack direction="row" gap={1} flexWrap="wrap" alignItems="flex-start">
+        {recipients.map(({ person, hasApproved }) => {
+          const name = `${person.firstName} ${person.lastName}`;
+          const showStatus = hasApproved || isPending;
+          return (
+            <div key={person.employeeId}>
+              <AvatarChip
+                avatarProps={{
+                  id: `recipient-${person.employeeId}`,
+                  firstName: person.firstName,
+                  lastName: person.lastName,
+                  src: person.authPic ?? "",
+                  alt: name
+                }}
+                label={person.firstName}
+                backgroundColor="bg-secondary-background"
+                textColor="text-secondary-text"
+                showActionButton={showStatus}
+                actionIcon={
+                  <Icon
+                    name={
+                      hasApproved
+                        ? IconName.SUCCESS_TICK_ICON
+                        : IconName.CLOCK_ICON
+                    }
+                    width="16"
+                    height="16"
+                  />
+                }
+                actionButtonAriaLabel={translateAria(
                   [hasApproved ? "approved" : "pending"],
-                  { name: `${person.firstName} ${person.lastName}` }
+                  { name }
                 )}
-              >
-                <Icon
-                  name={
-                    hasApproved
-                      ? IconName.SUCCESS_TICK_ICON
-                      : IconName.CLOCK_ICON
-                  }
-                />
-              </span>
-            )}
-          </li>
-        ))}
-      </ol>
-    </div>
+              />
+            </div>
+          );
+        })}
+      </Stack>
+    </Box>
   );
 };
 

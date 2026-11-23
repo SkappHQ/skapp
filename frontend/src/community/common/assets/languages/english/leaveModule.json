@@ -875,12 +875,7 @@
       "revokeLeaveSuccessTitle": "Request Revoked",
       "revokeLeaveSuccessDesc": "Request has been revoked successfully.",
       "attachments": "Attachments:",
-      "uploadedAttachment": "Uploaded Attachment",
-      "approvedBy": "Approved by",
-      "waitingForRequestAuthorizer": "Approved by the Primary Supervisor. Waiting for the Request authorizer.",
-      "forwardedToAuthorizerTitle": "Sent to the Request authorizer",
-      "forwardedToAuthorizerDesc": "The request now needs the Request authorizer's approval.",
-      "waitingForPrimarySupervisor": "Waiting for the Primary Supervisor."
+      "uploadedAttachment": "Uploaded Attachment"
     }
   },
   "leaveReports": {
