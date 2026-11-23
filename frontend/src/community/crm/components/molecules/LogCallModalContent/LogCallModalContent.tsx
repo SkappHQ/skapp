@@ -199,10 +199,8 @@ const LogCallModalContent: FC<Props> = ({
       onSave={handleSave}
       onClose={onClose}
     >
-      <div className="flex flex-col gap-2 overflow-y-auto pr-1">
-        {typeField?.(isPending || isSubmitting)}
-        <LogCallModalForm formik={formik} />
-      </div>
+      {typeField?.(isPending || isSubmitting)}
+      <LogCallModalForm formik={formik} />
     </LogActivityModal>
   );
 };

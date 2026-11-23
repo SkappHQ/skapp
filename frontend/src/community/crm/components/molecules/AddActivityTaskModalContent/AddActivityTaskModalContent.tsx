@@ -169,10 +169,8 @@ const AddActivityTaskModalContent: FC<Props> = ({
       onSave={submitForm}
       onClose={onClose}
     >
-      <div className="flex flex-col gap-2 overflow-y-auto pr-1">
-        {typeField?.(isPending || isSubmitting)}
-        <AddActivityTaskModalForm formik={formik} />
-      </div>
+      {typeField?.(isPending || isSubmitting)}
+      <AddActivityTaskModalForm formik={formik} />
     </LogActivityModal>
   );
 };

@@ -187,10 +187,8 @@ const LogEmailModalContent: FC<Props> = ({
       onSave={submitForm}
       onClose={onClose}
     >
-      <div className="flex flex-col gap-2 overflow-y-auto pr-1">
-        {typeField?.(isPending || isSubmitting)}
-        <LogEmailModalForm formik={formik} />
-      </div>
+      {typeField?.(isPending || isSubmitting)}
+      <LogEmailModalForm formik={formik} />
     </LogActivityModal>
   );
 };

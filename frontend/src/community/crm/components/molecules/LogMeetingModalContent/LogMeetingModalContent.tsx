@@ -185,10 +185,8 @@ const LogMeetingModalContent: FC<Props> = ({
       onSave={submitForm}
       onClose={onClose}
     >
-      <div className="flex flex-col gap-2 overflow-y-auto pr-1">
-        {typeField?.(isPending || isSubmitting)}
-        <LogMeetingModalForm formik={formik} />
-      </div>
+      {typeField?.(isPending || isSubmitting)}
+      <LogMeetingModalForm formik={formik} />
     </LogActivityModal>
   );
 };
