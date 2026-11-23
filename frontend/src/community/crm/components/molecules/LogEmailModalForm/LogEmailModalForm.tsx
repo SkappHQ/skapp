@@ -113,6 +113,10 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
     }
   };
 
+  const subjectError = touched.subject ? errors.subject : "";
+
+  const fromAddressError = touched.fromAddress ? errors.fromAddress : "";
+
   const pickedDate = values.date ? toPickerDate(values.date) : null;
 
   const handleDateSelect = (date?: Date): void => {
@@ -127,8 +131,8 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
         value={values.subject}
         label={translateText(["logActivity", "labels", "subject"])}
         placeholder={translateText(["logActivity", "placeholders", "subject"])}
-        errorMessage={touched.subject ? errors.subject : ""}
-        state={touched.subject && errors.subject ? "error" : "default"}
+        errorMessage={subjectError}
+        state={subjectError ? "error" : "default"}
         onChange={handleChange}
         onBlur={handleBlur}
         aria-label={translateAria(["subject"])}
@@ -147,8 +151,8 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
           "placeholders",
           "from"
         ])}
-        errorMessage={touched.fromAddress ? errors.fromAddress : ""}
-        state={touched.fromAddress && errors.fromAddress ? "error" : "default"}
+        errorMessage={fromAddressError}
+        state={fromAddressError ? "error" : "default"}
         onChange={handleChange}
         onBlur={handleBlur}
         aria-label={translateAria(["from"])}
