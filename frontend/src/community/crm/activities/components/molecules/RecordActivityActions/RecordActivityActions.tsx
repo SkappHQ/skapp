@@ -1,4 +1,4 @@
-import { ButtonV2, PlusIcon } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -13,25 +13,25 @@ import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 interface RecordActivityActionsProps {
   id: string;
   prefill: CrmActivityPrefill;
-  isLineButton?: boolean;
 }
 
 const RecordActivityActions: FC<RecordActivityActionsProps> = ({
   id,
-  prefill,
-  isLineButton = false
+  prefill
 }) => {
   const translateText = useTranslator("crmModule", "activities");
 
   const {
     setIsRecordActivityModalOpen,
     setRecordActivityModalType,
-    setRecordActivityPrefill
+    setRecordActivityPrefill,
+    setRecordActivityTriggerId
   } = useCrmStore(
     useShallow((store) => ({
       setIsRecordActivityModalOpen: store.setIsRecordActivityModalOpen,
       setRecordActivityModalType: store.setRecordActivityModalType,
-      setRecordActivityPrefill: store.setRecordActivityPrefill
+      setRecordActivityPrefill: store.setRecordActivityPrefill,
+      setRecordActivityTriggerId: store.setRecordActivityTriggerId
     }))
   );
 
@@ -40,6 +40,7 @@ const RecordActivityActions: FC<RecordActivityActionsProps> = ({
   const handleAddActivity = (): void => {
     guardCrmCreate(CrmLimitResource.ACTIVITIES, () => {
       setRecordActivityPrefill(prefill);
+      setRecordActivityTriggerId(`${id}-add`);
       setRecordActivityModalType(ActivityType.TASK);
       setIsRecordActivityModalOpen(true);
     });
@@ -51,12 +52,7 @@ const RecordActivityActions: FC<RecordActivityActionsProps> = ({
       <ButtonV2
         id={`${id}-add`}
         type="button"
-        variant={isLineButton ? "line" : "primary"}
-        {...(isLineButton && {
-          size: "sm",
-          icon: <PlusIcon />,
-          iconPosition: "end"
-        })}
+        variant="primary"
         disabled={isCheckingCrmLimit}
         isLoading={isCheckingCrmLimit}
         onClick={handleAddActivity}

@@ -39,6 +39,8 @@ const LogActivityModal: FC<Props> = ({
     "unsavedChangesModal"
   );
 
+  const translateAria = useTranslator("crmAria", "activities", "logActivity");
+
   const [isDiscardPromptOpen, setIsDiscardPromptOpen] = useState(false);
 
   const handleRequestClose = (): void => {
@@ -57,6 +59,7 @@ const LogActivityModal: FC<Props> = ({
       isOpen
       onClose={handleRequestClose}
       modalHeader={isDiscardPromptOpen ? translateCommon(["title"]) : title}
+      closeButtonAriaLabel={translateAria(["close"])}
       content={
         <>
           {isDiscardPromptOpen && (
@@ -67,7 +70,9 @@ const LogActivityModal: FC<Props> = ({
           )}
           <div className={isDiscardPromptOpen ? "hidden" : "contents"}>
             <div className="flex flex-col w-full h-full justify-between gap-2 -mt-3 max-h-[calc(100vh-10rem)]">
-              {children}
+              <div className="flex flex-col gap-2 overflow-y-auto pr-1">
+                {children}
+              </div>
               <div className="flex flex-row justify-end gap-[1rem]">
                 <ButtonV2
                   variant="tertiary"

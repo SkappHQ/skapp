@@ -58,12 +58,14 @@ export interface ActivityRowSubtitlePart {
   content: ReactNode;
 }
 
-export interface ActivityFeedResponse {
-  items: ActivityRow[];
+export interface ActivityListPage<T> {
+  items: T[];
   currentPage: number;
   totalItems: number;
   totalPages: number;
 }
+
+export type ActivityFeedResponse = ActivityListPage<ActivityRow>;
 
 export enum ActivityTaskStatus {
   OVERDUE = "OVERDUE",
@@ -123,6 +125,8 @@ export interface ActivityListFilters {
   endDate?: string;
   taskStatus?: ActivityTaskStatus;
   priority?: CrmPriorityEnum;
+  page?: number;
+  size?: number;
 }
 
 interface ActivityListItemBase {

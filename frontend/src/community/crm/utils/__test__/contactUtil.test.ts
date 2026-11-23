@@ -1,7 +1,14 @@
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { ADD_NEW_COMPANY_OPTION_ID } from "~community/crm/constants/contactConstants";
-import { CrmCompanyEntity } from "~community/crm/types/CrmCommonTypes";
-import { getCompanyOptions } from "~community/crm/utils/contactUtil";
+import {
+  CrmCompanyEntity,
+  CrmContactRecord
+} from "~community/crm/types/CrmCommonTypes";
+import {
+  getCompanyOptions,
+  getFieldsAddingOtherCompany,
+  toContactOption
+} from "~community/crm/utils/contactUtil";
 
 const lookupCompanies: CrmCompanyEntity[] = [
   { id: 1, name: "Acme" },
@@ -95,5 +102,75 @@ describe("getCompanyOptions add-new prompt", () => {
         getCompanyOptions(lookupCompanies, suggested, "suggested co")
       )
     ).toBeUndefined();
+  });
+});
+
+describe("toContactOption", () => {
+  const contacts: CrmContactRecord = {
+    5: { id: 5, firstName: "Jane", lastName: "Doe" }
+  };
+
+  it("uses the contact id as the value and the display name as the label", () => {
+    expect(toContactOption(5, contacts[5])).toEqual({
+      value: "5",
+      label: "Jane Doe"
+    });
+  });
+
+  it("keeps the id and gives an empty label when the contact is not in the store", () => {
+    expect(toContactOption(7, contacts[7])).toEqual({
+      value: "7",
+      label: ""
+    });
+  });
+});
+
+describe("getFieldsAddingOtherCompany", () => {
+  it("flags no field when every recipient shares one company", () => {
+    expect(getFieldsAddingOtherCompany([[1], [1], [1]])).toEqual([
+      false,
+      false,
+      false
+    ]);
+  });
+
+  it("flags the first field when its own contacts span two companies", () => {
+    expect(getFieldsAddingOtherCompany([[1, 2], [1], []])).toEqual([
+      true,
+      false,
+      false
+    ]);
+  });
+
+  it("flags the field that brings in another company", () => {
+    expect(getFieldsAddingOtherCompany([[1], [2], []])).toEqual([
+      false,
+      true,
+      false
+    ]);
+  });
+
+  it("flags only the last field when the earlier fields share a company", () => {
+    expect(getFieldsAddingOtherCompany([[1], [1], [2]])).toEqual([
+      false,
+      false,
+      true
+    ]);
+  });
+
+  it("flags every field that brings in a new company", () => {
+    expect(getFieldsAddingOtherCompany([[1], [2], [3]])).toEqual([
+      false,
+      true,
+      true
+    ]);
+  });
+
+  it("does not flag the first filled field when the fields above it are empty", () => {
+    expect(getFieldsAddingOtherCompany([[], [1], [2]])).toEqual([
+      false,
+      false,
+      true
+    ]);
   });
 });

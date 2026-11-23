@@ -1,4 +1,7 @@
-import { DropdownOption } from "@rootcodelabs/skapp-ui";
+import {
+  DropdownOption,
+  MultiSelectSearchDropdownOption
+} from "@rootcodelabs/skapp-ui";
 
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
@@ -75,6 +78,22 @@ export const getContactCompanyIds = (
   return companyIds;
 };
 
+export const getFieldsAddingOtherCompany = (
+  companyIdsByField: number[][]
+): boolean[] =>
+  companyIdsByField.map((fieldCompanyIds, fieldIndex) => {
+    const precedingCompanyIds = companyIdsByField.slice(0, fieldIndex).flat();
+    const companyCount = new Set([...precedingCompanyIds, ...fieldCompanyIds])
+      .size;
+
+    return (
+      companyCount > 1 &&
+      fieldCompanyIds.some(
+        (companyId) => !precedingCompanyIds.includes(companyId)
+      )
+    );
+  });
+
 export const linkContactToCompany = (
   contact: CrmContactEntity,
   companies: CrmCompanyRecord,
@@ -146,6 +165,14 @@ export const getContactDisplayName = (
   if (contact.name) return contact.name;
   return [contact.firstName, contact.lastName].filter(Boolean).join(" ");
 };
+
+export const toContactOption = (
+  contactId: number,
+  contact: CrmContactEntity
+): MultiSelectSearchDropdownOption => ({
+  value: String(contactId),
+  label: getContactDisplayName(contact)
+});
 
 export const getContactNameParts = (contact: CrmContactEntity) => {
   const [firstName, lastName] = getContactDisplayName(contact).split(" ");

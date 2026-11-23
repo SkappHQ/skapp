@@ -651,7 +651,10 @@
         },
         "validations": {
           "dateTime": "Date and time are required",
-          "to": "Please select at least one contact"
+          "to": "An activity must be linked to at least one contact."
+        },
+        "notices": {
+          "differentCompanies": "These contacts are linked to different companies."
         },
         "toastMessages": {
           "addSuccessTitle": "Email logged successfully",
@@ -672,7 +675,7 @@
           "duration": "Enter duration"
         },
         "validations": {
-          "contact": "Please select a contact",
+          "contact": "An activity must be linked to at least one contact.",
           "duration": "Please enter a valid duration (e.g. 1h 30m)"
         },
         "toastMessages": {
@@ -787,6 +790,12 @@
           "title": "No emails yet",
           "description": "Emails linked to this record will show here."
         }
+      },
+      "errorState": {
+        "description": "Couldn't load this record's activity history. Please refresh to try again."
+      },
+      "errorToast": {
+        "description": "Failed to load activity history"
       }
     },
     "toolbar": {
@@ -844,7 +853,7 @@
       "modal": {
         "validations": {
           "date": "Date is required",
-          "attendees": "An activity must be linked to at least one contact",
+          "attendees": "An activity must be linked to at least one contact.",
           "endTime": "End time must be after start time"
         },
         "title": "Log a meeting",
@@ -859,10 +868,11 @@
           "errorDescription": "Failed to save meeting"
         },
         "placeholders": {
-          "attendees": "Select attendees"
+          "attendees": "Select attendees",
+          "searchAttendees": "Search attendees"
         },
         "notices": {
-          "differentCompanies": "These contacts are linked to different companies. This activity will still be saved against all of them."
+          "differentCompanies": "These contacts are linked to different companies."
         }
       }
     },
@@ -883,7 +893,8 @@
         "activityOwner": "Search owner",
         "contact": "Enter name",
         "deal": "Search deals",
-        "relatedTo": "Search companies"
+        "relatedTo": "Search companies",
+        "selectedCount": "{count} selected"
       },
       "buttons": {
         "cancel": "Cancel",
@@ -905,6 +916,7 @@
       },
       "notices": {
         "dealCleared": "Deal cleared. It doesn't match the selected contact's company.",
+        "ownerReadOnly": "Read only. Only admins and sales managers can change the activity owner.",
         "relatedToMismatch": "This doesn't match the contact's company"
       },
       "toastMessages": {
@@ -940,6 +952,9 @@
         "deleteSuccessTitle": "Activity deleted successfully",
         "saveErrorDescription": "Failed to save activity",
         "deleteErrorDescription": "Failed to delete activity"
+      },
+      "validations": {
+        "contactRequired": "An activity must be linked to at least one contact."
       }
     },
     "meetingSidePanel": {

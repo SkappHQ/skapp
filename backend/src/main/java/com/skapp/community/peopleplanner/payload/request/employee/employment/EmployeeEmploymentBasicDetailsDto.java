@@ -35,4 +35,6 @@ public class EmployeeEmploymentBasicDetailsDto {
 
 	private Long businessUnitId;
 
+	private EmployeeEmploymentBasicDetailsManagerDetailsDto requestAuthorizer;
+
 }

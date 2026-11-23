@@ -1,6 +1,7 @@
 package com.skapp.community.peopleplanner.service;
 
 import com.skapp.community.common.model.User;
+import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeEmploymentDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeePersonalDetailsDto;
@@ -14,5 +15,7 @@ public interface EmployeeValidationService {
 	void validateCreateEmployeeRequestRequiredFields(CreateEmployeeRequestDto createEmployeeRequestDto, User user);
 
 	void validateEmployeeUpdateAccess(User currentUser, User user, CreateEmployeeRequestDto requestDto);
+
+	void validateRequestAuthorizerAssignment(Long requestAuthorizerId, Long employeeId, Long primarySupervisorId);
 
 }

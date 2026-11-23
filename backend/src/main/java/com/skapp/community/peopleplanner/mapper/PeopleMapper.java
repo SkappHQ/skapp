@@ -305,4 +305,6 @@ public interface PeopleMapper {
 	EmployeeEmploymentBillableRateDetailsDto employeeBillableRateToEmployeeEmploymentBillableRateDetailsDto(
 			EmployeeBillableRate employeeBillableRate);
 
+	EmployeeEmploymentBasicDetailsManagerDetailsDto employeeToManagerDetailsDto(Employee employee);
+
 }

@@ -246,7 +246,18 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_ERROR_CONTACT_NUMBER_ALREADY_SET("api.error.people.contact-number-already-set"),
 	PEOPLE_ERROR_JOINED_DATE_ALREADY_SET("api.error.people.joined-date-already-set"),
 	PEOPLE_ERROR_CONTACT_NUMBER_TARGET_NOT_ACTIVE("api.error.people.contact-number-target-not-active"),
-	PEOPLE_ERROR_INVALID_BILLABLE_RATE("api.error.people.invalid-billable-rate");
+	PEOPLE_ERROR_INVALID_BILLABLE_RATE("api.error.people.invalid-billable-rate"),
+	PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_EMPLOYEE_NOT_FOUND(
+			"api.error.people.validation.request-authorizer-employee-not-found"),
+	PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_NOT_ACTIVE("api.error.people.validation.request-authorizer-not-active"),
+	PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_SELF("api.error.people.validation.request-authorizer-self"),
+	PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_PRIMARY_SUPERVISOR_REQUIRED(
+			"api.error.people.validation.request-authorizer-primary-supervisor-required"),
+	PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_SAME_AS_PRIMARY_SUPERVISOR(
+			"api.error.people.validation.request-authorizer-same-as-primary-supervisor"),
+	PEOPLE_ERROR_VALIDATION_PRIMARY_SUPERVISOR_SAME_AS_REQUEST_AUTHORIZER(
+			"api.error.people.validation.primary-supervisor-same-as-request-authorizer"),
+	PEOPLE_ERROR_VALIDATION_OTHER_SUPERVISORS_NOT_ALLOWED("api.error.people.validation.other-supervisors-not-allowed");
 
 	private final String messageKey;
 

@@ -18,7 +18,10 @@ interface ContactLookup {
   dropdownItems: SearchableDropdownItem[];
 }
 
-export const useContactLookup = (searchTerm: string): ContactLookup => {
+export const useContactLookup = (
+  searchTerm: string,
+  shouldLoadWithoutSearch: boolean
+): ContactLookup => {
   const debouncedSearch = useDebounce(searchTerm.trim(), SEARCH_DEBOUNCE_DELAY);
 
   const lookupFilter: CrmContactFilterRequest = useMemo(
@@ -33,7 +36,7 @@ export const useContactLookup = (searchTerm: string): ContactLookup => {
 
   const { data: lookupData, isFetching } = useGetContactLookup(
     lookupFilter,
-    isSearchActive
+    isSearchActive || shouldLoadWithoutSearch
   );
 
   const lookupItems = useMemo(

@@ -14,7 +14,6 @@ import {
 } from "~community/crm/activities/types/activityTypes";
 import { useGetRecordActivities } from "~community/crm/api/ActivityApi";
 import { CrmActivityAssociationEnum } from "~community/crm/enums/common";
-import { useActivityDeals } from "~community/crm/hooks/useActivityDeals";
 import { useActivityTaskCompletion } from "~community/crm/hooks/useActivityTaskCompletion";
 
 export interface RecordActivitiesTabProps {
@@ -76,8 +75,6 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
 
   const rows = useMemo(() => pages.flatMap((page) => page.items), [pages]);
 
-  useActivityDeals(rows);
-
   useEffect(() => {
     if (!isError) return;
 
@@ -87,7 +84,7 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
       title: translateText(["activities", "feed", "errorToast", "title"]),
       description: translateText([
         "activities",
-        "feed",
+        "recordTab",
         "errorToast",
         "description"
       ])
@@ -133,17 +130,22 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
           resultCount={resultCount}
           isResultCountReady={!isLoading && (!isError || rows.length > 0)}
         />
-        <Dropdown
-          id={`${id}-type`}
-          options={typeOptions}
-          value={activeTab}
-          onChange={handleTypeChange}
-          variant="secondary"
-          size="sm"
-          width="9rem"
-          ariaLabel={translateAria(["activities", "recordTab", "typeFilter"])}
-        />
-        <div className="flex items-center gap-3 ml-auto">{actions}</div>
+        <div className={actions ? "" : "ml-auto"}>
+          <Dropdown
+            id={`${id}-type`}
+            options={typeOptions}
+            value={activeTab}
+            onChange={handleTypeChange}
+            variant="secondary"
+            size="sm"
+            className="rounded-lg"
+            width="9rem"
+            ariaLabel={translateAria(["activities", "recordTab", "typeFilter"])}
+          />
+        </div>
+        {actions && (
+          <div className="flex items-center gap-3 ml-auto">{actions}</div>
+        )}
       </div>
       <ActivityFeed
         id={`${id}-feed`}
@@ -172,6 +174,12 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
             "description"
           ])
         }}
+        errorStateDescription={translateText([
+          "activities",
+          "recordTab",
+          "errorState",
+          "description"
+        ])}
         isShowTaskCheckbox
         onLoadMore={fetchNextPage}
         onToggleComplete={handleToggleComplete}

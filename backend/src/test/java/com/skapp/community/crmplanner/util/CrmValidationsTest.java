@@ -4,6 +4,7 @@ import com.skapp.TestSkappApplication;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
+import com.skapp.community.crmplanner.type.CrmActivityTaskPriority;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -252,6 +253,26 @@ class CrmValidationsTest {
 		@DisplayName("Non-breaking space between words - becomes a normal space")
 		void normalizeIndustryName_NonBreakingSpaceBetweenWords_BecomesSpace() {
 			assertEquals("Deep Sea", CrmValidations.normalizeIndustryName("Deep Sea"));
+		}
+
+	}
+
+	@Nested
+	@DisplayName("validateActivityTaskPriority")
+	class ValidateActivityTaskPriority {
+
+		@Test
+		@DisplayName("Null priority - throws CRM_ERROR_ACTIVITY_TASK_PRIORITY_REQUIRED")
+		void validateActivityTaskPriority_Null_ThrowsRequired() {
+			ModuleException ex = assertThrows(ModuleException.class,
+					() -> CrmValidations.validateActivityTaskPriority(null));
+			assertEquals(CrmMessageConstant.CRM_ERROR_ACTIVITY_TASK_PRIORITY_REQUIRED, ex.getMessageKey());
+		}
+
+		@Test
+		@DisplayName("Valid priority - does not throw")
+		void validateActivityTaskPriority_Valid_DoesNotThrow() {
+			assertDoesNotThrow(() -> CrmValidations.validateActivityTaskPriority(CrmActivityTaskPriority.MEDIUM));
 		}
 
 	}

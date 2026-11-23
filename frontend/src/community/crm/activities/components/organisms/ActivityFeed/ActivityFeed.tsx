@@ -36,6 +36,7 @@ export interface ActivityFeedProps {
   emptyStateButton?: ButtonV2Props | null;
   emptyStateSecondaryButton?: ButtonV2Props | null;
   emptyStateText?: { title: string; description: string };
+  errorStateDescription: string;
   isShowTaskCheckbox?: boolean;
   onLoadMore: () => void;
   onRowClick?: (row: ActivityRow) => void;
@@ -56,6 +57,7 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
   emptyStateButton,
   emptyStateSecondaryButton,
   emptyStateText,
+  errorStateDescription,
   isShowTaskCheckbox,
   onLoadMore,
   onRowClick,
@@ -114,12 +116,7 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
           <EmptyDataView
             icon={<SearchIcon />}
             title={translateText(["activities", "feed", "errorState", "title"])}
-            description={translateText([
-              "activities",
-              "feed",
-              "errorState",
-              "description"
-            ])}
+            description={errorStateDescription}
             className={{ wrapper: "bg-secondary-background rounded-lg" }}
           />
         </div>

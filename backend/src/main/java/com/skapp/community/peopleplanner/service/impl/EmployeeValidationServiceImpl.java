@@ -10,6 +10,7 @@ import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.CommonModuleUtils;
+import com.skapp.community.leaveplanner.service.LeaveApprovalConfigService;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.JobFamily;
@@ -63,6 +64,8 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 	private final BusinessUnitDao businessUnitDao;
 
 	private final JsonMapper jsonMapper;
+
+	private final LeaveApprovalConfigService leaveApprovalConfigService;
 
 	@Override
 	public void validateCreateEmployeeRequestEmploymentDetails(EmployeeEmploymentDetailsDto employmentDetailsDto,
@@ -166,6 +169,9 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 							}
 						}
 					}
+
+					validateOtherSupervisorsAllowed(employmentDetailsDto.getEmploymentDetails());
+					validateRequestAuthorizer(employmentDetailsDto.getEmploymentDetails(), user);
 
 					LocalDate joinedDate = employmentDetailsDto.getEmploymentDetails().getJoinedDate();
 					LocalDate probationStartDate = employmentDetailsDto.getEmploymentDetails().getProbationStartDate();
@@ -576,6 +582,74 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 		selfServiceIdentification.setEthnicity(identificationDetailsDto.getEthnicity());
 		selfServiceIdentification.setEeoJobCategory(identificationDetailsDto.getEeoJobCategory());
 		return selfServiceIdentification;
+	}
+
+	private void validateOtherSupervisorsAllowed(EmployeeEmploymentBasicDetailsDto employmentDetails) {
+		List<EmployeeEmploymentBasicDetailsManagerDetailsDto> otherSupervisors = employmentDetails
+			.getOtherSupervisors();
+		if (otherSupervisors == null
+				|| otherSupervisors.stream().noneMatch(supervisor -> supervisor.getEmployeeId() != null)) {
+			return;
+		}
+
+		if (leaveApprovalConfigService.isMultiLevelApprovalEnabled()) {
+			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_OTHER_SUPERVISORS_NOT_ALLOWED);
+		}
+	}
+
+	private void validateRequestAuthorizer(EmployeeEmploymentBasicDetailsDto employmentDetails, User user) {
+		Employee employee = user.getEmployee();
+		Long primarySupervisorId = CommonModuleUtils
+			.resolvePrimarySupervisorId(employmentDetails.getPrimarySupervisor(), employee);
+		EmployeeEmploymentBasicDetailsManagerDetailsDto requestAuthorizer = employmentDetails.getRequestAuthorizer();
+
+		if (requestAuthorizer == null) {
+			validatePrimarySupervisorNotRequestAuthorizer(employmentDetails, employee, primarySupervisorId);
+			return;
+		}
+
+		if (requestAuthorizer.getEmployeeId() != null) {
+			validateRequestAuthorizerAssignment(requestAuthorizer.getEmployeeId(), user.getUserId(),
+					primarySupervisorId);
+		}
+	}
+
+	@Override
+	public void validateRequestAuthorizerAssignment(Long requestAuthorizerId, Long employeeId,
+			Long primarySupervisorId) {
+		if (Objects.equals(requestAuthorizerId, employeeId)) {
+			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_SELF);
+		}
+
+		Employee authorizer = employeeDao.findById(requestAuthorizerId)
+			.orElseThrow(() -> new ValidationException(
+					PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_EMPLOYEE_NOT_FOUND));
+		if (!CommonModuleUtils.isAssignableMember(authorizer)) {
+			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_NOT_ACTIVE);
+		}
+
+		if (primarySupervisorId == null) {
+			throw new ValidationException(
+					PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_PRIMARY_SUPERVISOR_REQUIRED);
+		}
+
+		if (Objects.equals(requestAuthorizerId, primarySupervisorId)) {
+			throw new ValidationException(
+					PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_SAME_AS_PRIMARY_SUPERVISOR);
+		}
+	}
+
+	private void validatePrimarySupervisorNotRequestAuthorizer(EmployeeEmploymentBasicDetailsDto employmentDetails,
+			Employee employee, Long primarySupervisorId) {
+		if (employmentDetails.getPrimarySupervisor() == null || primarySupervisorId == null || employee == null
+				|| employee.getRequestAuthorizer() == null) {
+			return;
+		}
+
+		if (Objects.equals(employee.getRequestAuthorizer().getEmployeeId(), primarySupervisorId)) {
+			throw new ValidationException(
+					PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_PRIMARY_SUPERVISOR_SAME_AS_REQUEST_AUTHORIZER);
+		}
 	}
 
 }

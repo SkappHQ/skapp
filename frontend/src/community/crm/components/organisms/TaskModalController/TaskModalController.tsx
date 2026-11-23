@@ -11,6 +11,7 @@ import { CrmModalTypes } from "~community/crm/types/CrmTypes";
 
 const TaskModalController: FC = () => {
   const translateText = useTranslator("crmModule");
+  const translateAria = useTranslator("crmAria", "tasks", "modal");
 
   const { isTaskModalOpen, taskModalType, selectedTaskId, setIsTaskModalOpen } =
     useCrmStore(
@@ -61,6 +62,7 @@ const TaskModalController: FC = () => {
       isOpen={isTaskModalOpen}
       onClose={handleCloseModal}
       modalHeader={getModalTitle(taskModalType)}
+      closeButtonAriaLabel={translateAria(["close"])}
       content={getModalContent()}
     />
   );

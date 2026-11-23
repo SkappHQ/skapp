@@ -22,9 +22,6 @@ public interface TimeRecordRepository {
 
 	List<TimeRecord> findOpenTimeRecordsByDate(LocalDate date);
 
-	AttendanceSummaryDto findManagerAssignUsersAttendanceSummary(Long managerId, List<Long> teamIds,
-			LocalDate startDate, LocalDate endDate, List<Long> employeeIds);
-
 	TimeSheetSummaryData findTimeSheetSummaryData(LocalDate startDate, LocalDate endDate, List<Long> employeeIds);
 
 	List<TimeRecord> getTimeRecordsByTeam(List<Long> teamsFilter);
