@@ -73,6 +73,13 @@ const ActivitiesContent: FC = () => {
 
   const actionButtonRef = useRef<HTMLButtonElement | null>(null);
 
+  useEffect(() => {
+    const params = new URLSearchParams(globalThis.location.search);
+    if (params.has("success") || params.has("error")) {
+      setActiveTab(ActivityTab.MEETINGS);
+    }
+  }, []);
+
   const focusActionButton = (): void => {
     requestAnimationFrame(() => {
       actionButtonRef.current?.focus();
