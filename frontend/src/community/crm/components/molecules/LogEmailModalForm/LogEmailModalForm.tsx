@@ -24,8 +24,14 @@ import {
   CrmContactEntity,
   CrmLogEmailFormValues
 } from "~community/crm/types/CrmCommonTypes";
-import { getContactCompanyIds } from "~community/crm/utils/contactUtil";
-import { isDealMatchingContacts } from "~community/crm/utils/dealUtil";
+import {
+  getContactCompanyIds,
+  getFieldsAddingOtherCompany
+} from "~community/crm/utils/contactUtil";
+import {
+  getSelectedDeal,
+  isDealMatchingContacts
+} from "~community/crm/utils/dealUtil";
 
 interface Props {
   formik: FormikProps<CrmLogEmailFormValues>;
@@ -82,6 +88,22 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
     new Set(getContactCompanyIds(contacts, recipientIds))
   );
 
+  const differentCompaniesNotice = translateText([
+    "logEmail",
+    "modal",
+    "notices",
+    "differentCompanies"
+  ]);
+
+  const [toCompaniesWarning, ccCompaniesWarning, bccCompaniesWarning] =
+    getFieldsAddingOtherCompany([
+      getContactCompanyIds(contacts, values.toContactIds),
+      getContactCompanyIds(contacts, values.ccContactIds),
+      getContactCompanyIds(contacts, values.bccContactIds)
+    ]).map((isAddingOtherCompany) =>
+      isAddingOtherCompany ? differentCompaniesNotice : ""
+    );
+
   const isDealMismatch =
     Boolean(status) &&
     status.mismatchedDealId === values.dealId &&
@@ -91,7 +113,7 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
     nextFieldContacts: CrmContactEntity[],
     otherRecipientIds: number[]
   ): void => {
-    const selectedDeal = values.dealId ? deals[values.dealId] : null;
+    const selectedDeal = getSelectedDeal(deals, values.dealId);
 
     const nextRecipients = [
       ...nextFieldContacts,
@@ -110,6 +132,10 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
     }
   };
 
+  const subjectError = touched.subject ? errors.subject : "";
+
+  const fromAddressError = touched.fromAddress ? errors.fromAddress : "";
+
   const pickedDate = values.date ? toPickerDate(values.date) : null;
 
   const handleDateSelect = (date?: Date): void => {
@@ -117,15 +143,15 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
   };
 
   return (
-    <div className="flex flex-col gap-2 overflow-y-auto pr-1">
+    <div className="flex flex-col gap-2">
       <InputField
         id="log-email-subject-input"
         name="subject"
         value={values.subject}
         label={translateText(["logActivity", "labels", "subject"])}
         placeholder={translateText(["logActivity", "placeholders", "subject"])}
-        errorMessage={touched.subject ? errors.subject : ""}
-        state={touched.subject && errors.subject ? "error" : "default"}
+        errorMessage={subjectError}
+        state={subjectError ? "error" : "default"}
         onChange={handleChange}
         onBlur={handleBlur}
         aria-label={translateAria(["subject"])}
@@ -144,8 +170,8 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
           "placeholders",
           "from"
         ])}
-        errorMessage={touched.fromAddress ? errors.fromAddress : ""}
-        state={touched.fromAddress && errors.fromAddress ? "error" : "default"}
+        errorMessage={fromAddressError}
+        state={fromAddressError ? "error" : "default"}
         onChange={handleChange}
         onBlur={handleBlur}
         aria-label={translateAria(["from"])}
@@ -209,6 +235,7 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
         searchPlaceholder={recipientsPlaceholder}
         groupAriaLabel={translateAria(["to"])}
         hiddenContactIds={[...values.ccContactIds, ...values.bccContactIds]}
+        warningMessage={toCompaniesWarning}
         onContactsChange={(nextContacts) =>
           handleRecipientsChange(nextContacts, [
             ...values.ccContactIds,
@@ -255,6 +282,7 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
                 placeholder={recipientsPlaceholder}
                 searchPlaceholder={recipientsPlaceholder}
                 groupAriaLabel={translateAria(["bcc"])}
+                warningMessage={bccCompaniesWarning}
                 hiddenContactIds={[
                   ...values.toContactIds,
                   ...values.ccContactIds
@@ -278,6 +306,7 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
                 placeholder={recipientsPlaceholder}
                 searchPlaceholder={recipientsPlaceholder}
                 groupAriaLabel={translateAria(["cc"])}
+                warningMessage={ccCompaniesWarning}
                 hiddenContactIds={[
                   ...values.toContactIds,
                   ...values.bccContactIds

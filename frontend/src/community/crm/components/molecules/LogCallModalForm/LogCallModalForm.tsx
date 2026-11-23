@@ -75,7 +75,7 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
   };
 
   return (
-    <div className="flex flex-col gap-2 overflow-y-auto pr-1">
+    <div className="flex flex-col gap-2">
       <InputField
         id="log-call-subject-input"
         name="subject"

@@ -78,6 +78,22 @@ export const getContactCompanyIds = (
   return companyIds;
 };
 
+export const getFieldsAddingOtherCompany = (
+  companyIdsByField: number[][]
+): boolean[] =>
+  companyIdsByField.map((fieldCompanyIds, fieldIndex) => {
+    const precedingCompanyIds = companyIdsByField.slice(0, fieldIndex).flat();
+    const companyCount = new Set([...precedingCompanyIds, ...fieldCompanyIds])
+      .size;
+
+    return (
+      companyCount > 1 &&
+      fieldCompanyIds.some(
+        (companyId) => !precedingCompanyIds.includes(companyId)
+      )
+    );
+  });
+
 export const linkContactToCompany = (
   contact: CrmContactEntity,
   companies: CrmCompanyRecord,

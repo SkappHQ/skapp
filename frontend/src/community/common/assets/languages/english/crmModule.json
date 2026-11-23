@@ -651,7 +651,10 @@
         },
         "validations": {
           "dateTime": "Date and time are required",
-          "to": "Please select at least one contact"
+          "to": "An activity must be linked to at least one contact."
+        },
+        "notices": {
+          "differentCompanies": "These contacts are linked to different companies."
         },
         "toastMessages": {
           "addSuccessTitle": "Email logged successfully",
@@ -672,7 +675,7 @@
           "duration": "Enter duration"
         },
         "validations": {
-          "contact": "Please select a contact",
+          "contact": "An activity must be linked to at least one contact.",
           "duration": "Please enter a valid duration (e.g. 1h 30m)"
         },
         "toastMessages": {
@@ -787,6 +790,12 @@
           "title": "No emails yet",
           "description": "Emails linked to this record will show here."
         }
+      },
+      "errorState": {
+        "description": "Couldn't load this record's activity history. Please refresh to try again."
+      },
+      "errorToast": {
+        "description": "Failed to load activity history"
       }
     },
     "toolbar": {
@@ -844,7 +853,7 @@
       "modal": {
         "validations": {
           "date": "Date is required",
-          "attendees": "An activity must be linked to at least one contact",
+          "attendees": "An activity must be linked to at least one contact.",
           "endTime": "End time must be after start time"
         },
         "title": "Log a meeting",
@@ -863,7 +872,7 @@
           "searchAttendees": "Search attendees"
         },
         "notices": {
-          "differentCompanies": "These contacts are linked to different companies. This activity will still be saved against all of them."
+          "differentCompanies": "These contacts are linked to different companies."
         }
       }
     },
@@ -943,6 +952,9 @@
         "deleteSuccessTitle": "Activity deleted successfully",
         "saveErrorDescription": "Failed to save activity",
         "deleteErrorDescription": "Failed to delete activity"
+      },
+      "validations": {
+        "contactRequired": "An activity must be linked to at least one contact."
       }
     },
     "meetingSidePanel": {

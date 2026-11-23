@@ -135,7 +135,7 @@ const ActivityContactsField: FC<Props> = ({
       >
         {label}
         {required && (
-          <span className="ml-1 text-red-700" aria-hidden="true">
+          <span className="ml-1 text-semantic-red-accent" aria-hidden="true">
             *
           </span>
         )}
