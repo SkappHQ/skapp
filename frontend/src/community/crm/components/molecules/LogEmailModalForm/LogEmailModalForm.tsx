@@ -25,7 +25,10 @@ import {
   CrmLogEmailFormValues
 } from "~community/crm/types/CrmCommonTypes";
 import { getContactCompanyIds } from "~community/crm/utils/contactUtil";
-import { isDealMatchingContacts } from "~community/crm/utils/dealUtil";
+import {
+  getSelectedDeal,
+  isDealMatchingContacts
+} from "~community/crm/utils/dealUtil";
 
 interface Props {
   formik: FormikProps<CrmLogEmailFormValues>;
@@ -84,7 +87,7 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
     nextFieldContacts: CrmContactEntity[],
     otherRecipientIds: number[]
   ): void => {
-    const selectedDeal = values.dealId ? deals[values.dealId] : null;
+    const selectedDeal = getSelectedDeal(deals, values.dealId);
 
     const nextRecipients = [
       ...nextFieldContacts,
