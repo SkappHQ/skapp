@@ -23,8 +23,6 @@ public class LeaveApprovalConfigController {
 
 	private final LeaveApprovalConfigService leaveApprovalConfigService;
 
-	@Operation(summary = "Get leave approval configuration",
-			description = "Returns whether multi-level leave approval is enabled for the organization")
 	@GetMapping
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE', 'ROLE_PEOPLE_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> getLeaveApprovalConfig() {
