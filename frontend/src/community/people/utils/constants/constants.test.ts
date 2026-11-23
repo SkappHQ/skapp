@@ -1,4 +1,17 @@
-import { DATE_FORMAT, USER_BULK_HEADERS } from "./constants";
+import {
+  DATE_FORMAT,
+  USER_BULK_HEADERS,
+  USER_BULK_MULTI_LEVEL_HEADERS
+} from "./constants";
+
+describe("USER_BULK_MULTI_LEVEL_HEADERS", () => {
+  it("adds the Request authorizer column after the standard headers", () => {
+    expect(USER_BULK_MULTI_LEVEL_HEADERS).toEqual([
+      ...USER_BULK_HEADERS,
+      "requestAuthorizerEmail"
+    ]);
+  });
+});
 
 describe("USER_BULK_HEADERS", () => {
   it("should contain all expected headers", () => {

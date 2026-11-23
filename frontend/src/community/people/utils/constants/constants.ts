@@ -52,6 +52,11 @@ export const USER_BULK_HEADERS = [
   "businessUnit"
 ];
 
+export const USER_BULK_MULTI_LEVEL_HEADERS = [
+  ...USER_BULK_HEADERS,
+  "requestAuthorizerEmail"
+];
+
 export const DATE_FORMAT = {
   YYYY_MM_DD_SLASH: "yyyy/MM/dd",
   YYYY_MM_DD_DASH: "yyyy-MM-dd",

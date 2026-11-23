@@ -38,6 +38,7 @@ import {
   getTimeZoneLabel
 } from "~community/common/utils/dateTimeUtils";
 import { isValidEmailPattern } from "~community/common/utils/validation";
+import useMultiLevelApprovalEnabled from "~community/leave/hooks/useMultiLevelApprovalEnabled";
 import {
   useCheckEmailAndIdentificationNo,
   useGetSearchedEmployees
@@ -111,6 +112,8 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
     const { user } = useAuth();
 
     const isAdmin = user?.roles?.includes(ManagerTypes.PEOPLE_MANAGER);
+
+    const { isMultiLevelApprovalEnabled } = useMultiLevelApprovalEnabled();
 
     const [isUniqueEmail, setIsUniqueEmail] = useState<boolean>(false);
     const [isUniqueEmployeeNo, setIsUniqueEmployeeNo] =
@@ -729,7 +732,10 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
 
             <Grid
               size={{ xs: 12, md: 6, xl: 4 }}
-              sx={{ display: isEmployee ? "none" : "block" }}
+              sx={{
+                display:
+                  isEmployee || isMultiLevelApprovalEnabled ? "none" : "block"
+              }}
             >
               <AvatarSearch
                 id="secondary-manager-search"

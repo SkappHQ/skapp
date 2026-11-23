@@ -29,6 +29,7 @@ import {
   convertDateToFormat,
   getTimeZoneLabel
 } from "~community/common/utils/dateTimeUtils";
+import useMultiLevelApprovalEnabled from "~community/leave/hooks/useMultiLevelApprovalEnabled";
 import SupervisorSelector from "~community/people/components/molecules/SupervisorSelector/SupervisorSelector";
 import { AccountStatusTypes } from "~community/people/enums/PeopleEnums";
 import useEmployeeDetailsFormHandler from "~community/people/hooks/useEmployeeDetailsFormHandler";
@@ -93,8 +94,13 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
 
     const canEditBusinessUnit = isSuperAdmin || isPeopleAdmin;
 
+    const { isMultiLevelApprovalEnabled } = useMultiLevelApprovalEnabled();
+
     const { employee, setTeamModalType, setIsTeamModalOpen } = usePeopleStore(
       (state) => state
+    );
+    const hasPrimarySupervisor = Boolean(
+      employee?.employment?.employmentDetails?.primarySupervisor?.employeeId
     );
 
     const [isUniqueEmail, setIsUniqueEmail] = useState<boolean>(false);
@@ -173,6 +179,14 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
       handleSecondaryManagerRemove,
       refetch,
       handleBackspacePressPrimary,
+      isRequestAuthorizerPopperOpen,
+      setIsRequestAuthorizerPopperOpen,
+      requestAuthorizerSearchTerm,
+      requestAuthorizerSuggestions,
+      onRequestAuthorizerSearchChange,
+      handleRequestAuthorizerSelect,
+      handleRequestAuthorizerRemove,
+      handleBackspacePressRequestAuthorizer,
       handleBackspacePressSecondary,
       setSecondaryManagerSearchTerm
     } = useEmployeeDetailsFormHandler({
@@ -424,9 +438,56 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
               />
             </Grid>
 
+            {isMultiLevelApprovalEnabled && !isEmployee && (
+              <Grid size={{ xs: 12, md: 6, xl: 4 }}>
+                <AvatarSearch
+                  id="request-authorizer-search"
+                  title={translateText(["requestAuthorizer"])}
+                  newResourceManager={
+                    employee?.employment?.employmentDetails?.requestAuthorizer
+                  }
+                  isManagerPopperOpen={isRequestAuthorizerPopperOpen}
+                  managerSuggestions={requestAuthorizerSuggestions}
+                  managerSearchTerm={requestAuthorizerSearchTerm}
+                  handleManagerRemove={handleRequestAuthorizerRemove}
+                  handleManagerSelect={handleRequestAuthorizerSelect}
+                  setIsManagerPopperOpen={setIsRequestAuthorizerPopperOpen}
+                  onManagerSearchChange={onRequestAuthorizerSearchChange}
+                  errors={errors?.requestAuthorizer ?? ""}
+                  inputName={"requestAuthorizer"}
+                  isDisabled={
+                    isReadOnly ||
+                    isProfileView ||
+                    isInputsDisabled ||
+                    !hasPrimarySupervisor
+                  }
+                  isDisabledLabel={isInputsDisabled || !hasPrimarySupervisor}
+                  helperText={
+                    hasPrimarySupervisor || isReadOnly || isProfileView
+                      ? undefined
+                      : translateText(["requestAuthorizerPrimaryRequired"])
+                  }
+                  placeholder={
+                    !isReadOnly && !isProfileView
+                      ? translateText(["selectRequestAuthorizer"])
+                      : ""
+                  }
+                  needSearchIcon={!isReadOnly && !isProfileView}
+                  noSearchResultTexts={translateText(["noSearchResults"])}
+                  componentStyle={{
+                    width: "100%"
+                  }}
+                  onKeyDown={handleBackspacePressRequestAuthorizer}
+                />
+              </Grid>
+            )}
+
             <Grid
               size={{ xs: 12, md: 6, xl: 4 }}
-              sx={{ display: isEmployee ? "none" : "block" }}
+              sx={{
+                display:
+                  isEmployee || isMultiLevelApprovalEnabled ? "none" : "block"
+              }}
             >
               {!isProTier ? (
                 <AvatarSearch

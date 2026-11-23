@@ -52,6 +52,7 @@ const useUserBulkConvert = () => {
           workLocation: user?.workLocation ?? null,
           businessUnit: user?.businessUnit ?? null,
           primaryManager: user?.primaryManager,
+          requestAuthorizerEmail: user?.requestAuthorizerEmail,
           joinedDate: user?.joinedDate,
           accountStatus: AccountStatus.PENDING,
           employmentAllocation: user?.employmentAllocation

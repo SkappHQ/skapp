@@ -44,6 +44,7 @@ export interface BulkUploadUser {
   joinedDate: string | null;
   teams: string | number[];
   primaryManager: string | null;
+  requestAuthorizerEmail?: string;
   probationStartDate: string | null;
   probationEndDate: string | null;
   timeZone: string | null;

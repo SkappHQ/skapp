@@ -26,6 +26,20 @@ describe("employmentDetailsChangesUtils", () => {
       const result = getEmploymentChanges(newEmployment, previousEmployment);
       expect(result).toEqual({});
     });
+
+    it("should return the request authorizer when it changes", () => {
+      const newEmployment = { requestAuthorizer: { employeeId: 2 } };
+      const previousEmployment = { requestAuthorizer: { employeeId: 1 } };
+      const result = getEmploymentChanges(newEmployment, previousEmployment);
+      expect(result).toEqual({ requestAuthorizer: { employeeId: 2 } });
+    });
+
+    it("should return an empty request authorizer when it is cleared", () => {
+      const newEmployment = { requestAuthorizer: {} };
+      const previousEmployment = { requestAuthorizer: { employeeId: 1 } };
+      const result = getEmploymentChanges(newEmployment, previousEmployment);
+      expect(result).toEqual({ requestAuthorizer: {} });
+    });
   });
 
   describe("getCareerProgressionChanges", () => {

@@ -15,7 +15,10 @@ import {
 } from "~community/people/constants/stringConstants";
 import { BulkUploadUser } from "~community/people/types/UserBulkUploadTypes";
 
-import { USER_BULK_HEADERS } from "../utils/constants/constants";
+import {
+  USER_BULK_HEADERS,
+  USER_BULK_MULTI_LEVEL_HEADERS
+} from "../utils/constants/constants";
 
 const useUserBulkValidation = () => {
   const validateUser = (user: BulkUploadUser) => {
@@ -66,6 +69,8 @@ const useUserBulkValidation = () => {
       user?.joinedDate &&
       dateValidation(user?.joinedDate) &&
       (!user?.primaryManager || isEmailInputValid(user?.primaryManager)) &&
+      (!user?.requestAuthorizerEmail ||
+        isEmailInputValid(user?.requestAuthorizerEmail)) &&
       (!user?.probationStartDate || dateValidation(user?.probationStartDate)) &&
       (!user?.probationEndDate || dateValidation(user?.probationEndDate)) &&
       (!user?.careerProgressionStartDate ||
@@ -93,11 +98,19 @@ const useUserBulkValidation = () => {
     return userArray?.every(validateUser);
   };
 
-  const isCsvValid = (userArray: BulkUploadUser[]) => {
+  const isCsvValid = (
+    userArray: BulkUploadUser[],
+    isMultiLevelApprovalEnabled: boolean
+  ) => {
     const headerList = Object.keys(userArray?.[0]).filter(Boolean);
+    const matchesHeaders = (expectedHeaders: string[]): boolean =>
+      headerList?.length === expectedHeaders?.length &&
+      expectedHeaders?.every((header) => headerList?.includes(header));
+
     return (
-      headerList?.length === USER_BULK_HEADERS?.length &&
-      USER_BULK_HEADERS?.every((header) => headerList?.includes(header))
+      matchesHeaders(USER_BULK_HEADERS) ||
+      (isMultiLevelApprovalEnabled &&
+        matchesHeaders(USER_BULK_MULTI_LEVEL_HEADERS))
     );
   };
 
