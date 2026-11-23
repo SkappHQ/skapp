@@ -107,8 +107,6 @@ const useUserBulkValidation = () => {
       headerList?.length === expectedHeaders?.length &&
       expectedHeaders?.every((header) => headerList?.includes(header));
 
-    // The Request authorizer column is optional, so a file from the normal
-    // template is still accepted while multi-level approval is on.
     return (
       matchesHeaders(USER_BULK_HEADERS) ||
       (isMultiLevelApprovalEnabled &&
