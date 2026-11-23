@@ -6,6 +6,7 @@ import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
+import com.skapp.community.leaveplanner.constant.LeaveModuleConstant;
 import com.skapp.community.leaveplanner.type.LeaveState;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.Holiday;
@@ -158,6 +159,24 @@ public class LeaveModuleUtil {
 			currentDate = currentDate.plusDays(1);
 		}
 		return workDays;
+	}
+
+	public static float getLeaveDaysOnDate(LocalDate date, LeaveState leaveState, List<TimeConfig> timeConfigs,
+			List<Holiday> holidays) {
+		if (!CommonModuleUtils.checkIfDayIsWorkingDay(date, timeConfigs)) {
+			return 0;
+		}
+
+		HolidayDuration holidayDuration = getHolidayAvailabilityOnGivenDate(date, holidays);
+		if (holidayDuration == HolidayDuration.FULL_DAY) {
+			return 0;
+		}
+
+		if (holidayDuration != null || isHalfDay(leaveState)) {
+			return LeaveModuleConstant.HALF_DAY;
+		}
+
+		return LeaveModuleConstant.FULL_DAY;
 	}
 
 	public static void validateTeamsForLeaveAnalytics(List<Long> teamIds, User currentUser, List<Team> teams) {

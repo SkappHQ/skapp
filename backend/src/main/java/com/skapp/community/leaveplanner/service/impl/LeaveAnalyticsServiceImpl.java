@@ -490,6 +490,13 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 		return holidayDao.findAllByIsActiveTrue().stream().map(Holiday::getDate).toList();
 	}
 
+	private List<Holiday> getHolidaysForEmployee(Employee employee) {
+		if (employee.getWorkLocation() != null && employee.getWorkLocation().getWorkLocationId() != null) {
+			return holidayDao.findAllActiveHolidaysByWorkLocationId(employee.getWorkLocation().getWorkLocationId());
+		}
+		return holidayDao.findAllByIsActiveTrueAndWorkLocationsIsEmpty();
+	}
+
 	private List<Integer> getWorkingDaysIndex() {
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
 		return timeConfigs.stream().map(TimeConfig::getDay).map(day -> day.getValue() % 7).toList();
@@ -604,11 +611,10 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_START_DATE_END_DATE_NOT_VALID);
 		}
 
-		List<LocalDate> holidayDates = holidayDao.findAllByIsActiveTrue().stream().map(Holiday::getDate).toList();
+		List<Holiday> holidays = getHolidaysForEmployee(employeeOptional.get());
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
 		List<LeaveUtilizationByEmployeeMonthly> leaveUtilizationByEmployeeMonthly = leaveRequestDao
-			.findLeaveUtilizationByEmployeeMonthly(startDate, endDate,
-					CommonModuleUtils.getWorkingDaysIndex(timeConfigs), holidayDates, employeeId, leaveTypeIds);
+			.findLeaveUtilizationByEmployeeMonthly(startDate, endDate, timeConfigs, holidays, employeeId, leaveTypeIds);
 
 		Map<Integer, Double> totalLeavesWithMonths = leaveUtilizationByEmployeeMonthly.stream()
 			.collect(Collectors.groupingBy(LeaveUtilizationByEmployeeMonthly::getMonthValue,

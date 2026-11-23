@@ -16,6 +16,7 @@ import com.skapp.community.leaveplanner.repository.projection.ManagerLeaveTrend;
 import com.skapp.community.leaveplanner.repository.projection.OrganizationLeaveTrendForTheYear;
 import com.skapp.community.leaveplanner.repository.projection.TeamLeaveCountByType;
 import com.skapp.community.leaveplanner.repository.projection.TeamLeaveTrendForTheYear;
+import com.skapp.community.peopleplanner.model.Holiday;
 import com.skapp.community.timeplanner.model.TimeConfig;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
@@ -99,7 +100,7 @@ public interface LeaveRequestRepository {
 			LocalDate startDate, LocalDate endDate, List<Long> typeIds, List<Long> teamIds, List<Long> employeeIds);
 
 	List<LeaveUtilizationByEmployeeMonthly> findLeaveUtilizationByEmployeeMonthly(LocalDate startDate,
-			LocalDate endDate, List<Integer> workingDaysIndex, List<LocalDate> holidayDates, Long employeeId,
+			LocalDate endDate, List<TimeConfig> timeConfigs, List<Holiday> holidays, Long employeeId,
 			List<Long> typeIds);
 
 	List<OrganizationLeaveTrendForTheYear> findOrganizationLeaveTrendForTheYear(List<Integer> workingDaysIndex,
