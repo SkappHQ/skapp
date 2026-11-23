@@ -24,7 +24,7 @@ const TableView: FC<TableViewProps> = ({
   onRowClick,
   className = "",
   height,
-  isFullHeight = false,
+  isFullHeight,
   minHeight = "min-h-70",
   pagination,
   infiniteScroll,
@@ -70,9 +70,7 @@ const TableView: FC<TableViewProps> = ({
   };
 
   return (
-    <div
-      className={`flex w-full flex-col gap-3 ${isFullHeight ? "min-h-0 flex-1" : ""} ${className}`}
-    >
+    <div className={`flex w-full flex-col gap-3 ${className}`}>
       {heading && <h2 className="h2 mt-4 mb-1">{heading}</h2>}
 
       {isToolbarVisible && (
