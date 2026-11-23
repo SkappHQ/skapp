@@ -62,7 +62,7 @@ export const useContactLookup = (
 
   return {
     isSearchActive,
-    isLoading: isFetching,
+    isLoading: isFetching || searchTerm.trim() !== debouncedSearch,
     lookupItems,
     dropdownItems
   };
