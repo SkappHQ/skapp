@@ -11,12 +11,10 @@ import com.skapp.community.leaveplanner.payload.response.EmployeeLeaveRequestRep
 import com.skapp.community.leaveplanner.repository.projection.LeaveTrendByDay;
 import com.skapp.community.leaveplanner.repository.projection.LeaveTrendByMonth;
 import com.skapp.community.leaveplanner.repository.projection.LeaveTypeBreakDown;
-import com.skapp.community.leaveplanner.repository.projection.LeaveUtilizationByEmployeeMonthly;
 import com.skapp.community.leaveplanner.repository.projection.ManagerLeaveTrend;
 import com.skapp.community.leaveplanner.repository.projection.OrganizationLeaveTrendForTheYear;
 import com.skapp.community.leaveplanner.repository.projection.TeamLeaveCountByType;
 import com.skapp.community.leaveplanner.repository.projection.TeamLeaveTrendForTheYear;
-import com.skapp.community.peopleplanner.model.Holiday;
 import com.skapp.community.timeplanner.model.TimeConfig;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
@@ -99,9 +97,8 @@ public interface LeaveRequestRepository {
 	List<LeaveTypeBreakDown> findLeaveTypeBreakDown(List<Integer> workingDaysIndex, List<LocalDate> holidayDates,
 			LocalDate startDate, LocalDate endDate, List<Long> typeIds, List<Long> teamIds, List<Long> employeeIds);
 
-	List<LeaveUtilizationByEmployeeMonthly> findLeaveUtilizationByEmployeeMonthly(LocalDate startDate,
-			LocalDate endDate, List<TimeConfig> timeConfigs, List<Holiday> holidays, Long employeeId,
-			List<Long> typeIds);
+	List<LeaveRequest> findApprovedLeaveRequestsByEmployeeAndTypesInRange(Long employeeId, List<Long> typeIds,
+			LocalDate startDate, LocalDate endDate);
 
 	List<OrganizationLeaveTrendForTheYear> findOrganizationLeaveTrendForTheYear(List<Integer> workingDaysIndex,
 			List<LocalDate> holidayDates, List<Long> leaveTypeIds, LocalDate startDate, LocalDate endDate);
