@@ -44,20 +44,22 @@ const SidePanelLinkPopupField: FC<Props> = ({
   };
 
   const handleRenderTrigger = (triggerProps: TriggerProps) => (
-    <div className="flex w-full min-w-0 items-center gap-1 px-1 rounded-lg border border-transparent hover:border-secondary-accent">
-      {selectedId && (
-        <SidePanelLinkButton label={linkLabel} onClick={onLinkClick} />
-      )}
+    <div className="relative flex w-full min-w-0 min-h-8 items-center px-1 rounded-lg border border-transparent hover:border-secondary-accent">
       <button
         id={id}
         type="button"
         {...triggerProps}
         ref={triggerProps.ref as RefObject<HTMLButtonElement>}
         aria-label={editAriaLabel}
-        className="body2 flex-1 self-stretch min-h-8 text-left cursor-pointer"
+        className="body2 absolute inset-0 flex items-center px-1 rounded-lg text-left cursor-pointer"
       >
         {!selectedId && emptyLabel}
       </button>
+      {selectedId && (
+        <span className="relative flex min-w-0">
+          <SidePanelLinkButton label={linkLabel} onClick={onLinkClick} />
+        </span>
+      )}
     </div>
   );
 
@@ -71,8 +73,9 @@ const SidePanelLinkPopupField: FC<Props> = ({
         searchPlaceholder={searchPlaceholder}
         searchable
         width="w-full"
-        popupWidth="w-64"
+        popupWidth="w-[calc(100%+9.5rem+2px)]"
         popupAlignment="right"
+        popupOffset={{ x: 9 }}
         renderTrigger={(_value, _isOpen, _disabled, triggerProps) =>
           handleRenderTrigger(triggerProps)
         }
