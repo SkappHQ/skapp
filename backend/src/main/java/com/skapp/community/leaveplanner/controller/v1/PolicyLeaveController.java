@@ -136,7 +136,8 @@ public class PolicyLeaveController {
 	}
 
 	@Operation(summary = "Get a single policy leave request",
-			description = "Available to the employee who raised it and to anyone supervising them")
+			description = "Available to the employee who raised it, to anyone supervising them and, "
+					+ "for a multi-level request forwarded to them, to the Request authorizer")
 	@GetMapping("/{id}")
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE','ROLE_LEAVE_MANAGER')")
 	public ResponseEntity<ResponseEntityDto> getPolicyLeaveRequestById(@PathVariable Long id) {
@@ -146,7 +147,8 @@ public class PolicyLeaveController {
 
 	@Operation(summary = "Update the status of a policy leave request",
 			description = "The employee who raised it may cancel it while it is pending; "
-					+ "anyone supervising them may approve, decline or revoke it")
+					+ "anyone supervising them may approve, decline or revoke it. A multi-level request is decided "
+					+ "by the Primary Supervisor, then by the Request authorizer")
 	@PatchMapping("/{id}")
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> updatePolicyLeaveRequest(@PathVariable Long id,

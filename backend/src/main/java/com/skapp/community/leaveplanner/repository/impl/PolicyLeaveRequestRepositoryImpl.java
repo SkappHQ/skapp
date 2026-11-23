@@ -324,8 +324,6 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		fetchPolicy(root);
 		root.fetch(PolicyLeaveRequest_.employee, JoinType.INNER);
 		root.fetch(PolicyLeaveRequest_.reviewer, JoinType.LEFT);
-		root.fetch(PolicyLeaveRequest_.requestAuthorizer, JoinType.LEFT);
-		root.fetch(PolicyLeaveRequest_.primaryReviewer, JoinType.LEFT);
 		Join<PolicyLeaveRequest, Employee> employee = root.join(PolicyLeaveRequest_.employee);
 
 		List<Predicate> predicates = employeeDao.buildEmployeeScopePredicates(criteriaBuilder, criteriaQuery, employee,
