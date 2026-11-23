@@ -394,15 +394,10 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		if (isMultiLevel(leaveRequest) && targetStatus == LeaveRequestStatus.APPROVED
 				&& leaveRequest.getPrimaryReviewer() == null) {
 			leaveRequest.setPrimaryReviewer(currentEmployee);
-
-			if (leaveRequest.getRequestAuthorizer() != null) {
-				PolicyLeaveRequest forwardedLeaveRequest = policyLeaveRequestDao.save(leaveRequest);
-				notifyRequestAuthorizer(forwardedLeaveRequest);
-
-				log.info("updatePolicyLeaveRequest: execution ended for request: {}", id);
-				return new ResponseEntityDto(false,
-						leaveMapper.policyLeaveRequestToPolicyLeaveRequestResponseDto(forwardedLeaveRequest));
+			if (canForwardToRequestAuthorizer(leaveRequest)) {
+				return forwardToRequestAuthorizer(leaveRequest);
 			}
+			leaveRequest.setRequestAuthorizer(null);
 		}
 
 		if (StringUtils.isNotBlank(updateDto.getReviewerComment())) {
@@ -689,6 +684,19 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		return employeeManagers.stream()
 			.filter(employeeManager -> employeeManager.getManagerType() == ManagerType.PRIMARY)
 			.toList();
+	}
+
+	private boolean canForwardToRequestAuthorizer(PolicyLeaveRequest leaveRequest) {
+		return leaveRequest.getRequestAuthorizer() != null && hasLeaveApproverRole(leaveRequest.getRequestAuthorizer());
+	}
+
+	private ResponseEntityDto forwardToRequestAuthorizer(PolicyLeaveRequest leaveRequest) {
+		PolicyLeaveRequest forwardedLeaveRequest = policyLeaveRequestDao.save(leaveRequest);
+		notifyRequestAuthorizer(forwardedLeaveRequest);
+
+		log.info("updatePolicyLeaveRequest: execution ended for request: {}", forwardedLeaveRequest.getId());
+		return new ResponseEntityDto(false,
+				leaveMapper.policyLeaveRequestToPolicyLeaveRequestResponseDto(forwardedLeaveRequest));
 	}
 
 	private boolean hasLeaveApproverRole(Employee employee) {
@@ -1273,12 +1281,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		notificationService.createNotification(employee, leaveRequest.getId().toString(),
 				NotificationType.LEAVE_REQUEST, employeeTemplate, employeeFields, NotificationCategory.LEAVE);
 
-		notifySupervisors(supervisors, leaveRequest, () -> {
-			LeaveEmailDynamicFields supervisorFields = leaveRequestEmailFields(leaveRequest);
-			supervisorFields.setEmployeeName(fullName(employee));
-			supervisorFields.setEmployeesName(fullName(employee));
-			return supervisorFields;
-		}, supervisorTemplate);
+		notifySupervisors(supervisors, leaveRequest, () -> supervisorEmailFields(leaveRequest), supervisorTemplate);
 	}
 
 	private void sendEmailAfterCommit(EmailBodyTemplates template, LeaveEmailDynamicFields dynamicFields,
@@ -1298,63 +1301,39 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 	private void notifySupervisors(List<EmployeeManager> supervisors, PolicyLeaveRequest leaveRequest,
 			Supplier<LeaveEmailDynamicFields> fieldsSupplier, EmailBodyTemplates template) {
-		notifySupervisors(supervisors, leaveRequest, fieldsSupplier, template, NotificationType.LEAVE_REQUEST);
-	}
-
-	private void notifySupervisors(List<EmployeeManager> supervisors, PolicyLeaveRequest leaveRequest,
-			Supplier<LeaveEmailDynamicFields> fieldsSupplier, EmailBodyTemplates template,
-			NotificationType notificationType) {
 		notifyApprovers(
 				PeopleUtil.filterManagersByLeaveRoles(supervisors).stream().map(EmployeeManager::getManager).toList(),
-				leaveRequest, fieldsSupplier, template, notificationType);
+				leaveRequest, fieldsSupplier, template, NotificationType.LEAVE_REQUEST);
 	}
 
 	private void notifyNudgedLeaveRequest(PolicyLeaveRequest leaveRequest) {
-		Employee employee = leaveRequest.getEmployee();
 		EmailBodyTemplates template = leaveRequest.getStartDate().equals(leaveRequest.getEndDate())
 				? EmailBodyTemplates.LEAVE_MODULE_MANAGER_NUDGE_SINGLE_DAY_LEAVE
 				: EmailBodyTemplates.LEAVE_MODULE_MANAGER_NUDGE_MULTI_DAY_LEAVE;
 
-		notifyApprovers(currentApprovers(leaveRequest), leaveRequest, () -> {
-			LeaveEmailDynamicFields dynamicFields = leaveRequestEmailFields(leaveRequest);
-			dynamicFields.setEmployeeName(fullName(employee));
-			dynamicFields.setEmployeesName(fullName(employee));
-			return dynamicFields;
-		}, template, NotificationType.LEAVE_REQUEST_NUDGE);
+		notifyApprovers(currentApprovers(leaveRequest), leaveRequest, () -> supervisorEmailFields(leaveRequest),
+				template, NotificationType.LEAVE_REQUEST_NUDGE);
 	}
 
 	private List<Employee> currentApprovers(PolicyLeaveRequest leaveRequest) {
-		List<EmployeeManager> employeeManagers = employeeManagerDao.findByEmployee(leaveRequest.getEmployee());
-		if (!isMultiLevel(leaveRequest)) {
-			return PeopleUtil.filterManagersByLeaveRoles(employeeManagers)
-				.stream()
-				.map(EmployeeManager::getManager)
-				.toList();
-		}
-
-		if (leaveRequest.getPrimaryReviewer() != null) {
-			Employee requestAuthorizer = leaveRequest.getRequestAuthorizer();
-			return requestAuthorizer != null && hasLeaveApproverRole(requestAuthorizer) ? List.of(requestAuthorizer)
+		if (isMultiLevel(leaveRequest) && leaveRequest.getPrimaryReviewer() != null) {
+			return canForwardToRequestAuthorizer(leaveRequest) ? List.of(leaveRequest.getRequestAuthorizer())
 					: List.of();
 		}
 
-		return PeopleUtil.filterManagersByLeaveRoles(primarySupervisorLinks(employeeManagers))
-			.stream()
-			.map(EmployeeManager::getManager)
-			.toList();
+		List<EmployeeManager> employeeManagers = employeeManagerDao.findByEmployee(leaveRequest.getEmployee());
+		List<EmployeeManager> approverLinks = isMultiLevel(leaveRequest) ? primarySupervisorLinks(employeeManagers)
+				: employeeManagers;
+		return PeopleUtil.filterManagersByLeaveRoles(approverLinks).stream().map(EmployeeManager::getManager).toList();
 	}
 
 	private void notifyRequestAuthorizer(PolicyLeaveRequest leaveRequest) {
-		Employee employee = leaveRequest.getEmployee();
 		boolean isSingleDay = leaveRequest.getStartDate().equals(leaveRequest.getEndDate());
 
-		notifyApprovers(currentApprovers(leaveRequest), leaveRequest, () -> {
-			LeaveEmailDynamicFields dynamicFields = leaveRequestEmailFields(leaveRequest);
-			dynamicFields.setEmployeeName(fullName(employee));
-			dynamicFields.setEmployeesName(fullName(employee));
-			return dynamicFields;
-		}, isSingleDay ? EmailBodyTemplates.LEAVE_MODULE_MANAGER_RECEIVED_SINGLE_DAY_LEAVE
-				: EmailBodyTemplates.LEAVE_MODULE_MANAGER_RECEIVED_MULTIPLE_DAY_LEAVE, NotificationType.LEAVE_REQUEST);
+		notifyApprovers(currentApprovers(leaveRequest), leaveRequest, () -> supervisorEmailFields(leaveRequest),
+				isSingleDay ? EmailBodyTemplates.LEAVE_MODULE_MANAGER_RECEIVED_SINGLE_DAY_LEAVE
+						: EmailBodyTemplates.LEAVE_MODULE_MANAGER_RECEIVED_MULTIPLE_DAY_LEAVE,
+				NotificationType.LEAVE_REQUEST);
 	}
 
 	private void notifyApprovers(List<Employee> approvers, PolicyLeaveRequest leaveRequest,
@@ -1376,6 +1355,13 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		dynamicFields.setLeaveStartDate(leaveRequest.getStartDate().toString());
 		dynamicFields.setLeaveEndDate(leaveRequest.getEndDate().toString());
 		dynamicFields.setComment(leaveRequest.getReviewerComment());
+		return dynamicFields;
+	}
+
+	private LeaveEmailDynamicFields supervisorEmailFields(PolicyLeaveRequest leaveRequest) {
+		LeaveEmailDynamicFields dynamicFields = leaveRequestEmailFields(leaveRequest);
+		dynamicFields.setEmployeeName(fullName(leaveRequest.getEmployee()));
+		dynamicFields.setEmployeesName(fullName(leaveRequest.getEmployee()));
 		return dynamicFields;
 	}
 

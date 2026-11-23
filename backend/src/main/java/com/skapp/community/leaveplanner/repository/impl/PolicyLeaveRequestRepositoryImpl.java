@@ -110,7 +110,7 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 
 		CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
 		Root<PolicyLeaveRequest> countRoot = countQuery.from(PolicyLeaveRequest.class);
-		countQuery.select(criteriaBuilder.countDistinct(countRoot.get(PolicyLeaveRequest_.id)))
+		countQuery.select(criteriaBuilder.count(countRoot))
 			.where(buildSupervisorPredicates(criteriaBuilder, countQuery, countRoot,
 					countRoot.join(PolicyLeaveRequest_.employee), supervisorEmployeeId, filterDto)
 				.toArray(new Predicate[0]));
@@ -129,7 +129,6 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		root.fetch(PolicyLeaveRequest_.primaryReviewer, JoinType.LEFT);
 
 		criteriaQuery.select(root)
-			.distinct(true)
 			.where(buildSupervisorPredicates(criteriaBuilder, criteriaQuery, root,
 					root.join(PolicyLeaveRequest_.employee), supervisorEmployeeId, filterDto)
 				.toArray(new Predicate[0]));
@@ -267,8 +266,7 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 			predicates.add(employee.get(Employee_.employeeId).in(teamMembers));
 		}
 
-		countQuery.select(criteriaBuilder.countDistinct(root.get(PolicyLeaveRequest_.id)))
-			.where(predicates.toArray(new Predicate[0]));
+		countQuery.select(criteriaBuilder.count(root)).where(predicates.toArray(new Predicate[0]));
 
 		return entityManager.createQuery(countQuery).getSingleResult();
 	}
@@ -689,7 +687,7 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 
 	private List<Predicate> buildSupervisionPredicates(CriteriaBuilder criteriaBuilder, CommonAbstractCriteria query,
 			Root<PolicyLeaveRequest> root, Join<PolicyLeaveRequest, Employee> employee, Join<Employee, User> user,
-			Long supervisorEmployeeId, boolean isPendingWithSupervisorOnly) {
+			Long supervisorEmployeeId, boolean isPendingOnly) {
 		List<Predicate> predicates = new ArrayList<>();
 
 		predicates.add(criteriaBuilder.equal(user.get(User_.isActive), true));
@@ -700,11 +698,11 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		Predicate isForwarded = criteriaBuilder.isNotNull(root.get(PolicyLeaveRequest_.primaryReviewer));
 		Predicate isRequestAuthorizer = criteriaBuilder
 			.equal(root.get(PolicyLeaveRequest_.requestAuthorizer).get(Employee_.employeeId), supervisorEmployeeId);
-		Predicate forwardedToSupervisor = criteriaBuilder.and(isMultiLevel, isForwarded, isRequestAuthorizer);
+		Predicate forwardedToRequestAuthorizer = criteriaBuilder.and(isMultiLevel, isForwarded, isRequestAuthorizer);
 		Predicate isSupervisor = supervisesEmployee(criteriaBuilder, query, employee, supervisorEmployeeId, null);
 
-		if (!isPendingWithSupervisorOnly) {
-			predicates.add(criteriaBuilder.or(isSupervisor, forwardedToSupervisor));
+		if (!isPendingOnly) {
+			predicates.add(criteriaBuilder.or(isSupervisor, forwardedToRequestAuthorizer));
 			return predicates;
 		}
 
@@ -713,7 +711,8 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		Predicate singleLevelPending = criteriaBuilder.and(isSingleLevel, isSupervisor);
 		Predicate pendingWithPrimarySupervisor = criteriaBuilder.and(isMultiLevel, criteriaBuilder.not(isForwarded),
 				supervisesEmployee(criteriaBuilder, query, employee, supervisorEmployeeId, ManagerType.PRIMARY));
-		predicates.add(criteriaBuilder.or(singleLevelPending, pendingWithPrimarySupervisor, forwardedToSupervisor));
+		predicates
+			.add(criteriaBuilder.or(singleLevelPending, pendingWithPrimarySupervisor, forwardedToRequestAuthorizer));
 
 		return predicates;
 	}
