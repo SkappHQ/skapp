@@ -32,7 +32,7 @@ public class EmployeeLeavePolicyController {
 	@Operation(summary = "Assign a leave policy to an employee",
 			description = "Opens an effective-dated assignment window; supersedes any open window of the same leave type")
 	@PostMapping
-	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PEOPLE_ADMIN', 'ROLE_LEAVE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> assignLeavePolicy(
 			@RequestBody AssignLeavePolicyRequestDto assignLeavePolicyRequestDto) {
 		ResponseEntityDto response = employeeLeavePolicyService.assignLeavePolicy(assignLeavePolicyRequestDto);
@@ -42,7 +42,7 @@ public class EmployeeLeavePolicyController {
 	@Operation(summary = "Bulk assign leave policies to employees",
 			description = "Assigns policies to many employees from CSV-derived rows; each row is validated and processed independently")
 	@PostMapping("/bulk")
-	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PEOPLE_ADMIN', 'ROLE_LEAVE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> bulkAssignLeavePolicies(
 			@RequestBody BulkAssignLeavePolicyRequestDto bulkAssignLeavePolicyRequestDto) {
 		ResponseEntityDto response = employeeLeavePolicyService
@@ -53,7 +53,7 @@ public class EmployeeLeavePolicyController {
 	@Operation(summary = "Unassign a leave policy from an employee",
 			description = "Closes the employee's open window for the policy; 404 if no active assignment exists")
 	@DeleteMapping
-	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PEOPLE_ADMIN', 'ROLE_LEAVE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> unassignLeavePolicy(
 			@RequestBody UnassignLeavePolicyRequestDto unassignLeavePolicyRequestDto) {
 		ResponseEntityDto response = employeeLeavePolicyService.unassignLeavePolicy(unassignLeavePolicyRequestDto);
@@ -63,7 +63,7 @@ public class EmployeeLeavePolicyController {
 	@Operation(summary = "List an employee's active leave policy assignments",
 			description = "Returns the currently active (open) policy assignment windows for the employee")
 	@GetMapping("/employee/{employeeId}")
-	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN', 'ROLE_PEOPLE_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PEOPLE_ADMIN', 'ROLE_LEAVE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> getEmployeeLeavePolicies(@PathVariable Long employeeId,
 			EmployeeLeavePolicyFilterDto filterDto) {
 		ResponseEntityDto response = employeeLeavePolicyService.getEmployeeLeavePolicies(employeeId, filterDto);
