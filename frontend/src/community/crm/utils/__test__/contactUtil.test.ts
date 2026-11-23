@@ -1,7 +1,13 @@
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { ADD_NEW_COMPANY_OPTION_ID } from "~community/crm/constants/contactConstants";
-import { CrmCompanyEntity } from "~community/crm/types/CrmCommonTypes";
-import { getCompanyOptions } from "~community/crm/utils/contactUtil";
+import {
+  CrmCompanyEntity,
+  CrmContactRecord
+} from "~community/crm/types/CrmCommonTypes";
+import {
+  getCompanyOptions,
+  toContactOption
+} from "~community/crm/utils/contactUtil";
 
 const lookupCompanies: CrmCompanyEntity[] = [
   { id: 1, name: "Acme" },
@@ -95,5 +101,25 @@ describe("getCompanyOptions add-new prompt", () => {
         getCompanyOptions(lookupCompanies, suggested, "suggested co")
       )
     ).toBeUndefined();
+  });
+});
+
+describe("toContactOption", () => {
+  const contacts: CrmContactRecord = {
+    5: { id: 5, firstName: "Jane", lastName: "Doe" }
+  };
+
+  it("uses the contact id as the value and the display name as the label", () => {
+    expect(toContactOption(5, contacts[5])).toEqual({
+      value: "5",
+      label: "Jane Doe"
+    });
+  });
+
+  it("keeps the id and gives an empty label when the contact is not in the store", () => {
+    expect(toContactOption(7, contacts[7])).toEqual({
+      value: "7",
+      label: ""
+    });
   });
 });
