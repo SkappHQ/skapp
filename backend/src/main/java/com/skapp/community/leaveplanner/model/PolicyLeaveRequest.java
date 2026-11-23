@@ -95,9 +95,6 @@ public class PolicyLeaveRequest extends Auditable<String> {
 	@JoinColumn(name = "primary_reviewer_id")
 	private Employee primaryReviewer;
 
-	@Column(name = "primary_reviewed_date")
-	private Instant primaryReviewedDate;
-
 	@OneToMany(mappedBy = "leaveRequest", cascade = CascadeType.ALL)
 	private List<PolicyLeaveRequestAttachment> attachments;
 

@@ -394,7 +394,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		if (isMultiLevel(leaveRequest) && targetStatus == LeaveRequestStatus.APPROVED
 				&& leaveRequest.getPrimaryReviewer() == null) {
 			leaveRequest.setPrimaryReviewer(currentEmployee);
-			leaveRequest.setPrimaryReviewedDate(Instant.now());
 
 			if (leaveRequest.getRequestAuthorizer() != null) {
 				PolicyLeaveRequest forwardedLeaveRequest = policyLeaveRequestDao.save(leaveRequest);

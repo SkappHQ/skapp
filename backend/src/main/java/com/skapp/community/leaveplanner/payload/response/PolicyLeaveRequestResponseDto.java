@@ -60,8 +60,6 @@ public class PolicyLeaveRequestResponseDto {
 
 	private EmployeeBasicDetailsResponseDto primaryReviewer;
 
-	private Instant primaryReviewedDate;
-
 	private Boolean isCurrentApprover;
 
 }
