@@ -52,7 +52,7 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
   });
 
   const { mutate, isPending } = useReviewPolicyLeaveRequest(
-    () => {
+    (reviewedRequest) => {
       setToastMessage({
         open: true,
         toastType: ToastType.SUCCESS,
@@ -61,7 +61,11 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
         isIcon: true
       });
       sendEvent(GoogleAnalyticsTypes.GA4_LEAVE_REQUEST_APPROVED);
-      setPopupType(PolicyLeaveReviewModalEnums.APPROVED_STATUS);
+      setPopupType(
+        reviewedRequest.status === PolicyLeaveRequestStatus.PENDING
+          ? PolicyLeaveReviewModalEnums.FORWARDED_STATUS
+          : PolicyLeaveReviewModalEnums.APPROVED_STATUS
+      );
     },
     () => {
       setToastMessage({

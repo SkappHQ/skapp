@@ -104,13 +104,13 @@ const PolicyLeaveReviewResultModal: FC<Props> = ({
     });
   };
 
+  const isForwarded =
+    popupType === PolicyLeaveReviewModalEnums.FORWARDED_STATUS;
+
   const isApproved =
     popupType === PolicyLeaveRequestStatus.APPROVED ||
-    popupType === PolicyLeaveReviewModalEnums.APPROVED_STATUS;
-
-  const isForwarded =
-    !!request.isMultiLevel &&
-    request.status === PolicyLeaveRequestStatus.PENDING;
+    popupType === PolicyLeaveReviewModalEnums.APPROVED_STATUS ||
+    isForwarded;
 
   const isDenied =
     popupType === PolicyLeaveRequestStatus.DENIED ||

@@ -54,20 +54,18 @@ export const getMultiLevelRecipients = (
 ): PolicyLeaveRecipientType[] => {
   const isApproved = request.status === PolicyLeaveRequestStatus.APPROVED;
   const primaryRecipient = request.primaryReviewer ?? primarySupervisor;
-  const recipients: PolicyLeaveRecipientType[] = [];
 
-  if (primaryRecipient) {
-    recipients.push({
-      person: primaryRecipient,
-      hasApproved: !!request.primaryReviewer || isApproved
-    });
-  }
-  if (request.requestAuthorizer) {
-    recipients.push({
-      person: request.requestAuthorizer,
-      hasApproved: isApproved
-    });
-  }
-
-  return recipients;
+  return [
+    ...(primaryRecipient
+      ? [
+          {
+            person: primaryRecipient,
+            hasApproved: !!request.primaryReviewer || isApproved
+          }
+        ]
+      : []),
+    ...(request.requestAuthorizer
+      ? [{ person: request.requestAuthorizer, hasApproved: isApproved }]
+      : [])
+  ];
 };
