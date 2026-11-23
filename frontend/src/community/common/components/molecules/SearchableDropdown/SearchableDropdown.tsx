@@ -216,6 +216,7 @@ const SearchableDropdown: FC<SearchableDropdownProps> = ({
 
       {isDropdownOpen && (
         <Popper
+          key={`${Boolean(loadingMessage)}-${items.length > 0}`}
           id={`${id}-popper`}
           anchorEl={inputWrapperRef.current}
           anchorElWidth={inputWrapperRef.current?.offsetWidth}
