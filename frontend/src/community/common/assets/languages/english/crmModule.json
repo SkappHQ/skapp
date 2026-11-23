@@ -651,7 +651,7 @@
         },
         "validations": {
           "dateTime": "Date and time are required",
-          "to": "Please select at least one contact"
+          "to": "An activity must be linked to at least one contact."
         },
         "notices": {
           "differentCompanies": "These contacts are linked to different companies. This activity will still be saved against all of them."
