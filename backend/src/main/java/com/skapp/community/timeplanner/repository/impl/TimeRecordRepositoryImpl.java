@@ -344,14 +344,6 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		Root<TimeRecord> timeRecord = query.from(TimeRecord.class);
 		Join<TimeRecord, TimeSlot> timeSlot = timeRecord.join(TimeRecord_.timeSlots, JoinType.LEFT);
 
-		Subquery<Long> latestIds = query.subquery(Long.class);
-		Root<TimeRecord> latestRoot = latestIds.from(TimeRecord.class);
-		latestIds.select(cb.max(latestRoot.get(TimeRecord_.timeRecordId)));
-		latestIds.where(latestRoot.get(TimeRecord_.employee).get(Employee_.employeeId).in(employeeIds),
-				cb.between(latestRoot.get(TimeRecord_.date), startDate, endDate));
-		latestIds.groupBy(latestRoot.get(TimeRecord_.employee).get(Employee_.employeeId),
-				latestRoot.get(TimeRecord_.date));
-
 		query.select(cb.tuple(timeRecord.get(TimeRecord_.timeRecordId),
 				timeRecord.get(TimeRecord_.employee).get(Employee_.employeeId), timeRecord.get(TimeRecord_.date),
 				cb.coalesce(cb.round(timeRecord.get(TimeRecord_.workedHours), 2), cb.literal(0.0f)),
@@ -363,7 +355,8 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 						timeSlot.get(TimeSlot_.isActiveRightNow), cb.literal("isManualEntry"),
 						timeSlot.get(TimeSlot_.isManualEntry)))));
 
-		query.where(timeRecord.get(TimeRecord_.timeRecordId).in(latestIds));
+		query.where(timeRecord.get(TimeRecord_.timeRecordId)
+			.in(buildLatestTimeRecordIdSubquery(cb, query, employeeIds, startDate, endDate)));
 
 		query.groupBy(timeRecord.get(TimeRecord_.date), timeRecord.get(TimeRecord_.employee).get(Employee_.employeeId),
 				timeRecord.get(TimeRecord_.timeRecordId));
@@ -436,8 +429,9 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 
 				query.select(cb.tuple(selections.toArray(new Selection<?>[0])));
 				query.where(predicates.toArray(new Predicate[0]));
+				query.orderBy(cb.desc(timeRecord.get(TimeRecord_.timeRecordId)));
 
-				List<Tuple> results = entityManager.createQuery(query).getResultList();
+				List<Tuple> results = entityManager.createQuery(query).setMaxResults(1).getResultList();
 
 				if (results.isEmpty()) {
 					allResults.add(buildEmptyTimeRecord(employeeId, currentDate));
@@ -490,6 +484,18 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		return subquery;
 	}
 
+	private Subquery<Long> buildLatestTimeRecordIdSubquery(CriteriaBuilder cb, CriteriaQuery<Tuple> query,
+			List<Long> employeeIds, LocalDate startDate, LocalDate endDate) {
+		Subquery<Long> subquery = query.subquery(Long.class);
+		Root<TimeRecord> latestRoot = subquery.from(TimeRecord.class);
+		subquery.select(cb.max(latestRoot.get(TimeRecord_.timeRecordId)));
+		subquery.where(latestRoot.get(TimeRecord_.employee).get(Employee_.employeeId).in(employeeIds),
+				cb.between(latestRoot.get(TimeRecord_.date), startDate, endDate));
+		subquery.groupBy(latestRoot.get(TimeRecord_.employee).get(Employee_.employeeId),
+				latestRoot.get(TimeRecord_.date));
+		return subquery;
+	}
+
 	private Set<Long> getEmployeesInTeams(List<Long> employeeIds, List<Long> teamIds) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Long> query = cb.createQuery(Long.class);
@@ -514,6 +520,8 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		List<Predicate> joinPredicates = new ArrayList<>();
 		joinPredicates.add(cb.equal(timeRecord.get(TimeRecord_.employee), employee));
 		joinPredicates.add(cb.between(timeRecord.get(TimeRecord_.date), startDate, endDate));
+		joinPredicates.add(timeRecord.get(TimeRecord_.timeRecordId)
+			.in(buildLatestTimeRecordIdSubquery(cb, query, employeeIds, startDate, endDate)));
 
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(employee.get(Employee_.employeeId).in(employeeIds));
@@ -564,11 +572,12 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		query.select(cb.tuple(root.get(TimeRecord_.date), cb.coalesce(root.get(TimeRecord_.workedHours), 0.0f)));
 		query.where(cb.equal(root.get(TimeRecord_.employee).get(Employee_.employeeId), employeeId),
 				cb.between(root.get(TimeRecord_.date), startDate, endDate));
+		query.orderBy(cb.asc(root.get(TimeRecord_.timeRecordId)));
 
 		Map<LocalDate, Float> workedHoursByDate = entityManager.createQuery(query)
 			.getResultList()
 			.stream()
-			.collect(Collectors.toMap(t -> t.get(0, LocalDate.class), t -> t.get(1, Float.class), (a, b) -> a));
+			.collect(Collectors.toMap(t -> t.get(0, LocalDate.class), t -> t.get(1, Float.class), (a, b) -> b));
 
 		return dateRange.stream()
 			.map(date -> (EmployeeWorkHours) new EmployeeWorkHoursImpl(date,
