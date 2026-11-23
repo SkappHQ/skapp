@@ -6,6 +6,7 @@ import {
 } from "~community/crm/types/CrmCommonTypes";
 import {
   getCompanyOptions,
+  getFieldsAddingOtherCompany,
   toContactOption
 } from "~community/crm/utils/contactUtil";
 
@@ -121,5 +122,55 @@ describe("toContactOption", () => {
       value: "7",
       label: ""
     });
+  });
+});
+
+describe("getFieldsAddingOtherCompany", () => {
+  it("flags no field when every recipient shares one company", () => {
+    expect(getFieldsAddingOtherCompany([[1], [1], [1]])).toEqual([
+      false,
+      false,
+      false
+    ]);
+  });
+
+  it("flags the first field when its own contacts span two companies", () => {
+    expect(getFieldsAddingOtherCompany([[1, 2], [1], []])).toEqual([
+      true,
+      false,
+      false
+    ]);
+  });
+
+  it("flags the field that brings in another company", () => {
+    expect(getFieldsAddingOtherCompany([[1], [2], []])).toEqual([
+      false,
+      true,
+      false
+    ]);
+  });
+
+  it("flags only the last field when the earlier fields share a company", () => {
+    expect(getFieldsAddingOtherCompany([[1], [1], [2]])).toEqual([
+      false,
+      false,
+      true
+    ]);
+  });
+
+  it("flags every field that brings in a new company", () => {
+    expect(getFieldsAddingOtherCompany([[1], [2], [3]])).toEqual([
+      false,
+      true,
+      true
+    ]);
+  });
+
+  it("does not flag the first filled field when the fields above it are empty", () => {
+    expect(getFieldsAddingOtherCompany([[], [1], [2]])).toEqual([
+      false,
+      false,
+      true
+    ]);
   });
 });
