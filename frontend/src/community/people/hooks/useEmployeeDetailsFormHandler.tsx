@@ -417,21 +417,6 @@ const useEmployeeDetailsFormHandler = ({
     });
   };
 
-  // onManagerRemove writes the store from the formik values captured at render,
-  // so a chained remove would put the primary supervisor back. Clear both together.
-  const clearRequestAuthorizerWithPrimary = async (): Promise<void> => {
-    setRequestAuthorizerSearchTerm("");
-    await formik.setFieldValue("requestAuthorizer", {});
-    setEmploymentDetails({
-      employmentDetails: {
-        ...formik.values,
-        primarySupervisor: {},
-        ...(formik.values?.otherSupervisors && { otherSupervisors: [] }),
-        requestAuthorizer: {}
-      }
-    });
-  };
-
   const handlePrimaryManagerSelect = async (
     user: EmployeeDataType
   ): Promise<void> => {
@@ -446,20 +431,26 @@ const useEmployeeDetailsFormHandler = ({
   };
 
   const handlePrimaryManagerRemove = async (): Promise<void> => {
-    await onManagerRemove({
-      fieldName: "primarySupervisor",
-      formik,
-      searchTermSetter: setPrimaryManagerSearchTerm,
-      setSupervisor: setEmploymentDetails
+    const hasOtherSupervisors = Boolean(formik.values?.otherSupervisors);
+
+    setPrimaryManagerSearchTerm("");
+    setRequestAuthorizerSearchTerm("");
+    await formik.setFieldValue("primarySupervisor", {});
+    await formik.setFieldValue("requestAuthorizer", {});
+
+    if (hasOtherSupervisors) {
+      setSecondaryManagerSearchTerm("");
+      await formik.setFieldValue("otherSupervisors", []);
+    }
+
+    setEmploymentDetails({
+      employmentDetails: {
+        ...formik.values,
+        primarySupervisor: {},
+        ...(hasOtherSupervisors && { otherSupervisors: [] }),
+        requestAuthorizer: {}
+      }
     });
-    formik?.values?.otherSupervisors &&
-      (await onManagerRemove({
-        fieldName: "otherSupervisors",
-        formik,
-        searchTermSetter: setSecondaryManagerSearchTerm,
-        setSupervisor: setEmploymentDetails
-      }));
-    await clearRequestAuthorizerWithPrimary();
   };
 
   const handleSecondaryManagerSelect = async (
