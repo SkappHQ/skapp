@@ -94,6 +94,11 @@ const PolicyMultiLevelRecipientsRow: FC<Props> = ({ request }) => {
                     }
                     width="16"
                     height="16"
+                    fill={
+                      hasApproved
+                        ? undefined
+                        : "var(--color-semantic-amber-accent)"
+                    }
                   />
                 }
                 actionButtonAriaLabel={translateAria(
