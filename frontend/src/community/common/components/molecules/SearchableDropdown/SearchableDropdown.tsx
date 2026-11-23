@@ -195,7 +195,7 @@ const SearchableDropdown: FC<SearchableDropdownProps> = ({
         onChange={handleInputChange}
         onKeyDown={handleInputKeyDown}
         variant={variant}
-        state={state}
+        state={isDropdownOpen ? "default" : state}
         errorMessage={errorMessage}
         styleOverrides={{
           labelContainer:

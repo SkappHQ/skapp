@@ -132,6 +132,7 @@ const SidePanelContactsField: FC<Props> = ({
 
   const handleOpen = (): void => {
     setPendingIds(contactIds);
+    setIsEmptyBlocked(false);
     setIsOpen(true);
   };
 
