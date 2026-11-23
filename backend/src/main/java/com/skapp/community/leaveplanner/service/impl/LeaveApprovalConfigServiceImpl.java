@@ -82,6 +82,8 @@ public class LeaveApprovalConfigServiceImpl implements LeaveApprovalConfigServic
 	}
 
 	protected void addOtherSupervisorsRemovedTimelineRecords(List<EmployeeManager> removedSupervisors) {
+		// Overridden in enterprise to record the removed other supervisors on each
+		// employee's timeline
 	}
 
 	private void removeOtherSupervisors() {

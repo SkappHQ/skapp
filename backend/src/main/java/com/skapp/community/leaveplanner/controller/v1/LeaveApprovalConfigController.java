@@ -26,7 +26,7 @@ public class LeaveApprovalConfigController {
 	@Operation(summary = "Get leave approval configuration",
 			description = "Returns whether multi-level leave approval is enabled for the organization")
 	@GetMapping
-	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE', 'ROLE_PEOPLE_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> getLeaveApprovalConfig() {
 		ResponseEntityDto response = leaveApprovalConfigService.getLeaveApprovalConfig();
 		return new ResponseEntity<>(response, HttpStatus.OK);
