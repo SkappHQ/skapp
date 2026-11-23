@@ -160,6 +160,7 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
             ariaLabel={translateAria(["startTime"])}
             width="100%"
             scrollToSelected
+            usePortal
           />
         </div>
         <div className="flex-1">
@@ -176,6 +177,7 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
             ariaLabel={translateAria(["endTime"])}
             width="100%"
             scrollToSelected
+            usePortal
           />
         </div>
       </div>
