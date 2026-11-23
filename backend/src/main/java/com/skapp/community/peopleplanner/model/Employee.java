@@ -187,6 +187,10 @@ public class Employee extends Auditable<String> {
 	@JoinColumn(name = "business_unit_id")
 	private BusinessUnit businessUnit;
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "request_authorizer_id")
+	private Employee requestAuthorizer;
+
 	public String getFullName() {
 		return Stream.of(firstName, lastName)
 			.filter(namePart -> namePart != null && !namePart.isBlank())

@@ -31,4 +31,6 @@ public interface EmployeeManagerDao extends JpaRepository<EmployeeManager, Long>
 
 	boolean existsByManagerEmployeeIdAndEmployeeEmployeeId(Long managerId, Long employeeId);
 
+	List<EmployeeManager> findByManagerType(ManagerType managerType);
+
 }
