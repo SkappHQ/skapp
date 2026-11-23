@@ -6,6 +6,7 @@ import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmContact_;
+import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.payload.response.CrmActivityCallResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityCallRepository;
@@ -72,7 +73,9 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 			predicates.add(cb.equal(call.get(CrmActivityCall_.deal).get(CrmDeal_.id), params.getRelatedDealId()));
 		}
 		if (Boolean.TRUE.equals(params.getIsWithoutDeal())) {
-			predicates.add(cb.isNull(call.get(CrmActivityCall_.deal)));
+			Join<CrmActivityCall, CrmDeal> deal = call.join(CrmActivityCall_.deal, JoinType.LEFT);
+			deal.on(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+			predicates.add(cb.isNull(deal.get(CrmDeal_.id)));
 		}
 		if (params.getExcludedId() != null) {
 			predicates.add(cb.notEqual(call.get(CrmActivityCall_.id), params.getExcludedId()));
@@ -140,7 +143,9 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 				.add(cb.equal(countRoot.get(CrmActivityCall_.deal).get(CrmDeal_.id), params.getRelatedDealId()));
 		}
 		if (Boolean.TRUE.equals(params.getIsWithoutDeal())) {
-			countPredicates.add(cb.isNull(countRoot.get(CrmActivityCall_.deal)));
+			Join<CrmActivityCall, CrmDeal> deal = countRoot.join(CrmActivityCall_.deal, JoinType.LEFT);
+			deal.on(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+			countPredicates.add(cb.isNull(deal.get(CrmDeal_.id)));
 		}
 		if (params.getExcludedId() != null) {
 			countPredicates.add(cb.notEqual(countRoot.get(CrmActivityCall_.id), params.getExcludedId()));

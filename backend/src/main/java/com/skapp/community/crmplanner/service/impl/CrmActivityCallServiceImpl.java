@@ -325,7 +325,7 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 		params.setCurrentEmployeeId(currentUser.getEmployee().getEmployeeId());
 		params.setIsRestrictedToOwner(CrmUtil.isCrmSalesRepresentative(currentUser));
 		params.setRelatedContactIds(List.of(call.getContact().getId()));
-		if (call.getDeal() != null) {
+		if (call.getDeal() != null && !Boolean.TRUE.equals(call.getDeal().getIsDeleted())) {
 			params.setRelatedDealId(call.getDeal().getId());
 		}
 		else {

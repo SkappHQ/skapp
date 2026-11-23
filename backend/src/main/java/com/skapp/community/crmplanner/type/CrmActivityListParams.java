@@ -29,8 +29,6 @@ public class CrmActivityListParams {
 
 	private Long relatedDealId;
 
-	private Boolean isWithoutContact;
-
 	private Boolean isWithoutDeal;
 
 	private Long excludedId;

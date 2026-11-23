@@ -6,6 +6,7 @@ import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmContact_;
+import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.payload.response.CrmActivityTaskResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityTaskRepository;
@@ -78,10 +79,14 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 			predicates.add(cb.equal(task.get(CrmActivityTask_.deal).get(CrmDeal_.id), params.getRelatedDealId()));
 		}
 		if (Boolean.TRUE.equals(params.getIsWithoutDeal())) {
-			predicates.add(cb.isNull(task.get(CrmActivityTask_.deal)));
+			Join<CrmActivityTask, CrmDeal> deal = task.join(CrmActivityTask_.deal, JoinType.LEFT);
+			deal.on(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+			predicates.add(cb.isNull(deal.get(CrmDeal_.id)));
 		}
 		if (Boolean.TRUE.equals(params.getIsWithoutContact())) {
-			predicates.add(cb.isNull(task.get(CrmActivityTask_.contact)));
+			Join<CrmActivityTask, CrmContact> contact = task.join(CrmActivityTask_.contact, JoinType.LEFT);
+			contact.on(cb.isFalse(contact.get(CrmContact_.isDeleted)));
+			predicates.add(cb.isNull(contact.get(CrmContact_.id)));
 		}
 		if (params.getExcludedId() != null) {
 			predicates.add(cb.notEqual(task.get(CrmActivityTask_.id), params.getExcludedId()));
@@ -174,10 +179,14 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 				.add(cb.equal(countRoot.get(CrmActivityTask_.deal).get(CrmDeal_.id), params.getRelatedDealId()));
 		}
 		if (Boolean.TRUE.equals(params.getIsWithoutDeal())) {
-			countPredicates.add(cb.isNull(countRoot.get(CrmActivityTask_.deal)));
+			Join<CrmActivityTask, CrmDeal> deal = countRoot.join(CrmActivityTask_.deal, JoinType.LEFT);
+			deal.on(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+			countPredicates.add(cb.isNull(deal.get(CrmDeal_.id)));
 		}
 		if (Boolean.TRUE.equals(params.getIsWithoutContact())) {
-			countPredicates.add(cb.isNull(countRoot.get(CrmActivityTask_.contact)));
+			Join<CrmActivityTask, CrmContact> contact = countRoot.join(CrmActivityTask_.contact, JoinType.LEFT);
+			contact.on(cb.isFalse(contact.get(CrmContact_.isDeleted)));
+			countPredicates.add(cb.isNull(contact.get(CrmContact_.id)));
 		}
 		if (params.getExcludedId() != null) {
 			countPredicates.add(cb.notEqual(countRoot.get(CrmActivityTask_.id), params.getExcludedId()));

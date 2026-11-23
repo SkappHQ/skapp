@@ -15,6 +15,8 @@ public class CrmActivityTaskFilterParams extends CrmActivityListParams {
 
 	private CrmActivityTaskPriority priority;
 
+	private Boolean isWithoutContact;
+
 	private Instant todayStart;
 
 	private Instant todayEnd;

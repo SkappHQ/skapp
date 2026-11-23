@@ -397,7 +397,7 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 			.map(CrmContact::getId)
 			.toList();
 
-		if (relatedContactIds.isEmpty() && meeting.getDeal() == null) {
+		if (relatedContactIds.isEmpty()) {
 			log.info("getRelatedMeetings: execution ended");
 			return new ResponseEntityDto(false, List.of());
 		}
@@ -407,10 +407,8 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 		params.setSortOrder(Sort.Direction.DESC);
 		params.setCurrentEmployeeId(currentUser.getEmployee().getEmployeeId());
 		params.setIsRestrictedToOwner(CrmUtil.isCrmSalesRepresentative(currentUser));
-		if (!relatedContactIds.isEmpty()) {
-			params.setRelatedContactIds(relatedContactIds);
-		}
-		if (meeting.getDeal() != null) {
+		params.setRelatedContactIds(relatedContactIds);
+		if (meeting.getDeal() != null && !Boolean.TRUE.equals(meeting.getDeal().getIsDeleted())) {
 			params.setRelatedDealId(meeting.getDeal().getId());
 		}
 		else {
