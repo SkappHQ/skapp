@@ -80,7 +80,7 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
   };
 
   return (
-    <div className="flex flex-col gap-2 overflow-y-auto pr-1">
+    <div className="flex flex-col gap-2">
       <InputField
         id="add-task-name-input"
         name="name"

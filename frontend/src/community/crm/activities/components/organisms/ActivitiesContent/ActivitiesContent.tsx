@@ -399,6 +399,12 @@ const ActivitiesContent: FC = () => {
         taskCompletions={taskCompletions}
         emptyStateButton={showControls ? null : actionButton}
         emptyStateSecondaryButton={showControls ? null : meetingsScheduleButton}
+        errorStateDescription={translateText([
+          "activities",
+          "feed",
+          "errorState",
+          "description"
+        ])}
         onLoadMore={fetchNextPage}
         onRowClick={handleRowClick}
         onToggleComplete={handleToggleComplete}

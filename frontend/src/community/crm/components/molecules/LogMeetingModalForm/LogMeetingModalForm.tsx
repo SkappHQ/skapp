@@ -102,7 +102,7 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
   };
 
   return (
-    <div className="flex flex-col gap-2 overflow-y-auto pr-1">
+    <div className="flex flex-col gap-2">
       <InputField
         id="log-meeting-subject-input"
         name="subject"
@@ -197,6 +197,12 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
               "modal",
               "placeholders",
               "attendees"
+            ])}
+            searchPlaceholder={translateText([
+              "logMeeting",
+              "modal",
+              "placeholders",
+              "searchAttendees"
             ])}
             groupAriaLabel={translateAria(["attendees"])}
             fillsRelatedTo

@@ -138,7 +138,8 @@ export const convertUserBulkCsvHeaders = (header: string) => {
     "EEO Job Category": "eeo",
     "Passport Number": "passportNo",
     "Payroll ID": "payrollId",
-    TIN: "tin"
+    TIN: "tin",
+    "Request Authorizer(Email)": "requestAuthorizerEmail"
   };
   return headerSelector[header] || header;
 };

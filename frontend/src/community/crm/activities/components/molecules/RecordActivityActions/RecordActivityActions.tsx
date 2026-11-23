@@ -1,4 +1,4 @@
-import { ButtonV2, PlusIcon } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -13,13 +13,11 @@ import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 interface RecordActivityActionsProps {
   id: string;
   prefill: CrmActivityPrefill;
-  isLineButton?: boolean;
 }
 
 const RecordActivityActions: FC<RecordActivityActionsProps> = ({
   id,
-  prefill,
-  isLineButton = false
+  prefill
 }) => {
   const translateText = useTranslator("crmModule", "activities");
 
@@ -54,12 +52,7 @@ const RecordActivityActions: FC<RecordActivityActionsProps> = ({
       <ButtonV2
         id={`${id}-add`}
         type="button"
-        variant={isLineButton ? "line" : "primary"}
-        {...(isLineButton && {
-          size: "sm",
-          icon: <PlusIcon />,
-          iconPosition: "end"
-        })}
+        variant="primary"
         disabled={isCheckingCrmLimit}
         isLoading={isCheckingCrmLimit}
         onClick={handleAddActivity}
