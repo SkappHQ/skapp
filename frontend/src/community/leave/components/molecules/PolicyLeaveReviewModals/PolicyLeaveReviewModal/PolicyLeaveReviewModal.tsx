@@ -52,7 +52,7 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
   });
 
   const { mutate, isPending } = useReviewPolicyLeaveRequest(
-    () => {
+    (reviewedRequest) => {
       setToastMessage({
         open: true,
         toastType: ToastType.SUCCESS,
@@ -61,7 +61,11 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
         isIcon: true
       });
       sendEvent(GoogleAnalyticsTypes.GA4_LEAVE_REQUEST_APPROVED);
-      setPopupType(PolicyLeaveReviewModalEnums.APPROVED_STATUS);
+      setPopupType(
+        reviewedRequest.status === PolicyLeaveRequestStatus.PENDING
+          ? PolicyLeaveReviewModalEnums.FORWARDED_STATUS
+          : PolicyLeaveReviewModalEnums.APPROVED_STATUS
+      );
     },
     () => {
       setToastMessage({
@@ -192,27 +196,29 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
         </div>
       </div>
 
-      <div className="flex flex-row gap-4 mt-4 justify-end">
-        <ButtonV2
-          variant={"error"}
-          onClick={handleDeclineModel}
-          disabled={isPending}
-          aria-label={translateText(["cancelAreaLabel"])}
-          icon={<CloseIcon fill="var(--color-primary-text)" />}
-          iconPosition="end"
-        >
-          {translateText(["declineLeave"])}
-        </ButtonV2>
-        <ButtonV2
-          onClick={handleApprove}
-          isLoading={isPending}
-          aria-label={translateText(["approveAreaLabel"])}
-          icon={<CheckIcon />}
-          iconPosition="end"
-        >
-          {translateText(["approveLeave"])}
-        </ButtonV2>
-      </div>
+      {request.isCurrentApprover !== false && (
+        <div className="flex flex-row gap-4 mt-4 justify-end">
+          <ButtonV2
+            variant={"error"}
+            onClick={handleDeclineModel}
+            disabled={isPending}
+            aria-label={translateText(["cancelAreaLabel"])}
+            icon={<CloseIcon fill="var(--color-primary-text)" />}
+            iconPosition="end"
+          >
+            {translateText(["declineLeave"])}
+          </ButtonV2>
+          <ButtonV2
+            onClick={handleApprove}
+            isLoading={isPending}
+            aria-label={translateText(["approveAreaLabel"])}
+            icon={<CheckIcon />}
+            iconPosition="end"
+          >
+            {translateText(["approveLeave"])}
+          </ButtonV2>
+        </div>
+      )}
     </div>
   );
 };

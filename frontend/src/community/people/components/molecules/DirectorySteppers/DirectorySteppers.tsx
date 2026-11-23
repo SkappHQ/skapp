@@ -14,6 +14,7 @@ import {
   replaceTabQueryParam,
   scrollToTop
 } from "~community/common/utils/commonUtil";
+import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useGetSupervisedByMe } from "~community/people/api/PeopleApi";
 import useFormChangeDetector from "~community/people/hooks/useFormChangeDetector";
 import { usePeopleStore } from "~community/people/store/store";
@@ -53,6 +54,12 @@ const DirectorySteppers = ({
 
   const isLeaveAdmin = user?.roles?.includes(AdminTypes.LEAVE_ADMIN);
 
+  const { isLeavePoliciesEnabled } = useLeavePoliciesEnabled();
+
+  // People and super admins open the Leave tab to assign leave policies.
+  const canAssignLeavePolicies =
+    isLeavePoliciesEnabled && Boolean(isSuperAdmin || isPeopleAdmin);
+
   const isAttendanceAdmin = user?.roles?.includes(AdminTypes.ATTENDANCE_ADMIN);
 
   const isLeaveManager = user?.roles?.includes(
@@ -70,7 +77,7 @@ const DirectorySteppers = ({
 
   useEffect(() => {
     if (supervisedData && !supervisorDataLoading) {
-      if (isLeaveAdmin) {
+      if (isLeaveAdmin || canAssignLeavePolicies) {
         setIsLeaveTabVisible(true);
       } else if (supervisedData && isLeaveManager) {
         const isManager =
@@ -90,7 +97,7 @@ const DirectorySteppers = ({
         setIsTimeTabVisible(isManager);
       }
     }
-  }, [supervisorDataLoading, supervisedData]);
+  }, [supervisorDataLoading, supervisedData, canAssignLeavePolicies]);
 
   const steps = [
     translateText(["editAllInfo", "personal"]),

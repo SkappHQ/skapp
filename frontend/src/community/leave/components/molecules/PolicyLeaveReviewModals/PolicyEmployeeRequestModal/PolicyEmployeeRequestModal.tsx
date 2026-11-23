@@ -15,6 +15,7 @@ import {
   useNudgePolicyLeaveRequestManagers
 } from "~community/leave/api/PolicyLeaveReviewApi";
 import PolicyLeaveAttachmentRow from "~community/leave/components/molecules/PolicyLeaveAttachmentRow/PolicyLeaveAttachmentRow";
+import PolicyMultiLevelRecipientsRow from "~community/leave/components/molecules/PolicyMultiLevelRecipientsRow/PolicyMultiLevelRecipientsRow";
 import StatusPopupColumn from "~community/leave/components/molecules/StatusPopupColumn/StatusPopupColumn";
 import StatusPopupRow from "~community/leave/components/molecules/StatusPopupRow/StatusPopupRow";
 import { PolicyLeaveReviewModalEnums } from "~community/leave/enums/PolicyLeaveReviewEnums";
@@ -115,13 +116,17 @@ const PolicyEmployeeRequestModal: FC<Props> = ({ request, setPopupType }) => {
           DAY_MONTH_YEAR_FORMAT
         )}
       />
-      <StatusPopupRow
-        label={translateText(["myLeaveRequests", "recipient"])}
-        isRecipient={true}
-        styles={{ alignItems: "flex-start" }}
-        textStyles={{ mt: "0.75rem" }}
-        reviewer={toStatusPopupReviewer(request.reviewer)}
-      />
+      {request.isMultiLevel ? (
+        <PolicyMultiLevelRecipientsRow request={request} />
+      ) : (
+        <StatusPopupRow
+          label={translateText(["myLeaveRequests", "recipient"])}
+          isRecipient={true}
+          styles={{ alignItems: "flex-start" }}
+          textStyles={{ mt: "0.75rem" }}
+          reviewer={toStatusPopupReviewer(request.reviewer)}
+        />
+      )}
 
       <StatusPopupColumn
         label={translateText(["myLeaveRequests", "reason"])}

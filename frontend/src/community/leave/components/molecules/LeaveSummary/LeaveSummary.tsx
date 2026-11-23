@@ -27,6 +27,8 @@ interface Props {
   leaveDuration: LeaveStates;
   startDate: DateTime;
   endDate: DateTime;
+  isMultiLevel?: boolean;
+  requestAuthorizer?: L4ManagerType;
 }
 
 const LeaveSummary = ({
@@ -36,7 +38,9 @@ const LeaveSummary = ({
   leaveTypeEmoji,
   leaveDuration,
   startDate,
-  endDate
+  endDate,
+  isMultiLevel = false,
+  requestAuthorizer
 }: Props) => {
   const commonTranslateText = useTranslator("durations");
 
@@ -58,9 +62,10 @@ const LeaveSummary = ({
   }, [myManagers]);
 
   const otherManagers = useMemo(() => {
+    if (isMultiLevel) return requestAuthorizer ? [requestAuthorizer] : [];
     if (!myManagers || myManagers.length === 0) return [];
     return myManagers.filter((manager) => manager.isPrimaryManager === false);
-  }, [myManagers]);
+  }, [myManagers, isMultiLevel, requestAuthorizer]);
 
   const duration = useMemo(() => {
     return getDuration({

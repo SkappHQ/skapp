@@ -51,6 +51,7 @@ import {
   PolicyLeaveModalEnums,
   PolicyLeaveToastEnums
 } from "~community/leave/enums/PolicyLeaveEnums";
+import useMultiLevelApprovalEnabled from "~community/leave/hooks/useMultiLevelApprovalEnabled";
 import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 import { useLeaveStore } from "~community/leave/store/store";
 import { MyLeaveRequestPayloadType } from "~community/leave/types/MyRequests";
@@ -130,6 +131,8 @@ const ApplyPolicyLeaveModal = () => {
     setAvailability,
     setModalType
   } = usePolicyLeaveStore();
+
+  const { isMultiLevelApprovalEnabled } = useMultiLevelApprovalEnabled();
 
   const isCalendarSelectionInvalid = useLeaveStore(
     (state) => state.isApplyLeaveModalBtnDisabled
@@ -540,6 +543,11 @@ const ApplyPolicyLeaveModal = () => {
     );
   };
 
+  const isMultiLevelRequest =
+    isMultiLevelApprovalEnabled &&
+    !!selectedPolicyBalance &&
+    !selectedPolicyBalance.leaveType.isAutoApproval;
+
   return (
     <div className="flex h-full flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto">
@@ -628,6 +636,10 @@ const ApplyPolicyLeaveModal = () => {
                 endDate={selectedDates[1]}
                 resourceAvailability={resourceAvailability}
                 workingDays={workingDays}
+                isMultiLevel={isMultiLevelRequest}
+                requestAuthorizer={
+                  employeeData?.employment?.employmentDetails?.requestAuthorizer
+                }
               />
             )}
           </div>
