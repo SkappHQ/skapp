@@ -60,6 +60,14 @@ const ActivitiesContent: FC = () => {
   const { isCrmInitialDataError } = useInitializeCrmData();
 
   const [activeTab, setActiveTab] = useState<ActivityTab>(DEFAULT_ACTIVITY_TAB);
+
+  useEffect(() => {
+    const params = new URLSearchParams(globalThis.location.search);
+    if (params.has("success") || params.has("error")) {
+      setActiveTab(ActivityTab.MEETINGS);
+    }
+  }, []);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<ActivityFilterValues>({});
   const { taskCompletions, setTaskCompletions, handleToggleComplete } =
@@ -72,13 +80,6 @@ const ActivitiesContent: FC = () => {
   const [isLogEmailModalOpen, setIsLogEmailModalOpen] = useState(false);
 
   const actionButtonRef = useRef<HTMLButtonElement | null>(null);
-
-  useEffect(() => {
-    const params = new URLSearchParams(globalThis.location.search);
-    if (params.has("success") || params.has("error")) {
-      setActiveTab(ActivityTab.MEETINGS);
-    }
-  }, []);
 
   const focusActionButton = (): void => {
     requestAnimationFrame(() => {
