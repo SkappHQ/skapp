@@ -319,14 +319,22 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_ACTIVITY_CALL_VIEW_DENIED);
 		}
 
+		if (Boolean.TRUE.equals(call.getContact().getIsDeleted())) {
+			log.info("getRelatedCalls: execution ended");
+			return new ResponseEntityDto(false, List.of());
+		}
+
 		CrmActivityCallFilterParams params = new CrmActivityCallFilterParams();
 		params.setSortKey(CrmActivityCallSort.LOGGED_AT);
 		params.setSortOrder(Sort.Direction.DESC);
 		params.setCurrentEmployeeId(currentUser.getEmployee().getEmployeeId());
 		params.setIsRestrictedToOwner(CrmUtil.isCrmSalesRepresentative(currentUser));
 		params.setRelatedContactIds(List.of(call.getContact().getId()));
-		if (call.getDeal() != null) {
+		if (call.getDeal() != null && !Boolean.TRUE.equals(call.getDeal().getIsDeleted())) {
 			params.setRelatedDealId(call.getDeal().getId());
+		}
+		else {
+			params.setIsWithoutDeal(true);
 		}
 		params.setExcludedId(id);
 

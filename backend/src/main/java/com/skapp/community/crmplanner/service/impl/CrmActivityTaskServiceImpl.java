@@ -268,7 +268,9 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_VIEW_DENIED);
 		}
 
-		if (task.getContact() == null && task.getDeal() == null) {
+		boolean hasContact = task.getContact() != null && !Boolean.TRUE.equals(task.getContact().getIsDeleted());
+		boolean hasDeal = task.getDeal() != null && !Boolean.TRUE.equals(task.getDeal().getIsDeleted());
+		if (!hasContact && !hasDeal) {
 			log.info("getRelatedTasks: execution ended");
 			return new ResponseEntityDto(false, List.of());
 		}
@@ -278,11 +280,17 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 		params.setSortOrder(Sort.Direction.DESC);
 		params.setCurrentEmployeeId(currentUser.getEmployee().getEmployeeId());
 		params.setIsRestrictedToOwner(CrmUtil.isCrmSalesRepresentative(currentUser));
-		if (task.getContact() != null) {
+		if (hasContact) {
 			params.setRelatedContactIds(List.of(task.getContact().getId()));
 		}
-		if (task.getDeal() != null) {
+		else {
+			params.setIsWithoutContact(true);
+		}
+		if (hasDeal) {
 			params.setRelatedDealId(task.getDeal().getId());
+		}
+		else {
+			params.setIsWithoutDeal(true);
 		}
 		params.setExcludedId(id);
 
