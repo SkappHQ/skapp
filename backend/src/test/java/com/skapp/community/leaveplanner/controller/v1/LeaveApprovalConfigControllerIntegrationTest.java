@@ -3,6 +3,8 @@ package com.skapp.community.leaveplanner.controller.v1;
 import com.skapp.TestSkappApplication;
 import com.skapp.community.common.security.AuthorityService;
 import com.skapp.community.common.service.JwtService;
+import com.skapp.community.leaveplanner.type.ManagerType;
+import com.skapp.community.peopleplanner.repository.EmployeeManagerDao;
 import com.skapp.support.MockUserFactory;
 import com.skapp.support.SecurityTestUtils;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -51,6 +54,8 @@ class LeaveApprovalConfigControllerIntegrationTest {
 	private final UserDetailsService userDetailsService;
 
 	private final MockMvc mvc;
+
+	private final EmployeeManagerDao employeeManagerDao;
 
 	private String adminToken() {
 		SecurityTestUtils.setupSecurityContext(authorityService, MockUserFactory.createSuperAdminWithAllRoles());
@@ -114,6 +119,23 @@ class LeaveApprovalConfigControllerIntegrationTest {
 		}
 
 		@Test
+		@DisplayName("Switching on removes other supervisors and keeps primary supervisors")
+		void updateLeaveApprovalConfig_On_RemovesOtherSupervisors() throws Exception {
+			String token = adminToken();
+
+			assertTrue(employeeManagerDao.existsByManagerEmployeeIdAndEmployeeEmployeeId(3L, 2L));
+
+			performPatch(token, ENABLED_BODY).andExpect(status().isOk());
+
+			assertTrue(employeeManagerDao.findByManagerType(ManagerType.SECONDARY).isEmpty());
+			assertTrue(employeeManagerDao.existsByManagerEmployeeIdAndEmployeeEmployeeId(1L, 2L));
+
+			performPatch(token, ENABLED_BODY).andExpect(status().isOk())
+				.andExpect(jsonPath(IS_ENABLED_PATH).value(true));
+			performGet(token).andExpect(status().isOk()).andExpect(jsonPath(IS_ENABLED_PATH).value(true));
+		}
+
+		@Test
 		@DisplayName("Switching off after on is saved and returned by GET")
 		void updateLeaveApprovalConfig_Off_ReturnsDisabled() throws Exception {
 			String token = adminToken();
@@ -125,9 +147,13 @@ class LeaveApprovalConfigControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Missing value is rejected")
+		@DisplayName("Missing value is rejected and the saved value is unchanged")
 		void updateLeaveApprovalConfig_MissingValue_ReturnsBadRequest() throws Exception {
-			performPatch(adminToken(), "{}").andExpect(status().isBadRequest());
+			String token = adminToken();
+
+			performPatch(token, ENABLED_BODY).andExpect(status().isOk());
+			performPatch(token, "{}").andExpect(status().isBadRequest());
+			performGet(token).andExpect(status().isOk()).andExpect(jsonPath(IS_ENABLED_PATH).value(true));
 		}
 
 		@Test
