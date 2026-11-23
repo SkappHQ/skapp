@@ -436,8 +436,9 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 
 				query.select(cb.tuple(selections.toArray(new Selection<?>[0])));
 				query.where(predicates.toArray(new Predicate[0]));
+				query.orderBy(cb.desc(timeRecord.get(TimeRecord_.timeRecordId)));
 
-				List<Tuple> results = entityManager.createQuery(query).getResultList();
+				List<Tuple> results = entityManager.createQuery(query).setMaxResults(1).getResultList();
 
 				if (results.isEmpty()) {
 					allResults.add(buildEmptyTimeRecord(employeeId, currentDate));
