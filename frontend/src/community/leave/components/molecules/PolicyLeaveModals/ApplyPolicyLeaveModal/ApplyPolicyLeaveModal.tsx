@@ -631,12 +631,12 @@ const ApplyPolicyLeaveModal = () => {
                 endDate={selectedDates[1]}
                 resourceAvailability={resourceAvailability}
                 workingDays={workingDays}
-                requestAuthorizer={
-                  leaveApprovalConfig?.isMultiLevelApprovalEnabled &&
+                isMultiLevel={
+                  !!leaveApprovalConfig?.isMultiLevelApprovalEnabled &&
                   !selectedPolicyBalance.leaveType.isAutoApproval
-                    ? employeeData?.employment?.employmentDetails
-                        ?.requestAuthorizer
-                    : undefined
+                }
+                requestAuthorizer={
+                  employeeData?.employment?.employmentDetails?.requestAuthorizer
                 }
               />
             )}

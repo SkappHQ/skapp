@@ -87,16 +87,14 @@ export interface PolicyManagerLeaveRequestType {
   isMultiLevel: boolean | null;
   requestAuthorizer: PolicyLeaveReviewEmployeeType | null;
   primaryReviewer: PolicyLeaveReviewEmployeeType | null;
-  isCurrentApprover?: boolean | null;
+  isCurrentApprover: boolean | null;
 }
 
 export interface PolicyLeaveRecipientType {
-  person: {
-    employeeId: number;
-    firstName: string;
-    lastName: string;
-    authPic: string | null;
-  };
+  person: Pick<
+    PolicyLeaveReviewEmployeeType,
+    "employeeId" | "firstName" | "lastName" | "authPic"
+  >;
   hasApproved: boolean;
 }
 

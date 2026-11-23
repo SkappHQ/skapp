@@ -5,7 +5,7 @@ import {
 } from "~community/common/types/CommonTypes";
 import { AccountStatus } from "~community/leave/types/LeaveTypes";
 import { TitleEnum } from "~community/people/enums/PeopleEnums";
-import { L4ManagerType } from "~community/people/types/PeopleTypes";
+import type { L4ManagerType } from "~community/people/types/PeopleTypes";
 
 import {
   EmploymentAllocationTypes,
