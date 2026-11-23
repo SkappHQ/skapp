@@ -16,6 +16,6 @@ public interface EmployeeValidationService {
 
 	void validateEmployeeUpdateAccess(User currentUser, User user, CreateEmployeeRequestDto requestDto);
 
-	Employee validateRequestAuthorizerAssignment(Long requestAuthorizerId, Long employeeId, Long primarySupervisorId);
+	void validateRequestAuthorizerAssignment(Long requestAuthorizerId, Long employeeId, Long primarySupervisorId);
 
 }

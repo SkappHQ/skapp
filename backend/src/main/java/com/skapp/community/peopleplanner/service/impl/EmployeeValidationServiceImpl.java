@@ -615,7 +615,7 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 	}
 
 	@Override
-	public Employee validateRequestAuthorizerAssignment(Long requestAuthorizerId, Long employeeId,
+	public void validateRequestAuthorizerAssignment(Long requestAuthorizerId, Long employeeId,
 			Long primarySupervisorId) {
 		if (Objects.equals(requestAuthorizerId, employeeId)) {
 			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_SELF);
@@ -637,8 +637,6 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 			throw new ValidationException(
 					PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_SAME_AS_PRIMARY_SUPERVISOR);
 		}
-
-		return authorizer;
 	}
 
 	private void validatePrimarySupervisorNotRequestAuthorizer(EmployeeEmploymentBasicDetailsDto employmentDetails,
