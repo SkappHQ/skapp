@@ -431,14 +431,12 @@ const useEmployeeDetailsFormHandler = ({
   };
 
   const handlePrimaryManagerRemove = async (): Promise<void> => {
-    const hasOtherSupervisors = Boolean(formik.values?.otherSupervisors);
-
     setPrimaryManagerSearchTerm("");
     setRequestAuthorizerSearchTerm("");
     await formik.setFieldValue("primarySupervisor", {});
     await formik.setFieldValue("requestAuthorizer", {});
 
-    if (hasOtherSupervisors) {
+    if (formik.values.otherSupervisors) {
       setSecondaryManagerSearchTerm("");
       await formik.setFieldValue("otherSupervisors", []);
     }
@@ -447,7 +445,7 @@ const useEmployeeDetailsFormHandler = ({
       employmentDetails: {
         ...formik.values,
         primarySupervisor: {},
-        ...(hasOtherSupervisors && { otherSupervisors: [] }),
+        ...(formik.values.otherSupervisors && { otherSupervisors: [] }),
         requestAuthorizer: {}
       }
     });
