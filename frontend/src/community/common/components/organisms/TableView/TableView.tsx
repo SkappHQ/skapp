@@ -25,6 +25,7 @@ const TableView: FC<TableViewProps> = ({
   className = "",
   height,
   minHeight = "min-h-70",
+  tableClassName = "",
   pagination,
   infiniteScroll,
   toolbar,
@@ -104,7 +105,7 @@ const TableView: FC<TableViewProps> = ({
         loader={loader}
         emptyState={emptyState}
         onRowClick={onRowClick}
-        className={isEmptyStateVisible ? EMPTY_STATE_MIN_HEIGHT : minHeight}
+        className={`${isEmptyStateVisible ? EMPTY_STATE_MIN_HEIGHT : minHeight} ${tableClassName}`}
         height={isInfiniteScroll ? infiniteScroll?.height : height}
         hasMore={isInfiniteScroll ? infiniteScroll?.hasMore : undefined}
         isFetchingNextPage={

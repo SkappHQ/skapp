@@ -77,6 +77,7 @@ export interface TableViewProps {
   className?: string;
   height?: string;
   minHeight?: string;
+  tableClassName?: string;
   pagination?: TableViewPagination;
   infiniteScroll?: TableViewInfiniteScroll;
   toolbar?: Omit<TableToolBarProps, "filterButton">;
