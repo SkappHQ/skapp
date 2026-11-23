@@ -395,7 +395,11 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 				&& leaveRequest.getPrimaryReviewer() == null) {
 			leaveRequest.setPrimaryReviewer(currentEmployee);
 			if (canForwardToRequestAuthorizer(leaveRequest)) {
-				return forwardToRequestAuthorizer(leaveRequest);
+				PolicyLeaveRequest forwardedLeaveRequest = forwardToRequestAuthorizer(leaveRequest);
+
+				log.info("updatePolicyLeaveRequest: execution ended for request: {}", id);
+				return new ResponseEntityDto(false,
+						leaveMapper.policyLeaveRequestToPolicyLeaveRequestResponseDto(forwardedLeaveRequest));
 			}
 			leaveRequest.setRequestAuthorizer(null);
 		}
@@ -690,13 +694,11 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		return leaveRequest.getRequestAuthorizer() != null && hasLeaveApproverRole(leaveRequest.getRequestAuthorizer());
 	}
 
-	private ResponseEntityDto forwardToRequestAuthorizer(PolicyLeaveRequest leaveRequest) {
+	private PolicyLeaveRequest forwardToRequestAuthorizer(PolicyLeaveRequest leaveRequest) {
 		PolicyLeaveRequest forwardedLeaveRequest = policyLeaveRequestDao.save(leaveRequest);
 		notifyRequestAuthorizer(forwardedLeaveRequest);
 
-		log.info("updatePolicyLeaveRequest: execution ended for request: {}", forwardedLeaveRequest.getId());
-		return new ResponseEntityDto(false,
-				leaveMapper.policyLeaveRequestToPolicyLeaveRequestResponseDto(forwardedLeaveRequest));
+		return forwardedLeaveRequest;
 	}
 
 	private boolean hasLeaveApproverRole(Employee employee) {
