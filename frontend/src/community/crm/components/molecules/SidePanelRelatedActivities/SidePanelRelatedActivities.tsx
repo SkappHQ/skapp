@@ -15,7 +15,7 @@ const SidePanelRelatedActivities: FC<Props> = ({ title, rows, onRowClick }) => {
     <div className="flex flex-col gap-3">
       <h2 className="h2">{title}</h2>
       <hr className="border-secondary-accent" />
-      <ul className="flex flex-col divide-y divide-secondary-accent">
+      <ul className="border border-secondary-accent rounded-lg overflow-hidden divide-y divide-secondary-accent">
         {rows.map((row) => (
           <li key={getActivityRowKey(row)}>
             <ActivityRow

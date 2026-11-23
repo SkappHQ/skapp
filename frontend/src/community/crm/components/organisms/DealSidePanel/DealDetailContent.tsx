@@ -106,9 +106,19 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
             onSave={(description) => updateDeal({ description })}
           />
           <div className="flex flex-col gap-3">
-            <h2 className="h2">
-              {translateText(["activities", "recordTab", "tabLabel"])}
-            </h2>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="h2">
+                {translateText(["activities", "recordTab", "tabLabel"])}
+              </h2>
+              <RecordActivityActions
+                id="deal-activity-actions"
+                prefill={{
+                  contactId: deal.contactId ? deal.contactId : null,
+                  dealId,
+                  companyId: deal.companyId ? deal.companyId : null
+                }}
+              />
+            </div>
             <hr className="border-secondary-accent" />
             <RecordActivitiesTab
               key={dealId}
@@ -117,15 +127,6 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
               recordId={dealId}
               activeTab={activityTab}
               onTabChange={setActivityTab}
-            />
-            <RecordActivityActions
-              id="deal-activity-actions"
-              prefill={{
-                contactId: deal.contactId ? deal.contactId : null,
-                dealId,
-                companyId: deal.companyId ? deal.companyId : null
-              }}
-              isLineButton
             />
           </div>
         </div>
