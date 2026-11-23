@@ -853,7 +853,7 @@
       "modal": {
         "validations": {
           "date": "Date is required",
-          "attendees": "An activity must be linked to at least one contact",
+          "attendees": "An activity must be linked to at least one contact.",
           "endTime": "End time must be after start time"
         },
         "title": "Log a meeting",
