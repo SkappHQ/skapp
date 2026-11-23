@@ -51,6 +51,11 @@ const SidePanelContactsField: FC<Props> = ({
   contactIds,
   onChange
 }) => {
+  const translateText = useTranslator(
+    "crmModule",
+    "activities",
+    "activitySidePanel"
+  );
   const translateAria = useTranslator(
     "crmAria",
     "activities",
@@ -69,6 +74,7 @@ const SidePanelContactsField: FC<Props> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [pendingIds, setPendingIds] = useState<number[]>(contactIds);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isEmptyBlocked, setIsEmptyBlocked] = useState(false);
   const debouncedSearch = useDebounce(searchTerm.trim(), SEARCH_DEBOUNCE_DELAY);
 
   const { data: lookupData } = useGetContactLookup({
@@ -96,7 +102,11 @@ const SidePanelContactsField: FC<Props> = ({
       pendingIds.length !== contactIds.length ||
       pendingIds.some((contactId) => !contactIds.includes(contactId));
 
-    if (isChanged && (!isRequired || pendingIds.length > 0)) {
+    const isEmptySelection = isRequired && pendingIds.length === 0;
+
+    setIsEmptyBlocked(isEmptySelection);
+
+    if (isChanged && !isEmptySelection) {
       onChange(pendingIds);
     }
   };
@@ -220,6 +230,16 @@ const SidePanelContactsField: FC<Props> = ({
           </span>
         )}
       </button>
+
+      {isEmptyBlocked && (
+        <p
+          className="body3 leading-none text-semantic-red-accent mt-2"
+          role="alert"
+          aria-live="assertive"
+        >
+          {translateText(["validations", "contactRequired"])}
+        </p>
+      )}
 
       {isOpen && (
         <div className="absolute inset-x-0 top-0 z-50">

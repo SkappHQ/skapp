@@ -590,7 +590,7 @@
           "priority": "Priority is required"
         },
         "notices": {
-          "dealCleared": "Deal cleared. It doesn't match the selected contact's company.",
+          "dealCleared": "Deal cleared — it doesn't match the selected contact's company.",
           "relatedToMismatch": "This doesn't match the contact's company"
         },
         "toastMessages": {
@@ -653,6 +653,9 @@
           "dateTime": "Date and time are required",
           "to": "Please select at least one contact"
         },
+        "notices": {
+          "differentCompanies": "These contacts are linked to different companies. This activity will still be saved against all of them."
+        },
         "toastMessages": {
           "addSuccessTitle": "Email logged successfully",
           "addSuccessDescription": "Email has been logged successfully",
@@ -672,7 +675,7 @@
           "duration": "Enter duration"
         },
         "validations": {
-          "contact": "Please select a contact",
+          "contact": "An activity must be linked to at least one contact.",
           "duration": "Please enter a valid duration (e.g. 1h 30m)"
         },
         "toastMessages": {
@@ -787,6 +790,12 @@
           "title": "No emails yet",
           "description": "Emails linked to this record will show here."
         }
+      },
+      "errorState": {
+        "description": "Couldn't load this record's activity history. Please refresh to try again."
+      },
+      "errorToast": {
+        "description": "Failed to load activity history"
       }
     },
     "toolbar": {
@@ -904,7 +913,7 @@
         "dealMismatch": "This deal's company doesn't match any linked contact. Add a contact from that company or choose a different deal."
       },
       "notices": {
-        "dealCleared": "Deal cleared. It doesn't match the selected contact's company.",
+        "dealCleared": "Deal cleared — it doesn't match the selected contact's company.",
         "ownerReadOnly": "Read only. Only admins and sales managers can change the activity owner.",
         "relatedToMismatch": "This doesn't match the contact's company"
       },
@@ -941,6 +950,9 @@
         "deleteSuccessTitle": "Activity deleted successfully",
         "saveErrorDescription": "Failed to save activity",
         "deleteErrorDescription": "Failed to delete activity"
+      },
+      "validations": {
+        "contactRequired": "An activity must be linked to at least one contact."
       }
     },
     "meetingSidePanel": {

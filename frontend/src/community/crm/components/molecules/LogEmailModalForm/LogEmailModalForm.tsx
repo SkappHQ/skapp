@@ -206,6 +206,14 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
         ])}
         groupAriaLabel={translateAria(["to"])}
         hiddenContactIds={[...values.ccContactIds, ...values.bccContactIds]}
+        {...(recipientCompanyIds.length > 1 && {
+          warningMessage: translateText([
+            "logEmail",
+            "modal",
+            "notices",
+            "differentCompanies"
+          ])
+        })}
         onContactsChange={(nextContacts) =>
           handleRecipientsChange(nextContacts, [
             ...values.ccContactIds,

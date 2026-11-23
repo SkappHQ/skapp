@@ -84,7 +84,7 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
       title: translateText(["activities", "feed", "errorToast", "title"]),
       description: translateText([
         "activities",
-        "feed",
+        "recordTab",
         "errorToast",
         "description"
       ])
@@ -169,6 +169,12 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
             "description"
           ])
         }}
+        errorStateDescription={translateText([
+          "activities",
+          "recordTab",
+          "errorState",
+          "description"
+        ])}
         isShowTaskCheckbox
         onLoadMore={fetchNextPage}
         onToggleComplete={handleToggleComplete}
