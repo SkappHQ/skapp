@@ -654,7 +654,7 @@
           "to": "An activity must be linked to at least one contact."
         },
         "notices": {
-          "differentCompanies": "These contacts are linked to different companies. This activity will still be saved against all of them."
+          "differentCompanies": "These contacts are linked to different companies."
         },
         "toastMessages": {
           "addSuccessTitle": "Email logged successfully",
@@ -872,7 +872,7 @@
           "searchAttendees": "Search attendees"
         },
         "notices": {
-          "differentCompanies": "These contacts are linked to different companies. This activity will still be saved against all of them."
+          "differentCompanies": "These contacts are linked to different companies."
         }
       }
     },
