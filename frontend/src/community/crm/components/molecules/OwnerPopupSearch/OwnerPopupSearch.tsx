@@ -28,6 +28,7 @@ interface Props {
   ariaInvalid?: boolean;
   popupWidth?: string;
   popupAlignment?: "left" | "right" | "center";
+  popupOffset?: { x?: number; y?: number };
 }
 
 const OwnerPopupSearch: FC<Props> = ({
@@ -38,7 +39,8 @@ const OwnerPopupSearch: FC<Props> = ({
   noResultsText,
   ariaInvalid,
   popupWidth,
-  popupAlignment
+  popupAlignment,
+  popupOffset
 }) => {
   const [ownerSearchTerm, setOwnerSearchTerm] = useState("");
   const { isCrmSalesManager } = useSessionData();
@@ -139,6 +141,7 @@ const OwnerPopupSearch: FC<Props> = ({
       width="w-full"
       popupWidth={popupWidth}
       popupAlignment={popupAlignment}
+      popupOffset={popupOffset}
       renderTrigger={(option, _a, _b, triggerProps) =>
         handleRenderTrigger(option as DropdownOption, triggerProps)
       }
