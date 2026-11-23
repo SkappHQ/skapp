@@ -80,8 +80,8 @@ const useEmployeeDetailsFormHandler = ({
     );
   const [requestAuthorizerSearchTerm, setRequestAuthorizerSearchTerm] =
     useState<string>(
-      employee?.employment?.employmentDetails?.requestAuthorizer
-        ?.firstName as string
+      employee?.employment?.employmentDetails?.requestAuthorizer?.firstName ??
+        ""
     );
 
   const [selectedJoinedDate, setSelectedJoinedDate] = useState<
@@ -107,7 +107,7 @@ const useEmployeeDetailsFormHandler = ({
   );
 
   const getSearchedEmployeesByRequestAuthorizer = useGetSearchedEmployees(
-    requestAuthorizerSearchTerm || "",
+    requestAuthorizerSearchTerm,
     SystemPermissionTypes.EMPLOYEES
   );
 
@@ -310,23 +310,21 @@ const useEmployeeDetailsFormHandler = ({
     });
   };
 
-  let primaryManagers: EmployeeDataType[] = [];
-  let secondaryManagers: EmployeeDataType[] = [];
-  let requestAuthorizers: EmployeeDataType[] = [];
-  let isPrimaryManagersLoading: boolean = false;
-  let isSecondaryManagersLoading: boolean = false;
-  let isRequestAuthorizersLoading: boolean = false;
+  const canSearchSupervisors = !isManager && !isProfileView;
 
-  if (!isManager && !isProfileView) {
-    ({ data: primaryManagers as any, isLoading: isPrimaryManagersLoading } =
-      getSearchedEmployeesByPrimaryManager);
-    ({ data: secondaryManagers as any, isLoading: isSecondaryManagersLoading } =
-      getSearchedEmployeesBySecondaryManager);
-    ({
-      data: requestAuthorizers as any,
-      isLoading: isRequestAuthorizersLoading
-    } = getSearchedEmployeesByRequestAuthorizer);
-  }
+  const primaryManagers: EmployeeDataType[] =
+    (canSearchSupervisors && getSearchedEmployeesByPrimaryManager.data) || [];
+  const secondaryManagers: EmployeeDataType[] =
+    (canSearchSupervisors && getSearchedEmployeesBySecondaryManager.data) || [];
+  const requestAuthorizers: EmployeeDataType[] =
+    (canSearchSupervisors && getSearchedEmployeesByRequestAuthorizer.data) ||
+    [];
+  const isPrimaryManagersLoading =
+    canSearchSupervisors && getSearchedEmployeesByPrimaryManager.isLoading;
+  const isSecondaryManagersLoading =
+    canSearchSupervisors && getSearchedEmployeesBySecondaryManager.isLoading;
+  const isRequestAuthorizersLoading =
+    canSearchSupervisors && getSearchedEmployeesByRequestAuthorizer.isLoading;
 
   const getSuggestions = (managerList: EmployeeDataType[]) => {
     let newManagerList = managerList;
@@ -433,19 +431,24 @@ const useEmployeeDetailsFormHandler = ({
   };
 
   const handlePrimaryManagerRemove = async (): Promise<void> => {
-    await onManagerRemove({
-      fieldName: "primarySupervisor",
-      formik,
-      searchTermSetter: setPrimaryManagerSearchTerm,
-      setSupervisor: setEmploymentDetails
+    setPrimaryManagerSearchTerm("");
+    setRequestAuthorizerSearchTerm("");
+    await formik.setFieldValue("primarySupervisor", {});
+    await formik.setFieldValue("requestAuthorizer", {});
+
+    if (formik.values.otherSupervisors) {
+      setSecondaryManagerSearchTerm("");
+      await formik.setFieldValue("otherSupervisors", []);
+    }
+
+    setEmploymentDetails({
+      employmentDetails: {
+        ...formik.values,
+        primarySupervisor: {},
+        ...(formik.values.otherSupervisors && { otherSupervisors: [] }),
+        requestAuthorizer: {}
+      }
     });
-    formik?.values?.otherSupervisors &&
-      (await onManagerRemove({
-        fieldName: "otherSupervisors",
-        formik,
-        searchTermSetter: setSecondaryManagerSearchTerm,
-        setSupervisor: setEmploymentDetails
-      }));
   };
 
   const handleSecondaryManagerSelect = async (
@@ -576,10 +579,13 @@ const useEmployeeDetailsFormHandler = ({
   ) => {
     if (e.key === "Backspace") {
       setPrimaryManagerSearchTerm("");
+      setRequestAuthorizerSearchTerm("");
+      await formik.setFieldValue("requestAuthorizer", {});
       setEmploymentDetails({
         employmentDetails: {
           ...employee?.employment?.employmentDetails,
-          primarySupervisor: {}
+          primarySupervisor: {},
+          requestAuthorizer: {}
         }
       });
     }

@@ -1,5 +1,5 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { FormikHelpers, useFormik } from "formik";
+import { useFormik } from "formik";
 import { FC, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -10,10 +10,8 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 import EnableMultiLevelApprovalConfirmModal from "~community/configurations/components/molecules/EnableMultiLevelApprovalConfirmModal/EnableMultiLevelApprovalConfirmModal";
 import useConfigurationUnsavedChanges from "~community/configurations/hooks/useConfigurationUnsavedChanges";
-import {
-  useGetLeaveApprovalConfig,
-  useUpdateLeaveApprovalConfig
-} from "~community/leave/api/LeaveApprovalConfigApi";
+import { useUpdateLeaveApprovalConfig } from "~community/leave/api/LeaveApprovalConfigApi";
+import useMultiLevelApprovalEnabled from "~community/leave/hooks/useMultiLevelApprovalEnabled";
 import { LeaveApprovalConfigType } from "~community/leave/types/LeaveApprovalConfigTypes";
 
 const LeaveApprovalSettings: FC = () => {
@@ -26,13 +24,11 @@ const LeaveApprovalSettings: FC = () => {
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState<boolean>(false);
 
-  const {
-    data: leaveApprovalConfig,
-    isLoading,
-    isError
-  } = useGetLeaveApprovalConfig();
+  const { isMultiLevelApprovalEnabled, isLoading, isError } =
+    useMultiLevelApprovalEnabled();
 
   const handleSuccess = (): void => {
+    formik.resetForm({ values: formik.values });
     setIsConfirmModalOpen(false);
     setToastMessage({
       open: true,
@@ -43,6 +39,7 @@ const LeaveApprovalSettings: FC = () => {
   };
 
   const handleError = (): void => {
+    formik.resetForm();
     setIsConfirmModalOpen(false);
     setToastMessage({
       open: true,
@@ -56,19 +53,11 @@ const LeaveApprovalSettings: FC = () => {
     useUpdateLeaveApprovalConfig(handleSuccess, handleError);
 
   const initialValues: LeaveApprovalConfigType = {
-    isMultiLevelApprovalEnabled: Boolean(
-      leaveApprovalConfig?.isMultiLevelApprovalEnabled
-    )
+    isMultiLevelApprovalEnabled
   };
 
-  const handleSubmit = (
-    values: LeaveApprovalConfigType,
-    { resetForm }: FormikHelpers<LeaveApprovalConfigType>
-  ): void => {
-    updateLeaveApprovalConfig(values, {
-      onSuccess: () => resetForm({ values }),
-      onError: () => resetForm()
-    });
+  const handleSubmit = (values: LeaveApprovalConfigType): void => {
+    updateLeaveApprovalConfig(values);
   };
 
   const formik = useFormik<LeaveApprovalConfigType>({

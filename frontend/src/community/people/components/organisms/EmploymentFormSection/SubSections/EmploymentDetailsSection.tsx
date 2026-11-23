@@ -29,7 +29,7 @@ import {
   convertDateToFormat,
   getTimeZoneLabel
 } from "~community/common/utils/dateTimeUtils";
-import { useGetLeaveApprovalConfig } from "~community/leave/api/LeaveApprovalConfigApi";
+import useMultiLevelApprovalEnabled from "~community/leave/hooks/useMultiLevelApprovalEnabled";
 import SupervisorSelector from "~community/people/components/molecules/SupervisorSelector/SupervisorSelector";
 import { AccountStatusTypes } from "~community/people/enums/PeopleEnums";
 import useEmployeeDetailsFormHandler from "~community/people/hooks/useEmployeeDetailsFormHandler";
@@ -94,10 +94,7 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
 
     const canEditBusinessUnit = isSuperAdmin || isPeopleAdmin;
 
-    const { data: leaveApprovalConfig } = useGetLeaveApprovalConfig();
-    const isMultiLevelApprovalEnabled = Boolean(
-      leaveApprovalConfig?.isMultiLevelApprovalEnabled
-    );
+    const { isMultiLevelApprovalEnabled } = useMultiLevelApprovalEnabled();
 
     const { employee, setTeamModalType, setIsTeamModalOpen } = usePeopleStore(
       (state) => state

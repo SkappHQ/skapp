@@ -348,18 +348,8 @@ const AvatarSearch = ({
             {errors}
           </Typography>
         )}
-        {!errors && !!helperText && (
-          <Typography
-            variant="body2"
-            sx={{
-              color: theme.palette.text.secondary,
-              fontSize: "0.875rem",
-              mt: "0.5rem",
-              lineHeight: "1rem"
-            }}
-          >
-            {helperText}
-          </Typography>
+        {!errors && helperText && (
+          <p className="body2 mt-2 text-secondary-text">{helperText}</p>
         )}
       </Box>
     </Box>
