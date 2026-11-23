@@ -114,5 +114,3 @@ databaseChangeLog:
       file: classpath:community/db/changelog/ddl-script/leave-ddl-script-v1-alter-table-lv-leave-request-add-column-request-authorizer-id.sql
   - include:
       file: classpath:community/db/changelog/ddl-script/leave-ddl-script-v1-alter-table-lv-leave-request-add-column-primary-reviewer-id.sql
-  - include:
-      file: classpath:community/db/changelog/ddl-script/leave-ddl-script-v1-alter-table-lv-leave-request-add-column-primary-reviewed-date.sql
