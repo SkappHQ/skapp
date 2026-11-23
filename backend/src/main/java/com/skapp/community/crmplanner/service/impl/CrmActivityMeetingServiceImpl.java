@@ -413,6 +413,9 @@ public class CrmActivityMeetingServiceImpl implements CrmActivityMeetingService 
 		if (meeting.getDeal() != null) {
 			params.setRelatedDealId(meeting.getDeal().getId());
 		}
+		else {
+			params.setIsWithoutDeal(true);
+		}
 		params.setExcludedId(id);
 
 		List<CrmActivityMeetingResponseDto> meetings = crmActivityMeetingDao

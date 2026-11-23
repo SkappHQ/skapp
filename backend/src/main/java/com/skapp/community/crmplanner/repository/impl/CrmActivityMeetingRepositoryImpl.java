@@ -85,6 +85,9 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 		if (params.getRelatedDealId() != null) {
 			predicates.add(cb.equal(meeting.get(CrmActivityMeeting_.deal).get(CrmDeal_.id), params.getRelatedDealId()));
 		}
+		if (Boolean.TRUE.equals(params.getIsWithoutDeal())) {
+			predicates.add(cb.isNull(meeting.get(CrmActivityMeeting_.deal)));
+		}
 		if (params.getExcludedId() != null) {
 			predicates.add(cb.notEqual(meeting.get(CrmActivityMeeting_.id), params.getExcludedId()));
 		}
@@ -169,6 +172,9 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 		if (params.getRelatedDealId() != null) {
 			countPredicates
 				.add(cb.equal(countRoot.get(CrmActivityMeeting_.deal).get(CrmDeal_.id), params.getRelatedDealId()));
+		}
+		if (Boolean.TRUE.equals(params.getIsWithoutDeal())) {
+			countPredicates.add(cb.isNull(countRoot.get(CrmActivityMeeting_.deal)));
 		}
 		if (params.getExcludedId() != null) {
 			countPredicates.add(cb.notEqual(countRoot.get(CrmActivityMeeting_.id), params.getExcludedId()));

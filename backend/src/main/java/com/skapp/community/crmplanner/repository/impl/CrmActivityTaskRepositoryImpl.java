@@ -77,6 +77,12 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 		if (params.getRelatedDealId() != null) {
 			predicates.add(cb.equal(task.get(CrmActivityTask_.deal).get(CrmDeal_.id), params.getRelatedDealId()));
 		}
+		if (Boolean.TRUE.equals(params.getIsWithoutDeal())) {
+			predicates.add(cb.isNull(task.get(CrmActivityTask_.deal)));
+		}
+		if (Boolean.TRUE.equals(params.getIsWithoutContact())) {
+			predicates.add(cb.isNull(task.get(CrmActivityTask_.contact)));
+		}
 		if (params.getExcludedId() != null) {
 			predicates.add(cb.notEqual(task.get(CrmActivityTask_.id), params.getExcludedId()));
 		}
@@ -166,6 +172,12 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 		if (params.getRelatedDealId() != null) {
 			countPredicates
 				.add(cb.equal(countRoot.get(CrmActivityTask_.deal).get(CrmDeal_.id), params.getRelatedDealId()));
+		}
+		if (Boolean.TRUE.equals(params.getIsWithoutDeal())) {
+			countPredicates.add(cb.isNull(countRoot.get(CrmActivityTask_.deal)));
+		}
+		if (Boolean.TRUE.equals(params.getIsWithoutContact())) {
+			countPredicates.add(cb.isNull(countRoot.get(CrmActivityTask_.contact)));
 		}
 		if (params.getExcludedId() != null) {
 			countPredicates.add(cb.notEqual(countRoot.get(CrmActivityTask_.id), params.getExcludedId()));

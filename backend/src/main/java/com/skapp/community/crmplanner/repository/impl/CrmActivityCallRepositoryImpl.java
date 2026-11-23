@@ -71,6 +71,9 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 		if (params.getRelatedDealId() != null) {
 			predicates.add(cb.equal(call.get(CrmActivityCall_.deal).get(CrmDeal_.id), params.getRelatedDealId()));
 		}
+		if (Boolean.TRUE.equals(params.getIsWithoutDeal())) {
+			predicates.add(cb.isNull(call.get(CrmActivityCall_.deal)));
+		}
 		if (params.getExcludedId() != null) {
 			predicates.add(cb.notEqual(call.get(CrmActivityCall_.id), params.getExcludedId()));
 		}
@@ -135,6 +138,9 @@ public class CrmActivityCallRepositoryImpl implements CrmActivityCallRepository 
 		if (params.getRelatedDealId() != null) {
 			countPredicates
 				.add(cb.equal(countRoot.get(CrmActivityCall_.deal).get(CrmDeal_.id), params.getRelatedDealId()));
+		}
+		if (Boolean.TRUE.equals(params.getIsWithoutDeal())) {
+			countPredicates.add(cb.isNull(countRoot.get(CrmActivityCall_.deal)));
 		}
 		if (params.getExcludedId() != null) {
 			countPredicates.add(cb.notEqual(countRoot.get(CrmActivityCall_.id), params.getExcludedId()));

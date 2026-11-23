@@ -328,6 +328,9 @@ public class CrmActivityCallServiceImpl implements CrmActivityCallService {
 		if (call.getDeal() != null) {
 			params.setRelatedDealId(call.getDeal().getId());
 		}
+		else {
+			params.setIsWithoutDeal(true);
+		}
 		params.setExcludedId(id);
 
 		List<CrmActivityCallResponseDto> calls = crmActivityCallDao

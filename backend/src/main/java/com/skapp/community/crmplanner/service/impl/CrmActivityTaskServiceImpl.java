@@ -281,8 +281,14 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 		if (task.getContact() != null) {
 			params.setRelatedContactIds(List.of(task.getContact().getId()));
 		}
+		else {
+			params.setIsWithoutContact(true);
+		}
 		if (task.getDeal() != null) {
 			params.setRelatedDealId(task.getDeal().getId());
+		}
+		else {
+			params.setIsWithoutDeal(true);
 		}
 		params.setExcludedId(id);
 
