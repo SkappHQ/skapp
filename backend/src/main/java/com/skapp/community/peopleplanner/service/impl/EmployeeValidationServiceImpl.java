@@ -599,7 +599,8 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 
 	private void validateRequestAuthorizer(EmployeeEmploymentBasicDetailsDto employmentDetails, User user) {
 		Employee employee = user.getEmployee();
-		Long primarySupervisorId = resolvePrimarySupervisorId(employmentDetails, employee);
+		Long primarySupervisorId = CommonModuleUtils
+			.resolvePrimarySupervisorId(employmentDetails.getPrimarySupervisor(), employee);
 		EmployeeEmploymentBasicDetailsManagerDetailsDto requestAuthorizer = employmentDetails.getRequestAuthorizer();
 
 		if (requestAuthorizer == null) {
@@ -614,7 +615,7 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 	}
 
 	@Override
-	public Employee validateRequestAuthorizerAssignment(Long requestAuthorizerId, Long employeeId,
+	public void validateRequestAuthorizerAssignment(Long requestAuthorizerId, Long employeeId,
 			Long primarySupervisorId) {
 		if (Objects.equals(requestAuthorizerId, employeeId)) {
 			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_SELF);
@@ -623,7 +624,7 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 		Employee authorizer = employeeDao.findById(requestAuthorizerId)
 			.orElseThrow(() -> new ValidationException(
 					PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_EMPLOYEE_NOT_FOUND));
-		if (!isAssignableMember(authorizer)) {
+		if (!CommonModuleUtils.isAssignableMember(authorizer)) {
 			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_NOT_ACTIVE);
 		}
 
@@ -636,8 +637,6 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 			throw new ValidationException(
 					PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_SAME_AS_PRIMARY_SUPERVISOR);
 		}
-
-		return authorizer;
 	}
 
 	private void validatePrimarySupervisorNotRequestAuthorizer(EmployeeEmploymentBasicDetailsDto employmentDetails,
@@ -651,31 +650,6 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 			throw new ValidationException(
 					PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_PRIMARY_SUPERVISOR_SAME_AS_REQUEST_AUTHORIZER);
 		}
-	}
-
-	private Long resolvePrimarySupervisorId(EmployeeEmploymentBasicDetailsDto employmentDetails, Employee employee) {
-		if (employmentDetails.getPrimarySupervisor() != null) {
-			return employmentDetails.getPrimarySupervisor().getEmployeeId();
-		}
-
-		if (employee == null || employee.getEmployeeManagers() == null) {
-			return null;
-		}
-
-		return employee.getEmployeeManagers()
-			.stream()
-			.filter(employeeManager -> Boolean.TRUE.equals(employeeManager.getIsPrimaryManager()))
-			.map(employeeManager -> employeeManager.getManager().getEmployeeId())
-			.findFirst()
-			.orElse(null);
-	}
-
-	private boolean isAssignableMember(Employee employee) {
-		User user = employee.getUser();
-		return user != null && Boolean.TRUE.equals(user.getIsActive())
-				&& (employee.getAccountStatus() == AccountStatus.ACTIVE
-						|| employee.getAccountStatus() == AccountStatus.PENDING)
-				&& !CommonModuleUtils.isGuestEmployee(employee);
 	}
 
 }

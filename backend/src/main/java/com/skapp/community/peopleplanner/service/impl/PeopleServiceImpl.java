@@ -467,6 +467,12 @@ public class PeopleServiceImpl implements PeopleService {
 		List<Employee> authorizedEmployees = employeeDao.findByRequestAuthorizer(requestAuthorizer);
 		authorizedEmployees.forEach(authorizedEmployee -> authorizedEmployee.setRequestAuthorizer(null));
 		employeeDao.saveAll(authorizedEmployees);
+		addRequestAuthorizerRemovedTimelineRecords(authorizedEmployees, requestAuthorizer);
+	}
+
+	protected void addRequestAuthorizerRemovedTimelineRecords(List<Employee> authorizedEmployees,
+			Employee requestAuthorizer) {
+		// This feature is available only for Pro tenants.
 	}
 
 	protected void invalidateUserCache() {
@@ -662,18 +668,20 @@ public class PeopleServiceImpl implements PeopleService {
 
 	private void processRequestAuthorizer(EmployeeEmploymentBasicDetailsDto employmentDetails, Employee employee) {
 		EmployeeEmploymentBasicDetailsManagerDetailsDto requestAuthorizer = employmentDetails.getRequestAuthorizer();
-		if (requestAuthorizer == null) {
-			return;
-		}
+		EmployeeEmploymentBasicDetailsManagerDetailsDto primarySupervisor = employmentDetails.getPrimarySupervisor();
+		boolean isPrimarySupervisorRemoved = primarySupervisor != null
+				&& (primarySupervisor.getEmployeeId() == null || primarySupervisor.getEmployeeId() <= 0);
 
-		if (requestAuthorizer.getEmployeeId() == null) {
+		if (isPrimarySupervisorRemoved || (requestAuthorizer != null && requestAuthorizer.getEmployeeId() == null)) {
 			employee.setRequestAuthorizer(null);
 			return;
 		}
 
-		employee.setRequestAuthorizer(employeeDao.findById(requestAuthorizer.getEmployeeId())
-			.orElseThrow(() -> new EntityNotFoundException(
-					PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_EMPLOYEE_NOT_FOUND)));
+		if (requestAuthorizer == null) {
+			return;
+		}
+
+		employee.setRequestAuthorizer(employeeDao.getReferenceById(requestAuthorizer.getEmployeeId()));
 	}
 
 	private void processPayrollIdAndTin(CreateEmployeeRequestDto requestDto, Employee employee) {
@@ -2127,23 +2135,44 @@ public class PeopleServiceImpl implements PeopleService {
 
 	}
 
-	private void setBulkRequestAuthorizer(EmployeeBulkDto employeeBulkDto, EmployeeDetailsDto employeeDetailsDto,
-			Employee employee) {
+	private void setBulkRequestAuthorizer(EmployeeBulkDto employeeBulkDto, Employee employee) {
+		String requestAuthorizerEmail = employeeBulkDto.getRequestAuthorizerEmail();
+		if (requestAuthorizerEmail == null || requestAuthorizerEmail.isBlank()) {
+			return;
+		}
+
+		userDao.findByEmail(requestAuthorizerEmail)
+			.ifPresent(authorizerUser -> employee
+				.setRequestAuthorizer(employeeDao.getReferenceById(authorizerUser.getUserId())));
+	}
+
+	private void validateRequestAuthorizerInBulk(EmployeeBulkDto employeeBulkDto, List<String> errors) {
 		String requestAuthorizerEmail = employeeBulkDto.getRequestAuthorizerEmail();
 		if (requestAuthorizerEmail == null || requestAuthorizerEmail.isBlank()) {
 			return;
 		}
 
 		if (requestAuthorizerEmail.equalsIgnoreCase(employeeBulkDto.getWorkEmail())) {
-			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_SELF);
+			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_SELF));
+			return;
 		}
 
-		Long requestAuthorizerId = userDao.findByEmail(requestAuthorizerEmail)
-			.map(User::getUserId)
-			.orElseThrow(() -> new ValidationException(
-					PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_EMPLOYEE_NOT_FOUND));
-		employee.setRequestAuthorizer(employeeValidationService.validateRequestAuthorizerAssignment(requestAuthorizerId,
-				null, employeeDetailsDto.getPrimaryManager()));
+		Optional<User> authorizerUser = userDao.findByEmail(requestAuthorizerEmail);
+		if (authorizerUser.isEmpty()) {
+			errors.add(messageUtil
+				.getMessage(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_EMPLOYEE_NOT_FOUND));
+			return;
+		}
+
+		Long primarySupervisorId = employeeBulkDto.getPrimaryManager() == null ? null
+				: userDao.findByEmail(employeeBulkDto.getPrimaryManager()).map(User::getUserId).orElse(null);
+		try {
+			employeeValidationService.validateRequestAuthorizerAssignment(authorizerUser.get().getUserId(), null,
+					primarySupervisorId);
+		}
+		catch (ValidationException e) {
+			errors.add(e.getMessage());
+		}
 	}
 
 	public void setBulkEmployeeProgression(EmployeeBulkDto employeeBulkDto, Employee employee) {
@@ -2567,7 +2596,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 		Set<EmployeeManager> managers = addNewManagers(employeeDetailsDto, employee);
 		employee.setEmployeeManagers(managers);
-		setBulkRequestAuthorizer(employeeBulkDto, employeeDetailsDto, employee);
+		setBulkRequestAuthorizer(employeeBulkDto, employee);
 
 		if (employeeBulkDto.getEmployeeEmergency() != null && (employeeBulkDto.getEmployeeEmergency().getName() != null
 				|| employeeBulkDto.getEmployeeEmergency().getContactNo() != null)) {
@@ -2957,6 +2986,7 @@ public class PeopleServiceImpl implements PeopleService {
 		validateLastName(employeeBulkDto.getLastName(), errors);
 		validateUserEmail(employeeBulkDto.getWorkEmail(), errors);
 		validateUserSupervisor(employeeBulkDto.getPrimaryManager(), errors);
+		validateRequestAuthorizerInBulk(employeeBulkDto, errors);
 		validateCareerProgressionInBulk(employeeBulkDto, errors);
 		validateStateInBulk(employeeBulkDto.getEmployeePersonalInfo().getState(), errors);
 

@@ -1,9 +1,12 @@
 package com.skapp.community.common.util;
 
+import com.skapp.community.common.model.User;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Holiday;
+import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBasicDetailsManagerDetailsDto;
+import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.type.HolidayDuration;
 import com.skapp.community.timeplanner.model.TimeConfig;
 import lombok.experimental.UtilityClass;
@@ -349,6 +352,32 @@ public class CommonModuleUtils {
 	public static boolean isGuestEmployee(Employee employee) {
 		return employee != null && employee.getEmployeeRole() != null
 				&& Role.PM_GUEST_EMPLOYEE == employee.getEmployeeRole().getPmRole();
+	}
+
+	public static boolean isAssignableMember(Employee employee) {
+		User user = employee.getUser();
+		return user != null && Boolean.TRUE.equals(user.getIsActive())
+				&& (employee.getAccountStatus() == AccountStatus.ACTIVE
+						|| employee.getAccountStatus() == AccountStatus.PENDING)
+				&& !isGuestEmployee(employee);
+	}
+
+	public static Long resolvePrimarySupervisorId(
+			EmployeeEmploymentBasicDetailsManagerDetailsDto requestedPrimarySupervisor, Employee employee) {
+		if (requestedPrimarySupervisor != null) {
+			return requestedPrimarySupervisor.getEmployeeId();
+		}
+
+		if (employee == null || employee.getEmployeeManagers() == null) {
+			return null;
+		}
+
+		return employee.getEmployeeManagers()
+			.stream()
+			.filter(employeeManager -> Boolean.TRUE.equals(employeeManager.getIsPrimaryManager()))
+			.map(employeeManager -> employeeManager.getManager().getEmployeeId())
+			.findFirst()
+			.orElse(null);
 	}
 
 }

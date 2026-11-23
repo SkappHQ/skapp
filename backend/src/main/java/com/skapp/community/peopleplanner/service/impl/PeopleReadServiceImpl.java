@@ -341,11 +341,11 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 				.toList());
 		}
 
-		if (accessLevel.canSeeSensitiveData() && employee.getRequestAuthorizer() != null) {
-			dto.setRequestAuthorizer(peopleMapper.employeeToManagerDetailsDto(employee.getRequestAuthorizer()));
-		}
-
 		if (accessLevel.canSeeSensitiveData()) {
+			Optional.ofNullable(employee.getRequestAuthorizer())
+				.ifPresent(requestAuthorizer -> dto
+					.setRequestAuthorizer(peopleMapper.employeeToManagerDetailsDto(requestAuthorizer)));
+
 			Optional.ofNullable(employee.getEmployeePeriods())
 				.flatMap(periods -> periods.stream().findFirst())
 				.ifPresent(probation -> {
