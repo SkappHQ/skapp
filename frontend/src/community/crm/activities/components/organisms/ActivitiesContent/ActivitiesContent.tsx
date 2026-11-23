@@ -61,6 +61,8 @@ const ActivitiesContent: FC = () => {
 
   const [activeTab, setActiveTab] = useState<ActivityTab>(DEFAULT_ACTIVITY_TAB);
 
+  // Keep this effect above useScheduleMeeting(): its showNotification
+  // strips success/error from the URL.
   useEffect(() => {
     const params = new URLSearchParams(globalThis.location.search);
     if (params.has("success") || params.has("error")) {
