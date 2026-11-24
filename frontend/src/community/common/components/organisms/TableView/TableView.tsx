@@ -10,6 +10,9 @@ import { TableViewProps } from "./types";
 
 const EMPTY_STATE_MIN_HEIGHT = "min-h-80";
 
+const getWrapperClassName = (className: string, isFullHeight?: boolean) =>
+  `flex w-full flex-col gap-3 ${isFullHeight ? "min-h-0 flex-1" : ""} ${className}`;
+
 const TableView: FC<TableViewProps> = ({
   heading,
   tableName,
@@ -70,7 +73,7 @@ const TableView: FC<TableViewProps> = ({
   };
 
   return (
-    <div className={`flex w-full flex-col gap-3 ${className}`}>
+    <div className={getWrapperClassName(className, isFullHeight)}>
       {heading && <h2 className="h2 mt-4 mb-1">{heading}</h2>}
 
       {isToolbarVisible && (
