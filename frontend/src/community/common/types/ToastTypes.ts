@@ -12,7 +12,3 @@ export interface ToastProps {
   handleToastClick?: () => void;
   isIcon?: boolean;
 }
-
-export interface ToastMessageProps extends Omit<ToastProps, "key"> {
-  toastKey?: string;
-}

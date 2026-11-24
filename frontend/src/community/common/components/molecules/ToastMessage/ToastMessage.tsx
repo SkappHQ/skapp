@@ -5,12 +5,12 @@ import { JSX, SyntheticEvent, useMemo } from "react";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { IconName } from "~community/common/types/IconTypes";
-import { ToastMessageProps } from "~community/common/types/ToastTypes";
+import { ToastProps } from "~community/common/types/ToastTypes";
 
 import styles from "./styles";
 
 const ToastMessage = ({
-  toastKey,
+  key,
   open,
   onClose,
   title,
@@ -19,7 +19,7 @@ const ToastMessage = ({
   autoHideDuration = 5000,
   handleToastClick,
   isIcon = true
-}: ToastMessageProps): JSX.Element => {
+}: ToastProps): JSX.Element => {
   const theme = useTheme();
   const classes = styles(theme);
 
@@ -71,64 +71,58 @@ const ToastMessage = ({
   }, [toastType]);
 
   return (
-    <>
-      <output className="sr-only">
-        {open && [title, description].join(" ")}
-      </output>
-      <Snackbar
-        key={toastKey}
-        open={open}
-        autoHideDuration={autoHideDuration}
-        ContentProps={{ role: "presentation", "aria-hidden": true }}
-        onClose={(_event: SyntheticEvent | Event, reason: string) => {
-          if (reason === "clickaway") {
-            return;
-          }
-          onClose?.();
-        }}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        sx={{
-          ...classes.stackStyle,
-          cursor: handleToastClick ? "pointer" : "default"
-        }}
-        action={
-          <Box onClick={handleToastClick} sx={classes.toastContainer(bgColor)}>
-            {/* Vertical Divider */}
-            <Divider
-              orientation="vertical"
-              flexItem
-              sx={classes.verticalDividerStyle(color)}
-            />
-
-            {/* Icon Section */}
-            {isIcon && <Box sx={classes.iconSection(color)}>{renderIcon}</Box>}
-
-            {/* Text Section */}
-            <Box sx={classes.textSection}>
-              <Typography variant="body1" sx={classes.titleStyle}>
-                {title}
-              </Typography>
-              <Typography variant="body2" sx={classes.descriptionStyle}>
-                {description}
-              </Typography>
-            </Box>
-
-            {/* Close Button */}
-            <Box aria-hidden={true}>
-              <IconButton
-                aria-label="close"
-                color="inherit"
-                size="small"
-                onClick={onClose}
-                sx={isIcon ? classes.iconBoxStyle : { display: "none" }}
-              >
-                <Icon name={IconName.CLOSE_ICON} />
-              </IconButton>
-            </Box>
-          </Box>
+    <Snackbar
+      key={key}
+      open={open}
+      autoHideDuration={autoHideDuration}
+      onClose={(_event: SyntheticEvent | Event, reason: string) => {
+        if (reason === "clickaway") {
+          return;
         }
-      />
-    </>
+        onClose?.();
+      }}
+      anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      sx={{
+        ...classes.stackStyle,
+        cursor: handleToastClick ? "pointer" : "default"
+      }}
+      action={
+        <Box onClick={handleToastClick} sx={classes.toastContainer(bgColor)}>
+          {/* Vertical Divider */}
+          <Divider
+            orientation="vertical"
+            flexItem
+            sx={classes.verticalDividerStyle(color)}
+          />
+
+          {/* Icon Section */}
+          {isIcon && <Box sx={classes.iconSection(color)}>{renderIcon}</Box>}
+
+          {/* Text Section */}
+          <Box sx={classes.textSection}>
+            <Typography variant="body1" sx={classes.titleStyle}>
+              {title}
+            </Typography>
+            <Typography variant="body2" sx={classes.descriptionStyle}>
+              {description}
+            </Typography>
+          </Box>
+
+          {/* Close Button */}
+          <Box aria-hidden={true}>
+            <IconButton
+              aria-label="close"
+              color="inherit"
+              size="small"
+              onClick={onClose}
+              sx={isIcon ? classes.iconBoxStyle : { display: "none" }}
+            >
+              <Icon name={IconName.CLOSE_ICON} />
+            </IconButton>
+          </Box>
+        </Box>
+      }
+    />
   );
 };
 

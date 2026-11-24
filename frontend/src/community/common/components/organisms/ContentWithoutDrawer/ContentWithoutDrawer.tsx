@@ -27,7 +27,7 @@ const ContentWithoutDrawer = ({ children }: Props) => {
         {loading && <FullScreenLoader />}
         {children}
         <ToastMessage
-          toastKey={toastMessage.key}
+          key={toastMessage.key}
           open={toastMessage.open}
           title={toastMessage.title}
           description={toastMessage.description}
