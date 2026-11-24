@@ -45,6 +45,7 @@ const CrmUiSlice: StateCreator<
 
   isCrmSidePanelOpen: false,
   crmSidePanelType: null,
+  crmSidePanelReturnType: null,
 
   preselectedStageId: null,
 
@@ -101,12 +102,35 @@ const CrmUiSlice: StateCreator<
     set({
       isCrmSidePanelOpen: false,
       crmSidePanelType: null,
+      crmSidePanelReturnType: null,
       selectedContactId: null,
       selectedCompanyId: null,
       selectedMeetingId: null,
       selectedActivityTaskId: null,
       selectedEmailId: null
     }),
+  setCrmSidePanelReturnType: (
+    crmSidePanelReturnType: CrmSidePanelTypes | null
+  ) => set({ crmSidePanelReturnType }),
+  closeActivitySidePanel: () =>
+    set((state) => ({
+      selectedCallId: null,
+      selectedMeetingId: null,
+      selectedActivityTaskId: null,
+      selectedEmailId: null,
+      crmSidePanelReturnType: null,
+      ...(state.crmSidePanelReturnType
+        ? {
+            isCrmSidePanelOpen: true,
+            crmSidePanelType: state.crmSidePanelReturnType
+          }
+        : {
+            isCrmSidePanelOpen: false,
+            crmSidePanelType: null,
+            selectedContactId: null,
+            selectedCompanyId: null
+          })
+    })),
 
   setPreselectedStageId: (preselectedStageId: number | null) =>
     set({ preselectedStageId }),

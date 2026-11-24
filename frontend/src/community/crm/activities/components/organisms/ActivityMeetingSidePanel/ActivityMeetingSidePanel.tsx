@@ -35,13 +35,13 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId }) => {
     isCrmSidePanelOpen,
     crmSidePanelType,
     setSelectedMeetingId,
-    closeCrmSidePanel
+    closeActivitySidePanel
   } = useCrmStore(
     useShallow((state) => ({
       isCrmSidePanelOpen: state.isCrmSidePanelOpen,
       crmSidePanelType: state.crmSidePanelType,
       setSelectedMeetingId: state.setSelectedMeetingId,
-      closeCrmSidePanel: state.closeCrmSidePanel
+      closeActivitySidePanel: state.closeActivitySidePanel
     }))
   );
 
@@ -57,8 +57,7 @@ const ActivityMeetingSidePanel: FC<Props> = ({ meetingId }) => {
   const { data: relatedMeetings } = useGetRelatedMeetings(meetingId, isOpen);
 
   const handleClose = (): void => {
-    setSelectedMeetingId(null);
-    closeCrmSidePanel();
+    closeActivitySidePanel();
   };
 
   const {

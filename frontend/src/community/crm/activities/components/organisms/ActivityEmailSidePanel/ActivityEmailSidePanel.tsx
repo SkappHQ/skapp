@@ -27,19 +27,14 @@ const ActivityEmailSidePanel: FC<Props> = ({ emailId }) => {
   const { setToastMessage } = useToast();
   const router = useRouter();
 
-  const {
-    isCrmSidePanelOpen,
-    crmSidePanelType,
-    setSelectedEmailId,
-    closeCrmSidePanel
-  } = useCrmStore(
-    useShallow((state) => ({
-      isCrmSidePanelOpen: state.isCrmSidePanelOpen,
-      crmSidePanelType: state.crmSidePanelType,
-      setSelectedEmailId: state.setSelectedEmailId,
-      closeCrmSidePanel: state.closeCrmSidePanel
-    }))
-  );
+  const { isCrmSidePanelOpen, crmSidePanelType, closeActivitySidePanel } =
+    useCrmStore(
+      useShallow((state) => ({
+        isCrmSidePanelOpen: state.isCrmSidePanelOpen,
+        crmSidePanelType: state.crmSidePanelType,
+        closeActivitySidePanel: state.closeActivitySidePanel
+      }))
+    );
 
   const isOpen =
     isCrmSidePanelOpen &&
@@ -48,8 +43,7 @@ const ActivityEmailSidePanel: FC<Props> = ({ emailId }) => {
   const { data: email, isError, isFetching } = useGetEmailById(emailId, isOpen);
 
   const handleClose = (): void => {
-    setSelectedEmailId(null);
-    closeCrmSidePanel();
+    closeActivitySidePanel();
   };
 
   const {

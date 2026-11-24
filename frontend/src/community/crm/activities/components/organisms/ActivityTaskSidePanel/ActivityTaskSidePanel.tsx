@@ -24,7 +24,7 @@ import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 
 interface Props {
   taskId: number;
-  onCompletionChange: (taskId: number) => void;
+  onCompletionChange?: (taskId: number) => void;
 }
 
 const ActivityTaskSidePanel: FC<Props> = ({ taskId, onCompletionChange }) => {
@@ -36,13 +36,13 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId, onCompletionChange }) => {
     isCrmSidePanelOpen,
     crmSidePanelType,
     setSelectedActivityTaskId,
-    closeCrmSidePanel
+    closeActivitySidePanel
   } = useCrmStore(
     useShallow((state) => ({
       isCrmSidePanelOpen: state.isCrmSidePanelOpen,
       crmSidePanelType: state.crmSidePanelType,
       setSelectedActivityTaskId: state.setSelectedActivityTaskId,
-      closeCrmSidePanel: state.closeCrmSidePanel
+      closeActivitySidePanel: state.closeActivitySidePanel
     }))
   );
 
@@ -58,8 +58,7 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId, onCompletionChange }) => {
   const { data: relatedTasks } = useGetRelatedActivityTasks(taskId, isOpen);
 
   const handleClose = (): void => {
-    setSelectedActivityTaskId(null);
-    closeCrmSidePanel();
+    closeActivitySidePanel();
   };
 
   const {
@@ -104,7 +103,7 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId, onCompletionChange }) => {
   };
 
   const handleCompletionChange = (isCompleted: boolean): void => {
-    onCompletionChange(taskId);
+    if (onCompletionChange) onCompletionChange(taskId);
     updateTask({ id: taskId, isCompleted });
   };
 

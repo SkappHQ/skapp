@@ -1,17 +1,13 @@
 import { ButtonV2, ButtonV2Props } from "@rootcodelabs/skapp-ui";
 import { FC, MouseEvent, useEffect, useMemo, useRef, useState } from "react";
-import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import ActivityCallSidePanel from "~community/crm/activities/components/organisms/ActivityCallSidePanel/ActivityCallSidePanel";
-import ActivityEmailSidePanel from "~community/crm/activities/components/organisms/ActivityEmailSidePanel/ActivityEmailSidePanel";
 import ActivityFeed from "~community/crm/activities/components/organisms/ActivityFeed/ActivityFeed";
-import ActivityMeetingSidePanel from "~community/crm/activities/components/organisms/ActivityMeetingSidePanel/ActivityMeetingSidePanel";
-import ActivityTaskSidePanel from "~community/crm/activities/components/organisms/ActivityTaskSidePanel/ActivityTaskSidePanel";
+import ActivitySidePanels from "~community/crm/activities/components/organisms/ActivitySidePanels/ActivitySidePanels";
 import ActivityToolbar from "~community/crm/activities/components/organisms/ActivityToolbar/ActivityToolbar";
 import { DEFAULT_ACTIVITY_TAB } from "~community/crm/activities/constants/activityConstants";
 import {
@@ -19,9 +15,7 @@ import {
   ActivityFeedResponse,
   ActivityFilterValues,
   ActivityListFilters,
-  ActivityRow,
-  ActivityTab,
-  ActivityType
+  ActivityTab
 } from "~community/crm/activities/types/activityTypes";
 import {
   toCallRow,
@@ -41,11 +35,10 @@ import AddActivityTaskModalContent from "~community/crm/components/molecules/Add
 import LogCallModalContent from "~community/crm/components/molecules/LogCallModalContent/LogCallModalContent";
 import LogEmailModalContent from "~community/crm/components/molecules/LogEmailModalContent/LogEmailModalContent";
 import LogMeetingModalContent from "~community/crm/components/molecules/LogMeetingModalContent/LogMeetingModalContent";
-import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useActivityTaskCompletion } from "~community/crm/hooks/useActivityTaskCompletion";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
+import { useOpenActivitySidePanel } from "~community/crm/hooks/useOpenActivitySidePanel";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import useScheduleMeeting from "~enterprise/crm/hooks/useScheduleMeeting";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
@@ -89,33 +82,7 @@ const ActivitiesContent: FC = () => {
 
   const isAllTab = activeTab === ActivityTab.ALL;
 
-  const {
-    owners,
-    selectedCallId,
-    selectedMeetingId,
-    selectedActivityTaskId,
-    selectedEmailId,
-    isCrmSidePanelOpen,
-    setSelectedCallId,
-    setSelectedMeetingId,
-    setSelectedActivityTaskId,
-    setSelectedEmailId,
-    openCrmSidePanel
-  } = useCrmStore(
-    useShallow((store) => ({
-      owners: store.owners,
-      selectedCallId: store.selectedCallId,
-      selectedMeetingId: store.selectedMeetingId,
-      selectedActivityTaskId: store.selectedActivityTaskId,
-      selectedEmailId: store.selectedEmailId,
-      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-      setSelectedCallId: store.setSelectedCallId,
-      setSelectedMeetingId: store.setSelectedMeetingId,
-      setSelectedActivityTaskId: store.setSelectedActivityTaskId,
-      setSelectedEmailId: store.setSelectedEmailId,
-      openCrmSidePanel: store.openCrmSidePanel
-    }))
-  );
+  const owners = useCrmStore((store) => store.owners);
 
   const teamMembers = useMemo(() => Object.values(owners), [owners]);
 
@@ -235,28 +202,7 @@ const ActivitiesContent: FC = () => {
     });
   };
 
-  const handleRowClick = (row: ActivityRow): void => {
-    switch (row.type) {
-      case ActivityType.CALL:
-        setSelectedCallId(row.id);
-        openCrmSidePanel(CrmSidePanelTypes.CALL_SIDE_PANEL);
-        break;
-      case ActivityType.MEETING:
-        setSelectedMeetingId(row.id);
-        openCrmSidePanel(CrmSidePanelTypes.MEETING_SIDE_PANEL);
-        break;
-      case ActivityType.TASK:
-        setSelectedActivityTaskId(row.id);
-        openCrmSidePanel(CrmSidePanelTypes.ACTIVITY_TASK_SIDE_PANEL);
-        break;
-      case ActivityType.EMAIL:
-        setSelectedEmailId(row.id);
-        openCrmSidePanel(CrmSidePanelTypes.EMAIL_SIDE_PANEL);
-        break;
-      default:
-        break;
-    }
-  };
+  const handleRowClick = useOpenActivitySidePanel();
 
   const handlePanelCompletionChange = (taskId: number): void => {
     setTaskCompletions((current) => {
@@ -417,29 +363,9 @@ const ActivitiesContent: FC = () => {
         onRowClick={handleRowClick}
         onToggleComplete={handleToggleComplete}
       />
-      {selectedCallId !== null && (
-        <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
-          <ActivityCallSidePanel callId={selectedCallId} />
-        </SidePanelWrapper>
-      )}
-      {selectedMeetingId !== null && (
-        <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
-          <ActivityMeetingSidePanel meetingId={selectedMeetingId} />
-        </SidePanelWrapper>
-      )}
-      {selectedActivityTaskId !== null && (
-        <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
-          <ActivityTaskSidePanel
-            taskId={selectedActivityTaskId}
-            onCompletionChange={handlePanelCompletionChange}
-          />
-        </SidePanelWrapper>
-      )}
-      {selectedEmailId !== null && (
-        <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
-          <ActivityEmailSidePanel emailId={selectedEmailId} />
-        </SidePanelWrapper>
-      )}
+      <ActivitySidePanels
+        onTaskCompletionChange={handlePanelCompletionChange}
+      />
     </div>
   );
 };

@@ -35,13 +35,13 @@ const ActivityCallSidePanel: FC<Props> = ({ callId }) => {
     isCrmSidePanelOpen,
     crmSidePanelType,
     setSelectedCallId,
-    closeCrmSidePanel
+    closeActivitySidePanel
   } = useCrmStore(
     useShallow((state) => ({
       isCrmSidePanelOpen: state.isCrmSidePanelOpen,
       crmSidePanelType: state.crmSidePanelType,
       setSelectedCallId: state.setSelectedCallId,
-      closeCrmSidePanel: state.closeCrmSidePanel
+      closeActivitySidePanel: state.closeActivitySidePanel
     }))
   );
 
@@ -53,8 +53,7 @@ const ActivityCallSidePanel: FC<Props> = ({ callId }) => {
   const { data: relatedCalls } = useGetRelatedCalls(callId, isOpen);
 
   const handleClose = () => {
-    setSelectedCallId(null);
-    closeCrmSidePanel();
+    closeActivitySidePanel();
   };
 
   const {
