@@ -36,13 +36,13 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId, onCompletionChange }) => {
     isCrmSidePanelOpen,
     crmSidePanelType,
     setSelectedActivityTaskId,
-    closeCrmSidePanel
+    closeActivitySidePanel
   } = useCrmStore(
     useShallow((state) => ({
       isCrmSidePanelOpen: state.isCrmSidePanelOpen,
       crmSidePanelType: state.crmSidePanelType,
       setSelectedActivityTaskId: state.setSelectedActivityTaskId,
-      closeCrmSidePanel: state.closeCrmSidePanel
+      closeActivitySidePanel: state.closeActivitySidePanel
     }))
   );
 
@@ -59,7 +59,7 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId, onCompletionChange }) => {
 
   const handleClose = (): void => {
     setSelectedActivityTaskId(null);
-    closeCrmSidePanel();
+    closeActivitySidePanel();
   };
 
   const {

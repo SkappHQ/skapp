@@ -47,6 +47,9 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
   const { taskCompletions, handleToggleComplete } = useActivityTaskCompletion();
 
   const {
+    isCrmSidePanelOpen,
+    crmSidePanelType,
+    setCrmSidePanelReturnType,
     setSelectedCallId,
     setSelectedMeetingId,
     setSelectedActivityTaskId,
@@ -54,6 +57,9 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
     openCrmSidePanel
   } = useCrmStore(
     useShallow((store) => ({
+      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+      crmSidePanelType: store.crmSidePanelType,
+      setCrmSidePanelReturnType: store.setCrmSidePanelReturnType,
       setSelectedCallId: store.setSelectedCallId,
       setSelectedMeetingId: store.setSelectedMeetingId,
       setSelectedActivityTaskId: store.setSelectedActivityTaskId,
@@ -63,6 +69,8 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
   );
 
   const handleRowClick = (row: ActivityRow): void => {
+    if (isCrmSidePanelOpen) setCrmSidePanelReturnType(crmSidePanelType);
+
     switch (row.type) {
       case ActivityType.CALL:
         setSelectedCallId(row.id);

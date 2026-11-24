@@ -31,13 +31,13 @@ const ActivityEmailSidePanel: FC<Props> = ({ emailId }) => {
     isCrmSidePanelOpen,
     crmSidePanelType,
     setSelectedEmailId,
-    closeCrmSidePanel
+    closeActivitySidePanel
   } = useCrmStore(
     useShallow((state) => ({
       isCrmSidePanelOpen: state.isCrmSidePanelOpen,
       crmSidePanelType: state.crmSidePanelType,
       setSelectedEmailId: state.setSelectedEmailId,
-      closeCrmSidePanel: state.closeCrmSidePanel
+      closeActivitySidePanel: state.closeActivitySidePanel
     }))
   );
 
@@ -49,7 +49,7 @@ const ActivityEmailSidePanel: FC<Props> = ({ emailId }) => {
 
   const handleClose = (): void => {
     setSelectedEmailId(null);
-    closeCrmSidePanel();
+    closeActivitySidePanel();
   };
 
   const {

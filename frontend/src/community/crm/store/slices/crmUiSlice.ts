@@ -14,7 +14,7 @@ const CrmUiSlice: StateCreator<
   [["zustand/devtools", never]],
   [],
   CrmUiSliceTypes
-> = (set) => ({
+> = (set, get) => ({
   companyIds: [],
   contactIds: [],
   dealIds: [],
@@ -45,6 +45,7 @@ const CrmUiSlice: StateCreator<
 
   isCrmSidePanelOpen: false,
   crmSidePanelType: null,
+  crmSidePanelReturnType: null,
 
   preselectedStageId: null,
 
@@ -101,12 +102,29 @@ const CrmUiSlice: StateCreator<
     set({
       isCrmSidePanelOpen: false,
       crmSidePanelType: null,
+      crmSidePanelReturnType: null,
       selectedContactId: null,
       selectedCompanyId: null,
       selectedMeetingId: null,
       selectedActivityTaskId: null,
       selectedEmailId: null
     }),
+  setCrmSidePanelReturnType: (
+    crmSidePanelReturnType: CrmSidePanelTypes | null
+  ) => set({ crmSidePanelReturnType }),
+  closeActivitySidePanel: () => {
+    const { crmSidePanelReturnType, closeCrmSidePanel } = get();
+
+    if (!crmSidePanelReturnType) {
+      closeCrmSidePanel();
+      return;
+    }
+
+    set({
+      crmSidePanelType: crmSidePanelReturnType,
+      crmSidePanelReturnType: null
+    });
+  },
 
   setPreselectedStageId: (preselectedStageId: number | null) =>
     set({ preselectedStageId }),
