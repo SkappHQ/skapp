@@ -2,6 +2,7 @@ import {
   Popper,
   type PopperProps,
   TableToolBar,
+  type TableToolBarProps,
   TableV2
 } from "@rootcodelabs/skapp-ui";
 import { FC, MouseEvent, useState } from "react";
@@ -9,10 +10,27 @@ import { FC, MouseEvent, useState } from "react";
 import { TableViewProps } from "./types";
 
 const EMPTY_STATE_MIN_HEIGHT = "min-h-80";
-const FULL_HEIGHT_CLASS_NAMES: Record<string, string> = {
-  true: "min-h-0 flex-1",
-  false: ""
-};
+const FULL_HEIGHT_CLASS_NAME = "min-h-0 flex-1";
+
+const getFilterButton = (
+  filter: TableViewProps["filter"],
+  isFilterInteractive: boolean,
+  isOpen: boolean,
+  onClick: (event: MouseEvent<HTMLElement>) => void
+): TableToolBarProps["filterButton"] =>
+  filter
+    ? {
+        onClick,
+        disabled: filter.isDisabled,
+        "aria-label": filter.filterButtonAriaLabel,
+        "aria-expanded": isFilterInteractive ? isOpen : undefined,
+        "aria-haspopup": isFilterInteractive ? "dialog" : undefined,
+        badge: {
+          count: filter.filterCount ?? 0,
+          show: (filter.filterCount ?? 0) > 0
+        }
+      }
+    : undefined;
 
 const TableView: FC<TableViewProps> = ({
   heading,
@@ -28,7 +46,7 @@ const TableView: FC<TableViewProps> = ({
   onRowClick,
   className = "",
   height,
-  isFullHeight = false,
+  isFullHeight,
   minHeight = "min-h-70",
   pagination,
   infiniteScroll,
@@ -75,28 +93,19 @@ const TableView: FC<TableViewProps> = ({
 
   return (
     <div
-      className={`flex w-full flex-col gap-3 ${FULL_HEIGHT_CLASS_NAMES[String(isFullHeight)]} ${className}`}
+      className={`flex w-full flex-col gap-3 ${isFullHeight ? FULL_HEIGHT_CLASS_NAME : ""} ${className}`}
     >
       {heading && <h2 className="h2 mt-4 mb-1">{heading}</h2>}
 
       {isToolbarVisible && (
         <TableToolBar
           {...toolbar}
-          filterButton={
-            isFilterEnabled
-              ? {
-                  onClick: togglePopover,
-                  disabled: filter?.isDisabled,
-                  "aria-label": filter?.filterButtonAriaLabel,
-                  "aria-expanded": isFilterInteractive ? isOpen : undefined,
-                  "aria-haspopup": isFilterInteractive ? "dialog" : undefined,
-                  badge: {
-                    count: filter?.filterCount ?? 0,
-                    show: (filter?.filterCount ?? 0) > 0
-                  }
-                }
-              : undefined
-          }
+          filterButton={getFilterButton(
+            filter,
+            isFilterInteractive,
+            isOpen,
+            togglePopover
+          )}
         />
       )}
 

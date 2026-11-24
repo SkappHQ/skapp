@@ -5,7 +5,7 @@ import { JSX, SyntheticEvent, useMemo } from "react";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { IconName } from "~community/common/types/IconTypes";
-import { ToastProps } from "~community/common/types/ToastTypes";
+import { ToastMessageProps } from "~community/common/types/ToastTypes";
 
 import styles from "./styles";
 
@@ -19,7 +19,7 @@ const ToastMessage = ({
   autoHideDuration = 5000,
   handleToastClick,
   isIcon = true
-}: ToastProps): JSX.Element => {
+}: ToastMessageProps): JSX.Element => {
   const theme = useTheme();
   const classes = styles(theme);
 
