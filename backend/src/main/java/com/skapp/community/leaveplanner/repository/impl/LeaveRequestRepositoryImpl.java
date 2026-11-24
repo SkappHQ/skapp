@@ -25,10 +25,10 @@ import com.skapp.community.leaveplanner.payload.request.EmployeesOnLeavePeriodFi
 import com.skapp.community.leaveplanner.payload.response.EmployeeLeaveRequestReportExportDto;
 import com.skapp.community.leaveplanner.payload.response.EmployeeLeaveRequestReportQueryDto;
 import com.skapp.community.leaveplanner.repository.LeaveRequestRepository;
+import com.skapp.community.leaveplanner.repository.projection.LeaveRequestPeriod;
 import com.skapp.community.leaveplanner.repository.projection.LeaveTrendByDay;
 import com.skapp.community.leaveplanner.repository.projection.LeaveTrendByMonth;
 import com.skapp.community.leaveplanner.repository.projection.LeaveTypeBreakDown;
-import com.skapp.community.leaveplanner.repository.projection.LeaveUtilizationByEmployeeMonthly;
 import com.skapp.community.leaveplanner.repository.projection.ManagerLeaveTrend;
 import com.skapp.community.leaveplanner.repository.projection.OrganizationLeaveTrendForTheYear;
 import com.skapp.community.leaveplanner.repository.projection.TeamLeaveCountByType;
@@ -1452,101 +1452,30 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 	}
 
 	@Override
-	public List<LeaveUtilizationByEmployeeMonthly> findLeaveUtilizationByEmployeeMonthly(LocalDate startDate,
-			LocalDate endDate, List<Integer> workingDaysIndex, List<LocalDate> holidayDates, Long employeeId,
-			List<Long> typeIds) {
+	public List<LeaveRequestPeriod> findApprovedLeavePeriodsOfActiveEmployeeInRange(Long employeeId, List<Long> typeIds,
+			LocalDate startDate, LocalDate endDate) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<LeaveRequestPeriod> criteriaQuery = criteriaBuilder.createQuery(LeaveRequestPeriod.class);
+		Root<LeaveRequest> leaveRequestRoot = criteriaQuery.from(LeaveRequest.class);
+		Join<LeaveRequest, Employee> employeeJoin = leaveRequestRoot.join(LeaveRequest_.employee);
+		Join<Employee, User> userJoin = employeeJoin.join(Employee_.user);
 
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-
-		List<LocalDate> allDates = startDate.datesUntil(endDate.plusDays(1))
-			.filter(date -> isValidLeaveDate(date, workingDaysIndex, holidayDates))
-			.toList();
-
-		Map<String, Float> leaveCountsByTypeAndMonth = new HashMap<>();
-
-		for (LocalDate date : allDates) {
-
-			CriteriaQuery<Object[]> leaveQuery = cb.createQuery(Object[].class);
-			Root<LeaveRequest> leaveRequest = leaveQuery.from(LeaveRequest.class);
-			Join<LeaveRequest, Employee> employee = leaveRequest.join(LeaveRequest_.employee);
-			Join<Employee, User> user = employee.join(Employee_.user);
-
-			List<Predicate> predicates = new ArrayList<>();
-
-			predicates.add(cb.lessThanOrEqualTo(leaveRequest.get(LeaveRequest_.startDate), date));
-			predicates.add(cb.greaterThanOrEqualTo(leaveRequest.get(LeaveRequest_.endDate), date));
-
-			predicates.add(cb.equal(employee.get(Employee_.employeeId), employeeId));
-
-			predicates.add(cb.equal(leaveRequest.get(LeaveRequest_.status), LeaveRequestStatus.APPROVED));
-			predicates.add(cb.equal(user.get(User_.isActive), true));
-
-			if (typeIds != null && !typeIds.isEmpty()) {
-				predicates.add(leaveRequest.get(LeaveRequest_.leaveType).get(LeaveType_.typeId).in(typeIds));
-			}
-
-			leaveQuery.multiselect(leaveRequest.get(LeaveRequest_.leaveType).get(LeaveType_.typeId),
-					leaveRequest.get(LeaveRequest_.leaveState));
-			leaveQuery.where(predicates.toArray(new Predicate[0]));
-
-			List<Object[]> results = entityManager.createQuery(leaveQuery).getResultList();
-
-			for (Object[] result : results) {
-				Long leaveTypeId = (Long) result[0];
-				LeaveState leaveState = (LeaveState) result[1];
-
-				float leaveCount = (leaveState == LeaveState.HALFDAY_MORNING
-						|| leaveState == LeaveState.HALFDAY_EVENING) ? 0.5f : 1.0f;
-
-				int month = date.getMonthValue();
-				String key = leaveTypeId + ":" + month;
-
-				leaveCountsByTypeAndMonth.put(key, leaveCountsByTypeAndMonth.getOrDefault(key, 0.0f) + leaveCount);
-			}
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(criteriaBuilder.equal(employeeJoin.get(Employee_.employeeId), employeeId));
+		predicates.add(criteriaBuilder.equal(userJoin.get(User_.isActive), true));
+		if (typeIds != null && !typeIds.isEmpty()) {
+			predicates.add(leaveRequestRoot.get(LeaveRequest_.leaveType).get(LeaveType_.typeId).in(typeIds));
 		}
+		predicates.add(criteriaBuilder.equal(leaveRequestRoot.get(LeaveRequest_.status), LeaveRequestStatus.APPROVED));
+		predicates.add(criteriaBuilder.lessThanOrEqualTo(leaveRequestRoot.get(LeaveRequest_.startDate), endDate));
+		predicates.add(criteriaBuilder.greaterThanOrEqualTo(leaveRequestRoot.get(LeaveRequest_.endDate), startDate));
 
-		return convertToResultList(leaveCountsByTypeAndMonth);
-	}
-
-	private boolean isValidLeaveDate(LocalDate date, List<Integer> workingDaysIndex, List<LocalDate> holidayDates) {
-
-		if (workingDaysIndex != null && !workingDaysIndex.isEmpty()
-				&& !workingDaysIndex.contains(date.getDayOfWeek().getValue() % 7)) {
-			return false;
-		}
-
-		return holidayDates == null || !holidayDates.contains(date);
-	}
-
-	private List<LeaveUtilizationByEmployeeMonthly> convertToResultList(Map<String, Float> leaveCountsByTypeAndMonth) {
-
-		List<LeaveUtilizationByEmployeeMonthly> result = new ArrayList<>();
-
-		for (Map.Entry<String, Float> entry : leaveCountsByTypeAndMonth.entrySet()) {
-			String[] keyParts = entry.getKey().split(":");
-			final Integer leaveTypeId = Integer.parseInt(keyParts[0]);
-			final Integer month = Integer.parseInt(keyParts[1]);
-			final Float leaveCount = entry.getValue();
-
-			result.add(new LeaveUtilizationByEmployeeMonthly() {
-				public Integer getLeaveType() {
-					return leaveTypeId;
-				}
-
-				public Integer getMonthValue() {
-					return month;
-				}
-
-				public Float getLeaveCount() {
-					return leaveCount;
-				}
-			});
-		}
-
-		result.sort(Comparator.comparing(LeaveUtilizationByEmployeeMonthly::getMonthValue)
-			.thenComparing(LeaveUtilizationByEmployeeMonthly::getLeaveType));
-
-		return result;
+		criteriaQuery.select(criteriaBuilder.construct(LeaveRequestPeriod.class,
+				leaveRequestRoot.get(LeaveRequest_.leaveType).get(LeaveType_.typeId),
+				leaveRequestRoot.get(LeaveRequest_.startDate), leaveRequestRoot.get(LeaveRequest_.endDate),
+				leaveRequestRoot.get(LeaveRequest_.leaveState)))
+			.where(predicates.toArray(new Predicate[0]));
+		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
 	@Override
