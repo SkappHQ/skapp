@@ -9,7 +9,10 @@ import { FC, MouseEvent, useState } from "react";
 import { TableViewProps } from "./types";
 
 const EMPTY_STATE_MIN_HEIGHT = "min-h-80";
-const FULL_HEIGHT_CLASS_NAMES = { true: "min-h-0 flex-1", false: "" };
+const FULL_HEIGHT_CLASS_NAMES: Record<string, string> = {
+  true: "min-h-0 flex-1",
+  false: ""
+};
 
 const TableView: FC<TableViewProps> = ({
   heading,
