@@ -138,23 +138,26 @@ const SidePanelMeetingInfo: FC<Props> = ({
           startTime: DateTime.fromFormat(values.startTime, TIME_FORMAT_24_HOUR)
         })}
         secondaryRow={
-          <PropertyRow
-            label={translateText([
-              "activities",
-              "meetingSidePanel",
-              "info",
-              "endTime"
-            ])}
-          >
-            <SidePanelTimeField
-              id="meeting-end-time"
-              value={values.endTime}
-              placeholder={noValue}
-              ariaLabel={translateAria(["activitySidePanel", "editEndTime"])}
-              {...(errors.endTime && { errorMessage: errors.endTime })}
-              onChange={(time) => setFieldValue("endTime", time)}
-            />
-          </PropertyRow>
+          <>
+            <PropertyRow
+              label={translateText([
+                "activities",
+                "meetingSidePanel",
+                "info",
+                "endTime"
+              ])}
+            >
+              <SidePanelTimeField
+                id="meeting-end-time"
+                value={values.endTime}
+                placeholder={noValue}
+                ariaLabel={translateAria(["activitySidePanel", "editEndTime"])}
+                {...(errors.endTime && { errorMessage: errors.endTime })}
+                onChange={(time) => setFieldValue("endTime", time)}
+              />
+            </PropertyRow>
+            {getMeetingVenueInfo(meeting)}
+          </>
         }
         {...(values.ownerId && { owner: owners[values.ownerId] })}
         companyId={values.companyId}
@@ -164,8 +167,6 @@ const SidePanelMeetingInfo: FC<Props> = ({
         onOwnerChange={(ownerId) => setFieldValue("ownerId", ownerId)}
         onCompanyChange={(companyId) => setFieldValue("companyId", companyId)}
       />
-
-      {getMeetingVenueInfo(meeting)}
     </div>
   );
 };
