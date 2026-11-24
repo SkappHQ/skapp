@@ -7,13 +7,13 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FC, MouseEvent, useState } from "react";
 
-import { TableViewProps } from "./types";
+import { TableViewFilter, TableViewProps } from "./types";
 
 const EMPTY_STATE_MIN_HEIGHT = "min-h-80";
 const FULL_HEIGHT_CLASS_NAME = "min-h-0 flex-1";
 
 const getFilterButton = (
-  filter: TableViewProps["filter"],
+  filter: TableViewFilter | undefined,
   isFilterInteractive: boolean,
   isOpen: boolean,
   onClick: (event: MouseEvent<HTMLElement>) => void
@@ -26,8 +26,8 @@ const getFilterButton = (
         "aria-expanded": isFilterInteractive ? isOpen : undefined,
         "aria-haspopup": isFilterInteractive ? "dialog" : undefined,
         badge: {
-          count: filter.filterCount ?? 0,
-          show: (filter.filterCount ?? 0) > 0
+          count: filter.filterCount,
+          show: filter.filterCount > 0
         }
       }
     : undefined;
