@@ -1,5 +1,5 @@
 import { DateTime } from "luxon";
-import { FC, ReactNode } from "react";
+import { CSSProperties, FC, ReactNode, RefObject, useRef } from "react";
 
 import {
   TIME_FORMAT_12_HOUR,
@@ -11,10 +11,12 @@ import PropertyRow from "~community/crm/components/molecules/PropertyRow/Propert
 import SidePanelCompanyField from "~community/crm/components/molecules/SidePanelCompanyField/SidePanelCompanyField";
 import SidePanelDateField from "~community/crm/components/molecules/SidePanelDateField/SidePanelDateField";
 import SidePanelTimeField from "~community/crm/components/molecules/SidePanelTimeField/SidePanelTimeField";
+import useCardAlignedPopup from "~community/crm/hooks/useCardAlignedPopup";
 import { CrmOwnerEntity } from "~community/crm/types/CrmCommonTypes";
 
 interface Props {
   id?: string;
+  cardRef: RefObject<HTMLDivElement | null>;
   primaryRow?: ReactNode;
   date: DateTime;
   dateLabel: string;
@@ -33,6 +35,7 @@ interface Props {
 
 const SidePanelActivityInfo: FC<Props> = ({
   id,
+  cardRef,
   primaryRow,
   date,
   dateLabel,
@@ -54,6 +57,8 @@ const SidePanelActivityInfo: FC<Props> = ({
     "activities",
     "activitySidePanel"
   );
+  const ownerFieldRef = useRef<HTMLDivElement>(null);
+  const ownerPopup = useCardAlignedPopup(cardRef, ownerFieldRef);
 
   const noValue = translateText([
     "activities",
@@ -72,7 +77,10 @@ const SidePanelActivityInfo: FC<Props> = ({
   };
 
   return (
-    <div className="flex flex-col border border-secondary-accent rounded-xl p-3">
+    <div
+      ref={cardRef}
+      className="flex flex-col border border-secondary-accent rounded-xl p-3"
+    >
       {primaryRow}
 
       <PropertyRow label={dateLabel}>
@@ -112,14 +120,20 @@ const SidePanelActivityInfo: FC<Props> = ({
           "activityOwner"
         ])}
       >
-        <div className="flex flex-col w-full">
+        <div
+          ref={ownerFieldRef}
+          className="flex flex-col w-full"
+          style={
+            { "--card-popup-width": `${ownerPopup.width}px` } as CSSProperties
+          }
+        >
           <OwnerPopupSearch
             selectedUser={owner || null}
             onChange={handleOwnerChange}
             placeholder={noValue}
-            popupWidth="w-[calc(100%+10rem+2px)]"
+            popupWidth="w-[var(--card-popup-width)]"
             popupAlignment="right"
-            popupOffset={{ x: 13 }}
+            popupOffset={{ x: ownerPopup.offsetX }}
             searchPlaceholder={translateText([
               "deals",
               "common",
@@ -146,6 +160,7 @@ const SidePanelActivityInfo: FC<Props> = ({
       >
         <SidePanelCompanyField
           id={`${id}-related-to`}
+          cardRef={cardRef}
           companyId={companyId}
           emptyLabel={noValue}
           editAriaLabel={translateAria(["editRelatedTo"])}

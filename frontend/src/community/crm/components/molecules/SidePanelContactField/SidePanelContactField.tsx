@@ -1,4 +1,4 @@
-import { FC, useMemo, useState } from "react";
+import { FC, RefObject, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -18,6 +18,7 @@ import {
 
 interface Props {
   id: string;
+  cardRef: RefObject<HTMLDivElement | null>;
   contactId: number | null;
   emptyLabel: string;
   editAriaLabel: string;
@@ -27,6 +28,7 @@ interface Props {
 
 const SidePanelContactField: FC<Props> = ({
   id,
+  cardRef,
   contactId,
   emptyLabel,
   editAriaLabel,
@@ -75,6 +77,7 @@ const SidePanelContactField: FC<Props> = ({
   return (
     <SidePanelLinkPopupField
       id={id}
+      cardRef={cardRef}
       options={buildContactOptions(lookupItems, companies)}
       selectedId={selectedContact ? contactId : null}
       linkLabel={selectedContact ? getContactDisplayName(selectedContact) : ""}

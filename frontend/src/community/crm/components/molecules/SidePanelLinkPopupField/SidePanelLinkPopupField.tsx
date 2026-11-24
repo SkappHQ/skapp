@@ -4,12 +4,14 @@ import {
   DropdownWithSearchablePopup,
   TriggerProps
 } from "@rootcodelabs/skapp-ui";
-import { FC, RefObject } from "react";
+import { CSSProperties, FC, RefObject, useRef } from "react";
 
 import SidePanelLinkButton from "~community/crm/components/molecules/SidePanelLinkButton/SidePanelLinkButton";
+import useCardAlignedPopup from "~community/crm/hooks/useCardAlignedPopup";
 
 interface Props {
   id: string;
+  cardRef: RefObject<HTMLDivElement | null>;
   options: DropdownOption[];
   selectedId: number | null;
   linkLabel: string;
@@ -24,6 +26,7 @@ interface Props {
 
 const SidePanelLinkPopupField: FC<Props> = ({
   id,
+  cardRef,
   options,
   selectedId,
   linkLabel,
@@ -35,6 +38,9 @@ const SidePanelLinkPopupField: FC<Props> = ({
   onSearch,
   onSelect
 }) => {
+  const fieldRef = useRef<HTMLDivElement>(null);
+  const popup = useCardAlignedPopup(cardRef, fieldRef);
+
   const selectedValue: DropdownOption | null = selectedId
     ? { id: selectedId, value: selectedId, label: linkLabel }
     : null;
@@ -64,7 +70,11 @@ const SidePanelLinkPopupField: FC<Props> = ({
   );
 
   return (
-    <div className="-m-1 flex-1 min-w-0">
+    <div
+      ref={fieldRef}
+      className="-m-1 flex-1 min-w-0"
+      style={{ "--card-popup-width": `${popup.width}px` } as CSSProperties}
+    >
       <DropdownWithSearchablePopup
         options={options}
         value={selectedValue}
@@ -73,9 +83,9 @@ const SidePanelLinkPopupField: FC<Props> = ({
         searchPlaceholder={searchPlaceholder}
         searchable
         width="w-full"
-        popupWidth="w-[calc(100%+9.5rem+2px)]"
+        popupWidth="w-[var(--card-popup-width)]"
         popupAlignment="right"
-        popupOffset={{ x: 9 }}
+        popupOffset={{ x: popup.offsetX }}
         renderTrigger={(_value, _isOpen, _disabled, triggerProps) =>
           handleRenderTrigger(triggerProps)
         }
