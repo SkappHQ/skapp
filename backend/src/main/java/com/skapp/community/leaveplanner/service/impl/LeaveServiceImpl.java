@@ -64,6 +64,7 @@ import com.skapp.community.peopleplanner.repository.EmployeeManagerDao;
 import com.skapp.community.peopleplanner.repository.EmployeeTeamDao;
 import com.skapp.community.peopleplanner.repository.HolidayDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
+import com.skapp.community.peopleplanner.service.HolidayService;
 import com.skapp.community.peopleplanner.service.PeopleService;
 import com.skapp.community.peopleplanner.type.HolidayDuration;
 import com.skapp.community.peopleplanner.util.PeopleUtil;
@@ -125,6 +126,8 @@ public class LeaveServiceImpl implements LeaveService {
 	private final TimeConfigDao timeConfigDao;
 
 	private final HolidayDao holidayDao;
+
+	private final HolidayService holidayService;
 
 	private final EmployeeDao employeeDao;
 
@@ -834,7 +837,7 @@ public class LeaveServiceImpl implements LeaveService {
 		leaveEntitlements.sort(Comparator.comparing(LeaveEntitlement::getValidTo));
 
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
-		List<Holiday> holidayObjects = holidayDao.findAllActiveHolidaysForEmployee(leaveRequest.getEmployee());
+		List<Holiday> holidayObjects = holidayService.getActiveHolidaysForEmployee(leaveRequest.getEmployee());
 		List<LocalDate> holidayDates = holidayObjects.stream().map(Holiday::getDate).toList();
 
 		validateLeaveWithHoliday(leaveRequest.getStartDate(), leaveRequest.getEndDate(), holidayObjects, leaveRequest);
@@ -1095,7 +1098,7 @@ public class LeaveServiceImpl implements LeaveService {
 
 	private void addUsedHoursToLeaveEntitlement(LeaveRequest leaveRequest) {
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
-		List<Holiday> holidayObjects = holidayDao.findAllActiveHolidaysForEmployee(leaveRequest.getEmployee());
+		List<Holiday> holidayObjects = holidayService.getActiveHolidaysForEmployee(leaveRequest.getEmployee());
 		List<LocalDate> holidayDates = holidayObjects.stream().map(Holiday::getDate).toList();
 
 		removeExistingEntitlements(leaveRequest);

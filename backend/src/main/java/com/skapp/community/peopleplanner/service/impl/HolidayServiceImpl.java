@@ -306,6 +306,15 @@ public class HolidayServiceImpl implements HolidayService {
 				messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_DELETE_SELECTED_HOLIDAYS), false);
 	}
 
+	@Override
+	public List<Holiday> getActiveHolidaysForEmployee(Employee employee) {
+		if (employee != null && employee.getWorkLocation() != null
+				&& employee.getWorkLocation().getWorkLocationId() != null) {
+			return holidayDao.findAllActiveHolidaysByWorkLocationId(employee.getWorkLocation().getWorkLocationId());
+		}
+		return holidayDao.findAllByIsActiveTrueAndWorkLocationsIsEmpty();
+	}
+
 	private void updateLeaveRequestDueHoliday(Holiday holiday, LeaveRequest leaveRequest) {
 		boolean isMultiple = isMultipleDaysLeave(leaveRequest);
 		boolean isFullDayHoliday = holiday.getHolidayDuration() == HolidayDuration.FULL_DAY;

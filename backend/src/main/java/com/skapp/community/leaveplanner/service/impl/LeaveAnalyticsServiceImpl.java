@@ -100,6 +100,7 @@ import com.skapp.community.peopleplanner.repository.EmployeeTeamDao;
 import com.skapp.community.peopleplanner.repository.HolidayDao;
 import com.skapp.community.peopleplanner.repository.JobFamilyDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
+import com.skapp.community.peopleplanner.service.HolidayService;
 import com.skapp.community.peopleplanner.util.PeopleUtil;
 import com.skapp.community.timeplanner.model.TimeConfig;
 import com.skapp.community.timeplanner.repository.TimeConfigDao;
@@ -150,6 +151,8 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 	private final UserDao userDao;
 
 	private final HolidayDao holidayDao;
+
+	private final HolidayService holidayService;
 
 	private final TimeConfigDao timeConfigDao;
 
@@ -605,7 +608,7 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_START_DATE_END_DATE_NOT_VALID);
 		}
 
-		List<Holiday> holidays = holidayDao.findAllActiveHolidaysForEmployee(employeeOptional.get());
+		List<Holiday> holidays = holidayService.getActiveHolidaysForEmployee(employeeOptional.get());
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
 		List<LeaveRequestPeriod> leavePeriods = leaveRequestDao
 			.findApprovedLeavePeriodsOfActiveEmployeeInRange(employeeId, leaveTypeIds, startDate, endDate);

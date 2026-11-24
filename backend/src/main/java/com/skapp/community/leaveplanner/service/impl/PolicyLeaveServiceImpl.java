@@ -71,6 +71,7 @@ import com.skapp.community.peopleplanner.model.Holiday;
 import com.skapp.community.peopleplanner.payload.response.HolidayResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeManagerDao;
 import com.skapp.community.peopleplanner.repository.HolidayDao;
+import com.skapp.community.peopleplanner.service.HolidayService;
 import com.skapp.community.peopleplanner.util.PeopleUtil;
 import com.skapp.community.peopleplanner.type.HolidayDuration;
 import com.skapp.community.timeplanner.model.TimeConfig;
@@ -125,6 +126,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 	private final EmployeeManagerDao employeeManagerDao;
 
 	private final HolidayDao holidayDao;
+
+	private final HolidayService holidayService;
 
 	private final TimeConfigDao timeConfigDao;
 
@@ -719,7 +722,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 			return PolicyLeaveValidationFailure.OUTSIDE_POLICY_PERIOD;
 		}
 
-		List<Holiday> holidays = holidayDao.findAllActiveHolidaysForEmployee(employee);
+		List<Holiday> holidays = holidayService.getActiveHolidaysForEmployee(employee);
 		if (conflictsWithHoliday(startDate, endDate, leaveState, holidays)) {
 			return PolicyLeaveValidationFailure.NO_WORKING_DAYS;
 		}
@@ -755,7 +758,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_OUTSIDE_POLICY_PERIOD);
 		}
 
-		List<Holiday> holidays = holidayDao.findAllActiveHolidaysForEmployee(employee);
+		List<Holiday> holidays = holidayService.getActiveHolidaysForEmployee(employee);
 		if (conflictsWithHoliday(startDate, endDate, leaveState, holidays)) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_NOT_APPLICABLE);
 		}
