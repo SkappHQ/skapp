@@ -71,59 +71,64 @@ const ToastMessage = ({
   }, [toastType]);
 
   return (
-    <Snackbar
-      key={key}
-      open={open}
-      autoHideDuration={autoHideDuration}
-      ContentProps={{ role: "status" }}
-      onClose={(_event: SyntheticEvent | Event, reason: string) => {
-        if (reason === "clickaway") {
-          return;
+    <>
+      <div role="status" className="sr-only">
+        {open && [title, description].join(" ")}
+      </div>
+      <Snackbar
+        key={key}
+        open={open}
+        autoHideDuration={autoHideDuration}
+        ContentProps={{ role: "presentation", "aria-hidden": true }}
+        onClose={(_event: SyntheticEvent | Event, reason: string) => {
+          if (reason === "clickaway") {
+            return;
+          }
+          onClose?.();
+        }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        sx={{
+          ...classes.stackStyle,
+          cursor: handleToastClick ? "pointer" : "default"
+        }}
+        action={
+          <Box onClick={handleToastClick} sx={classes.toastContainer(bgColor)}>
+            {/* Vertical Divider */}
+            <Divider
+              orientation="vertical"
+              flexItem
+              sx={classes.verticalDividerStyle(color)}
+            />
+
+            {/* Icon Section */}
+            {isIcon && <Box sx={classes.iconSection(color)}>{renderIcon}</Box>}
+
+            {/* Text Section */}
+            <Box sx={classes.textSection}>
+              <Typography variant="body1" sx={classes.titleStyle}>
+                {title}
+              </Typography>
+              <Typography variant="body2" sx={classes.descriptionStyle}>
+                {description}
+              </Typography>
+            </Box>
+
+            {/* Close Button */}
+            <Box aria-hidden={true}>
+              <IconButton
+                aria-label="close"
+                color="inherit"
+                size="small"
+                onClick={onClose}
+                sx={isIcon ? classes.iconBoxStyle : { display: "none" }}
+              >
+                <Icon name={IconName.CLOSE_ICON} />
+              </IconButton>
+            </Box>
+          </Box>
         }
-        onClose?.();
-      }}
-      anchorOrigin={{ vertical: "top", horizontal: "right" }}
-      sx={{
-        ...classes.stackStyle,
-        cursor: handleToastClick ? "pointer" : "default"
-      }}
-      action={
-        <Box onClick={handleToastClick} sx={classes.toastContainer(bgColor)}>
-          {/* Vertical Divider */}
-          <Divider
-            orientation="vertical"
-            flexItem
-            sx={classes.verticalDividerStyle(color)}
-          />
-
-          {/* Icon Section */}
-          {isIcon && <Box sx={classes.iconSection(color)}>{renderIcon}</Box>}
-
-          {/* Text Section */}
-          <Box sx={classes.textSection}>
-            <Typography variant="body1" sx={classes.titleStyle}>
-              {title}
-            </Typography>
-            <Typography variant="body2" sx={classes.descriptionStyle}>
-              {description}
-            </Typography>
-          </Box>
-
-          {/* Close Button */}
-          <Box aria-hidden={true}>
-            <IconButton
-              aria-label="close"
-              color="inherit"
-              size="small"
-              onClick={onClose}
-              sx={isIcon ? classes.iconBoxStyle : { display: "none" }}
-            >
-              <Icon name={IconName.CLOSE_ICON} />
-            </IconButton>
-          </Box>
-        </Box>
-      }
-    />
+      />
+    </>
   );
 };
 
