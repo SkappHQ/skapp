@@ -68,6 +68,7 @@ import com.skapp.community.leaveplanner.payload.response.LeaveRequestResponseDto
 import com.skapp.community.leaveplanner.repository.LeaveEntitlementDao;
 import com.skapp.community.leaveplanner.repository.LeaveRequestDao;
 import com.skapp.community.leaveplanner.repository.LeaveTypeDao;
+import com.skapp.community.leaveplanner.repository.projection.LeaveRequestPeriod;
 import com.skapp.community.leaveplanner.repository.projection.LeaveTrendByDay;
 import com.skapp.community.leaveplanner.repository.projection.LeaveTrendByMonth;
 import com.skapp.community.leaveplanner.repository.projection.LeaveTypeBreakDown;
@@ -489,33 +490,6 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 		return holidayDao.findAllByIsActiveTrue().stream().map(Holiday::getDate).toList();
 	}
 
-	private Map<Integer, Map<Integer, Double>> getLeaveDaysByTypeAndMonth(List<LeaveRequest> leaveRequests,
-			LocalDate startDate, LocalDate endDate, List<TimeConfig> timeConfigs, List<Holiday> holidays) {
-		Map<Integer, Map<Integer, Double>> leaveDaysByTypeAndMonth = new HashMap<>();
-		for (LeaveRequest leaveRequest : leaveRequests) {
-			Map<Integer, Double> leaveDaysByMonth = leaveDaysByTypeAndMonth
-				.computeIfAbsent(leaveRequest.getLeaveType().getTypeId().intValue(), typeId -> new HashMap<>());
-			LocalDate from = DateTimeUtils.getLaterDate(leaveRequest.getStartDate(), startDate);
-			LocalDate to = DateTimeUtils.getEarlierDate(leaveRequest.getEndDate(), endDate);
-
-			for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
-				double leaveDays = LeaveModuleUtil.getLeaveDaysOnDate(date, leaveRequest.getLeaveState(), timeConfigs,
-						holidays);
-				if (leaveDays > 0) {
-					leaveDaysByMonth.merge(date.getMonthValue(), leaveDays, Double::sum);
-				}
-			}
-		}
-		return leaveDaysByTypeAndMonth;
-	}
-
-	private List<Holiday> getHolidaysForEmployee(Employee employee) {
-		if (employee.getWorkLocation() != null && employee.getWorkLocation().getWorkLocationId() != null) {
-			return holidayDao.findAllActiveHolidaysByWorkLocationId(employee.getWorkLocation().getWorkLocationId());
-		}
-		return holidayDao.findAllByIsActiveTrueAndWorkLocationsIsEmpty();
-	}
-
 	private List<Integer> getWorkingDaysIndex() {
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
 		return timeConfigs.stream().map(TimeConfig::getDay).map(day -> day.getValue() % 7).toList();
@@ -583,6 +557,7 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getEmployeeLeaveUtilization(LeaveUtilizationFilterDto leaveUtilizationFilterDto) {
 		User currentUser = userService.getCurrentUser();
 		log.info("getLeaveUtilization: execution started by user: {}", currentUser.getUserId());
@@ -630,13 +605,13 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_START_DATE_END_DATE_NOT_VALID);
 		}
 
-		List<Holiday> holidays = getHolidaysForEmployee(employeeOptional.get());
+		List<Holiday> holidays = holidayDao.findAllActiveHolidaysForEmployee(employeeOptional.get());
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
-		List<LeaveRequest> leaveRequests = leaveRequestDao
-			.findApprovedLeaveRequestsByEmployeeAndTypesInRange(employeeId, leaveTypeIds, startDate, endDate);
+		List<LeaveRequestPeriod> leavePeriods = leaveRequestDao
+			.findApprovedLeavePeriodsOfActiveEmployeeInRange(employeeId, leaveTypeIds, startDate, endDate);
 
-		Map<Integer, Map<Integer, Double>> result = getLeaveDaysByTypeAndMonth(leaveRequests, startDate, endDate,
-				timeConfigs, holidays);
+		Map<Integer, Map<Integer, Double>> result = LeaveModuleUtil.getLeaveDaysByTypeAndMonth(leavePeriods, startDate,
+				endDate, timeConfigs, holidays);
 
 		Map<Integer, Double> totalLeavesWithMonths = new HashMap<>();
 		result.values()

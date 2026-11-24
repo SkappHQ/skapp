@@ -25,6 +25,7 @@ import com.skapp.community.leaveplanner.payload.request.EmployeesOnLeavePeriodFi
 import com.skapp.community.leaveplanner.payload.response.EmployeeLeaveRequestReportExportDto;
 import com.skapp.community.leaveplanner.payload.response.EmployeeLeaveRequestReportQueryDto;
 import com.skapp.community.leaveplanner.repository.LeaveRequestRepository;
+import com.skapp.community.leaveplanner.repository.projection.LeaveRequestPeriod;
 import com.skapp.community.leaveplanner.repository.projection.LeaveTrendByDay;
 import com.skapp.community.leaveplanner.repository.projection.LeaveTrendByMonth;
 import com.skapp.community.leaveplanner.repository.projection.LeaveTypeBreakDown;
@@ -1451,10 +1452,10 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 	}
 
 	@Override
-	public List<LeaveRequest> findApprovedLeaveRequestsByEmployeeAndTypesInRange(Long employeeId, List<Long> typeIds,
+	public List<LeaveRequestPeriod> findApprovedLeavePeriodsOfActiveEmployeeInRange(Long employeeId, List<Long> typeIds,
 			LocalDate startDate, LocalDate endDate) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-		CriteriaQuery<LeaveRequest> criteriaQuery = criteriaBuilder.createQuery(LeaveRequest.class);
+		CriteriaQuery<LeaveRequestPeriod> criteriaQuery = criteriaBuilder.createQuery(LeaveRequestPeriod.class);
 		Root<LeaveRequest> leaveRequestRoot = criteriaQuery.from(LeaveRequest.class);
 		Join<LeaveRequest, Employee> employeeJoin = leaveRequestRoot.join(LeaveRequest_.employee);
 		Join<Employee, User> userJoin = employeeJoin.join(Employee_.user);
@@ -1462,12 +1463,18 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(criteriaBuilder.equal(employeeJoin.get(Employee_.employeeId), employeeId));
 		predicates.add(criteriaBuilder.equal(userJoin.get(User_.isActive), true));
-		predicates.add(leaveRequestRoot.get(LeaveRequest_.leaveType).get(LeaveType_.typeId).in(typeIds));
+		if (typeIds != null && !typeIds.isEmpty()) {
+			predicates.add(leaveRequestRoot.get(LeaveRequest_.leaveType).get(LeaveType_.typeId).in(typeIds));
+		}
 		predicates.add(criteriaBuilder.equal(leaveRequestRoot.get(LeaveRequest_.status), LeaveRequestStatus.APPROVED));
 		predicates.add(criteriaBuilder.lessThanOrEqualTo(leaveRequestRoot.get(LeaveRequest_.startDate), endDate));
 		predicates.add(criteriaBuilder.greaterThanOrEqualTo(leaveRequestRoot.get(LeaveRequest_.endDate), startDate));
 
-		criteriaQuery.select(leaveRequestRoot).where(predicates.toArray(new Predicate[0]));
+		criteriaQuery.select(criteriaBuilder.construct(LeaveRequestPeriod.class,
+				leaveRequestRoot.get(LeaveRequest_.leaveType).get(LeaveType_.typeId),
+				leaveRequestRoot.get(LeaveRequest_.startDate), leaveRequestRoot.get(LeaveRequest_.endDate),
+				leaveRequestRoot.get(LeaveRequest_.leaveState)))
+			.where(predicates.toArray(new Predicate[0]));
 		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 

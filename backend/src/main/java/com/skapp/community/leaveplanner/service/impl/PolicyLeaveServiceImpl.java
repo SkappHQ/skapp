@@ -719,7 +719,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 			return PolicyLeaveValidationFailure.OUTSIDE_POLICY_PERIOD;
 		}
 
-		List<Holiday> holidays = getHolidaysForEmployee(employee);
+		List<Holiday> holidays = holidayDao.findAllActiveHolidaysForEmployee(employee);
 		if (conflictsWithHoliday(startDate, endDate, leaveState, holidays)) {
 			return PolicyLeaveValidationFailure.NO_WORKING_DAYS;
 		}
@@ -755,7 +755,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_OUTSIDE_POLICY_PERIOD);
 		}
 
-		List<Holiday> holidays = getHolidaysForEmployee(employee);
+		List<Holiday> holidays = holidayDao.findAllActiveHolidaysForEmployee(employee);
 		if (conflictsWithHoliday(startDate, endDate, leaveState, holidays)) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_NOT_APPLICABLE);
 		}
@@ -1249,14 +1249,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 	private String fullName(Employee employee) {
 		return employee.getFirstName() + " " + employee.getLastName();
-	}
-
-	private List<Holiday> getHolidaysForEmployee(Employee employee) {
-		if (employee != null && employee.getWorkLocation() != null
-				&& employee.getWorkLocation().getWorkLocationId() != null) {
-			return holidayDao.findAllActiveHolidaysByWorkLocationId(employee.getWorkLocation().getWorkLocationId());
-		}
-		return holidayDao.findAllByIsActiveTrueAndWorkLocationsIsEmpty();
 	}
 
 	private int resolveCycleYear(Integer year, LocalDate today, MonthDay cycleAnchor) {

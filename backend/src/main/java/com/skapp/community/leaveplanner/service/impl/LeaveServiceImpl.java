@@ -834,7 +834,7 @@ public class LeaveServiceImpl implements LeaveService {
 		leaveEntitlements.sort(Comparator.comparing(LeaveEntitlement::getValidTo));
 
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
-		List<Holiday> holidayObjects = getHolidaysForEmployee(leaveRequest.getEmployee());
+		List<Holiday> holidayObjects = holidayDao.findAllActiveHolidaysForEmployee(leaveRequest.getEmployee());
 		List<LocalDate> holidayDates = holidayObjects.stream().map(Holiday::getDate).toList();
 
 		validateLeaveWithHoliday(leaveRequest.getStartDate(), leaveRequest.getEndDate(), holidayObjects, leaveRequest);
@@ -1034,14 +1034,6 @@ public class LeaveServiceImpl implements LeaveService {
 				|| holidayDuration.equals(HolidayDuration.HALF_DAY_EVENING);
 	}
 
-	private List<Holiday> getHolidaysForEmployee(Employee employee) {
-		if (employee != null && employee.getWorkLocation() != null
-				&& employee.getWorkLocation().getWorkLocationId() != null) {
-			return holidayDao.findAllActiveHolidaysByWorkLocationId(employee.getWorkLocation().getWorkLocationId());
-		}
-		return holidayDao.findAllByIsActiveTrueAndWorkLocationsIsEmpty();
-	}
-
 	private float getRemainingTotalHours(List<LeaveEntitlement> leaveEntitlements, LeaveRequest leaveRequest,
 			List<TimeConfig> timeConfigs, List<LocalDate> holidays, float totalRequestedDayCount,
 			List<Holiday> holidayObjects) {
@@ -1103,7 +1095,7 @@ public class LeaveServiceImpl implements LeaveService {
 
 	private void addUsedHoursToLeaveEntitlement(LeaveRequest leaveRequest) {
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
-		List<Holiday> holidayObjects = getHolidaysForEmployee(leaveRequest.getEmployee());
+		List<Holiday> holidayObjects = holidayDao.findAllActiveHolidaysForEmployee(leaveRequest.getEmployee());
 		List<LocalDate> holidayDates = holidayObjects.stream().map(Holiday::getDate).toList();
 
 		removeExistingEntitlements(leaveRequest);

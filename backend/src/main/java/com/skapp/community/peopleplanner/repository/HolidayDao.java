@@ -1,5 +1,6 @@
 package com.skapp.community.peopleplanner.repository;
 
+import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Holiday;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -22,5 +23,13 @@ public interface HolidayDao extends JpaRepository<Holiday, Long>, JpaSpecificati
 	List<Holiday> findAllByIsActiveTrueAndDateBetween(LocalDate startDate, LocalDate endDate);
 
 	Holiday findByIsActiveTrueAndDate(LocalDate currentDate);
+
+	default List<Holiday> findAllActiveHolidaysForEmployee(Employee employee) {
+		if (employee != null && employee.getWorkLocation() != null
+				&& employee.getWorkLocation().getWorkLocationId() != null) {
+			return findAllActiveHolidaysByWorkLocationId(employee.getWorkLocation().getWorkLocationId());
+		}
+		return findAllByIsActiveTrueAndWorkLocationsIsEmpty();
+	}
 
 }
