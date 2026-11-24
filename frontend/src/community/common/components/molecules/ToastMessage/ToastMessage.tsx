@@ -72,9 +72,9 @@ const ToastMessage = ({
 
   return (
     <>
-      <div role="status" className="sr-only">
+      <output className="sr-only">
         {open && [title, description].join(" ")}
-      </div>
+      </output>
       <Snackbar
         key={key}
         open={open}

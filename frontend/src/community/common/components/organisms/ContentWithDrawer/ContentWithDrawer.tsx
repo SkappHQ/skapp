@@ -79,7 +79,6 @@ const ContentWithDrawer = ({ children }: Props) => {
         </Stack>
       </Stack>
       <ToastMessage
-        key={toastMessage.key}
         open={toastMessage.open}
         title={toastMessage.title}
         description={toastMessage.description}
