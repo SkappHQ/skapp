@@ -1,6 +1,6 @@
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
-import { FC, useEffect, useMemo } from "react";
+import { FC, useEffect, useMemo, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { TIME_FORMAT_24_HOUR } from "~community/common/constants/timeConstants";
@@ -44,6 +44,7 @@ const SidePanelCallInfo: FC<Props> = ({
   onContactClick,
   onCompanyClick
 }) => {
+  const cardRef = useRef<HTMLDivElement>(null);
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator(
     "crmAria",
@@ -122,6 +123,7 @@ const SidePanelCallInfo: FC<Props> = ({
   return (
     <SidePanelActivityInfo
       id="call"
+      cardRef={cardRef}
       primaryRow={
         <PropertyRow
           label={translateText([
@@ -133,6 +135,7 @@ const SidePanelCallInfo: FC<Props> = ({
         >
           <SidePanelContactField
             id="call-contact"
+            cardRef={cardRef}
             contactId={values.contactId}
             emptyLabel={translateText([
               "activities",

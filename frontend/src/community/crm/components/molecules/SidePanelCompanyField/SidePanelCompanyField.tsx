@@ -1,4 +1,4 @@
-import { FC, useMemo, useState } from "react";
+import { FC, RefObject, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -14,6 +14,7 @@ import { updateCompanyRecord } from "~community/crm/utils/companyUtil";
 
 interface Props {
   id: string;
+  cardRef: RefObject<HTMLDivElement | null>;
   companyId: number | null;
   emptyLabel: string;
   editAriaLabel: string;
@@ -23,6 +24,7 @@ interface Props {
 
 const SidePanelCompanyField: FC<Props> = ({
   id,
+  cardRef,
   companyId,
   emptyLabel,
   editAriaLabel,
@@ -81,6 +83,7 @@ const SidePanelCompanyField: FC<Props> = ({
   return (
     <SidePanelLinkPopupField
       id={id}
+      cardRef={cardRef}
       options={options}
       selectedId={selectedCompany ? companyId : null}
       linkLabel={selectedCompany?.name ? selectedCompany.name : ""}

@@ -62,6 +62,8 @@ const ActivityRelatedToField: FC<Props> = ({
 
   const debouncedSearch = useDebounce(searchTerm.trim(), SEARCH_DEBOUNCE_DELAY);
 
+  const isSearchPending = searchTerm.trim() !== debouncedSearch;
+
   const lookupFilter: CrmCompanyFilterRequest = useMemo(
     () => ({
       searchKeyword: debouncedSearch,
@@ -147,7 +149,7 @@ const ActivityRelatedToField: FC<Props> = ({
         onSelect={handleSelect}
         isOpenOnFocus={debouncedSearch.length > 0}
         emptyMessage={translateText(["emptyStates", "noCompanies"])}
-        {...(isFetching && {
+        {...((isFetching || isSearchPending) && {
           loadingMessage: translateText(["emptyStates", "searching"])
         })}
       />
