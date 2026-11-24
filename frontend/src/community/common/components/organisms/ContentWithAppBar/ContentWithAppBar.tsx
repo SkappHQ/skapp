@@ -55,6 +55,7 @@ const ContentWithAppBar = ({ children }: Props) => {
         </Stack>
       </Stack>
       <ToastMessage
+        toastKey={toastMessage.key}
         open={toastMessage.open}
         title={toastMessage.title}
         description={toastMessage.description}

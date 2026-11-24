@@ -10,7 +10,7 @@ import { ToastProps } from "~community/common/types/ToastTypes";
 import styles from "./styles";
 
 const ToastMessage = ({
-  key,
+  toastKey,
   open,
   onClose,
   title,
@@ -76,7 +76,7 @@ const ToastMessage = ({
         {open && [title, description].join(" ")}
       </output>
       <Snackbar
-        key={key}
+        key={toastKey}
         open={open}
         autoHideDuration={autoHideDuration}
         ContentProps={{ role: "presentation", "aria-hidden": true }}
