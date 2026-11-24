@@ -70,7 +70,6 @@ export interface CrmUiSliceTypes {
 
   isCrmSidePanelOpen: boolean;
   crmSidePanelType: CrmSidePanelTypes | null;
-  crmSidePanelReturnType: CrmSidePanelTypes | null;
 
   preselectedStageId: number | null;
 
@@ -107,10 +106,6 @@ export interface CrmUiSliceTypes {
 
   openCrmSidePanel: (crmSidePanelType: CrmSidePanelTypes) => void;
   closeCrmSidePanel: () => void;
-  setCrmSidePanelReturnType: (
-    crmSidePanelReturnType: CrmSidePanelTypes | null
-  ) => void;
-  closeActivitySidePanel: () => void;
 
   setPreselectedStageId: (preselectedStageId: number | null) => void;
 
