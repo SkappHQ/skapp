@@ -75,7 +75,7 @@ const ToastMessage = ({
       key={key}
       open={open}
       autoHideDuration={autoHideDuration}
-      ContentProps={{ role: "status", "aria-live": "polite" }}
+      ContentProps={{ role: "status" }}
       onClose={(_event: SyntheticEvent | Event, reason: string) => {
         if (reason === "clickaway") {
           return;

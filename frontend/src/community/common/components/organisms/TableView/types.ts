@@ -76,6 +76,7 @@ export interface TableViewProps {
   onRowClick?: (row: GridRow, id: string | number) => void;
   className?: string;
   height?: string;
+  /** Fills the height the parent gives the table; the parent must be a flex column with a bounded height. `height` and `infiniteScroll.height` still cap the table as a max height, and `minHeight` is the lower bound. */
   isFullHeight?: boolean;
   minHeight?: string;
   pagination?: TableViewPagination;
