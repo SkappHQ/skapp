@@ -1,5 +1,6 @@
 import { Dropdown } from "@rootcodelabs/skapp-ui";
 import { FC, ReactNode, useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
@@ -8,6 +9,7 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import ActivitySearchField from "~community/crm/activities/components/molecules/ActivitySearchField/ActivitySearchField";
 import ActivityFeed from "~community/crm/activities/components/organisms/ActivityFeed/ActivityFeed";
 import {
+  ActivityRow,
   ActivityTab,
   ActivityType,
   RecordActivityFilters
@@ -15,7 +17,8 @@ import {
 import { useGetRecordActivities } from "~community/crm/api/ActivityApi";
 import { CrmActivityAssociationEnum } from "~community/crm/enums/common";
 import { useActivityTaskCompletion } from "~community/crm/hooks/useActivityTaskCompletion";
-import { useOpenActivitySidePanel } from "~community/crm/hooks/useOpenActivitySidePanel";
+import { useCrmStore } from "~community/crm/store/store";
+import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 
 export interface RecordActivitiesTabProps {
   id: string;
@@ -41,9 +44,46 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { taskCompletions, setTaskCompletions, handleToggleComplete } =
-    useActivityTaskCompletion();
-  const handleRowClick = useOpenActivitySidePanel();
+  const { taskCompletions, handleToggleComplete } = useActivityTaskCompletion();
+
+  const {
+    setSelectedCallId,
+    setSelectedMeetingId,
+    setSelectedActivityTaskId,
+    setSelectedEmailId,
+    openCrmSidePanel
+  } = useCrmStore(
+    useShallow((store) => ({
+      setSelectedCallId: store.setSelectedCallId,
+      setSelectedMeetingId: store.setSelectedMeetingId,
+      setSelectedActivityTaskId: store.setSelectedActivityTaskId,
+      setSelectedEmailId: store.setSelectedEmailId,
+      openCrmSidePanel: store.openCrmSidePanel
+    }))
+  );
+
+  const handleRowClick = (row: ActivityRow): void => {
+    switch (row.type) {
+      case ActivityType.CALL:
+        setSelectedCallId(row.id);
+        openCrmSidePanel(CrmSidePanelTypes.CALL_SIDE_PANEL);
+        break;
+      case ActivityType.MEETING:
+        setSelectedMeetingId(row.id);
+        openCrmSidePanel(CrmSidePanelTypes.MEETING_SIDE_PANEL);
+        break;
+      case ActivityType.TASK:
+        setSelectedActivityTaskId(row.id);
+        openCrmSidePanel(CrmSidePanelTypes.ACTIVITY_TASK_SIDE_PANEL);
+        break;
+      case ActivityType.EMAIL:
+        setSelectedEmailId(row.id);
+        openCrmSidePanel(CrmSidePanelTypes.EMAIL_SIDE_PANEL);
+        break;
+      default:
+        break;
+    }
+  };
 
   const activityType = {
     [ActivityTab.ALL]: null,
@@ -68,16 +108,11 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
     isLoading,
     isError,
     errorUpdatedAt,
-    dataUpdatedAt,
     hasNextPage,
     isFetchingNextPage,
     isFetchNextPageError,
     fetchNextPage
   } = useGetRecordActivities(filters, recordId > 0);
-
-  useEffect(() => {
-    setTaskCompletions({});
-  }, [dataUpdatedAt]);
 
   const pages = useMemo(() => (data ? data.pages : []), [data]);
 

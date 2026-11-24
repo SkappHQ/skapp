@@ -8,11 +8,7 @@ import ActivityTaskSidePanel from "~community/crm/activities/components/organism
 import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useCrmStore } from "~community/crm/store/store";
 
-interface Props {
-  onTaskCompletionChange?: (taskId: number) => void;
-}
-
-const ActivitySidePanels: FC<Props> = ({ onTaskCompletionChange }) => {
+const ActivitySidePanels: FC = () => {
   const {
     selectedCallId,
     selectedMeetingId,
@@ -43,12 +39,7 @@ const ActivitySidePanels: FC<Props> = ({ onTaskCompletionChange }) => {
       )}
       {selectedActivityTaskId !== null && (
         <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
-          <ActivityTaskSidePanel
-            taskId={selectedActivityTaskId}
-            {...(onTaskCompletionChange && {
-              onCompletionChange: onTaskCompletionChange
-            })}
-          />
+          <ActivityTaskSidePanel taskId={selectedActivityTaskId} />
         </SidePanelWrapper>
       )}
       {selectedEmailId !== null && (
