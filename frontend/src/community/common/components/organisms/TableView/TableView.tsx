@@ -9,7 +9,7 @@ import { FC, MouseEvent, useState } from "react";
 import { TableViewProps } from "./types";
 
 const EMPTY_STATE_MIN_HEIGHT = "min-h-80";
-const FULL_HEIGHT_CLASS_NAME = "min-h-0 flex-1";
+const FULL_HEIGHT_CLASS_NAMES = { true: "min-h-0 flex-1", false: "" };
 
 const TableView: FC<TableViewProps> = ({
   heading,
@@ -25,7 +25,7 @@ const TableView: FC<TableViewProps> = ({
   onRowClick,
   className = "",
   height,
-  isFullHeight,
+  isFullHeight = false,
   minHeight = "min-h-70",
   pagination,
   infiniteScroll,
@@ -72,7 +72,7 @@ const TableView: FC<TableViewProps> = ({
 
   return (
     <div
-      className={`flex w-full flex-col gap-3 ${isFullHeight ? FULL_HEIGHT_CLASS_NAME : ""} ${className}`}
+      className={`flex w-full flex-col gap-3 ${FULL_HEIGHT_CLASS_NAMES[`${isFullHeight}`]} ${className}`}
     >
       {heading && <h2 className="h2 mt-4 mb-1">{heading}</h2>}
 
