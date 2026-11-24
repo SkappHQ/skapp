@@ -159,7 +159,6 @@ const ROUTES = {
     COMPANY_DETAIL: (id: number) => `/crm/companies?companyId=${id}`,
     DEALS: "/crm/deals",
     DEAL_DETAIL: (id: number) => `/crm/deals/${id}`,
-    TASKS: "/crm/tasks",
     ACTIVITIES: "/crm/activities"
   },
   PROJECTS: {
