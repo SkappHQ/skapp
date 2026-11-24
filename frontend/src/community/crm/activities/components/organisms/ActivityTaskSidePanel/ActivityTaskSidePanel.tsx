@@ -104,7 +104,7 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId, onCompletionChange }) => {
   };
 
   const handleCompletionChange = (isCompleted: boolean): void => {
-    if (onCompletionChange) onCompletionChange(taskId);
+    onCompletionChange?.(taskId);
     updateTask({ id: taskId, isCompleted });
   };
 

@@ -41,7 +41,8 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { taskCompletions, handleToggleComplete } = useActivityTaskCompletion();
+  const { taskCompletions, setTaskCompletions, handleToggleComplete } =
+    useActivityTaskCompletion();
 
   const handleRowClick = useOpenActivitySidePanel();
 
@@ -68,11 +69,16 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
     isLoading,
     isError,
     errorUpdatedAt,
+    dataUpdatedAt,
     hasNextPage,
     isFetchingNextPage,
     isFetchNextPageError,
     fetchNextPage
   } = useGetRecordActivities(filters, recordId > 0);
+
+  useEffect(() => {
+    setTaskCompletions({});
+  }, [dataUpdatedAt]);
 
   const pages = useMemo(() => (data ? data.pages : []), [data]);
 
