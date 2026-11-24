@@ -308,11 +308,14 @@ public class HolidayServiceImpl implements HolidayService {
 
 	@Override
 	public List<Holiday> getActiveHolidaysForEmployee(Employee employee) {
-		if (employee != null && employee.getWorkLocation() != null
-				&& employee.getWorkLocation().getWorkLocationId() != null) {
-			return holidayDao.findAllActiveHolidaysByWorkLocationId(employee.getWorkLocation().getWorkLocationId());
-		}
-		return holidayDao.findAllByIsActiveTrueAndWorkLocationsIsEmpty();
+		log.info("getActiveHolidaysForEmployee: execution started");
+
+		List<Holiday> holidays = employee.getWorkLocation() != null
+				? holidayDao.findAllActiveHolidaysByWorkLocationId(employee.getWorkLocation().getWorkLocationId())
+				: holidayDao.findAllByIsActiveTrueAndWorkLocationsIsEmpty();
+
+		log.info("getActiveHolidaysForEmployee: execution ended");
+		return holidays;
 	}
 
 	private void updateLeaveRequestDueHoliday(Holiday holiday, LeaveRequest leaveRequest) {
