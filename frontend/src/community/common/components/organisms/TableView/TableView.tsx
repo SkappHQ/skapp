@@ -72,7 +72,7 @@ const TableView: FC<TableViewProps> = ({
 
   return (
     <div
-      className={`flex w-full flex-col gap-3 ${FULL_HEIGHT_CLASS_NAMES[`${isFullHeight}`]} ${className}`}
+      className={`flex w-full flex-col gap-3 ${FULL_HEIGHT_CLASS_NAMES[String(isFullHeight)]} ${className}`}
     >
       {heading && <h2 className="h2 mt-4 mb-1">{heading}</h2>}
 
