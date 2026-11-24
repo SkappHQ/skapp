@@ -439,8 +439,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 					LeaveMessageConstant.LEAVE_ERROR_UNABLE_TO_NUDGE_PRE_APPROVED_DENIED_LEAVE_REQUEST);
 		}
 
-		Notification lastNudge = findLastNudge(id);
-		if (lastNudge != null && !isNudgeAllowed(lastNudge.getCreatedDate())) {
+		if (isNudgeLimited(leaveRequest, findLastNudge(id))) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_NUDGE_TOO_SOON);
 		}
 
@@ -472,7 +471,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 			nudgeStatus.setIsNudge(true);
 		}
 		else {
-			nudgeStatus.setIsNudge(isNudgeAllowed(lastNudge.getCreatedDate()));
+			nudgeStatus.setIsNudge(!isNudgeLimited(leaveRequest, lastNudge));
 			nudgeStatus.setLastNudgedDateTime(lastNudge.getCreatedDate());
 		}
 
@@ -577,6 +576,16 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 	private Notification findLastNudge(Long id) {
 		return notificationDao.findFirstByResourceIdAndNotificationTypeOrderByCreatedDateDesc(String.valueOf(id),
 				NotificationType.LEAVE_REQUEST_NUDGE);
+	}
+
+	private boolean isNudgeLimited(PolicyLeaveRequest leaveRequest, Notification lastNudge) {
+		return lastNudge != null && !isNudgeAllowed(lastNudge.getCreatedDate())
+				&& !isHandedOverSinceNudge(leaveRequest, lastNudge);
+	}
+
+	private boolean isHandedOverSinceNudge(PolicyLeaveRequest leaveRequest, Notification lastNudge) {
+		return isMultiLevel(leaveRequest) && leaveRequest.getPrimaryReviewer() != null
+				&& !isSameEmployee(leaveRequest.getRequestAuthorizer(), lastNudge.getEmployee());
 	}
 
 	private boolean isNudgeAllowed(Instant lastNudgedDateTime) {
