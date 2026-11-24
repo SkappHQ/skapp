@@ -19,9 +19,7 @@ import {
   ActivityFeedResponse,
   ActivityFilterValues,
   ActivityListFilters,
-  ActivityRow,
-  ActivityTab,
-  ActivityType
+  ActivityTab
 } from "~community/crm/activities/types/activityTypes";
 import {
   toCallRow,
@@ -44,8 +42,8 @@ import LogMeetingModalContent from "~community/crm/components/molecules/LogMeeti
 import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useActivityTaskCompletion } from "~community/crm/hooks/useActivityTaskCompletion";
 import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
+import { useOpenActivitySidePanel } from "~community/crm/hooks/useOpenActivitySidePanel";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import useScheduleMeeting from "~enterprise/crm/hooks/useScheduleMeeting";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
@@ -95,12 +93,7 @@ const ActivitiesContent: FC = () => {
     selectedMeetingId,
     selectedActivityTaskId,
     selectedEmailId,
-    isCrmSidePanelOpen,
-    setSelectedCallId,
-    setSelectedMeetingId,
-    setSelectedActivityTaskId,
-    setSelectedEmailId,
-    openCrmSidePanel
+    isCrmSidePanelOpen
   } = useCrmStore(
     useShallow((store) => ({
       owners: store.owners,
@@ -108,12 +101,7 @@ const ActivitiesContent: FC = () => {
       selectedMeetingId: store.selectedMeetingId,
       selectedActivityTaskId: store.selectedActivityTaskId,
       selectedEmailId: store.selectedEmailId,
-      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-      setSelectedCallId: store.setSelectedCallId,
-      setSelectedMeetingId: store.setSelectedMeetingId,
-      setSelectedActivityTaskId: store.setSelectedActivityTaskId,
-      setSelectedEmailId: store.setSelectedEmailId,
-      openCrmSidePanel: store.openCrmSidePanel
+      isCrmSidePanelOpen: store.isCrmSidePanelOpen
     }))
   );
 
@@ -235,28 +223,7 @@ const ActivitiesContent: FC = () => {
     });
   };
 
-  const handleRowClick = (row: ActivityRow): void => {
-    switch (row.type) {
-      case ActivityType.CALL:
-        setSelectedCallId(row.id);
-        openCrmSidePanel(CrmSidePanelTypes.CALL_SIDE_PANEL);
-        break;
-      case ActivityType.MEETING:
-        setSelectedMeetingId(row.id);
-        openCrmSidePanel(CrmSidePanelTypes.MEETING_SIDE_PANEL);
-        break;
-      case ActivityType.TASK:
-        setSelectedActivityTaskId(row.id);
-        openCrmSidePanel(CrmSidePanelTypes.ACTIVITY_TASK_SIDE_PANEL);
-        break;
-      case ActivityType.EMAIL:
-        setSelectedEmailId(row.id);
-        openCrmSidePanel(CrmSidePanelTypes.EMAIL_SIDE_PANEL);
-        break;
-      default:
-        break;
-    }
-  };
+  const handleRowClick = useOpenActivitySidePanel();
 
   const handlePanelCompletionChange = (taskId: number): void => {
     setTaskCompletions((current) => {
