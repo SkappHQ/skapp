@@ -7,6 +7,7 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import { Modules } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
+import ActivitySidePanels from "~community/crm/activities/components/organisms/ActivitySidePanels/ActivitySidePanels";
 import ContactModalController from "~community/crm/components/organisms/ContactModalController/ContactModalController";
 import ContactSidePanel from "~community/crm/components/organisms/ContactSidePanel/ContactSidePanel";
 import { ContactTable } from "~community/crm/components/organisms/ContactTable/ContactTable";
@@ -84,6 +85,7 @@ const Contacts: NextPage = () => {
         <ContactModalController />
         <TaskModalController />
         <RecordActivityModalController />
+        <ActivitySidePanels />
         <ContactTable isCrmDataLoading={isCrmInitialDataLoading} />
       </>
     </ContentLayout>

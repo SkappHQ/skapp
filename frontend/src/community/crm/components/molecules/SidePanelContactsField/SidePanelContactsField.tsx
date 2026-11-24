@@ -234,7 +234,7 @@ const SidePanelContactsField: FC<Props> = ({
 
       {isEmptyBlocked && (
         <p
-          className="body3 leading-none text-semantic-red-accent mt-2"
+          className="body3 leading-none text-semantic-red-accent mt-2 ml-3"
           role="alert"
           aria-live="assertive"
         >
