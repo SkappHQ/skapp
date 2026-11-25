@@ -149,7 +149,8 @@ const ROUTES = {
     WORKFORCE_DEMOGRAPHICS: "/report/workforce-demographics",
     ATTENDANCE_OVERVIEW: "/report/attendance-overview",
     CLOCK_IN_OVERVIEW: "/report/clock-in-overview",
-    LEAVE_BALANCE_UTILIZATION: "/report/leave-balance-utilization"
+    LEAVE_BALANCE_UTILIZATION: "/report/leave-balance-utilization",
+    TENURE: "/report/tenure"
   },
   CRM: {
     BASE: "/crm",
