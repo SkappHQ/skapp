@@ -157,6 +157,7 @@ const ActivityContactsField: FC<Props> = ({
             isSearchVisible
             ariaLabel={groupAriaLabel}
             ariaRequired={required}
+            isError={isError}
             texts={{
               placeholder,
               selectedCount: translateText(["placeholders", "selectedCount"]),

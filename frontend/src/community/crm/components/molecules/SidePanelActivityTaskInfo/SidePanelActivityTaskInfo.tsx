@@ -1,6 +1,6 @@
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
-import { FC, useEffect, useMemo } from "react";
+import { FC, useEffect, useMemo, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
@@ -39,6 +39,7 @@ const SidePanelActivityTaskInfo: FC<Props> = ({
   onContactClick,
   onCompanyClick
 }) => {
+  const cardRef = useRef<HTMLDivElement>(null);
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator(
     "crmAria",
@@ -105,6 +106,7 @@ const SidePanelActivityTaskInfo: FC<Props> = ({
   return (
     <SidePanelActivityInfo
       id="activity-task"
+      cardRef={cardRef}
       primaryRow={
         <>
           <PropertyRow
@@ -112,6 +114,7 @@ const SidePanelActivityTaskInfo: FC<Props> = ({
           >
             <SidePanelContactField
               id="activity-task-contact"
+              cardRef={cardRef}
               contactId={values.contactId}
               emptyLabel={translateText([
                 "activities",

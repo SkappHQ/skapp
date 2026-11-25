@@ -112,10 +112,7 @@ const ActivityRowSubtitle: FC<ActivityRowSubtitleProps> = ({
   if (visibleParts.length === 0) return null;
 
   return (
-    <span
-      id={id}
-      className="body3 leading-none mt-0.5 flex min-w-0 items-center gap-2"
-    >
+    <span id={id} className="body3 mt-0.5 flex min-w-0 items-center gap-2">
       {visibleParts.map((part, index) => (
         <Fragment key={part.key}>
           {index > 0 && (

@@ -59,9 +59,6 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
     status.mismatchedDealId === values.dealId &&
     status.mismatchedContactId === values.contactId;
 
-  const errorInputClasses =
-    "text-semantic-red-text! placeholder:text-semantic-red-text!";
-
   const subjectError = touched.subject ? errors.subject : "";
   const durationError = touched.duration ? errors.duration : "";
 
@@ -84,9 +81,6 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
         placeholder={translateText(["logActivity", "placeholders", "subject"])}
         errorMessage={subjectError}
         state={isSubjectInvalid ? "error" : "default"}
-        {...(isSubjectInvalid && {
-          styleOverrides: { input: errorInputClasses }
-        })}
         onChange={handleChange}
         onBlur={handleBlur}
         aria-label={translateAria(["subject"])}
@@ -148,9 +142,6 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
         ])}
         errorMessage={durationError}
         state={isDurationInvalid ? "error" : "default"}
-        {...(isDurationInvalid && {
-          styleOverrides: { input: errorInputClasses }
-        })}
         onChange={handleChange}
         onBlur={handleBlur}
         aria-label={translateAria(["duration"])}

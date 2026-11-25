@@ -1,6 +1,6 @@
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
-import { FC, ReactNode, useEffect, useMemo } from "react";
+import { FC, ReactNode, useEffect, useMemo, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { TIME_FORMAT_24_HOUR } from "~community/common/constants/timeConstants";
@@ -42,6 +42,7 @@ const SidePanelActivityEmailInfo: FC<Props> = ({
   onSave,
   onCompanyClick
 }) => {
+  const cardRef = useRef<HTMLDivElement>(null);
   const translateModule = useTranslator("crmModule");
   const translateText = useTranslator("crmModule", "activities");
   const translateAria = useTranslator(
@@ -129,6 +130,7 @@ const SidePanelActivityEmailInfo: FC<Props> = ({
 
       <SidePanelActivityInfo
         id="email"
+        cardRef={cardRef}
         primaryRow={
           <PropertyRow
             label={translateText(["emailSidePanel", "info", "from"])}

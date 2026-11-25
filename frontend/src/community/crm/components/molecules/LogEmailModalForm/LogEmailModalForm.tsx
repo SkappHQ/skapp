@@ -245,28 +245,30 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
         required
         fillsRelatedTo
         actions={
-          <>
-            {!isBccOpen && (
-              <button
-                type="button"
-                className="text-primary-text"
-                aria-label={translateAria(["bcc"])}
-                onClick={() => setIsBccOpen(true)}
-              >
-                {translateText(["logEmail", "modal", "labels", "bcc"])}
-              </button>
-            )}
-            {!isCcOpen && (
-              <button
-                type="button"
-                className="text-primary-text"
-                aria-label={translateAria(["cc"])}
-                onClick={() => setIsCcOpen(true)}
-              >
-                {translateText(["logEmail", "modal", "labels", "cc"])}
-              </button>
-            )}
-          </>
+          (!isBccOpen || !isCcOpen) && (
+            <div className="flex flex-row items-center gap-6 pr-2">
+              {!isBccOpen && (
+                <button
+                  type="button"
+                  className="text-primary-text"
+                  aria-label={translateAria(["bcc"])}
+                  onClick={() => setIsBccOpen(true)}
+                >
+                  {translateText(["logEmail", "modal", "labels", "bcc"])}
+                </button>
+              )}
+              {!isCcOpen && (
+                <button
+                  type="button"
+                  className="text-primary-text"
+                  aria-label={translateAria(["cc"])}
+                  onClick={() => setIsCcOpen(true)}
+                >
+                  {translateText(["logEmail", "modal", "labels", "cc"])}
+                </button>
+              )}
+            </div>
+          )
         }
       />
 
@@ -334,7 +336,7 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
           "description"
         ])}
         onChange={handleChange}
-        rows={4}
+        rows={2}
         aria-label={translateAria(["description"])}
       />
 

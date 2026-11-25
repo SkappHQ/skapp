@@ -24,7 +24,7 @@ import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 
 interface Props {
   taskId: number;
-  onCompletionChange: (taskId: number) => void;
+  onCompletionChange?: (taskId: number) => void;
 }
 
 const ActivityTaskSidePanel: FC<Props> = ({ taskId, onCompletionChange }) => {
@@ -104,7 +104,7 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId, onCompletionChange }) => {
   };
 
   const handleCompletionChange = (isCompleted: boolean): void => {
-    onCompletionChange(taskId);
+    onCompletionChange?.(taskId);
     updateTask({ id: taskId, isCompleted });
   };
 

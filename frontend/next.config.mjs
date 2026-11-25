@@ -519,10 +519,6 @@ const nextConfig = {
         destination: "/community/crm/deals/:id"
       },
       {
-        source: "/crm/tasks",
-        destination: "/community/crm/tasks"
-      },
-      {
         source: "/crm/activities",
         destination: "/community/crm/activities"
       }

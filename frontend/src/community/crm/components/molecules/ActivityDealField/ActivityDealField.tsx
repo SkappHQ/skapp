@@ -64,6 +64,8 @@ const ActivityDealField: FC<Props> = ({
 
   const debouncedSearch = useDebounce(searchTerm.trim(), SEARCH_DEBOUNCE_DELAY);
 
+  const isSearchPending = searchTerm.trim() !== debouncedSearch;
+
   const isSearchEnabled =
     debouncedSearch.length > 0 || Boolean(filterCompanyId);
 
@@ -151,7 +153,7 @@ const ActivityDealField: FC<Props> = ({
         onSelect={handleSelect}
         isOpenOnFocus={isSearchEnabled}
         emptyMessage={translateText(["emptyStates", "noDeals"])}
-        {...(isFetching && {
+        {...((isFetching || isSearchPending) && {
           loadingMessage: translateText(["emptyStates", "searching"])
         })}
         {...(isMismatch && {

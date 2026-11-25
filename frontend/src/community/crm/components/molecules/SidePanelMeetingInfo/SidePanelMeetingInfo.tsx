@@ -1,6 +1,6 @@
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
-import { FC, useEffect, useMemo } from "react";
+import { FC, useEffect, useMemo, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { TIME_FORMAT_24_HOUR } from "~community/common/constants/timeConstants";
@@ -37,6 +37,7 @@ const SidePanelMeetingInfo: FC<Props> = ({
   onSave,
   onCompanyClick
 }) => {
+  const cardRef = useRef<HTMLDivElement>(null);
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator("crmAria", "activities");
 
@@ -123,6 +124,7 @@ const SidePanelMeetingInfo: FC<Props> = ({
 
       <SidePanelActivityInfo
         id="meeting"
+        cardRef={cardRef}
         date={
           values.date
             ? DateTime.fromISO(values.date)
@@ -138,23 +140,26 @@ const SidePanelMeetingInfo: FC<Props> = ({
           startTime: DateTime.fromFormat(values.startTime, TIME_FORMAT_24_HOUR)
         })}
         secondaryRow={
-          <PropertyRow
-            label={translateText([
-              "activities",
-              "meetingSidePanel",
-              "info",
-              "endTime"
-            ])}
-          >
-            <SidePanelTimeField
-              id="meeting-end-time"
-              value={values.endTime}
-              placeholder={noValue}
-              ariaLabel={translateAria(["activitySidePanel", "editEndTime"])}
-              {...(errors.endTime && { errorMessage: errors.endTime })}
-              onChange={(time) => setFieldValue("endTime", time)}
-            />
-          </PropertyRow>
+          <>
+            <PropertyRow
+              label={translateText([
+                "activities",
+                "meetingSidePanel",
+                "info",
+                "endTime"
+              ])}
+            >
+              <SidePanelTimeField
+                id="meeting-end-time"
+                value={values.endTime}
+                placeholder={noValue}
+                ariaLabel={translateAria(["activitySidePanel", "editEndTime"])}
+                {...(errors.endTime && { errorMessage: errors.endTime })}
+                onChange={(time) => setFieldValue("endTime", time)}
+              />
+            </PropertyRow>
+            {getMeetingVenueInfo(meeting)}
+          </>
         }
         {...(values.ownerId && { owner: owners[values.ownerId] })}
         companyId={values.companyId}
@@ -164,8 +169,6 @@ const SidePanelMeetingInfo: FC<Props> = ({
         onOwnerChange={(ownerId) => setFieldValue("ownerId", ownerId)}
         onCompanyChange={(companyId) => setFieldValue("companyId", companyId)}
       />
-
-      {getMeetingVenueInfo(meeting)}
     </div>
   );
 };

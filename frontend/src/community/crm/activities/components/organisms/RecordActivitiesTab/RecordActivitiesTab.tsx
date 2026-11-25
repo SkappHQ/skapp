@@ -15,6 +15,7 @@ import {
 import { useGetRecordActivities } from "~community/crm/api/ActivityApi";
 import { CrmActivityAssociationEnum } from "~community/crm/enums/common";
 import { useActivityTaskCompletion } from "~community/crm/hooks/useActivityTaskCompletion";
+import { useOpenActivitySidePanel } from "~community/crm/hooks/useOpenActivitySidePanel";
 
 export interface RecordActivitiesTabProps {
   id: string;
@@ -40,7 +41,10 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { taskCompletions, handleToggleComplete } = useActivityTaskCompletion();
+  const { taskCompletions, setTaskCompletions, handleToggleComplete } =
+    useActivityTaskCompletion();
+
+  const handleRowClick = useOpenActivitySidePanel();
 
   const activityType = {
     [ActivityTab.ALL]: null,
@@ -65,11 +69,16 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
     isLoading,
     isError,
     errorUpdatedAt,
+    dataUpdatedAt,
     hasNextPage,
     isFetchingNextPage,
     isFetchNextPageError,
     fetchNextPage
   } = useGetRecordActivities(filters, recordId > 0);
+
+  useEffect(() => {
+    setTaskCompletions({});
+  }, [dataUpdatedAt]);
 
   const pages = useMemo(() => (data ? data.pages : []), [data]);
 
@@ -182,6 +191,7 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
         ])}
         isShowTaskCheckbox
         onLoadMore={fetchNextPage}
+        onRowClick={handleRowClick}
         onToggleComplete={handleToggleComplete}
       />
     </div>
