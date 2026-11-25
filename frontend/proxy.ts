@@ -304,6 +304,10 @@ const RESTRICTED_ROUTE_RULES: RestrictedRouteRule[] = [
   {
     routes: employeeRestrictedRoutes,
     requiredRole: ManagerTypes.PEOPLE_MANAGER
+  },
+  {
+    routes: attendanceReportRestrictedRoutes,
+    requiredRole: AdminTypes.ATTENDANCE_ADMIN
   }
 ];
 
@@ -385,19 +389,6 @@ const resolveLeaveBalanceReportAccess: AccessGuard = ({
     currentPath.toLowerCase().startsWith(url)
   ) &&
   !roles.includes(AdminTypes.LEAVE_ADMIN) &&
-  !roles.includes(ROLE_SUPER_ADMIN)
-    ? redirectToUnauthorized(request)
-    : null;
-
-const resolveAttendanceReportAccess: AccessGuard = ({
-  request,
-  currentPath,
-  roles
-}) =>
-  attendanceReportRestrictedRoutes.some((url) =>
-    currentPath.toLowerCase().startsWith(url)
-  ) &&
-  !roles.includes(AdminTypes.ATTENDANCE_ADMIN) &&
   !roles.includes(ROLE_SUPER_ADMIN)
     ? redirectToUnauthorized(request)
     : null;
@@ -505,7 +496,6 @@ const ALLOWED_ROUTE_GUARDS: AccessGuard[] = [
   resolveIntegrationsAccess,
   resolveReportAccess,
   resolveLeaveBalanceReportAccess,
-  resolveAttendanceReportAccess,
   resolveCrmAccess,
   resolveRestrictedRouteAccess,
   resolveInvoiceIntegrationsAccess,

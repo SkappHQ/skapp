@@ -245,13 +245,14 @@ export const leaveReportRestrictedRoutes = [
   ROUTES.REPORT.LEAVE_BALANCE_UTILIZATION
 ];
 
+export const attendanceReportRestrictedRoutes = [
+  ROUTES.REPORT.ATTENDANCE_OVERVIEW,
+  ROUTES.REPORT.CLOCK_IN_OVERVIEW
+];
+
 export const userRolesRestrictedRoutes = [ROUTES.CONFIGURATIONS.USER_ROLES];
 
 export const oAuthCallbackRoutes = [
   ROUTES.AUTH.OAUTH_AUTHORIZE,
   ROUTES.AUTH.OAUTH_CONSENT
-];
-
-export const attendanceReportRestrictedRoutes = [
-  ROUTES.REPORT.ATTENDANCE_OVERVIEW
 ];
