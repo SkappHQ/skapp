@@ -257,6 +257,7 @@ const ActivitiesContent: FC = () => {
     ? {
         variant: "primary",
         type: "button",
+        onClick: handleActionButtonClick,
         children: translateText([
           "activities",
           "toolbar",
@@ -311,7 +312,7 @@ const ActivitiesContent: FC = () => {
               {meetingsScheduleButton && (
                 <ButtonV2 {...meetingsScheduleButton} />
               )}
-              <ButtonV2 {...actionButton} onClick={handleActionButtonClick} />
+              <ButtonV2 {...actionButton} />
             </div>
           )
         }
