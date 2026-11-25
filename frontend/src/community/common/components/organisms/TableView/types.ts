@@ -76,6 +76,7 @@ export interface TableViewProps {
   onRowClick?: (row: GridRow, id: string | number) => void;
   className?: string;
   height?: string;
+  isFullHeight?: boolean;
   minHeight?: string;
   pagination?: TableViewPagination;
   infiniteScroll?: TableViewInfiniteScroll;
