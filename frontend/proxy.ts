@@ -18,6 +18,7 @@ import {
 } from "~community/auth/utils/tokenUtils";
 import ROUTES, {
   COMMUNITY_PAGES_BASE_PATH,
+  attendanceReportRestrictedRoutes,
   employeeRestrictedRoutes,
   invoiceEmployeeRestrictedRoutes,
   invoiceManagerRestrictedRoutes,
@@ -303,6 +304,10 @@ const RESTRICTED_ROUTE_RULES: RestrictedRouteRule[] = [
   {
     routes: employeeRestrictedRoutes,
     requiredRole: ManagerTypes.PEOPLE_MANAGER
+  },
+  {
+    routes: attendanceReportRestrictedRoutes,
+    requiredRole: AdminTypes.ATTENDANCE_ADMIN
   }
 ];
 
