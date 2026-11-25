@@ -242,6 +242,8 @@ export const leavePolicyManagementRestrictedRoutes = [
   ROUTES.LEAVE.CREATE_LEAVE_POLICY
 ];
 
+export const tenureReportRestrictedRoutes = [ROUTES.REPORT.TENURE];
+
 export const leaveReportRestrictedRoutes = [
   ROUTES.REPORT.LEAVE_BALANCE_UTILIZATION
 ];

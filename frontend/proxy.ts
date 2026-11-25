@@ -25,6 +25,7 @@ import ROUTES, {
   leaveReportRestrictedRoutes,
   managerRestrictedRoutes,
   nonSuperAdminRestrictedRoutes,
+  tenureReportRestrictedRoutes,
   userRolesRestrictedRoutes
 } from "~community/common/constants/routes";
 import {
@@ -388,6 +389,19 @@ const resolveLeaveBalanceReportAccess: AccessGuard = ({
     ? redirectToUnauthorized(request)
     : null;
 
+const resolveTenureReportAccess: AccessGuard = ({
+  request,
+  currentPath,
+  roles
+}) =>
+  tenureReportRestrictedRoutes.some((url) =>
+    currentPath.toLowerCase().startsWith(url)
+  ) &&
+  !roles.includes(AdminTypes.PEOPLE_ADMIN) &&
+  !roles.includes(ROLE_SUPER_ADMIN)
+    ? redirectToUnauthorized(request)
+    : null;
+
 // Attendance-only employees land on their timesheet instead of the dashboard
 const resolveDashboardAccess: AccessGuard = ({
   request,
@@ -491,6 +505,7 @@ const ALLOWED_ROUTE_GUARDS: AccessGuard[] = [
   resolveIntegrationsAccess,
   resolveReportAccess,
   resolveLeaveBalanceReportAccess,
+  resolveTenureReportAccess,
   resolveCrmAccess,
   resolveRestrictedRouteAccess,
   resolveInvoiceIntegrationsAccess,
