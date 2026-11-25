@@ -251,3 +251,7 @@ export const oAuthCallbackRoutes = [
   ROUTES.AUTH.OAUTH_AUTHORIZE,
   ROUTES.AUTH.OAUTH_CONSENT
 ];
+
+export const attendanceReportRestrictedRoutes = [
+  ROUTES.REPORT.ATTENDANCE_OVERVIEW
+];

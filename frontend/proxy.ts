@@ -18,6 +18,7 @@ import {
 } from "~community/auth/utils/tokenUtils";
 import ROUTES, {
   COMMUNITY_PAGES_BASE_PATH,
+  attendanceReportRestrictedRoutes,
   employeeRestrictedRoutes,
   invoiceEmployeeRestrictedRoutes,
   invoiceManagerRestrictedRoutes,
@@ -388,6 +389,19 @@ const resolveLeaveBalanceReportAccess: AccessGuard = ({
     ? redirectToUnauthorized(request)
     : null;
 
+const resolveAttendanceReportAccess: AccessGuard = ({
+  request,
+  currentPath,
+  roles
+}) =>
+  attendanceReportRestrictedRoutes.some((url) =>
+    currentPath.toLowerCase().startsWith(url)
+  ) &&
+  !roles.includes(AdminTypes.ATTENDANCE_ADMIN) &&
+  !roles.includes(ROLE_SUPER_ADMIN)
+    ? redirectToUnauthorized(request)
+    : null;
+
 // Attendance-only employees land on their timesheet instead of the dashboard
 const resolveDashboardAccess: AccessGuard = ({
   request,
@@ -491,6 +505,7 @@ const ALLOWED_ROUTE_GUARDS: AccessGuard[] = [
   resolveIntegrationsAccess,
   resolveReportAccess,
   resolveLeaveBalanceReportAccess,
+  resolveAttendanceReportAccess,
   resolveCrmAccess,
   resolveRestrictedRouteAccess,
   resolveInvoiceIntegrationsAccess,
