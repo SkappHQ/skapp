@@ -45,8 +45,7 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
     touched,
     handleChange,
     handleBlur,
-    setFieldValue,
-    submitCount
+    setFieldValue
   } = formik;
 
   const translateText = useTranslator("crmModule", "activities");
@@ -348,10 +347,12 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
       />
 
       <ActivityAssociations
-        isForcedOpen={
-          isDealClearedNoticeVisible || isDealMismatch || isCompanyMismatch
-        }
-        submitCount={submitCount}
+        formik={formik}
+        dealFieldId="log-email-deal"
+        relatedToFieldId="log-email-related-to"
+        isDealMismatch={isDealMismatch}
+        isDealClearedNoticeVisible={isDealClearedNoticeVisible}
+        isCompanyMismatch={isCompanyMismatch}
       >
         <ActivityDealField
           id="log-email-deal"

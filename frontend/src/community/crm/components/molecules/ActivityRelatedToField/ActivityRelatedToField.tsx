@@ -46,7 +46,7 @@ const ActivityRelatedToField: FC<Props> = ({
   fieldAriaLabel,
   mismatchMessage
 }) => {
-  const { values, submitCount, setFieldValue } = formik;
+  const { values, setFieldValue } = formik;
 
   const translateText = useTranslator("crmModule", "activities", "logActivity");
   const translateAria = useTranslator("crmAria", "activities", "logActivity");
@@ -111,13 +111,6 @@ const ActivityRelatedToField: FC<Props> = ({
       setCompanies(updateCompanyRecord(companies, fetchedCompanies));
     }
   }, [fetchedCompanies]);
-
-  useEffect(() => {
-    if (!mismatchMessage) return;
-    document
-      .getElementById(`${id}-mismatch`)
-      ?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [mismatchMessage, submitCount]);
 
   const selectedCompany = values.companyId ? companies[values.companyId] : null;
 
