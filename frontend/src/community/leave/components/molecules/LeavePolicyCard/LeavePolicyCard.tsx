@@ -125,7 +125,12 @@ const LeavePolicyCard = forwardRef<HTMLDivElement, Props>(
           <Stack>
             <Stack sx={classes.amount}>
               {isUnlimited ? (
-                <Box component="span" role="img" aria-label={balanceLabel}>
+                <Box
+                  component="span"
+                  role="img"
+                  aria-label={balanceLabel}
+                  sx={classes.unlimitedIcon}
+                >
                   <InfinityIcon width="32" height="32" />
                 </Box>
               ) : (

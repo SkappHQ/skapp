@@ -38,6 +38,11 @@ const styles = (theme: Theme): StyleProps => ({
     flexDirection: "row",
     alignItems: "baseline"
   },
+  unlimitedIcon: {
+    display: "flex",
+    alignItems: "center",
+    height: "2.5rem"
+  },
   heading: {
     fontWeight: 400,
     fontSize: "2.5rem",
