@@ -93,7 +93,7 @@ export const useGetContactLookup = (
     queryFn: () => fetchContactLookup(params),
     enabled,
     refetchOnWindowFocus: false,
-    ...(shouldKeepPreviousData ? { placeholderData: keepPreviousData } : {})
+    placeholderData: shouldKeepPreviousData ? keepPreviousData : undefined
   });
 
 const fetchOwnerLookup = async (
