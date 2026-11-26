@@ -36,7 +36,8 @@ export const useContactLookup = (
 
   const { data: lookupData, isFetching } = useGetContactLookup(
     lookupFilter,
-    isSearchActive || shouldLoadWithoutSearch
+    isSearchActive || shouldLoadWithoutSearch,
+    shouldLoadWithoutSearch
   );
 
   const lookupItems = useMemo(

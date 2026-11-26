@@ -85,14 +85,15 @@ const fetchContactLookup = async (
 
 export const useGetContactLookup = (
   params: CrmContactFilterRequest,
-  enabled?: boolean
+  enabled?: boolean,
+  isKeepingPreviousData?: boolean
 ): UseQueryResult<CrmContactListResponse> =>
   useQuery({
     queryKey: crmContactQueryKeys.LOOKUP(params),
     queryFn: () => fetchContactLookup(params),
     enabled,
     refetchOnWindowFocus: false,
-    placeholderData: keepPreviousData
+    ...(isKeepingPreviousData ? { placeholderData: keepPreviousData } : {})
   });
 
 const fetchOwnerLookup = async (
