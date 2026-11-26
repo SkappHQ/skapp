@@ -48,8 +48,6 @@ const GoogleCalendarIcon = ({
           d="M0 0h166v76H0z"
           transform="matrix(1 0 0 -1 13 172)"
         />
-      </g>
-      <g mask="url(#google-calendar-icon-mask)">
         <path
           fill="url(#google-calendar-icon-gradient-top)"
           d="M32 27.2C32 16.596 40.596 8 51.2 8h89.6c10.604 0 19.2 8.596 19.2 19.2V96H32z"
