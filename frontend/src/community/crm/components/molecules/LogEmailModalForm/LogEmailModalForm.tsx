@@ -45,7 +45,10 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
     touched,
     handleChange,
     handleBlur,
-    setFieldValue
+    setFieldValue,
+    submitCount,
+    isValidating,
+    isValid
   } = formik;
 
   const translateText = useTranslator("crmModule", "activities");
@@ -108,6 +111,12 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
     Boolean(status) &&
     status.mismatchedDealId === values.dealId &&
     status.mismatchedContactIds === recipientIds.join();
+
+  const isCompanyMismatch = Boolean(
+    values.companyId &&
+    contacts[values.toContactIds[0]]?.companyId &&
+    values.companyId !== contacts[values.toContactIds[0]].companyId
+  );
 
   const handleRecipientsChange = (
     nextFieldContacts: CrmContactEntity[],
@@ -341,7 +350,12 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
       />
 
       <ActivityAssociations
-        isForcedOpen={isDealClearedNoticeVisible || isDealMismatch}
+        submitCount={submitCount}
+        isValidating={isValidating}
+        isValid={isValid}
+        isDealMismatch={isDealMismatch}
+        isDealClearedNoticeVisible={isDealClearedNoticeVisible}
+        isCompanyMismatch={isCompanyMismatch}
       >
         <ActivityDealField
           id="log-email-deal"
@@ -358,15 +372,13 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
           id="log-email-related-to"
           formik={formik}
           fieldAriaLabel={translateAria(["relatedTo"])}
-          {...(values.companyId &&
-            contacts[values.toContactIds[0]]?.companyId &&
-            values.companyId !== contacts[values.toContactIds[0]].companyId && {
-              mismatchMessage: translateText([
-                "logActivity",
-                "notices",
-                "relatedToMismatch"
-              ])
-            })}
+          {...(isCompanyMismatch && {
+            mismatchMessage: translateText([
+              "logActivity",
+              "notices",
+              "relatedToMismatch"
+            ])
+          })}
         />
       </ActivityAssociations>
     </div>

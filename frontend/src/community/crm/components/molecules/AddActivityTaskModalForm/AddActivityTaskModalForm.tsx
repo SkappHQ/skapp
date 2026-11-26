@@ -32,7 +32,16 @@ interface Props {
 }
 
 const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
-  const { values, status, handleChange, handleBlur, setFieldValue } = formik;
+  const {
+    values,
+    status,
+    submitCount,
+    isValidating,
+    isValid,
+    handleChange,
+    handleBlur,
+    setFieldValue
+  } = formik;
 
   const translateText = useTranslator("crmModule", "activities");
   const translateAria = useTranslator(
@@ -179,9 +188,12 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
       />
 
       <ActivityAssociations
-        isForcedOpen={
-          isDealClearedNoticeVisible || isDealMismatch || isCompanyMismatch
-        }
+        submitCount={submitCount}
+        isValidating={isValidating}
+        isValid={isValid}
+        isDealMismatch={isDealMismatch}
+        isDealClearedNoticeVisible={isDealClearedNoticeVisible}
+        isCompanyMismatch={isCompanyMismatch}
       >
         <ActivityDealField
           id="add-task-deal"

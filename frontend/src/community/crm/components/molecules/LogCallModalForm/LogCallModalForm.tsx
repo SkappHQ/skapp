@@ -34,7 +34,10 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
     touched,
     handleChange,
     handleBlur,
-    setFieldValue
+    setFieldValue,
+    submitCount,
+    isValidating,
+    isValid
   } = formik;
 
   const translateText = useTranslator("crmModule", "activities");
@@ -58,6 +61,12 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
     Boolean(status) &&
     status.mismatchedDealId === values.dealId &&
     status.mismatchedContactId === values.contactId;
+
+  const isCompanyMismatch = Boolean(
+    values.companyId &&
+    contactCompanyId &&
+    values.companyId !== contactCompanyId
+  );
 
   const subjectError = touched.subject ? errors.subject : "";
   const durationError = touched.duration ? errors.duration : "";
@@ -177,7 +186,12 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
       />
 
       <ActivityAssociations
-        isForcedOpen={isDealClearedNoticeVisible || isDealMismatch}
+        submitCount={submitCount}
+        isValidating={isValidating}
+        isValid={isValid}
+        isDealMismatch={isDealMismatch}
+        isDealClearedNoticeVisible={isDealClearedNoticeVisible}
+        isCompanyMismatch={isCompanyMismatch}
       >
         <ActivityDealField
           id="log-call-deal"
@@ -192,15 +206,13 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
           id="log-call-related-to"
           formik={formik}
           fieldAriaLabel={translateAria(["relatedTo"])}
-          {...(values.companyId &&
-            contactCompanyId &&
-            values.companyId !== contactCompanyId && {
-              mismatchMessage: translateText([
-                "logActivity",
-                "notices",
-                "relatedToMismatch"
-              ])
-            })}
+          {...(isCompanyMismatch && {
+            mismatchMessage: translateText([
+              "logActivity",
+              "notices",
+              "relatedToMismatch"
+            ])
+          })}
         />
       </ActivityAssociations>
     </div>

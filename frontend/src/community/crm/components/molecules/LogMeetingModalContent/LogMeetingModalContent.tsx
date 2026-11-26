@@ -144,7 +144,9 @@ const LogMeetingModalContent: FC<Props> = ({
         mismatchedContactIds: formik.values.contactIds.join()
       });
       requestAnimationFrame(() => {
-        document.getElementById("log-meeting-deal-input")?.focus();
+        document
+          .getElementById("log-meeting-deal-input")
+          ?.focus({ preventScroll: true });
       });
       return;
     }

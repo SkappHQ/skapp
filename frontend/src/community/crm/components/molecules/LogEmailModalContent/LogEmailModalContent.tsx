@@ -146,7 +146,9 @@ const LogEmailModalContent: FC<Props> = ({
         ].join()
       });
       requestAnimationFrame(() => {
-        document.getElementById("log-email-deal-input")?.focus();
+        document
+          .getElementById("log-email-deal-input")
+          ?.focus({ preventScroll: true });
       });
       return;
     }

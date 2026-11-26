@@ -74,6 +74,12 @@ export enum CrmActivityAssociationEnum {
   COMPANY = "COMPANY"
 }
 
+export enum CrmActivityAssociationMessageEnum {
+  DEAL_MISMATCH = "DEAL_MISMATCH",
+  DEAL_CLEARED = "DEAL_CLEARED",
+  COMPANY_MISMATCH = "COMPANY_MISMATCH"
+}
+
 export enum CrmTaskSortEnum {
   DUE_AT = "DUE_AT",
   LAST_MODIFIED_DATE = "LAST_MODIFIED_DATE"
