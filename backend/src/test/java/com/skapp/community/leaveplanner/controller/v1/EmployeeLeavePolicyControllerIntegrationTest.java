@@ -743,11 +743,11 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Super admin can bulk assign")
+		@DisplayName("Super admin without leave admin cannot bulk assign")
 		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES, USER2_SUPER_ADMIN_ONLY })
-		void bulkAssign_SuperAdmin_Allowed() throws Exception {
+		void bulkAssign_SuperAdmin_Forbidden() throws Exception {
 			String body = bulkBody(bulkRow(EMPLOYEE_1_NAME, "Annual Standard", "01/06/2024"));
-			performBulk(user2Token(), body).andDo(print()).andExpect(status().isOk());
+			performBulk(user2Token(), body).andDo(print()).andExpect(status().isForbidden());
 		}
 
 		@Test
