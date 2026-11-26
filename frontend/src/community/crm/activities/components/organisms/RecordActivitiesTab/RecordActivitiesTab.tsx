@@ -144,25 +144,21 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
             resultCount={resultCount}
             isResultCountReady={!isLoading && (!isError || rows.length > 0)}
           />
-          <div>
-            <Dropdown
-              id={`${id}-type`}
-              options={typeOptions}
-              value={activeTab}
-              onChange={handleTypeChange}
-              variant="secondary"
-              size="sm"
-              className="rounded-lg"
-              width="8rem"
-              ariaLabel={translateAria([
-                "activities",
-                "recordTab",
-                "typeFilter"
-              ])}
-            />
-          </div>
+          <Dropdown
+            id={`${id}-type`}
+            options={typeOptions}
+            value={activeTab}
+            onChange={handleTypeChange}
+            variant="secondary"
+            size="sm"
+            className="rounded-lg"
+            width="8rem"
+            ariaLabel={translateAria(["activities", "recordTab", "typeFilter"])}
+          />
         </div>
-        {actions && <div className="flex items-center gap-3">{actions}</div>}
+        {actions && (
+          <div className="flex shrink-0 items-center gap-3">{actions}</div>
+        )}
       </div>
       <ActivityFeed
         id={`${id}-feed`}
