@@ -74,10 +74,10 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(MissingPathVariableException.class)
 	public ResponseEntity<ResponseEntityDto> handleMissingPathVariableException(MissingPathVariableException e) {
-		if (!e.isMissingAfterConversion()) {
-			return handleServletException(e);
+		if (e.isMissingAfterConversion()) {
+			return validationBadRequestResponse(e);
 		}
-		return validationBadRequestResponse(e);
+		return handleServletException(e);
 	}
 
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)

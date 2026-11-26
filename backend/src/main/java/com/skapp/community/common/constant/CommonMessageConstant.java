@@ -52,7 +52,6 @@ public enum CommonMessageConstant implements MessageConstant {
 	COMMON_ERROR_DECRYPTION_FAILED("api.error.common.decryption-failed"),
 	COMMON_ERROR_ENCRYPTION_DECRYPTION_SET_KEY_FAILED("api.error.common.encryption-decryption-key-failed"),
 	COMMON_ERROR_VALIDATION_ERROR("api.error.common.missing-mandatory-fields"),
-	COMMON_ERROR_INVALID_FIELD_VALUE("api.error.common.invalid-field-value"),
 	COMMON_ERROR_FAILED_TO_CONVERT_DYNAMIC_VALUES("api.error.common.failed-to-convert-dynamic-values"),
 	COMMON_ERROR_NOTIFICATION_TEMPLATE_LOADING_FAILED("api.error.common.notification-template-loading-failed"),
 	COMMON_ERROR_FAILED_TO_LOAD_NOTIFICATION_LANGUAGE("api.error.common.failed-to-load-notification-language"),
@@ -148,7 +147,8 @@ public enum CommonMessageConstant implements MessageConstant {
 	COMMON_ERROR_YAML_READ_FAILED("api.error.common.yaml-read-failed"),
 	COMMON_ERROR_ORGANIZATION_TIMEZONE_NOT_CONFIGURED("api.error.common.organization.timezone-not-configured"),
 	COMMON_ERROR_PASSWORD_RESET_NOT_ALLOWED("api.error.common.password-reset-not-allowed"),
-	COMMON_ERROR_VALIDATION_PASSWORD_LENGTH("api.error.common.validation.password-length");
+	COMMON_ERROR_VALIDATION_PASSWORD_LENGTH("api.error.common.validation.password-length"),
+	COMMON_ERROR_INVALID_FIELD_VALUE("api.error.common.invalid-field-value");
 
 	private final String messageKey;
 
