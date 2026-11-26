@@ -3,6 +3,7 @@ import {
   UseInfiniteQueryResult,
   UseMutationResult,
   UseQueryResult,
+  keepPreviousData,
   useInfiniteQuery,
   useMutation,
   useQuery,
@@ -90,7 +91,8 @@ export const useGetContactLookup = (
     queryKey: crmContactQueryKeys.LOOKUP(params),
     queryFn: () => fetchContactLookup(params),
     enabled,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData
   });
 
 const fetchOwnerLookup = async (

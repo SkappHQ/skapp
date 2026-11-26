@@ -71,7 +71,7 @@ const ActivityContactsField: FC<Props> = ({
   const [hasMenuOpened, setHasMenuOpened] = useState(false);
   const [pinnedContactIds, setPinnedContactIds] = useState<number[]>([]);
 
-  const { isSearchActive, isLoading, lookupItems } = useContactLookup(
+  const { isSearchActive, lookupItems } = useContactLookup(
     searchTerm,
     hasMenuOpened
   );
@@ -161,10 +161,7 @@ const ActivityContactsField: FC<Props> = ({
             texts={{
               placeholder,
               selectedCount: translateText(["placeholders", "selectedCount"]),
-              noOptions: translateText([
-                "emptyStates",
-                isLoading ? "searching" : "noContacts"
-              ])
+              noOptions: translateText(["emptyStates", "noContacts"])
             }}
           />
         </div>
