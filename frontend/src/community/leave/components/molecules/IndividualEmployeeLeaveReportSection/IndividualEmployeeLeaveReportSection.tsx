@@ -11,7 +11,7 @@ import UserLeavePolicies from "~community/leave/components/molecules/UserLeavePo
 import UserLeavePoliciesSkeleton from "~community/leave/components/molecules/UserLeavePolicies/UserLeavePoliciesSkeleton";
 import UserLeaveUtilization from "~community/leave/components/molecules/UserLeaveUtilization/UserLeaveUtilization";
 import { USER_ASSIGNED_LEAVE_TYPES_PAGE_SIZE } from "~community/leave/constants/leavePolicyConstants";
-import useCanAssignLeavePolicies from "~community/leave/hooks/useCanAssignLeavePolicies";
+import useCanViewLeavePolicies from "~community/leave/hooks/useCanViewLeavePolicies";
 import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useLeaveStore } from "~community/leave/store/store";
 import { LeaveType } from "~community/leave/types/CustomLeaveAllocationTypes";
@@ -43,7 +43,7 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
 
   const { isLeaveManager } = useSessionData();
 
-  const canViewLeavePolicies = useCanAssignLeavePolicies();
+  const canViewLeavePolicies = useCanViewLeavePolicies();
 
   const { isLeavePoliciesEnabled, isLoading: isLeavePolicyConfigLoading } =
     useLeavePoliciesEnabled();

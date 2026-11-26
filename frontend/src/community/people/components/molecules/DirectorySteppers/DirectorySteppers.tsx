@@ -14,7 +14,7 @@ import {
   replaceTabQueryParam,
   scrollToTop
 } from "~community/common/utils/commonUtil";
-import useCanAssignLeavePolicies from "~community/leave/hooks/useCanAssignLeavePolicies";
+import useCanViewLeavePolicies from "~community/leave/hooks/useCanViewLeavePolicies";
 import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useGetSupervisedByMe } from "~community/people/api/PeopleApi";
 import useFormChangeDetector from "~community/people/hooks/useFormChangeDetector";
@@ -57,10 +57,9 @@ const DirectorySteppers = ({
 
   const { isLeavePoliciesEnabled } = useLeavePoliciesEnabled();
 
-  const canAssignLeavePolicyRoles = useCanAssignLeavePolicies();
+  const canViewLeavePolicies = useCanViewLeavePolicies();
 
-  const canAssignLeavePolicies =
-    isLeavePoliciesEnabled && canAssignLeavePolicyRoles;
+  const canAssignLeavePolicies = isLeavePoliciesEnabled && canViewLeavePolicies;
 
   const isAttendanceAdmin = user?.roles?.includes(AdminTypes.ATTENDANCE_ADMIN);
 

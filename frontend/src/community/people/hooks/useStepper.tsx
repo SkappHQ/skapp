@@ -51,7 +51,7 @@ const useStepper = () => {
     if (activeStep > lastStepIndex) {
       setActiveStep(lastStepIndex);
     }
-  }, [activeStep, lastStepIndex, setActiveStep]);
+  }, [activeStep, lastStepIndex]);
 
   const isLastStep = activeStep >= lastStepIndex;
 

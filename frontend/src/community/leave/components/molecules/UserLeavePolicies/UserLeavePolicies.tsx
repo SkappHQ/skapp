@@ -8,7 +8,7 @@ import AssignLeavePolicyModal from "~community/leave/components/molecules/Assign
 import UnassignLeavePolicyModal from "~community/leave/components/molecules/UnassignLeavePolicyModal/UnassignLeavePolicyModal";
 import LeavePolicyCard from "~community/leave/components/molecules/UserLeavePolicies/LeavePolicyCard";
 import UserLeavePoliciesSkeleton from "~community/leave/components/molecules/UserLeavePolicies/UserLeavePoliciesSkeleton";
-import useCanAssignLeavePolicies from "~community/leave/hooks/useCanAssignLeavePolicies";
+import useCanViewLeavePolicies from "~community/leave/hooks/useCanViewLeavePolicies";
 import { EmployeeLeavePolicyType } from "~community/leave/types/LeavePolicyTypes";
 
 interface Props {
@@ -20,7 +20,7 @@ const POLICIES_PER_PAGE = 6;
 
 const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
   const translateText = useTranslator("leaveModule", "leavePolicyAssignment");
-  const canAssignPolicies = useCanAssignLeavePolicies();
+  const canAssignPolicies = useCanViewLeavePolicies();
 
   const [isAssignModalOpen, setIsAssignModalOpen] = useState<boolean>(false);
   const [openKebabMenuId, setOpenKebabMenuId] = useState<number | null>(null);
