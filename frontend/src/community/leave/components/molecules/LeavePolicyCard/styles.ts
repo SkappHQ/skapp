@@ -2,6 +2,8 @@ import { type Theme } from "@mui/material";
 
 import { StyleProps } from "~community/common/types/CommonTypes";
 
+const BALANCE_ROW_HEIGHT = "2.5rem";
+
 const styles = (theme: Theme): StyleProps => ({
   activeCard: {
     flexDirection: "row",
@@ -41,12 +43,12 @@ const styles = (theme: Theme): StyleProps => ({
   unlimitedIcon: {
     display: "flex",
     alignItems: "center",
-    height: "2.5rem"
+    height: BALANCE_ROW_HEIGHT
   },
   heading: {
     fontWeight: 400,
     fontSize: "2.5rem",
-    lineHeight: "2.5rem"
+    lineHeight: BALANCE_ROW_HEIGHT
   },
   rightContent: {
     width: "max-content"

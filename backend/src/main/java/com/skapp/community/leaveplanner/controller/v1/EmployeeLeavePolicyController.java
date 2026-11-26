@@ -40,7 +40,7 @@ public class EmployeeLeavePolicyController {
 	}
 
 	@Operation(summary = "Bulk assign leave policies to employees",
-			description = "Assigns policies to many employees from CSV-derived rows; each row is validated and processed independently")
+			description = "Assigns policies to many employees from CSV-derived rows; each row is validated and processed independently. Limited to super and leave admins, who manage policies; people admins assign one employee at a time")
 	@PostMapping("/bulk")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_LEAVE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> bulkAssignLeavePolicies(

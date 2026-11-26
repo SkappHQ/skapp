@@ -70,6 +70,7 @@ describe("useStepper", () => {
       "systemPermissions",
       "entitlements"
     ]);
+    expect(useLeavePoliciesEnabled).toHaveBeenCalledWith(true);
   });
 
   it("should initialize steps correctly when leave module is disabled", () => {
@@ -85,6 +86,7 @@ describe("useStepper", () => {
       "employment",
       "systemPermissions"
     ]);
+    expect(useLeavePoliciesEnabled).toHaveBeenCalledWith(false);
   });
 
   it("should hide the entitlements step when leave policies are enabled", () => {
@@ -101,6 +103,35 @@ describe("useStepper", () => {
       "employment",
       "systemPermissions"
     ]);
+    expect(result.current.isLastStep).toBe(true);
+  });
+
+  it.each([
+    ["loading", { isLoading: true }],
+    ["failed", { isError: true }]
+  ])(
+    "should hide the entitlements step while the policy config is %s",
+    (_state, configState) => {
+      (useLeavePoliciesEnabled as jest.Mock).mockReturnValue({
+        isLeavePoliciesEnabled: false,
+        ...configState
+      });
+
+      const { result } = renderHook(() => useStepper());
+
+      expect(result.current.steps).not.toContain("entitlements");
+    }
+  );
+
+  it("should move back to the last step when the entitlements step is removed", () => {
+    (useLeavePoliciesEnabled as jest.Mock).mockReturnValue({
+      isLeavePoliciesEnabled: true
+    });
+    (usePeopleStore as jest.Mock).mockReturnValue(mockStore(4));
+
+    const { result } = renderHook(() => useStepper());
+
+    expect(mockSetActiveStep).toHaveBeenCalledWith(3);
     expect(result.current.isLastStep).toBe(true);
   });
 

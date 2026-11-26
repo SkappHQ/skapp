@@ -86,7 +86,7 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
             <LeavePolicyCard
               key={policy.id}
               policy={policy}
-              canManagePolicies={canAssignPolicies}
+              canAssignPolicies={canAssignPolicies}
               isKebabMenuOpen={openKebabMenuId === policy.id}
               onKebabToggle={(isOpen: boolean) =>
                 setOpenKebabMenuId(isOpen ? policy.id : null)

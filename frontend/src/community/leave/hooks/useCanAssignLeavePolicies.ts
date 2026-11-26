@@ -1,9 +1,5 @@
-import useSessionData from "~community/common/hooks/useSessionData";
+import useCanViewLeavePolicies from "~community/leave/hooks/useCanViewLeavePolicies";
 
-const useCanAssignLeavePolicies = (): boolean => {
-  const { isSuperAdmin, isLeaveAdmin, isPeopleAdmin } = useSessionData();
-
-  return Boolean(isSuperAdmin || isLeaveAdmin || isPeopleAdmin);
-};
+const useCanAssignLeavePolicies = (): boolean => useCanViewLeavePolicies();
 
 export default useCanAssignLeavePolicies;

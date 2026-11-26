@@ -14,6 +14,7 @@ import {
   replaceTabQueryParam,
   scrollToTop
 } from "~community/common/utils/commonUtil";
+import useCanAssignLeavePolicies from "~community/leave/hooks/useCanAssignLeavePolicies";
 import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useGetSupervisedByMe } from "~community/people/api/PeopleApi";
 import useFormChangeDetector from "~community/people/hooks/useFormChangeDetector";
@@ -56,9 +57,10 @@ const DirectorySteppers = ({
 
   const { isLeavePoliciesEnabled } = useLeavePoliciesEnabled();
 
-  // People and super admins open the Leave tab to assign leave policies.
+  const canAssignLeavePolicyRoles = useCanAssignLeavePolicies();
+
   const canAssignLeavePolicies =
-    isLeavePoliciesEnabled && Boolean(isSuperAdmin || isPeopleAdmin);
+    isLeavePoliciesEnabled && canAssignLeavePolicyRoles;
 
   const isAttendanceAdmin = user?.roles?.includes(AdminTypes.ATTENDANCE_ADMIN);
 
