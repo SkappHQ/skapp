@@ -98,15 +98,6 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
     values.companyId !== primaryAttendee.companyId
   );
 
-  const associationsProps = {
-    submitCount,
-    isValidating,
-    isValid,
-    isDealMismatch,
-    isDealClearedNoticeVisible,
-    isCompanyMismatch
-  };
-
   const pickedDate = values.date ? toPickerDate(values.date) : null;
 
   const handleDateSelect = (date?: Date): void => {
@@ -249,7 +240,14 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
         aria-label={translateAria(["comments"])}
       />
 
-      <ActivityAssociations {...associationsProps}>
+      <ActivityAssociations
+        submitCount={submitCount}
+        isValidating={isValidating}
+        isValid={isValid}
+        isDealMismatch={isDealMismatch}
+        isDealClearedNoticeVisible={isDealClearedNoticeVisible}
+        isCompanyMismatch={isCompanyMismatch}
+      >
         <ActivityDealField
           id="log-meeting-deal"
           formik={formik}

@@ -118,15 +118,6 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
     values.companyId !== contacts[values.toContactIds[0]].companyId
   );
 
-  const associationsProps = {
-    submitCount,
-    isValidating,
-    isValid,
-    isDealMismatch,
-    isDealClearedNoticeVisible,
-    isCompanyMismatch
-  };
-
   const handleRecipientsChange = (
     nextFieldContacts: CrmContactEntity[],
     otherRecipientIds: number[]
@@ -358,7 +349,14 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
         aria-label={translateAria(["description"])}
       />
 
-      <ActivityAssociations {...associationsProps}>
+      <ActivityAssociations
+        submitCount={submitCount}
+        isValidating={isValidating}
+        isValid={isValid}
+        isDealMismatch={isDealMismatch}
+        isDealClearedNoticeVisible={isDealClearedNoticeVisible}
+        isCompanyMismatch={isCompanyMismatch}
+      >
         <ActivityDealField
           id="log-email-deal"
           formik={formik}

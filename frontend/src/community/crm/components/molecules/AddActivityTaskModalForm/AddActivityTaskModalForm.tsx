@@ -73,15 +73,6 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
     values.companyId !== contactCompanyId
   );
 
-  const associationsProps = {
-    submitCount,
-    isValidating,
-    isValid,
-    isDealMismatch,
-    isDealClearedNoticeVisible,
-    isCompanyMismatch
-  };
-
   const dueDate = values.dueAt
     ? instantToPickedDay(values.dueAt, displayZone)
     : null;
@@ -196,7 +187,14 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
         aria-label={translateAria(["notes"])}
       />
 
-      <ActivityAssociations {...associationsProps}>
+      <ActivityAssociations
+        submitCount={submitCount}
+        isValidating={isValidating}
+        isValid={isValid}
+        isDealMismatch={isDealMismatch}
+        isDealClearedNoticeVisible={isDealClearedNoticeVisible}
+        isCompanyMismatch={isCompanyMismatch}
+      >
         <ActivityDealField
           id="add-task-deal"
           formik={formik}
