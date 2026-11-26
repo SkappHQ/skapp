@@ -2,6 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 
 import { usePeopleStore } from "../store/store";
 import useStepper from "./useStepper";
@@ -15,6 +16,8 @@ jest.mock("~community/common/hooks/useSessionData", () => jest.fn());
 jest.mock("~community/common/hooks/useTranslator", () => ({
   useTranslator: jest.fn()
 }));
+
+jest.mock("~community/leave/hooks/useLeavePoliciesEnabled", () => jest.fn());
 
 type StepTransition = [number, number];
 
@@ -52,6 +55,9 @@ describe("useStepper", () => {
       isLeaveModuleEnabled: true
     });
     (useTranslator as jest.Mock).mockReturnValue(mockTranslateText);
+    (useLeavePoliciesEnabled as jest.Mock).mockReturnValue({
+      isLeavePoliciesEnabled: false
+    });
   });
 
   it("should initialize steps correctly when leave module is enabled", () => {
@@ -79,6 +85,23 @@ describe("useStepper", () => {
       "employment",
       "systemPermissions"
     ]);
+  });
+
+  it("should hide the entitlements step when leave policies are enabled", () => {
+    (useLeavePoliciesEnabled as jest.Mock).mockReturnValue({
+      isLeavePoliciesEnabled: true
+    });
+    (usePeopleStore as jest.Mock).mockReturnValue(mockStore(3));
+
+    const { result } = renderHook(() => useStepper());
+
+    expect(result.current.steps).toEqual([
+      "personal",
+      "emergency",
+      "employment",
+      "systemPermissions"
+    ]);
+    expect(result.current.isLastStep).toBe(true);
   });
 
   it("should flag the entitlements step as the last step when leave module is enabled", () => {

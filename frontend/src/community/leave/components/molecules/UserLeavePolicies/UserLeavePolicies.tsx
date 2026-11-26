@@ -8,7 +8,7 @@ import AssignLeavePolicyModal from "~community/leave/components/molecules/Assign
 import UnassignLeavePolicyModal from "~community/leave/components/molecules/UnassignLeavePolicyModal/UnassignLeavePolicyModal";
 import LeavePolicyCard from "~community/leave/components/molecules/UserLeavePolicies/LeavePolicyCard";
 import UserLeavePoliciesSkeleton from "~community/leave/components/molecules/UserLeavePolicies/UserLeavePoliciesSkeleton";
-import useCanManageLeavePolicies from "~community/leave/hooks/useCanManageLeavePolicies";
+import useCanAssignLeavePolicies from "~community/leave/hooks/useCanAssignLeavePolicies";
 import { EmployeeLeavePolicyType } from "~community/leave/types/LeavePolicyTypes";
 
 interface Props {
@@ -20,7 +20,7 @@ const POLICIES_PER_PAGE = 6;
 
 const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
   const translateText = useTranslator("leaveModule", "leavePolicyAssignment");
-  const canManagePolicies = useCanManageLeavePolicies();
+  const canAssignPolicies = useCanAssignLeavePolicies();
 
   const [isAssignModalOpen, setIsAssignModalOpen] = useState<boolean>(false);
   const [openKebabMenuId, setOpenKebabMenuId] = useState<number | null>(null);
@@ -52,7 +52,7 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
     <div className="flex flex-col gap-4">
       <div className="flex flex-row items-center justify-between gap-3">
         <h2 className="h2 text-black">{translateText(["sectionTitle"])}</h2>
-        {canManagePolicies && (
+        {canAssignPolicies && (
           <ButtonV2
             variant="primary"
             size="md"
@@ -86,7 +86,7 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
             <LeavePolicyCard
               key={policy.id}
               policy={policy}
-              canManagePolicies={canManagePolicies}
+              canManagePolicies={canAssignPolicies}
               isKebabMenuOpen={openKebabMenuId === policy.id}
               onKebabToggle={(isOpen: boolean) =>
                 setOpenKebabMenuId(isOpen ? policy.id : null)
