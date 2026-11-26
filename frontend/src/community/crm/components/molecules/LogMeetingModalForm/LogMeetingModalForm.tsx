@@ -241,12 +241,12 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
       />
 
       <ActivityAssociations
-        submitCount={submitCount}
-        isValidating={isValidating}
-        isValid={isValid}
         isDealMismatch={isDealMismatch}
         isDealClearedNoticeVisible={isDealClearedNoticeVisible}
         isCompanyMismatch={isCompanyMismatch}
+        submitCount={submitCount}
+        isValidating={isValidating}
+        isValid={isValid}
       >
         <ActivityDealField
           id="log-meeting-deal"
