@@ -499,6 +499,10 @@ const nextConfig = {
         destination: "/enterprise/report/leave-balance-utilization"
       },
       {
+        source: "/report/tenure",
+        destination: "/enterprise/report/tenure"
+      },
+      {
         source: "/crm",
         destination: "/community/crm/contacts"
       },
