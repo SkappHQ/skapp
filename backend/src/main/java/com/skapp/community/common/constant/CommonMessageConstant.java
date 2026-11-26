@@ -52,6 +52,7 @@ public enum CommonMessageConstant implements MessageConstant {
 	COMMON_ERROR_DECRYPTION_FAILED("api.error.common.decryption-failed"),
 	COMMON_ERROR_ENCRYPTION_DECRYPTION_SET_KEY_FAILED("api.error.common.encryption-decryption-key-failed"),
 	COMMON_ERROR_VALIDATION_ERROR("api.error.common.missing-mandatory-fields"),
+	COMMON_ERROR_INVALID_FIELD_VALUE("api.error.common.invalid-field-value"),
 	COMMON_ERROR_FAILED_TO_CONVERT_DYNAMIC_VALUES("api.error.common.failed-to-convert-dynamic-values"),
 	COMMON_ERROR_NOTIFICATION_TEMPLATE_LOADING_FAILED("api.error.common.notification-template-loading-failed"),
 	COMMON_ERROR_FAILED_TO_LOAD_NOTIFICATION_LANGUAGE("api.error.common.failed-to-load-notification-language"),

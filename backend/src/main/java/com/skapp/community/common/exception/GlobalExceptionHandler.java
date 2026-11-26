@@ -46,10 +46,11 @@ public class GlobalExceptionHandler {
 		ErrorResponse errorResponse = new ErrorResponse(status,
 				messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR),
 				CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR);
+		String invalidFieldValueMessage = messageUtil
+			.getMessage(CommonMessageConstant.COMMON_ERROR_INVALID_FIELD_VALUE);
 
 		for (FieldError fieldError : e.getBindingResult().getFieldErrors()) {
-			String errorMessage = fieldError.isBindingFailure()
-					? messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR)
+			String errorMessage = fieldError.isBindingFailure() ? invalidFieldValueMessage
 					: fieldError.getDefaultMessage();
 			errorResponse.addValidationError(fieldError.getField(), errorMessage);
 			log.debug("Validation error on field '{}': {}", fieldError.getField(), fieldError.getDefaultMessage());
@@ -73,19 +74,19 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(MissingPathVariableException.class)
 	public ResponseEntity<ResponseEntityDto> handleMissingPathVariableException(MissingPathVariableException e) {
-		HttpStatus status = HttpStatus.BAD_REQUEST;
-		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR);
-		handleException(e, CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR.name(), status);
-
-		return new ResponseEntity<>(
-				new ResponseEntityDto(true,
-						new ErrorResponse(status, message, CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR)),
-				status);
+		if (!e.isMissingAfterConversion()) {
+			return handleServletException(e);
+		}
+		return validationBadRequestResponse(e);
 	}
 
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
 	public ResponseEntity<ResponseEntityDto> handleMethodArgumentTypeMismatchException(
 			MethodArgumentTypeMismatchException e) {
+		return validationBadRequestResponse(e);
+	}
+
+	private ResponseEntity<ResponseEntityDto> validationBadRequestResponse(Exception e) {
 		HttpStatus status = HttpStatus.BAD_REQUEST;
 		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR);
 		handleException(e, CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR.name(), status);
