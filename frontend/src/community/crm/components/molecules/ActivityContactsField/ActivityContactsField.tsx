@@ -73,7 +73,8 @@ const ActivityContactsField: FC<Props> = ({
 
   const { isSearchActive, isLoading, lookupItems } = useContactLookup(
     searchTerm,
-    hasMenuOpened
+    hasMenuOpened,
+    true
   );
 
   const fillRelatedToFromContact = useRelatedToAutoFill(formik, fillsRelatedTo);
@@ -163,7 +164,9 @@ const ActivityContactsField: FC<Props> = ({
               selectedCount: translateText(["placeholders", "selectedCount"]),
               noOptions: translateText([
                 "emptyStates",
-                isLoading ? "searching" : "noContacts"
+                isLoading && lookupItems.length === 0
+                  ? "searching"
+                  : "noContacts"
               ])
             }}
           />
