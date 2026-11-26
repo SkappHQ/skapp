@@ -161,10 +161,7 @@ const ActivityDealField: FC<Props> = ({
         })}
       />
       {isClearedNoticeVisible && (
-        <output
-          id={`${id}-cleared`}
-          className="text-sm text-semantic-amber-text"
-        >
+        <output className="text-sm text-semantic-amber-text">
           {translateText(["notices", "dealCleared"])}
         </output>
       )}
