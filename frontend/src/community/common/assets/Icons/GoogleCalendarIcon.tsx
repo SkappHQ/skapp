@@ -29,7 +29,7 @@ const GoogleCalendarIcon = ({
         d="M19.867 49.392C17.818 33.82 29.94 20 45.645 20h100.71c15.706 0 27.827 13.82 25.778 29.392L166 96l6.133 46.608C174.182 158.18 162.061 172 146.355 172H45.645c-15.706 0-27.827-13.82-25.778-29.392L26 96z"
       />
       <mask
-        id="google-calendar-icon-mask-bottom"
+        id="google-calendar-icon-mask"
         width="154"
         height="152"
         x="19"
@@ -42,28 +42,14 @@ const GoogleCalendarIcon = ({
           d="M19.867 49.392C17.818 33.82 29.94 20 45.645 20h100.71c15.706 0 27.827 13.82 25.778 29.392L166 96l6.133 46.608C174.182 158.18 162.061 172 146.355 172H45.645c-15.706 0-27.827-13.82-25.778-29.392L26 96z"
         />
       </mask>
-      <g mask="url(#google-calendar-icon-mask-bottom)">
+      <g mask="url(#google-calendar-icon-mask)">
         <path
           fill="url(#google-calendar-icon-gradient-bottom)"
           d="M0 0h166v76H0z"
           transform="matrix(1 0 0 -1 13 172)"
         />
       </g>
-      <mask
-        id="google-calendar-icon-mask-top"
-        width="154"
-        height="152"
-        x="19"
-        y="20"
-        maskUnits="userSpaceOnUse"
-        style={{ maskType: "alpha" }}
-      >
-        <path
-          fill="#3186ff"
-          d="M19.867 49.392C17.818 33.82 29.94 20 45.645 20h100.71c15.706 0 27.827 13.82 25.778 29.392L166 96l6.133 46.608C174.182 158.18 162.061 172 146.355 172H45.645c-15.706 0-27.827-13.82-25.778-29.392L26 96z"
-        />
-      </mask>
-      <g mask="url(#google-calendar-icon-mask-top)">
+      <g mask="url(#google-calendar-icon-mask)">
         <path
           fill="url(#google-calendar-icon-gradient-top)"
           d="M32 27.2C32 16.596 40.596 8 51.2 8h89.6c10.604 0 19.2 8.596 19.2 19.2V96H32z"
@@ -105,12 +91,7 @@ const GoogleCalendarIcon = ({
           colorInterpolationFilters="sRGB"
           filterUnits="userSpaceOnUse"
         >
-          <feFlood floodOpacity="0" result="BackgroundImageFix" />
-          <feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
-          <feGaussianBlur
-            result="effect1_foregroundBlur_37330_7673"
-            stdDeviation="6"
-          />
+          <feGaussianBlur stdDeviation="6" />
         </filter>
       </defs>
     </svg>
