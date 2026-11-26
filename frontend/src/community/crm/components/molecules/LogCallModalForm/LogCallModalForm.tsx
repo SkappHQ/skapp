@@ -68,6 +68,15 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
     values.companyId !== contactCompanyId
   );
 
+  const associationsProps = {
+    submitCount,
+    isValidating,
+    isValid,
+    isDealMismatch,
+    isDealClearedNoticeVisible,
+    isCompanyMismatch
+  };
+
   const subjectError = touched.subject ? errors.subject : "";
   const durationError = touched.duration ? errors.duration : "";
 
@@ -185,14 +194,7 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
         aria-label={translateAria(["comments"])}
       />
 
-      <ActivityAssociations
-        submitCount={submitCount}
-        isValidating={isValidating}
-        isValid={isValid}
-        isDealMismatch={isDealMismatch}
-        isDealClearedNoticeVisible={isDealClearedNoticeVisible}
-        isCompanyMismatch={isCompanyMismatch}
-      >
+      <ActivityAssociations {...associationsProps}>
         <ActivityDealField
           id="log-call-deal"
           formik={formik}

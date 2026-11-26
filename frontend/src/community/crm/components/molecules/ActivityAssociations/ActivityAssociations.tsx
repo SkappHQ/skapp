@@ -1,6 +1,7 @@
 import { FC, ReactNode, useEffect, useRef, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { CrmActivityAssociationMessageEnum } from "~community/crm/enums/common";
 
 interface Props {
   submitCount: number;
@@ -30,10 +31,12 @@ const ActivityAssociations: FC<Props> = ({
 
   const sectionRef = useRef<HTMLDivElement>(null);
 
-  const getActiveMessage = (): string | null => {
-    if (isDealMismatch) return "dealMismatch";
-    if (isDealClearedNoticeVisible) return "dealCleared";
-    if (isCompanyMismatch) return "companyMismatch";
+  const getActiveMessage = (): CrmActivityAssociationMessageEnum | null => {
+    if (isDealMismatch) return CrmActivityAssociationMessageEnum.DEAL_MISMATCH;
+    if (isDealClearedNoticeVisible)
+      return CrmActivityAssociationMessageEnum.DEAL_CLEARED;
+    if (isCompanyMismatch)
+      return CrmActivityAssociationMessageEnum.COMPANY_MISMATCH;
     return null;
   };
 
