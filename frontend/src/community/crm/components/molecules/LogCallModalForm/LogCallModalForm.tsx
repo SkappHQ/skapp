@@ -2,8 +2,7 @@ import {
   CalendarIcon,
   DatePicker,
   Dropdown,
-  InputField,
-  TextArea
+  InputField
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import { FC, useState } from "react";
@@ -15,6 +14,7 @@ import {
   toPickerDate
 } from "~community/crm/activities/utils/activityUtil";
 import ActivityAssociations from "~community/crm/components/molecules/ActivityAssociations/ActivityAssociations";
+import ActivityCommentsField from "~community/crm/components/molecules/ActivityCommentsField/ActivityCommentsField";
 import ActivityContactField from "~community/crm/components/molecules/ActivityContactField/ActivityContactField";
 import ActivityDealField from "~community/crm/components/molecules/ActivityDealField/ActivityDealField";
 import ActivityOwnerField from "~community/crm/components/molecules/ActivityOwnerField/ActivityOwnerField";
@@ -175,14 +175,11 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
         </div>
       </div>
 
-      <TextArea
-        name="comments"
+      <ActivityCommentsField
         value={values.comments}
-        label={translateText(["logActivity", "labels", "comments"])}
-        placeholder={translateText(["logActivity", "placeholders", "comments"])}
         onChange={handleChange}
         rows={2}
-        aria-label={translateAria(["comments"])}
+        ariaLabel={translateAria(["comments"])}
       />
 
       <ActivityAssociations
