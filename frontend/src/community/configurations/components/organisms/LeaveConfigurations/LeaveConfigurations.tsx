@@ -6,7 +6,7 @@ import { FC, useState } from "react";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
-// TODO: Restore once multi-level leave approval is behind a feature flag
+// TODO: Restore once a feature flag exists for multi-level leave approval
 // import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -144,7 +144,7 @@ const LeaveConfigurations: FC = () => {
         </>
       )}
 
-      {/* TODO: Restore once multi-level leave approval is behind a feature flag */}
+      {/* TODO: Restore once a feature flag exists for multi-level leave approval */}
       {/* {isPeopleAdmin && isLeavePoliciesEnabled && <LeaveApprovalSettings />} */}
 
       <EnableLeavePoliciesConfirmModal
