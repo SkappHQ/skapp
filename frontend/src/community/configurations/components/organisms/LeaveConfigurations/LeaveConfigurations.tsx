@@ -6,12 +6,13 @@ import { FC, useState } from "react";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
-import useSessionData from "~community/common/hooks/useSessionData";
+// TODO: Restore once multi-level leave approval is behind a feature flag
+// import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 import EnableLeavePoliciesConfirmModal from "~community/configurations/components/molecules/EnableLeavePoliciesConfirmModal/EnableLeavePoliciesConfirmModal";
-import LeaveApprovalSettings from "~community/configurations/components/organisms/LeaveApprovalSettings/LeaveApprovalSettings";
+// import LeaveApprovalSettings from "~community/configurations/components/organisms/LeaveApprovalSettings/LeaveApprovalSettings";
 import { useEnableLeavePolicies } from "~community/leave/api/LeavePolicyApi";
 import useCanManageLeavePolicies from "~community/leave/hooks/useCanManageLeavePolicies";
 import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
@@ -22,7 +23,7 @@ const LeaveConfigurations: FC = () => {
   const { setToastMessage } = useToast();
 
   const canManageLeavePolicies = useCanManageLeavePolicies();
-  const { isPeopleAdmin } = useSessionData();
+  // const { isPeopleAdmin } = useSessionData();
   const { isLeavePoliciesEnabled, isLoading, isError } =
     useLeavePoliciesEnabled();
 
@@ -143,7 +144,8 @@ const LeaveConfigurations: FC = () => {
         </>
       )}
 
-      {isPeopleAdmin && isLeavePoliciesEnabled && <LeaveApprovalSettings />}
+      {/* TODO: Restore once multi-level leave approval is behind a feature flag */}
+      {/* {isPeopleAdmin && isLeavePoliciesEnabled && <LeaveApprovalSettings />} */}
 
       <EnableLeavePoliciesConfirmModal
         isOpen={isConfirmModalOpen}
