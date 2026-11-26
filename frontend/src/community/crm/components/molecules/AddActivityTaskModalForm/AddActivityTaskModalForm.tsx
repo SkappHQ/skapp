@@ -7,7 +7,6 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import { FC, useState } from "react";
-import { useShallow } from "zustand/react/shallow";
 
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
@@ -27,14 +26,22 @@ import {
   CrmAddTaskFormErrorField,
   CrmAddTaskFormValues
 } from "~community/crm/types/CrmCommonTypes";
-import { isDealMatchingCompany } from "~community/crm/utils/dealUtil";
 
 interface Props {
   formik: FormikProps<CrmAddTaskFormValues>;
 }
 
 const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
-  const { values, status, handleChange, handleBlur, setFieldValue } = formik;
+  const {
+    values,
+    status,
+    submitCount,
+    isValidating,
+    isValid,
+    handleChange,
+    handleBlur,
+    setFieldValue
+  } = formik;
 
   const translateText = useTranslator("crmModule", "activities");
   const translateAria = useTranslator(
@@ -46,12 +53,7 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
   const displayZone = useDisplayZone();
   const priorityOptions = useGetPriorityOptions();
 
-  const { contacts, deals } = useCrmStore(
-    useShallow((state) => ({
-      contacts: state.contacts,
-      deals: state.deals
-    }))
-  );
+  const contacts = useCrmStore((state) => state.contacts);
 
   const [isDealClearedNoticeVisible, setIsDealClearedNoticeVisible] =
     useState(false);
@@ -60,17 +62,16 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
     ? contacts[values.contactId]?.companyId
     : null;
 
-  const selectedDeal = values.dealId ? deals[values.dealId] : null;
-
   const isDealMismatch =
-    Boolean(
-      selectedDeal &&
-      values.contactId &&
-      !isDealMatchingCompany(selectedDeal, contactCompanyId)
-    ) ||
-    (Boolean(status) &&
-      status.mismatchedDealId === values.dealId &&
-      status.mismatchedContactId === values.contactId);
+    Boolean(status) &&
+    status.mismatchedDealId === values.dealId &&
+    status.mismatchedContactId === values.contactId;
+
+  const isCompanyMismatch = Boolean(
+    values.companyId &&
+    contactCompanyId &&
+    values.companyId !== contactCompanyId
+  );
 
   const dueDate = values.dueAt
     ? instantToPickedDay(values.dueAt, displayZone)
@@ -88,7 +89,7 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
   };
 
   return (
-    <div className="flex flex-col gap-2 overflow-y-auto pr-1">
+    <div className="flex flex-col gap-2">
       <InputField
         id="add-task-name-input"
         name="name"
@@ -131,31 +132,30 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
             onSelect={handleDueDateSelect}
             popperProps={{ position: "bottom-start", isFlip: true }}
           >
-            <div>
-              <InputField
-                id="add-task-dueAt-input"
-                name="dueAt"
-                value={dueDate ? dueDate.toLocaleDateString() : ""}
-                label={translateText(["addTask", "modal", "labels", "dueDate"])}
-                placeholder={translateText([
-                  "addTask",
-                  "modal",
-                  "placeholders",
-                  "dueDate"
-                ])}
-                errorMessage={getFieldError("dueAt")}
-                state={getFieldError("dueAt") ? "error" : "default"}
-                aria-label={translateAria(["dueDate"])}
-                rightIcon={<CalendarIcon />}
-                fullWidth
-                readOnly
-                required
-              />
-            </div>
+            <InputField
+              role="combobox"
+              id="add-task-dueAt-input"
+              name="dueAt"
+              value={dueDate ? dueDate.toLocaleDateString() : ""}
+              label={translateText(["addTask", "modal", "labels", "dueDate"])}
+              placeholder={translateText([
+                "addTask",
+                "modal",
+                "placeholders",
+                "dueDate"
+              ])}
+              errorMessage={getFieldError("dueAt")}
+              state={getFieldError("dueAt") ? "error" : "default"}
+              aria-label={translateAria(["dueDate"])}
+              rightIcon={<CalendarIcon />}
+              fullWidth
+              readOnly
+              required
+            />
           </DatePicker>
         </div>
         <div className="flex-1">
-          <ActivityOwnerField id="add-task-ownerId" formik={formik} />
+          <ActivityOwnerField id="add-task-ownerId" formik={formik} required />
         </div>
       </div>
 
@@ -165,6 +165,7 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
         label={translateText(["addTask", "modal", "labels", "contact"])}
         fieldAriaLabel={translateAria(["contact"])}
         onDealCleared={() => setIsDealClearedNoticeVisible(true)}
+        fillsRelatedTo
       />
 
       <TextArea
@@ -187,7 +188,12 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
       />
 
       <ActivityAssociations
-        isForcedOpen={isDealClearedNoticeVisible || isDealMismatch}
+        submitCount={submitCount}
+        isValidating={isValidating}
+        isValid={isValid}
+        isDealMismatch={isDealMismatch}
+        isDealClearedNoticeVisible={isDealClearedNoticeVisible}
+        isCompanyMismatch={isCompanyMismatch}
       >
         <ActivityDealField
           id="add-task-deal"
@@ -202,6 +208,14 @@ const AddActivityTaskModalForm: FC<Props> = ({ formik }) => {
           id="add-task-related-to"
           formik={formik}
           fieldAriaLabel={translateAria(["relatedTo"])}
+          {...(isCompanyMismatch && {
+            mismatchMessage: translateText([
+              "addTask",
+              "modal",
+              "notices",
+              "relatedToMismatch"
+            ])
+          })}
         />
       </ActivityAssociations>
     </div>

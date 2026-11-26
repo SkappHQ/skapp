@@ -109,6 +109,8 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 
 	private static final String USER2_PEOPLE_ADMIN_ONLY = "UPDATE employee_role SET leave_role = 'LEAVE_EMPLOYEE', people_role = 'PEOPLE_ADMIN', attendance_role = 'ATTENDANCE_EMPLOYEE' WHERE employee_id = 2";
 
+	private static final String USER2_SUPER_ADMIN_ONLY = "UPDATE employee_role SET leave_role = 'LEAVE_EMPLOYEE', people_role = 'PEOPLE_EMPLOYEE', attendance_role = 'ATTENDANCE_EMPLOYEE', is_super_admin = true WHERE employee_id = 2";
+
 	private final AuthorityService authorityService;
 
 	private final JwtService jwtService;
@@ -519,12 +521,21 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("People admin can list but cannot assign or unassign")
+		@DisplayName("People admin can list, assign and unassign")
 		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES, USER2_PEOPLE_ADMIN_ONLY })
-		void peopleAdmin_ReadOnly() throws Exception {
+		void peopleAdmin_AllOperations_Allowed() throws Exception {
 			performGet(user2Token(), 1).andDo(print()).andExpect(status().isOk());
-			performAssign(user2Token(), assignBody(1, 500, "JOIN_DATE", null)).andExpect(status().isForbidden());
-			performUnassign(user2Token(), unassignBody(1, 500)).andExpect(status().isForbidden());
+			performAssign(user2Token(), assignBody(1, 500, "JOIN_DATE", null)).andExpect(status().isOk());
+			performUnassign(user2Token(), unassignBody(1, 500)).andExpect(status().isOk());
+		}
+
+		@Test
+		@DisplayName("Super admin can list, assign and unassign")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES, USER2_SUPER_ADMIN_ONLY })
+		void superAdmin_AllOperations_Allowed() throws Exception {
+			performGet(user2Token(), 1).andDo(print()).andExpect(status().isOk());
+			performAssign(user2Token(), assignBody(1, 500, "JOIN_DATE", null)).andExpect(status().isOk());
+			performUnassign(user2Token(), unassignBody(1, 500)).andExpect(status().isOk());
 		}
 
 		@Test
@@ -727,6 +738,22 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 		@DisplayName("People admin cannot bulk assign")
 		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES, USER2_PEOPLE_ADMIN_ONLY })
 		void bulkAssign_PeopleAdmin_Forbidden() throws Exception {
+			String body = bulkBody(bulkRow(EMPLOYEE_1_NAME, "Annual Standard", "01/06/2024"));
+			performBulk(user2Token(), body).andDo(print()).andExpect(status().isForbidden());
+		}
+
+		@Test
+		@DisplayName("Super admin without leave admin cannot bulk assign")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES, USER2_SUPER_ADMIN_ONLY })
+		void bulkAssign_SuperAdmin_Forbidden() throws Exception {
+			String body = bulkBody(bulkRow(EMPLOYEE_1_NAME, "Annual Standard", "01/06/2024"));
+			performBulk(user2Token(), body).andDo(print()).andExpect(status().isForbidden());
+		}
+
+		@Test
+		@DisplayName("Leave employee cannot bulk assign")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES, DOWNGRADE_USER2_TO_EMPLOYEE })
+		void bulkAssign_LeaveEmployee_Forbidden() throws Exception {
 			String body = bulkBody(bulkRow(EMPLOYEE_1_NAME, "Annual Standard", "01/06/2024"));
 			performBulk(user2Token(), body).andDo(print()).andExpect(status().isForbidden());
 		}

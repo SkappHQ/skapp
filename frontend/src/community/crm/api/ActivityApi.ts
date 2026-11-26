@@ -17,16 +17,19 @@ import {
   ActivityCallEditPayload,
   ActivityCallResponse,
   ActivityEmailCreatePayload,
+  ActivityEmailEditPayload,
   ActivityEmailResponse,
   ActivityFeedFilters,
   ActivityFeedResponse,
   ActivityListFilters,
+  ActivityListPage,
   ActivityMeetingCreatePayload,
   ActivityMeetingEditPayload,
   ActivityMeetingResponse,
   ActivityTaskCreatePayload,
   ActivityTaskEditPayload,
-  ActivityTaskResponse
+  ActivityTaskResponse,
+  RecordActivityFilters
 } from "~community/crm/activities/types/activityTypes";
 import { crmActivityEndpoints } from "~community/crm/api/utils/ApiEndpoints";
 import { crmActivityQueryKeys } from "~community/crm/api/utils/QueryKeys";
@@ -37,10 +40,17 @@ import {
   CrmMeetingEntity,
   CrmTaskCompletionPayload
 } from "~community/crm/types/CrmCommonTypes";
-import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
+import useActivityLimitCount from "~enterprise/crm/hooks/useActivityLimitCount";
+
+const getNextActivityListPage = <T>(
+  lastPage: ActivityListPage<T>
+): number | null =>
+  lastPage.currentPage < lastPage.totalPages - 1
+    ? lastPage.currentPage + 1
+    : null;
 
 const fetchActivityFeed = async (
-  params: ActivityFeedFilters
+  params: ActivityFeedFilters | RecordActivityFilters
 ): Promise<ActivityFeedResponse> => {
   const response = await authFetch.get(crmActivityEndpoints.GET_ACTIVITY_FEED, {
     params
@@ -58,50 +68,73 @@ export const useGetActivityFeed = (
       fetchActivityFeed({ ...params, page: pageParam }),
     enabled,
     initialPageParam: 0,
-    getNextPageParam: (lastPage) =>
-      lastPage && lastPage.currentPage < lastPage.totalPages - 1
-        ? lastPage.currentPage + 1
-        : null,
+    getNextPageParam: getNextActivityListPage,
+    refetchOnWindowFocus: false
+  });
+
+export const useGetRecordActivities = (
+  params: RecordActivityFilters,
+  enabled: boolean
+): UseInfiniteQueryResult<InfiniteData<ActivityFeedResponse>, AxiosError> =>
+  useInfiniteQuery({
+    queryKey: crmActivityQueryKeys.RECORD(params),
+    queryFn: ({ pageParam }) =>
+      fetchActivityFeed({ ...params, page: pageParam }),
+    enabled,
+    initialPageParam: 0,
+    getNextPageParam: getNextActivityListPage,
     refetchOnWindowFocus: false
   });
 
 const fetchActivityCalls = async (
   params: ActivityListFilters
-): Promise<ActivityCallResponse[]> => {
+): Promise<ActivityListPage<ActivityCallResponse>> => {
   const response = await authFetch.get(crmActivityEndpoints.GET_CALLS, {
     params
   });
-  return response?.data?.results;
+  return response?.data?.results?.[0];
 };
 
 export const useGetActivityCalls = (
   params: ActivityListFilters,
   enabled: boolean
-): UseQueryResult<ActivityCallResponse[], AxiosError> =>
-  useQuery({
+): UseInfiniteQueryResult<
+  InfiniteData<ActivityListPage<ActivityCallResponse>>,
+  AxiosError
+> =>
+  useInfiniteQuery({
     queryKey: crmActivityQueryKeys.CALLS(params),
-    queryFn: () => fetchActivityCalls(params),
+    queryFn: ({ pageParam }) =>
+      fetchActivityCalls({ ...params, page: pageParam }),
     enabled,
+    initialPageParam: 0,
+    getNextPageParam: getNextActivityListPage,
     refetchOnWindowFocus: false
   });
 
 const fetchActivityEmails = async (
   params: ActivityListFilters
-): Promise<ActivityEmailResponse[]> => {
+): Promise<ActivityListPage<ActivityEmailResponse>> => {
   const response = await authFetch.get(crmActivityEndpoints.GET_EMAILS, {
     params
   });
-  return response?.data?.results;
+  return response?.data?.results?.[0];
 };
 
 export const useGetActivityEmails = (
   params: ActivityListFilters,
   enabled: boolean
-): UseQueryResult<ActivityEmailResponse[], AxiosError> =>
-  useQuery({
+): UseInfiniteQueryResult<
+  InfiniteData<ActivityListPage<ActivityEmailResponse>>,
+  AxiosError
+> =>
+  useInfiniteQuery({
     queryKey: crmActivityQueryKeys.EMAILS(params),
-    queryFn: () => fetchActivityEmails(params),
+    queryFn: ({ pageParam }) =>
+      fetchActivityEmails({ ...params, page: pageParam }),
     enabled,
+    initialPageParam: 0,
+    getNextPageParam: getNextActivityListPage,
     refetchOnWindowFocus: false
   });
 
@@ -116,13 +149,12 @@ export const useCreateEmail = (
   onError: (error: ErrorResponse) => void
 ): UseMutationResult<void, ErrorResponse, ActivityEmailCreatePayload> => {
   const queryClient = useQueryClient();
+  const { updateActivityLimitCount } = useActivityLimitCount();
 
   return useMutation({
     mutationFn: createEmail,
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
-      });
+      updateActivityLimitCount(1);
       queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
       onSuccess();
     },
@@ -132,41 +164,53 @@ export const useCreateEmail = (
 
 const fetchActivityMeetings = async (
   params: ActivityListFilters
-): Promise<ActivityMeetingResponse[]> => {
+): Promise<ActivityListPage<ActivityMeetingResponse>> => {
   const response = await authFetch.get(crmActivityEndpoints.GET_MEETINGS, {
     params
   });
-  return response?.data?.results;
+  return response?.data?.results?.[0];
 };
 
 export const useGetActivityMeetings = (
   params: ActivityListFilters,
   enabled: boolean
-): UseQueryResult<ActivityMeetingResponse[], AxiosError> =>
-  useQuery({
+): UseInfiniteQueryResult<
+  InfiniteData<ActivityListPage<ActivityMeetingResponse>>,
+  AxiosError
+> =>
+  useInfiniteQuery({
     queryKey: crmActivityQueryKeys.MEETINGS(params),
-    queryFn: () => fetchActivityMeetings(params),
+    queryFn: ({ pageParam }) =>
+      fetchActivityMeetings({ ...params, page: pageParam }),
     enabled,
+    initialPageParam: 0,
+    getNextPageParam: getNextActivityListPage,
     refetchOnWindowFocus: false
   });
 
 const fetchActivityTasks = async (
   params: ActivityListFilters
-): Promise<ActivityTaskResponse[]> => {
+): Promise<ActivityListPage<ActivityTaskResponse>> => {
   const response = await authFetch.get(crmActivityEndpoints.GET_TASKS, {
     params
   });
-  return response?.data?.results;
+  return response?.data?.results?.[0];
 };
 
 export const useGetActivityTasks = (
   params: ActivityListFilters,
   enabled: boolean
-): UseQueryResult<ActivityTaskResponse[], AxiosError> =>
-  useQuery({
+): UseInfiniteQueryResult<
+  InfiniteData<ActivityListPage<ActivityTaskResponse>>,
+  AxiosError
+> =>
+  useInfiniteQuery({
     queryKey: crmActivityQueryKeys.TASKS(params),
-    queryFn: () => fetchActivityTasks(params),
+    queryFn: ({ pageParam }) =>
+      fetchActivityTasks({ ...params, page: pageParam }),
     enabled,
+    initialPageParam: 0,
+    getNextPageParam: getNextActivityListPage,
     refetchOnWindowFocus: false
   });
 
@@ -179,11 +223,17 @@ const updateTaskCompletion = async ({
 
 export const useUpdateTaskCompletion = (
   onError: (payload: CrmTaskCompletionPayload) => void
-): UseMutationResult<void, ErrorResponse, CrmTaskCompletionPayload> =>
-  useMutation({
+): UseMutationResult<void, ErrorResponse, CrmTaskCompletionPayload> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
     mutationFn: updateTaskCompletion,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
+    },
     onError: (_error, payload) => onError(payload)
   });
+};
 
 const createCall = async (
   payload: ActivityCallCreatePayload
@@ -196,13 +246,12 @@ export const useCreateCall = (
   onError: (error: ErrorResponse) => void
 ): UseMutationResult<void, ErrorResponse, ActivityCallCreatePayload> => {
   const queryClient = useQueryClient();
+  const { updateActivityLimitCount } = useActivityLimitCount();
 
   return useMutation({
     mutationFn: createCall,
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
-      });
+      updateActivityLimitCount(1);
       queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
       onSuccess();
     },
@@ -254,13 +303,12 @@ export const useCreateMeeting = (
   onError: (error: ErrorResponse) => void
 ): UseMutationResult<void, ErrorResponse, ActivityMeetingCreatePayload> => {
   const queryClient = useQueryClient();
+  const { updateActivityLimitCount } = useActivityLimitCount();
 
   return useMutation({
     mutationFn: createMeeting,
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
-      });
+      updateActivityLimitCount(1);
       queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
       onSuccess();
     },
@@ -279,13 +327,12 @@ export const useCreateTask = (
   onError: (error: ErrorResponse) => void
 ): UseMutationResult<void, ErrorResponse, ActivityTaskCreatePayload> => {
   const queryClient = useQueryClient();
+  const { updateActivityLimitCount } = useActivityLimitCount();
 
   return useMutation({
     mutationFn: createTask,
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
-      });
+      updateActivityLimitCount(1);
       queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
       onSuccess();
     },
@@ -305,6 +352,24 @@ export const useGetActivityTaskById = (
   useQuery({
     queryKey: crmActivityQueryKeys.TASK(id),
     queryFn: () => fetchTaskById(id),
+    enabled,
+    refetchOnWindowFocus: false
+  });
+
+const fetchEmailById = async (id: number): Promise<CrmActivityEmailEntity> => {
+  const response = await authFetch.get(
+    crmActivityEndpoints.GET_EMAIL_BY_ID(id)
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useGetEmailById = (
+  id: number,
+  enabled: boolean
+): UseQueryResult<CrmActivityEmailEntity, AxiosError> =>
+  useQuery({
+    queryKey: crmActivityQueryKeys.EMAIL(id),
+    queryFn: () => fetchEmailById(id),
     enabled,
     refetchOnWindowFocus: false
   });
@@ -378,10 +443,12 @@ export const useDeleteCall = (
   onError: (error: ErrorResponse) => void
 ): UseMutationResult<void, ErrorResponse, number> => {
   const queryClient = useQueryClient();
+  const { updateActivityLimitCount } = useActivityLimitCount();
 
   return useMutation({
     mutationFn: deleteCall,
     onSuccess: () => {
+      updateActivityLimitCount(-1);
       queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
       onSuccess();
     },
@@ -398,10 +465,12 @@ export const useDeleteMeeting = (
   onError: (error: ErrorResponse) => void
 ): UseMutationResult<void, ErrorResponse, number> => {
   const queryClient = useQueryClient();
+  const { updateActivityLimitCount } = useActivityLimitCount();
 
   return useMutation({
     mutationFn: deleteMeeting,
     onSuccess: () => {
+      updateActivityLimitCount(-1);
       queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
       onSuccess();
     },
@@ -418,10 +487,12 @@ export const useDeleteActivityTask = (
   onError: (error: ErrorResponse) => void
 ): UseMutationResult<void, ErrorResponse, number> => {
   const queryClient = useQueryClient();
+  const { updateActivityLimitCount } = useActivityLimitCount();
 
   return useMutation({
     mutationFn: deleteActivityTask,
     onSuccess: () => {
+      updateActivityLimitCount(-1);
       queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
       onSuccess();
     },
@@ -488,21 +559,44 @@ export const useGetRelatedActivityTasks = (
     enabled,
     refetchOnWindowFocus: false
   });
-
-const fetchEmailById = async (id: number): Promise<CrmActivityEmailEntity> => {
-  const response = await authFetch.get(
-    crmActivityEndpoints.GET_EMAIL_BY_ID(id)
-  );
-  return response?.data?.results?.[0];
+const updateEmail = async ({
+  id,
+  ...payload
+}: ActivityEmailEditPayload): Promise<void> => {
+  await authFetch.patch(crmActivityEndpoints.EDIT_EMAIL(id), payload);
 };
 
-export const useGetEmailById = (
-  id: number,
-  enabled: boolean
-): UseQueryResult<CrmActivityEmailEntity, AxiosError> =>
-  useQuery({
-    queryKey: crmActivityQueryKeys.EMAIL(id),
-    queryFn: () => fetchEmailById(id),
-    enabled,
-    refetchOnWindowFocus: false
+export const useUpdateEmail = (
+  onError: (error: ErrorResponse) => void
+): UseMutationResult<void, ErrorResponse, ActivityEmailEditPayload> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateEmail,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL }),
+    onError
   });
+};
+
+const deleteEmail = async (id: number): Promise<void> => {
+  await authFetch.delete(crmActivityEndpoints.DELETE_EMAIL(id));
+};
+
+export const useDeleteEmail = (
+  onSuccess: () => void,
+  onError: (error: ErrorResponse) => void
+): UseMutationResult<void, ErrorResponse, number> => {
+  const queryClient = useQueryClient();
+  const { updateActivityLimitCount } = useActivityLimitCount();
+
+  return useMutation({
+    mutationFn: deleteEmail,
+    onSuccess: () => {
+      updateActivityLimitCount(-1);
+      queryClient.invalidateQueries({ queryKey: crmActivityQueryKeys.ALL });
+      onSuccess();
+    },
+    onError
+  });
+};

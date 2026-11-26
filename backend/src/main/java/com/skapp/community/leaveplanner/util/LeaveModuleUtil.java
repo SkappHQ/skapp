@@ -6,6 +6,8 @@ import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
+import com.skapp.community.leaveplanner.constant.LeaveModuleConstant;
+import com.skapp.community.leaveplanner.repository.projection.LeaveRequestPeriod;
 import com.skapp.community.leaveplanner.type.LeaveState;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.Holiday;
@@ -21,7 +23,9 @@ import tools.jackson.databind.node.ObjectNode;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @UtilityClass
@@ -158,6 +162,59 @@ public class LeaveModuleUtil {
 			currentDate = currentDate.plusDays(1);
 		}
 		return workDays;
+	}
+
+	public static Map<Integer, Map<Integer, Double>> getLeaveDaysByTypeAndMonth(List<LeaveRequestPeriod> leavePeriods,
+			LocalDate startDate, LocalDate endDate, List<TimeConfig> timeConfigs, List<Holiday> holidays) {
+		Map<LocalDate, HolidayDuration> holidayDurationsByDate = getHolidayDurationsByDate(holidays, startDate,
+				endDate);
+		Map<Integer, Map<Integer, Double>> leaveDaysByTypeAndMonth = new HashMap<>();
+		for (LeaveRequestPeriod leavePeriod : leavePeriods) {
+			Map<Integer, Double> leaveDaysByMonth = leaveDaysByTypeAndMonth
+				.computeIfAbsent(leavePeriod.getTypeId().intValue(), typeId -> new HashMap<>());
+			LocalDate from = DateTimeUtils.getLaterDate(leavePeriod.getStartDate(), startDate);
+			LocalDate to = DateTimeUtils.getEarlierDate(leavePeriod.getEndDate(), endDate);
+
+			for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
+				double leaveDays = getLeaveDaysOnDate(date, leavePeriod.getLeaveState(), timeConfigs,
+						holidayDurationsByDate.get(date));
+				if (leaveDays > 0) {
+					leaveDaysByMonth.merge(date.getMonthValue(), leaveDays, Double::sum);
+				}
+			}
+		}
+		return leaveDaysByTypeAndMonth;
+	}
+
+	public static Map<LocalDate, HolidayDuration> getHolidayDurationsByDate(List<Holiday> holidays, LocalDate startDate,
+			LocalDate endDate) {
+		Map<LocalDate, HolidayDuration> holidayDurationsByDate = new HashMap<>();
+		for (Holiday holiday : holidays) {
+			LocalDate date = holiday.getDate();
+			if (!date.isBefore(startDate) && !date.isAfter(endDate)) {
+				holidayDurationsByDate.merge(date, holiday.getHolidayDuration(),
+						LeaveModuleUtil::combineHolidayDurations);
+			}
+		}
+		return holidayDurationsByDate;
+	}
+
+	public static float getLeaveDaysOnDate(LocalDate date, LeaveState leaveState, List<TimeConfig> timeConfigs,
+			HolidayDuration holidayDuration) {
+		if (!CommonModuleUtils.checkIfDayIsWorkingDay(date, timeConfigs) || holidayDuration == HolidayDuration.FULL_DAY
+				|| isSameHalf(holidayDuration, leaveState)) {
+			return 0;
+		}
+
+		if (holidayDuration != null || isHalfDay(leaveState)) {
+			return LeaveModuleConstant.HALF_DAY;
+		}
+
+		return LeaveModuleConstant.FULL_DAY;
+	}
+
+	private static HolidayDuration combineHolidayDurations(HolidayDuration first, HolidayDuration second) {
+		return first == second ? first : HolidayDuration.FULL_DAY;
 	}
 
 	public static void validateTeamsForLeaveAnalytics(List<Long> teamIds, User currentUser, List<Team> teams) {

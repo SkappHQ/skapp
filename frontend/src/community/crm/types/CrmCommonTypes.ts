@@ -1,3 +1,6 @@
+import { ButtonV2Props } from "@rootcodelabs/skapp-ui";
+import { ReactNode } from "react";
+
 import { CrmMeetingVenueDetails } from "~enterprise/crm/types/ScheduleMeetingTypes";
 
 import {
@@ -150,6 +153,17 @@ export type CrmTaskRecord = Record<number, CrmTaskEntity>;
 export type CrmTaskTypeRecord = Record<number, CrmTaskTypeEntity>;
 export type CrmIndustryRecord = Record<number, CrmIndustryEntity>;
 
+export interface UseScheduleMeetingResult {
+  scheduleMeetingButton: ButtonV2Props | null;
+  scheduleMeetingModals: ReactNode;
+}
+
+export interface CrmActivityPrefill {
+  contactId: number | null;
+  dealId: number | null;
+  companyId: number | null;
+}
+
 export interface CrmLogEmailFormValues {
   fromAddress: string;
   date: string | null;
@@ -158,6 +172,7 @@ export interface CrmLogEmailFormValues {
   ccContactIds: number[];
   bccContactIds: number[];
   subject: string;
+  ownerId: number | null;
   dealId: number | null;
   companyId: number | null;
   description: string;
@@ -203,6 +218,10 @@ export interface CrmLogMeetingFormValues {
   comments: string;
   dealId: number | null;
   companyId: number | null;
+}
+
+export interface CrmActivityDealFormValues {
+  dealId: number | null;
 }
 
 export interface CrmAddTaskFormValues {

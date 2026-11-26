@@ -34,6 +34,9 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
@@ -50,7 +53,7 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 	private final EntityManager entityManager;
 
 	@Override
-	public List<CrmActivityMeetingResponseDto> findMeetings(CrmActivityMeetingFilterParams params) {
+	public Page<CrmActivityMeetingResponseDto> findMeetings(CrmActivityMeetingFilterParams params, Pageable pageable) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Tuple> query = cb.createTupleQuery();
 		Root<CrmActivityMeeting> meeting = query.from(CrmActivityMeeting.class);
@@ -81,6 +84,9 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 		}
 		if (params.getRelatedDealId() != null) {
 			predicates.add(cb.equal(meeting.get(CrmActivityMeeting_.deal).get(CrmDeal_.id), params.getRelatedDealId()));
+		}
+		if (Boolean.TRUE.equals(params.getIsWithoutDeal())) {
+			predicates.add(cb.isNull(deal.get(CrmDeal_.id)));
 		}
 		if (params.getExcludedId() != null) {
 			predicates.add(cb.notEqual(meeting.get(CrmActivityMeeting_.id), params.getExcludedId()));
@@ -143,10 +149,73 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 			.orderBy(orders);
 
 		TypedQuery<Tuple> typedQuery = entityManager.createQuery(query);
-		if (params.getMaxResults() != null) {
-			typedQuery.setMaxResults(params.getMaxResults());
+		typedQuery.setFirstResult((int) pageable.getOffset());
+		typedQuery.setMaxResults(pageable.getPageSize());
+		List<Tuple> results = typedQuery.getResultList();
+
+		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+		Root<CrmActivityMeeting> countRoot = countQuery.from(CrmActivityMeeting.class);
+		Path<Long> countOwnerId = countRoot.get(CrmActivityMeeting_.owner).get(Employee_.employeeId);
+		List<Predicate> countPredicates = new ArrayList<>();
+		countPredicates.add(cb.isFalse(countRoot.get(CrmActivityMeeting_.isDeleted)));
+
+		if (params.getRelatedContactIds() != null) {
+			Subquery<Long> attendeeMatch = countQuery.subquery(Long.class);
+			Root<CrmActivityMeetingContact> attendee = attendeeMatch.from(CrmActivityMeetingContact.class);
+			Path<CrmActivityMeetingContactId> attendeeId = attendee.get(CrmActivityMeetingContact_.id);
+			attendeeMatch.select(attendeeId.get(CrmActivityMeetingContactId_.meetingId))
+				.where(cb.equal(attendeeId.get(CrmActivityMeetingContactId_.meetingId),
+						countRoot.get(CrmActivityMeeting_.id)),
+						attendeeId.get(CrmActivityMeetingContactId_.contactId).in(params.getRelatedContactIds()));
+			countPredicates.add(cb.exists(attendeeMatch));
 		}
-		List<CrmActivityMeetingResponseDto> meetings = typedQuery.getResultList().stream().map(row -> {
+		if (params.getRelatedDealId() != null) {
+			countPredicates
+				.add(cb.equal(countRoot.get(CrmActivityMeeting_.deal).get(CrmDeal_.id), params.getRelatedDealId()));
+		}
+		if (Boolean.TRUE.equals(params.getIsWithoutDeal())) {
+			Join<CrmActivityMeeting, CrmDeal> countDeal = countRoot.join(CrmActivityMeeting_.deal, JoinType.LEFT);
+			countDeal.on(cb.isFalse(countDeal.get(CrmDeal_.isDeleted)));
+			countPredicates.add(cb.isNull(countDeal.get(CrmDeal_.id)));
+		}
+		if (params.getExcludedId() != null) {
+			countPredicates.add(cb.notEqual(countRoot.get(CrmActivityMeeting_.id), params.getExcludedId()));
+		}
+
+		if (Boolean.TRUE.equals(params.getIsRestrictedToOwner())) {
+			countPredicates.add(cb.equal(countOwnerId, params.getCurrentEmployeeId()));
+		}
+		if (params.getOwnerId() != null) {
+			countPredicates.add(cb.equal(countOwnerId, params.getOwnerId()));
+		}
+		if (params.getRangeStart() != null) {
+			countPredicates
+				.add(cb.greaterThanOrEqualTo(countRoot.get(CrmActivityMeeting_.startAt), params.getRangeStart()));
+		}
+		if (params.getRangeEnd() != null) {
+			countPredicates.add(cb.lessThan(countRoot.get(CrmActivityMeeting_.startAt), params.getRangeEnd()));
+		}
+
+		if (params.getSearchPattern() != null) {
+			Subquery<Long> contactMatch = countQuery.subquery(Long.class);
+			Root<CrmActivityMeetingContact> link = contactMatch.from(CrmActivityMeetingContact.class);
+			Join<CrmActivityMeetingContact, CrmContact> contact = link.join(CrmActivityMeetingContact_.contact);
+			Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
+			contactCompany.on(cb.isFalse(contactCompany.get(CrmCompany_.isDeleted)));
+			contactMatch.select(link.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId))
+				.where(cb.equal(link.get(CrmActivityMeetingContact_.id).get(CrmActivityMeetingContactId_.meetingId),
+						countRoot.get(CrmActivityMeeting_.id)), cb.isFalse(contact.get(CrmContact_.isDeleted)),
+						cb.or(cb.like(cb.lower(contact.get(CrmContact_.name)), params.getSearchPattern()),
+								cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), params.getSearchPattern())));
+
+			countPredicates
+				.add(cb.or(cb.like(cb.lower(countRoot.get(CrmActivityMeeting_.name)), params.getSearchPattern()),
+						cb.exists(contactMatch)));
+		}
+
+		countQuery.select(cb.count(countRoot)).where(countPredicates.toArray(new Predicate[0]));
+		long total = entityManager.createQuery(countQuery).getSingleResult();
+		List<CrmActivityMeetingResponseDto> meetings = results.stream().map(row -> {
 			CrmActivityMeetingResponseDto dto = new CrmActivityMeetingResponseDto();
 			dto.setId(row.get(0, Long.class));
 			dto.setName(row.get(1, String.class));
@@ -185,7 +254,7 @@ public class CrmActivityMeetingRepositoryImpl implements CrmActivityMeetingRepos
 					Collectors.mapping(row -> row.get(1, Long.class), Collectors.toList())));
 		meetings.forEach(m -> m.setContactIds(contactIdsByMeeting.getOrDefault(m.getId(), List.of())));
 
-		return meetings;
+		return new PageImpl<>(meetings, pageable, total);
 	}
 
 	@Override

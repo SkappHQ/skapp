@@ -448,7 +448,7 @@ public class PeopleServiceImpl implements PeopleService {
 			validateBillableRateCurrency(billableRateDetailsDto.getBillableRateCurrency());
 		}
 
-		employee.setUser(createUserEntity(user, requestDto));
+		employee.setUser(createUserEntity(user, requestDto, CommonModuleUtils.generateSecureRandomPassword()));
 		user.setEmployee(createEmployeeEntity(employee, requestDto));
 
 		userDao.save(user);
@@ -461,6 +461,18 @@ public class PeopleServiceImpl implements PeopleService {
 		invalidateUserCache();
 
 		return new ResponseEntityDto(false, requestDto);
+	}
+
+	protected void clearRequestAuthorizerAssignments(Employee requestAuthorizer) {
+		List<Employee> authorizedEmployees = employeeDao.findByRequestAuthorizer(requestAuthorizer);
+		authorizedEmployees.forEach(authorizedEmployee -> authorizedEmployee.setRequestAuthorizer(null));
+		employeeDao.saveAll(authorizedEmployees);
+		addRequestAuthorizerRemovedTimelineRecords(authorizedEmployees, requestAuthorizer);
+	}
+
+	protected void addRequestAuthorizerRemovedTimelineRecords(List<Employee> authorizedEmployees,
+			Employee requestAuthorizer) {
+		// This feature is available only for Pro tenants.
 	}
 
 	protected void invalidateUserCache() {
@@ -610,6 +622,11 @@ public class PeopleServiceImpl implements PeopleService {
 			processEmployeeManagers(requestDto.getEmployment(), employee);
 		}
 
+		if (requestDto != null && requestDto.getEmployment() != null
+				&& requestDto.getEmployment().getEmploymentDetails() != null) {
+			processRequestAuthorizer(requestDto.getEmployment().getEmploymentDetails(), employee);
+		}
+
 		// Emergency Contacts
 		processEmergencyContacts(requestDto, employee);
 
@@ -649,6 +666,24 @@ public class PeopleServiceImpl implements PeopleService {
 					() -> new EntityNotFoundException(CommonMessageConstant.COMMON_ERROR_BUSINESS_UNIT_NOT_FOUND)));
 	}
 
+	private void processRequestAuthorizer(EmployeeEmploymentBasicDetailsDto employmentDetails, Employee employee) {
+		EmployeeEmploymentBasicDetailsManagerDetailsDto requestAuthorizer = employmentDetails.getRequestAuthorizer();
+		EmployeeEmploymentBasicDetailsManagerDetailsDto primarySupervisor = employmentDetails.getPrimarySupervisor();
+		boolean isPrimarySupervisorRemoved = primarySupervisor != null
+				&& (primarySupervisor.getEmployeeId() == null || primarySupervisor.getEmployeeId() <= 0);
+
+		if (isPrimarySupervisorRemoved || (requestAuthorizer != null && requestAuthorizer.getEmployeeId() == null)) {
+			employee.setRequestAuthorizer(null);
+			return;
+		}
+
+		if (requestAuthorizer == null) {
+			return;
+		}
+
+		employee.setRequestAuthorizer(employeeDao.getReferenceById(requestAuthorizer.getEmployeeId()));
+	}
+
 	private void processPayrollIdAndTin(CreateEmployeeRequestDto requestDto, Employee employee) {
 		if (requestDto == null || requestDto.getEmployment() == null
 				|| requestDto.getEmployment().getIdentificationAndDiversityDetails() == null || employee == null) {
@@ -676,10 +711,6 @@ public class PeopleServiceImpl implements PeopleService {
 		}
 	}
 
-	private User createUserEntity(User user, CreateEmployeeRequestDto requestDto) {
-		return createUserEntity(user, requestDto, null);
-	}
-
 	private User createUserEntity(User user, CreateEmployeeRequestDto requestDto, String tempPassword) {
 		if (requestDto.getEmployment() != null && requestDto.getEmployment().getEmploymentDetails() != null) {
 			String email = requestDto.getEmployment().getEmploymentDetails().getEmail();
@@ -696,7 +727,7 @@ public class PeopleServiceImpl implements PeopleService {
 					&& requestDto.getEmployment().getEmploymentDetails() != null
 					&& requestDto.getEmployment().getEmploymentDetails().getEmail() != null
 					&& !requestDto.getEmployment().getEmploymentDetails().getEmail().isEmpty()) {
-				resendInvitationEmail(requestDto, user);
+				resendInvitationEmail(requestDto, user, tempPassword);
 			}
 
 			return user;
@@ -707,7 +738,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 		LoginMethod loginMethod = userDao.findById(1L).map(User::getLoginMethod).orElse(LoginMethod.CREDENTIALS);
 
-		if (loginMethod == LoginMethod.CREDENTIALS && tempPassword != null) {
+		if (loginMethod == LoginMethod.CREDENTIALS) {
 			String encodedTempPassword = passwordEncoder.encode(tempPassword);
 			AuthUtil.issueTempPassword(user, encodedTempPassword);
 		}
@@ -724,18 +755,18 @@ public class PeopleServiceImpl implements PeopleService {
 		return user;
 	}
 
-	private void resendInvitationEmail(CreateEmployeeRequestDto requestDto, User user) {
+	private void resendInvitationEmail(CreateEmployeeRequestDto requestDto, User user, String tempPassword) {
 		CommonModuleUtils.setIfExists(() -> requestDto.getEmployment().getEmploymentDetails().getEmail(),
 				user::setEmail);
 
-		String tempPassword = null;
+		String issuedPassword = null;
 		LoginMethod loginMethod = userDao.findById(1L).map(User::getLoginMethod).orElse(LoginMethod.CREDENTIALS);
 		if (loginMethod == LoginMethod.CREDENTIALS) {
-			tempPassword = CommonModuleUtils.generateSecureRandomPassword();
+			issuedPassword = tempPassword;
 			AuthUtil.issueTempPassword(user, passwordEncoder.encode(tempPassword));
 		}
 
-		peopleEmailService.sendUserInvitationEmail(user, tempPassword);
+		peopleEmailService.sendUserInvitationEmail(user, issuedPassword);
 
 	}
 
@@ -1336,7 +1367,7 @@ public class PeopleServiceImpl implements PeopleService {
 		Employee employee = user.getEmployee();
 		CreateEmployeeResponseDto responseDto = peopleMapper.employeeToCreateEmployeeResponseDto(employee);
 
-		if (user.getLoginMethod() == LoginMethod.CREDENTIALS) {
+		if (user.getLoginMethod() == LoginMethod.CREDENTIALS && isCredentialSharingOnCreateEnabled()) {
 			EmployeeCredentialsResponseDto credentials = new EmployeeCredentialsResponseDto();
 			credentials.setEmail(employee.getUser() != null ? employee.getUser().getEmail() : null);
 			credentials.setTempPassword(tempPassword);
@@ -2104,6 +2135,46 @@ public class PeopleServiceImpl implements PeopleService {
 
 	}
 
+	private void setBulkRequestAuthorizer(EmployeeBulkDto employeeBulkDto, Employee employee) {
+		String requestAuthorizerEmail = employeeBulkDto.getRequestAuthorizerEmail();
+		if (requestAuthorizerEmail == null || requestAuthorizerEmail.isBlank()) {
+			return;
+		}
+
+		userDao.findByEmail(requestAuthorizerEmail)
+			.ifPresent(authorizerUser -> employee
+				.setRequestAuthorizer(employeeDao.getReferenceById(authorizerUser.getUserId())));
+	}
+
+	private void validateRequestAuthorizerInBulk(EmployeeBulkDto employeeBulkDto, List<String> errors) {
+		String requestAuthorizerEmail = employeeBulkDto.getRequestAuthorizerEmail();
+		if (requestAuthorizerEmail == null || requestAuthorizerEmail.isBlank()) {
+			return;
+		}
+
+		if (requestAuthorizerEmail.equalsIgnoreCase(employeeBulkDto.getWorkEmail())) {
+			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_SELF));
+			return;
+		}
+
+		Optional<User> authorizerUser = userDao.findByEmail(requestAuthorizerEmail);
+		if (authorizerUser.isEmpty()) {
+			errors.add(messageUtil
+				.getMessage(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_REQUEST_AUTHORIZER_EMPLOYEE_NOT_FOUND));
+			return;
+		}
+
+		Long primarySupervisorId = employeeBulkDto.getPrimaryManager() == null ? null
+				: userDao.findByEmail(employeeBulkDto.getPrimaryManager()).map(User::getUserId).orElse(null);
+		try {
+			employeeValidationService.validateRequestAuthorizerAssignment(authorizerUser.get().getUserId(), null,
+					primarySupervisorId);
+		}
+		catch (ValidationException e) {
+			errors.add(e.getMessage());
+		}
+	}
+
 	public void setBulkEmployeeProgression(EmployeeBulkDto employeeBulkDto, Employee employee) {
 		if (employeeBulkDto.getEmployeeProgression() != null) {
 			if (employeeBulkDto.getEmployeeProgression().getEmploymentType() != null) {
@@ -2372,6 +2443,10 @@ public class PeopleServiceImpl implements PeopleService {
 		return false;
 	}
 
+	protected boolean isCredentialSharingOnCreateEnabled() {
+		return true;
+	}
+
 	/**
 	 * Retrieves a deep copy of the given employee. This method is only available for Pro
 	 * tenants.
@@ -2521,6 +2596,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 		Set<EmployeeManager> managers = addNewManagers(employeeDetailsDto, employee);
 		employee.setEmployeeManagers(managers);
+		setBulkRequestAuthorizer(employeeBulkDto, employee);
 
 		if (employeeBulkDto.getEmployeeEmergency() != null && (employeeBulkDto.getEmployeeEmergency().getName() != null
 				|| employeeBulkDto.getEmployeeEmergency().getContactNo() != null)) {
@@ -2910,6 +2986,7 @@ public class PeopleServiceImpl implements PeopleService {
 		validateLastName(employeeBulkDto.getLastName(), errors);
 		validateUserEmail(employeeBulkDto.getWorkEmail(), errors);
 		validateUserSupervisor(employeeBulkDto.getPrimaryManager(), errors);
+		validateRequestAuthorizerInBulk(employeeBulkDto, errors);
 		validateCareerProgressionInBulk(employeeBulkDto, errors);
 		validateStateInBulk(employeeBulkDto.getEmployeePersonalInfo().getState(), errors);
 
@@ -3066,12 +3143,15 @@ public class PeopleServiceImpl implements PeopleService {
 		if (!employee.getEmployeeManagers().isEmpty()) {
 			employee.getEmployeeManagers().clear();
 		}
+		employee.setRequestAuthorizer(null);
 
 		// deletes other manager relationships
 		List<EmployeeManager> managedEmployees = employeeManagerDao.findByManager(employee);
 		if (!managedEmployees.isEmpty()) {
 			employeeManagerDao.deleteAll(managedEmployees);
 		}
+
+		clearRequestAuthorizerAssignments(employee);
 
 		employee.setJobTitle(null);
 		employee.setJobFamily(null);

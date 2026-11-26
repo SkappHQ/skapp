@@ -5,6 +5,7 @@ import {
 } from "~community/common/types/CommonTypes";
 import { AccountStatus } from "~community/leave/types/LeaveTypes";
 import { TitleEnum } from "~community/people/enums/PeopleEnums";
+import type { L4ManagerType } from "~community/people/types/PeopleTypes";
 
 import {
   EmploymentAllocationTypes,
@@ -152,6 +153,7 @@ export interface BulkEmployeeDetails {
   phone: string | null;
   teams: (string | number)[] | null;
   primaryManager: string | null;
+  requestAuthorizerEmail?: string;
   timeZone: string | null;
   workLocation: string | null;
   businessUnit: string | null;
@@ -342,7 +344,11 @@ export interface EmployeeDetails {
   userRoles: EmployeeRoleType;
   accountStatus?: string | null;
   employment?: {
-    employmentDetails?: { workLocationId?: number; joinedDate?: string };
+    employmentDetails?: {
+      workLocationId?: number;
+      joinedDate?: string;
+      requestAuthorizer?: L4ManagerType;
+    };
   };
 }
 

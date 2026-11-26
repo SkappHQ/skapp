@@ -40,6 +40,7 @@ export const getConfigurationTabs = (
     {
       id: "leave",
       label: translateText(["tabs", "leave"]),
+      // TODO: Add AdminTypes.PEOPLE_ADMIN back once a feature flag exists for multi-level leave approval
       requiredRoles: [AdminTypes.SUPER_ADMIN, AdminTypes.LEAVE_ADMIN],
       component: <LeaveConfigurations />,
       position: 1.5

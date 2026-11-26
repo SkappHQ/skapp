@@ -463,6 +463,14 @@ const nextConfig = {
           "/enterprise/invoice/customers/customer-details/projects/:id"
       },
       {
+        source: "/invoice/time-approvals",
+        destination: "/enterprise/invoice/time-approvals"
+      },
+      {
+        source: "/invoice/time-approvals/:id",
+        destination: "/enterprise/invoice/time-approvals/:id"
+      },
+      {
         source: "/app-link",
         destination: "/enterprise/app-link"
       },
@@ -509,10 +517,6 @@ const nextConfig = {
       {
         source: "/crm/deals/:id",
         destination: "/community/crm/deals/:id"
-      },
-      {
-        source: "/crm/tasks",
-        destination: "/community/crm/tasks"
       },
       {
         source: "/crm/activities",

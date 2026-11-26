@@ -7,7 +7,7 @@ import { EmployeeLeavePolicyType } from "~community/leave/types/LeavePolicyTypes
 
 interface Props {
   policy: EmployeeLeavePolicyType;
-  canManagePolicies: boolean;
+  canAssignPolicies: boolean;
   isKebabMenuOpen: boolean;
   onKebabToggle: (isOpen: boolean) => void;
   onUnassign: () => void;
@@ -15,7 +15,7 @@ interface Props {
 
 const LeavePolicyCard: FC<Props> = ({
   policy,
-  canManagePolicies,
+  canAssignPolicies,
   isKebabMenuOpen,
   onKebabToggle,
   onUnassign
@@ -69,7 +69,7 @@ const LeavePolicyCard: FC<Props> = ({
           </span>
         </div>
       </div>
-      {canManagePolicies && (
+      {canAssignPolicies && (
         <KebabMenu
           id={`employee-leave-policy-kebab-menu-${policy.id}`}
           isOpen={isKebabMenuOpen}

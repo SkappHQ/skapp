@@ -11,6 +11,7 @@ import UserLeavePolicies from "~community/leave/components/molecules/UserLeavePo
 import UserLeavePoliciesSkeleton from "~community/leave/components/molecules/UserLeavePolicies/UserLeavePoliciesSkeleton";
 import UserLeaveUtilization from "~community/leave/components/molecules/UserLeaveUtilization/UserLeaveUtilization";
 import { USER_ASSIGNED_LEAVE_TYPES_PAGE_SIZE } from "~community/leave/constants/leavePolicyConstants";
+import useCanViewLeavePolicies from "~community/leave/hooks/useCanViewLeavePolicies";
 import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useLeaveStore } from "~community/leave/store/store";
 import { LeaveType } from "~community/leave/types/CustomLeaveAllocationTypes";
@@ -40,11 +41,9 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
 
   const { isAtLeastCoreTier } = useTier();
 
-  const { isSuperAdmin, isPeopleAdmin, isLeaveAdmin } = useSessionData();
+  const { isLeaveManager } = useSessionData();
 
-  const canViewLeavePolicies = Boolean(
-    isSuperAdmin || (isPeopleAdmin && isLeaveAdmin)
-  );
+  const canViewLeavePolicies = useCanViewLeavePolicies();
 
   const { isLeavePoliciesEnabled, isLoading: isLeavePolicyConfigLoading } =
     useLeavePoliciesEnabled();
@@ -67,7 +66,7 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
     useGetLeaveTypes({
       filterByInUse: isAtLeastCoreTier,
       employeeId: isAtLeastCoreTier ? selectedUser : undefined,
-      enabled: isAtLeastCoreTier
+      enabled: isAtLeastCoreTier && Boolean(isLeaveManager)
     });
 
   const leaveTypes = useMemo(() => {
@@ -99,33 +98,38 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
           />
         )}
 
-        <UpgradeOverlay customContainerStyles={classes.customContainerStyles}>
-          <>
-            {showAssignedLeaveTypes && (
-              <>
-                <h2 className="h2 text-black">{translateText(["pageHead"])}</h2>
-                <UserAssignedLeaveTypes
-                  employeeId={selectedUser}
-                  pageSize={USER_ASSIGNED_LEAVE_TYPES_PAGE_SIZE}
-                />
-              </>
-            )}
+        {/* Leave history and utilization need leave manager access, which people and super admins may not have */}
+        {isLeaveManager && (
+          <UpgradeOverlay customContainerStyles={classes.customContainerStyles}>
+            <>
+              {showAssignedLeaveTypes && (
+                <>
+                  <h2 className="h2 text-black">
+                    {translateText(["pageHead"])}
+                  </h2>
+                  <UserAssignedLeaveTypes
+                    employeeId={selectedUser}
+                    pageSize={USER_ASSIGNED_LEAVE_TYPES_PAGE_SIZE}
+                  />
+                </>
+              )}
 
-            {(isLeavePoliciesEnabled || leaveTypesList?.length > 0) && (
-              <UserLeaveUtilization
+              {(isLeavePoliciesEnabled || leaveTypesList?.length > 0) && (
+                <UserLeaveUtilization
+                  employeeId={selectedUser}
+                  leaveTypesList={leaveTypesList}
+                />
+              )}
+
+              <UserLeaveHistory
                 employeeId={selectedUser}
                 leaveTypesList={leaveTypesList}
+                employeeLastName={employeeLastName}
+                employeeFirstName={employeeFirstName}
               />
-            )}
-
-            <UserLeaveHistory
-              employeeId={selectedUser}
-              leaveTypesList={leaveTypesList}
-              employeeLastName={employeeLastName}
-              employeeFirstName={employeeFirstName}
-            />
-          </>
-        </UpgradeOverlay>
+            </>
+          </UpgradeOverlay>
+        )}
       </Stack>
     </PeopleLayout>
   );

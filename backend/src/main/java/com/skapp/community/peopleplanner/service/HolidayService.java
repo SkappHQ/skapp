@@ -1,6 +1,7 @@
 package com.skapp.community.peopleplanner.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Holiday;
 import com.skapp.community.peopleplanner.payload.request.HolidayBulkRequestDto;
 import com.skapp.community.peopleplanner.payload.request.HolidayFilterDto;
@@ -22,5 +23,7 @@ public interface HolidayService {
 	ResponseEntityDto deleteSelectedHolidays(HolidaysDeleteRequestDto holidayDeleteDto);
 
 	void validateNoLeaveRequestsOnHolidays(List<Holiday> holidays);
+
+	List<Holiday> getActiveHolidaysForEmployee(Employee employee);
 
 }

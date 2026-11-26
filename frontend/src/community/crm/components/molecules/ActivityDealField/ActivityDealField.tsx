@@ -1,11 +1,11 @@
 import { FormikProps } from "formik";
-import { FC, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { SearchableDropdownItem } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useGetDealLookup } from "~community/crm/api/DealApi";
+import { useGetDealLookup, useGetDealsByIds } from "~community/crm/api/DealApi";
 import SelectableSearchField from "~community/crm/components/molecules/SelectableSearchField/SelectableSearchField";
 import {
   DEFAULT_LOOKUP_PAGE_SIZE,
@@ -13,13 +13,14 @@ import {
 } from "~community/crm/constants/commonConstants";
 import { useCrmStore } from "~community/crm/store/store";
 import {
+  CrmActivityDealFormValues,
   CrmAddTaskFormValues,
   CrmLogCallFormValues,
   CrmLogEmailFormValues,
   CrmLogMeetingFormValues
 } from "~community/crm/types/CrmCommonTypes";
 import { CrmDealFilterRequest } from "~community/crm/types/CrmTypes";
-import { mergeDeals } from "~community/crm/utils/dealUtil";
+import { getMissingDealIds, mergeDeals } from "~community/crm/utils/dealUtil";
 import { CrmScheduleMeetingFormValues } from "~enterprise/crm/types/ScheduleMeetingTypes";
 
 interface Props {
@@ -29,7 +30,8 @@ interface Props {
     | FormikProps<CrmLogMeetingFormValues>
     | FormikProps<CrmAddTaskFormValues>
     | FormikProps<CrmLogEmailFormValues>
-    | FormikProps<CrmScheduleMeetingFormValues>;
+    | FormikProps<CrmScheduleMeetingFormValues>
+    | FormikProps<CrmActivityDealFormValues>;
   fieldAriaLabel: string;
   isClearedNoticeVisible?: boolean;
   isMismatch?: boolean;
@@ -61,6 +63,8 @@ const ActivityDealField: FC<Props> = ({
   const [searchTerm, setSearchTerm] = useState("");
 
   const debouncedSearch = useDebounce(searchTerm.trim(), SEARCH_DEBOUNCE_DELAY);
+
+  const isSearchPending = searchTerm.trim() !== debouncedSearch;
 
   const isSearchEnabled =
     debouncedSearch.length > 0 || Boolean(filterCompanyId);
@@ -96,6 +100,20 @@ const ActivityDealField: FC<Props> = ({
       })),
     [lookupItems]
   );
+
+  const missingDealIds = useMemo(
+    () => (values.dealId ? getMissingDealIds([values.dealId], deals) : []),
+    [values.dealId, deals]
+  );
+  const { data: fetchedDeals } = useGetDealsByIds(
+    missingDealIds,
+    missingDealIds.length > 0
+  );
+  useEffect(() => {
+    if (fetchedDeals && fetchedDeals.length > 0) {
+      setDeals(mergeDeals(deals, fetchedDeals));
+    }
+  }, [fetchedDeals]);
 
   const selectedDeal = values.dealId ? deals[values.dealId] : null;
 
@@ -135,7 +153,7 @@ const ActivityDealField: FC<Props> = ({
         onSelect={handleSelect}
         isOpenOnFocus={isSearchEnabled}
         emptyMessage={translateText(["emptyStates", "noDeals"])}
-        {...(isFetching && {
+        {...((isFetching || isSearchPending) && {
           loadingMessage: translateText(["emptyStates", "searching"])
         })}
         {...(isMismatch && {

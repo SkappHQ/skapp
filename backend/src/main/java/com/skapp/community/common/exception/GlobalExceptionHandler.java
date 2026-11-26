@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -20,9 +21,11 @@ import org.springframework.security.authentication.InternalAuthenticationService
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.io.IOException;
@@ -43,15 +46,55 @@ public class GlobalExceptionHandler {
 		ErrorResponse errorResponse = new ErrorResponse(status,
 				messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR),
 				CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR);
+		String invalidFieldValueMessage = messageUtil
+			.getMessage(CommonMessageConstant.COMMON_ERROR_INVALID_FIELD_VALUE);
 
 		for (FieldError fieldError : e.getBindingResult().getFieldErrors()) {
-			errorResponse.addValidationError(fieldError.getField(), fieldError.getDefaultMessage());
+			String errorMessage = fieldError.isBindingFailure() ? invalidFieldValueMessage
+					: fieldError.getDefaultMessage();
+			errorResponse.addValidationError(fieldError.getField(), errorMessage);
 			log.debug("Validation error on field '{}': {}", fieldError.getField(), fieldError.getDefaultMessage());
 		}
 
 		handleException(e, CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR.name(), status);
 
 		return new ResponseEntity<>(new ResponseEntityDto(true, errorResponse), status);
+	}
+
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	public ResponseEntity<ResponseEntityDto> handleHttpMessageNotReadableException() {
+		HttpStatus status = HttpStatus.BAD_REQUEST;
+		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR);
+
+		return new ResponseEntity<>(
+				new ResponseEntityDto(true,
+						new ErrorResponse(status, message, CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR)),
+				status);
+	}
+
+	@ExceptionHandler(MissingPathVariableException.class)
+	public ResponseEntity<ResponseEntityDto> handleMissingPathVariableException(MissingPathVariableException e) {
+		if (e.isMissingAfterConversion()) {
+			return validationBadRequestResponse(e);
+		}
+		return handleServletException(e);
+	}
+
+	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
+	public ResponseEntity<ResponseEntityDto> handleMethodArgumentTypeMismatchException(
+			MethodArgumentTypeMismatchException e) {
+		return validationBadRequestResponse(e);
+	}
+
+	private ResponseEntity<ResponseEntityDto> validationBadRequestResponse(Exception e) {
+		HttpStatus status = HttpStatus.BAD_REQUEST;
+		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR);
+		handleException(e, CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR.name(), status);
+
+		return new ResponseEntity<>(
+				new ResponseEntityDto(true,
+						new ErrorResponse(status, message, CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR)),
+				status);
 	}
 
 	@ExceptionHandler(AccessDeniedException.class)

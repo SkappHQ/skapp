@@ -811,7 +811,10 @@
       "probationEndDateSameAsStartDateError": "Probation end date can't be the same as probation start date",
       "probationEndDateAfterStartDateError": "Probation end date must be after the start date",
       "requireTimeZoneError": "Please select the work time zone",
-      "head": "Directory | Skapp"
+      "head": "Directory | Skapp",
+      "requestAuthorizer": "Request authorizer",
+      "selectRequestAuthorizer": "Select request authorizer",
+      "requestAuthorizerPrimaryRequired": "Select a Primary Supervisor first."
     },
     "careerDetails": {
       "title": "Career Progression",

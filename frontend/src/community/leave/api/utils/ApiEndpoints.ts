@@ -181,3 +181,8 @@ export const analyticAPIs = {
   ): string =>
     `${moduleAPIPath.LEAVE}/analytics/employee-leave-report-file?year=${year}&teamId=${teamId}&leaveTypeId=${leaveTypeIds}&leaveRequestStatus=${leaveStatus}`
 };
+
+export const leaveApprovalConfigEndPoints = {
+  GET_LEAVE_APPROVAL_CONFIG: `${moduleAPIPath.LEAVE}/approval-config`,
+  UPDATE_LEAVE_APPROVAL_CONFIG: `${moduleAPIPath.LEAVE}/approval-config`
+};

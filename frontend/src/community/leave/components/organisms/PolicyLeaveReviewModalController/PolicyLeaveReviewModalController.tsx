@@ -59,6 +59,7 @@ const PolicyLeaveReviewModalController: FC = () => {
         return translateText(["declineModalTitle"]);
       case PolicyLeaveRequestStatus.APPROVED:
       case PolicyLeaveReviewModalEnums.APPROVED_STATUS:
+      case PolicyLeaveReviewModalEnums.FORWARDED_STATUS:
         return translateText(["approvedModalTitle"]);
       case PolicyLeaveRequestStatus.DENIED:
       case PolicyLeaveReviewModalEnums.DECLINE_STATUS:
@@ -80,6 +81,7 @@ const PolicyLeaveReviewModalController: FC = () => {
       );
     if (
       popupType === PolicyLeaveReviewModalEnums.APPROVED_STATUS ||
+      popupType === PolicyLeaveReviewModalEnums.FORWARDED_STATUS ||
       popupType === PolicyLeaveReviewModalEnums.DECLINE_STATUS ||
       popupType === PolicyLeaveRequestStatus.DENIED ||
       popupType === PolicyLeaveRequestStatus.APPROVED ||

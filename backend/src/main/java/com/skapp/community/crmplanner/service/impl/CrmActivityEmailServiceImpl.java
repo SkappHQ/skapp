@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
@@ -37,6 +38,8 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.util.Validations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -106,10 +109,17 @@ public class CrmActivityEmailServiceImpl implements CrmActivityEmailService {
 			params.setRangeEnd(filterDto.getEndDate().plusDays(1).atStartOfDay(zone).toInstant());
 		}
 
-		List<CrmActivityEmailResponseDto> emails = crmActivityEmailDao.findEmails(params);
+		PageRequest pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
+		Page<CrmActivityEmailResponseDto> emailPage = crmActivityEmailDao.findEmails(params, pageable);
+
+		PageDto pageDto = new PageDto();
+		pageDto.setItems(emailPage.getContent());
+		pageDto.setCurrentPage(emailPage.getNumber());
+		pageDto.setTotalItems(emailPage.getTotalElements());
+		pageDto.setTotalPages(emailPage.getTotalPages());
 
 		log.info("getEmails: execution ended");
-		return new ResponseEntityDto(false, emails);
+		return new ResponseEntityDto(false, pageDto);
 	}
 
 	@Override

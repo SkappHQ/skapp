@@ -18,8 +18,10 @@ import {
 } from "~community/auth/utils/tokenUtils";
 import ROUTES, {
   COMMUNITY_PAGES_BASE_PATH,
+  attendanceReportRestrictedRoutes,
   employeeRestrictedRoutes,
   invoiceEmployeeRestrictedRoutes,
+  invoiceManagerRestrictedRoutes,
   leavePolicyManagementRestrictedRoutes,
   leaveReportRestrictedRoutes,
   managerRestrictedRoutes,
@@ -296,8 +298,16 @@ const RESTRICTED_ROUTE_RULES: RestrictedRouteRule[] = [
     requiredRole: ManagerTypes.INVOICE_MANAGER
   },
   {
+    routes: invoiceManagerRestrictedRoutes,
+    requiredRole: AdminTypes.INVOICE_ADMIN
+  },
+  {
     routes: employeeRestrictedRoutes,
     requiredRole: ManagerTypes.PEOPLE_MANAGER
+  },
+  {
+    routes: attendanceReportRestrictedRoutes,
+    requiredRole: AdminTypes.ATTENDANCE_ADMIN
   }
 ];
 
@@ -432,6 +442,18 @@ const resolveInvoiceIntegrationsAccess: AccessGuard = ({
   return canAccessInvoiceIntegrations ? null : redirectToUnauthorized(request);
 };
 
+const resolveTimeApprovalsAccess: AccessGuard = ({
+  request,
+  currentPath,
+  claims,
+  roles
+}) =>
+  currentPath.startsWith(ROUTES.INVOICE.TIME_APPROVALS.BASE) &&
+  (!roles.includes(AdminTypes.INVOICE_ADMIN) ||
+    !isCoreOrProTier(getClaimTiers(claims)))
+    ? redirectToUnauthorized(request)
+    : null;
+
 const resolveReportAccess: AccessGuard = ({ request, currentPath, claims }) =>
   currentPath.startsWith(ROUTES.REPORT.BASE) &&
   !isCoreOrProTier(getClaimTiers(claims))
@@ -476,7 +498,8 @@ const ALLOWED_ROUTE_GUARDS: AccessGuard[] = [
   resolveLeaveBalanceReportAccess,
   resolveCrmAccess,
   resolveRestrictedRouteAccess,
-  resolveInvoiceIntegrationsAccess
+  resolveInvoiceIntegrationsAccess,
+  resolveTimeApprovalsAccess
 ];
 
 const runAccessGuards = (

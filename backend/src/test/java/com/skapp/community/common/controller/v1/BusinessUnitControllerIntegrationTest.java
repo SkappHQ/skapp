@@ -183,6 +183,17 @@ class BusinessUnitControllerIntegrationTest {
 				.andExpect(jsonPath(RESULTS_0_PATH + "['isOtherBusinessUnitsExist']").value(true));
 		}
 
+		@Test
+		@DisplayName("Get business unit summary with text id - Returns Bad Request")
+		void getBusinessUnitSummary_withTextId_ReturnsBadRequest() throws Exception {
+			performRequest(get(BASE_PATH + "/{id}/business-unit-summary", "abc").accept(MediaType.APPLICATION_JSON))
+				.andDo(print())
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+					.value(messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR)));
+		}
+
 	}
 
 	@Nested

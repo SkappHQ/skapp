@@ -9,7 +9,6 @@ import {
   useGetCompaniesByIds,
   useGetCompanyLookup
 } from "~community/crm/api/CompanyApi";
-import ActivityWarningTooltip from "~community/crm/components/atoms/ActivityWarningTooltip/ActivityWarningTooltip";
 import SelectableSearchField from "~community/crm/components/molecules/SelectableSearchField/SelectableSearchField";
 import {
   DEFAULT_LOOKUP_PAGE_SIZE,
@@ -38,14 +37,14 @@ interface Props {
     | FormikProps<CrmLogEmailFormValues>
     | FormikProps<CrmScheduleMeetingFormValues>;
   fieldAriaLabel: string;
-  mismatchTooltip?: string;
+  mismatchMessage?: string;
 }
 
 const ActivityRelatedToField: FC<Props> = ({
   id,
   formik,
   fieldAriaLabel,
-  mismatchTooltip
+  mismatchMessage
 }) => {
   const { values, setFieldValue } = formik;
 
@@ -62,6 +61,8 @@ const ActivityRelatedToField: FC<Props> = ({
   const [searchTerm, setSearchTerm] = useState("");
 
   const debouncedSearch = useDebounce(searchTerm.trim(), SEARCH_DEBOUNCE_DELAY);
+
+  const isSearchPending = searchTerm.trim() !== debouncedSearch;
 
   const lookupFilter: CrmCompanyFilterRequest = useMemo(
     () => ({
@@ -131,31 +132,34 @@ const ActivityRelatedToField: FC<Props> = ({
   };
 
   return (
-    <div className="flex flex-row items-center gap-2">
-      <div className="flex-1 min-w-0">
-        <SelectableSearchField
-          positionStrategy="fixed"
-          id={id}
-          label={translateText(["labels", "relatedTo"])}
-          placeholder={translateText(["placeholders", "relatedTo"])}
-          selectedValue={selectedCompany?.name ? selectedCompany.name : ""}
-          onClear={handleClear}
-          clearAriaLabel={translateAria(["clearRelatedTo"])}
-          fieldAriaLabel={fieldAriaLabel}
-          {...(mismatchTooltip && { describedById: `${id}-mismatch` })}
-          searchValue={searchTerm}
-          onSearchChange={(event) => setSearchTerm(event.target.value)}
-          items={dropdownItems}
-          onSelect={handleSelect}
-          isOpenOnFocus={debouncedSearch.length > 0}
-          emptyMessage={translateText(["emptyStates", "noCompanies"])}
-          {...(isFetching && {
-            loadingMessage: translateText(["emptyStates", "searching"])
-          })}
-        />
-      </div>
-      {mismatchTooltip && (
-        <ActivityWarningTooltip id={`${id}-mismatch`} text={mismatchTooltip} />
+    <div className="flex flex-col gap-1">
+      <SelectableSearchField
+        positionStrategy="fixed"
+        id={id}
+        label={translateText(["labels", "relatedTo"])}
+        placeholder={translateText(["placeholders", "relatedTo"])}
+        selectedValue={selectedCompany?.name ? selectedCompany.name : ""}
+        onClear={handleClear}
+        clearAriaLabel={translateAria(["clearRelatedTo"])}
+        fieldAriaLabel={fieldAriaLabel}
+        {...(mismatchMessage && { describedById: `${id}-mismatch` })}
+        searchValue={searchTerm}
+        onSearchChange={(event) => setSearchTerm(event.target.value)}
+        items={dropdownItems}
+        onSelect={handleSelect}
+        isOpenOnFocus={debouncedSearch.length > 0}
+        emptyMessage={translateText(["emptyStates", "noCompanies"])}
+        {...((isFetching || isSearchPending) && {
+          loadingMessage: translateText(["emptyStates", "searching"])
+        })}
+      />
+      {mismatchMessage && (
+        <output
+          id={`${id}-mismatch`}
+          className="text-sm text-semantic-amber-text"
+        >
+          {mismatchMessage}
+        </output>
       )}
     </div>
   );

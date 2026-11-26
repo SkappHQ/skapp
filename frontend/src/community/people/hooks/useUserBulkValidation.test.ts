@@ -3,6 +3,10 @@ import {
   TIN_LENGTH
 } from "~community/people/constants/stringConstants";
 import { BulkUploadUser } from "~community/people/types/UserBulkUploadTypes";
+import {
+  USER_BULK_HEADERS,
+  USER_BULK_MULTI_LEVEL_HEADERS
+} from "~community/people/utils/constants/constants";
 
 import useUserBulkValidation from "./useUserBulkValidation";
 
@@ -121,11 +125,33 @@ describe("useUserBulkValidation", () => {
 
   it("should validate a CSV with correct headers", () => {
     const validCsv = [validUser];
-    expect(isCsvValid(validCsv)).toBe(false);
+    expect(isCsvValid(validCsv, false)).toBe(false);
   });
 
   it("should invalidate a CSV with incorrect headers", () => {
     const invalidCsv = [{ invalidHeader: "value" }];
-    expect(isCsvValid(invalidCsv as any)).toBe(false);
+    expect(isCsvValid(invalidCsv as any, false)).toBe(false);
+  });
+
+  const buildRow = (headers: string[]): BulkUploadUser =>
+    Object.fromEntries(
+      headers.map((header) => [header, ""])
+    ) as unknown as BulkUploadUser;
+
+  it("should accept the normal template headers when multi-level approval is off", () => {
+    expect(isCsvValid([buildRow(USER_BULK_HEADERS)], false)).toBe(true);
+  });
+
+  it("should reject the multi-level template headers when multi-level approval is off", () => {
+    expect(isCsvValid([buildRow(USER_BULK_MULTI_LEVEL_HEADERS)], false)).toBe(
+      false
+    );
+  });
+
+  it("should accept both template headers when multi-level approval is on", () => {
+    expect(isCsvValid([buildRow(USER_BULK_HEADERS)], true)).toBe(true);
+    expect(isCsvValid([buildRow(USER_BULK_MULTI_LEVEL_HEADERS)], true)).toBe(
+      true
+    );
   });
 });

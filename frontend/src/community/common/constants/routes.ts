@@ -159,7 +159,6 @@ const ROUTES = {
     COMPANY_DETAIL: (id: number) => `/crm/companies?companyId=${id}`,
     DEALS: "/crm/deals",
     DEAL_DETAIL: (id: number) => `/crm/deals/${id}`,
-    TASKS: "/crm/tasks",
     ACTIVITIES: "/crm/activities"
   },
   PROJECTS: {
@@ -191,6 +190,10 @@ const ROUTES = {
       BASE: "/invoice/integrations",
       SYNC: (provider: string, resource: string) =>
         `/invoice/integrations/${provider}?resource=${resource}`
+    },
+    TIME_APPROVALS: {
+      BASE: "/invoice/time-approvals",
+      ID: (id: number) => `/invoice/time-approvals/${id}`
     }
   }
 };
@@ -205,13 +208,18 @@ const RESCRITED_DYNAMIC_ROUTES = {
   },
   INVOICE: {
     CREATE: "/invoice/create/",
-    VIEW: "/invoice/view/"
+    VIEW: "/invoice/view/",
+    PROJECT_DETAILS: "/invoice/customers/customer-details/projects/"
   }
 };
 
 export const invoiceEmployeeRestrictedRoutes = [
   RESCRITED_DYNAMIC_ROUTES.INVOICE.CREATE,
   RESCRITED_DYNAMIC_ROUTES.INVOICE.VIEW
+];
+
+export const invoiceManagerRestrictedRoutes = [
+  RESCRITED_DYNAMIC_ROUTES.INVOICE.PROJECT_DETAILS
 ];
 
 export const employeeRestrictedRoutes = [
@@ -235,6 +243,11 @@ export const leavePolicyManagementRestrictedRoutes = [
 
 export const leaveReportRestrictedRoutes = [
   ROUTES.REPORT.LEAVE_BALANCE_UTILIZATION
+];
+
+export const attendanceReportRestrictedRoutes = [
+  ROUTES.REPORT.ATTENDANCE_OVERVIEW,
+  ROUTES.REPORT.CLOCK_IN_OVERVIEW
 ];
 
 export const userRolesRestrictedRoutes = [ROUTES.CONFIGURATIONS.USER_ROLES];

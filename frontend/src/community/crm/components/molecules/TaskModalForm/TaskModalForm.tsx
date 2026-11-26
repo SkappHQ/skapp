@@ -162,26 +162,25 @@ const TaskModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
               onSelect={handleDueDateSelect}
               popperProps={{ position: "bottom-start", isFlip: true }}
             >
-              <div>
-                <InputField
-                  name="dueAt"
-                  value={dueDate ? dueDate.toLocaleDateString() : ""}
-                  label={translateText(["tasks", "modal", "labels", "dueDate"])}
-                  placeholder={translateText([
-                    "tasks",
-                    "modal",
-                    "placeholders",
-                    "dueDate"
-                  ])}
-                  errorMessage={touched.dueAt ? errors.dueAt : undefined}
-                  state={touched.dueAt && errors.dueAt ? "error" : "default"}
-                  aria-label={translateAria(["tasks", "modal", "dueDate"])}
-                  rightIcon={<CalendarIcon />}
-                  fullWidth
-                  readOnly
-                  required
-                />
-              </div>
+              <InputField
+                role="combobox"
+                name="dueAt"
+                value={dueDate ? dueDate.toLocaleDateString() : ""}
+                label={translateText(["tasks", "modal", "labels", "dueDate"])}
+                placeholder={translateText([
+                  "tasks",
+                  "modal",
+                  "placeholders",
+                  "dueDate"
+                ])}
+                errorMessage={touched.dueAt ? errors.dueAt : undefined}
+                state={touched.dueAt && errors.dueAt ? "error" : "default"}
+                aria-label={translateAria(["tasks", "modal", "dueDate"])}
+                rightIcon={<CalendarIcon />}
+                fullWidth
+                readOnly
+                required
+              />
             </DatePicker>
           </div>
 

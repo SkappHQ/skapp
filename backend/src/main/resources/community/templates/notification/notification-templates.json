@@ -212,6 +212,16 @@
         "id": "leave-module-employee-custom-allocation",
         "title": "Custom allocation added",
         "message": "{{leaveType}} leave of {{leaveDuration}} days has been added to your account."
+      },
+      {
+        "id": "leave-module-employee-accrual-policy-assigned",
+        "title": "Leave policy assigned",
+        "message": "{{policyName}} leave policy has been assigned to you"
+      },
+      {
+        "id": "leave-module-employee-flexible-policy-assigned",
+        "title": "Leave policy assigned",
+        "message": "{{policyName}} leave policy has been assigned to you"
       }
     ],
     "attendance": [

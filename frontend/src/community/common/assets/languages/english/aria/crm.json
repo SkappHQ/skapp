@@ -122,7 +122,8 @@
       "clearDeal": "Clear selected deal",
       "notes": "Notes",
       "save": "Save task",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "close": "Close modal"
     },
     "deleteModal": {
       "confirm": "Confirm delete task",
@@ -148,9 +149,12 @@
     },
     "emailSidePanel": {
       "kebabMenu": "Email actions",
-      "to": "Email to recipients",
-      "cc": "Email cc recipients",
-      "bcc": "Email bcc recipients"
+      "description": "Email description",
+      "editDescription": "Edit email description",
+      "editTo": "Change the To recipients",
+      "editCc": "Change the Cc recipients",
+      "editBcc": "Change the Bcc recipients",
+      "editFrom": "Change the from address"
     },
     "callSidePanel": {
       "kebabMenu": "Call actions"
@@ -193,11 +197,19 @@
       "owner": "Owner: {{name}}",
       "highPriority": "High priority",
       "mediumPriority": "Medium priority",
-      "lowPriority": "Low priority"
+      "lowPriority": "Low priority",
+      "moreContacts_one": "and {{count}} more contact",
+      "moreContacts_other": "and {{count}} more contacts"
     },
     "feed": {
       "loading": "Loading activities",
       "loadingMore": "Loading more activities"
+    },
+    "recordTab": {
+      "typeFilter": "Filter activities by type"
+    },
+    "addActivity": {
+      "type": "Choose the activity type"
     },
     "toolbar": {
       "clearSearch": "Clear search",
@@ -223,14 +235,14 @@
       }
     },
     "logActivity": {
+      "close": "Close modal",
       "removeOwner": "Remove activity owner",
       "clearContact": "Clear selected contact",
       "clearDeal": "Clear selected deal",
       "clearRelatedTo": "Clear selected company"
     },
     "meetingSidePanel": {
-      "kebabMenu": "Meeting actions",
-      "attendees": "Meeting attendees"
+      "kebabMenu": "Meeting actions"
     },
     "activitySidePanel": {
       "title": "Activity title",
@@ -242,6 +254,36 @@
       "deleteModal": {
         "confirm": "Delete activity",
         "cancel": "Cancel deleting activity"
+      },
+      "addDeal": "Add a deal to this activity",
+      "removeDeal": "Remove the deal from this activity",
+      "dealSearch": "Search deals to link",
+      "editContact": "Change the contact",
+      "editDate": "Change the date",
+      "editStartTime": "Change the start time",
+      "editEndTime": "Change the end time",
+      "editDuration": "Change the duration",
+      "editRelatedTo": "Change the related company",
+      "editAttendees": "Change the attendees",
+      "contactsDropdown": {
+        "accessibilityTexts": {
+          "dropdownClosedText": "Contact dropdown closed",
+          "focusReturnedText": "Focus returned to contact search",
+          "itemText": "contact",
+          "noMoreItemsText": "All contacts have been selected",
+          "noResultsFoundText": "No contacts found",
+          "removedText": "Removed contact",
+          "resultAvailableText": "contact available",
+          "resultsAvailableText": "contacts available",
+          "selectedText": "Selected contact"
+        },
+        "ariaLabels": {
+          "availableOptionsAriaLabel": "Available contacts",
+          "searchResultsAriaLabel": "Contact search results",
+          "selectedItemsAriaLabel": "Selected contacts",
+          "selectedItemsRemoveAriaLabel": "Remove selected contacts",
+          "removeItemAriaLabel": "Remove contact"
+        }
       }
     }
   }

@@ -18,6 +18,7 @@ import com.skapp.community.leaveplanner.mapper.LeaveMapper;
 import com.skapp.community.leaveplanner.model.LeaveEntitlement;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.leaveplanner.model.LeaveRequestEntitlement;
+import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
 import com.skapp.community.leaveplanner.payload.LeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.payload.request.EmployeesOnLeavePeriodFilterDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveRequestResponseDto;
@@ -760,7 +761,7 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	@Override
-	@Transactional
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getManagerAttendanceSummary(
 			ManagerAttendanceSummaryFilterDto managerAttendanceSummaryFilterDto) {
 		User user = userService.getCurrentUser();
@@ -773,17 +774,16 @@ public class TimeServiceImpl implements TimeService {
 			managerAttendanceSummaryFilterDto.setTeamIds(longArrayList);
 		}
 
-		if (managerAttendanceSummaryFilterDto.getStartDate().isAfter(managerAttendanceSummaryFilterDto.getEndDate())) {
+		if (CommonModuleUtils.validateStartDateAndEndDate(managerAttendanceSummaryFilterDto.getStartDate(),
+				managerAttendanceSummaryFilterDto.getEndDate(), timeZoneService.currentOrganizationYear())) {
 			throw new ModuleException(TimeMessageConstant.TIME_ERROR_START_DATE_END_DATE_NOT_VALID);
 		}
 
 		List<Long> teamIds = managerAttendanceSummaryFilterDto.getTeamIds();
-		if (teamIds.getFirst() == -1) {
-			teamIds = user.getEmployee().getEmployeeRole().getAttendanceRole() == Role.ATTENDANCE_MANAGER
-					? teamDao.findLeadingTeamIdsByManagerId(user.getUserId())
-					: teamDao.findAllByIsActive(true).stream().map(Team::getTeamId).toList();
+		if (user.getEmployee().getEmployeeRole().getAttendanceRole() != Role.ATTENDANCE_ADMIN) {
+			teamIds = validateFilteringTeamsByManager(teamIds, user.getEmployee().getEmployeeId());
 		}
-		else {
+		else if (!teamIds.contains(-1L)) {
 			Set<Long> activeTeamIds = teamDao.findByTeamIdIn(teamIds)
 				.stream()
 				.filter(Team::isActive)
@@ -796,26 +796,14 @@ public class TimeServiceImpl implements TimeService {
 			}
 		}
 
-		Pageable pageable = PageRequest.of(0, Integer.MAX_VALUE);
+		List<Long> employeeIds = teamDao
+			.findEmployeesInManagerLeadingTeams(teamIds, PageRequest.of(0, Integer.MAX_VALUE), user)
+			.stream()
+			.map(Employee::getEmployeeId)
+			.toList();
 
-		List<Long> employeeList = new ArrayList<>();
-		if (managerAttendanceSummaryFilterDto.getTeamIds().contains(-1L)) {
-
-			List<Employee> employeePage = teamDao.findEmployeesInManagerLeadingTeams(teamIds, pageable, user)
-				.getContent();
-
-			if (!employeePage.isEmpty()) {
-				employeePage.forEach(employee -> employeeList.add(employee.getEmployeeId()));
-			}
-
-			if (user.getEmployee().getEmployeeRole().getAttendanceRole() == Role.ATTENDANCE_MANAGER) {
-				employeeList.addAll(employeeManagerDao.findManagerSupervisingEmployee(user.getUserId()));
-			}
-		}
-
-		AttendanceSummaryDto attendanceSummaryDto = timeRecordDao.findManagerAssignUsersAttendanceSummary(
-				user.getUserId(), teamIds, managerAttendanceSummaryFilterDto.getStartDate(),
-				managerAttendanceSummaryFilterDto.getEndDate(), employeeList);
+		AttendanceSummaryDto attendanceSummaryDto = timeRecordDao.getEmployeeAttendanceSummary(employeeIds,
+				managerAttendanceSummaryFilterDto.getStartDate(), managerAttendanceSummaryFilterDto.getEndDate());
 
 		log.info("getManagerAttendanceSummary: execution ended");
 		return new ResponseEntityDto(false,
@@ -2189,9 +2177,11 @@ public class TimeServiceImpl implements TimeService {
 			.toList();
 
 		if (policyAttendanceLeaveService.isLeavePoliciesEnabled()) {
-			policyAttendanceLeaveService.voidLeaveRequestsOnRemovedDays(removingConfigs);
+			List<PolicyLeaveRequest> voidedLeaveRequests = policyAttendanceLeaveService
+				.voidLeaveRequestsOnRemovedDays(removingConfigs);
 			timeConfigDao.deleteAll(removingConfigs);
 			currentTimeConfigs.removeAll(removingConfigs);
+			handlePolicyCalendarEventsDeletion(voidedLeaveRequests);
 			return;
 		}
 
@@ -2302,6 +2292,9 @@ public class TimeServiceImpl implements TimeService {
 	 */
 	protected void handleCalendarEventsDeletion(LeaveRequest leaveRequest) {
 		// This feature is available only for Pro tenants.
+	}
+
+	protected void handlePolicyCalendarEventsDeletion(List<PolicyLeaveRequest> voidedLeaveRequests) {
 	}
 
 	protected TimeRecordChipResponseDto createTimeRecordChipDto() {

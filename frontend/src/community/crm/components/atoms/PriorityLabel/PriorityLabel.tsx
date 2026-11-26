@@ -1,6 +1,7 @@
 import { PriorityIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 import { getPriorityConfig } from "~community/crm/utils/priorityUtil";
 
@@ -9,9 +10,17 @@ interface PriorityLabelProps {
 }
 
 const PriorityLabel: FC<PriorityLabelProps> = ({ priority }) => {
-  const { icon, bgColor } = getPriorityConfig(priority);
+  const translateAria = useTranslator("crmAria");
 
-  return <PriorityIcon bgColor={bgColor} icon={icon} />;
+  const { icon, bgColor, key } = getPriorityConfig(priority);
+
+  return (
+    <PriorityIcon
+      bgColor={bgColor}
+      icon={icon}
+      ariaLabel={translateAria(["activities", "row", `${key}Priority`])}
+    />
+  );
 };
 
 export default PriorityLabel;

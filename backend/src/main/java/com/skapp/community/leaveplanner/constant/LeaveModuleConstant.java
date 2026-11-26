@@ -27,6 +27,8 @@ public class LeaveModuleConstant {
 
 	public static final float HALF_DAY = 0.5f;
 
+	public static final float FULL_DAY = 1f;
+
 	public static final String MONTH = "month";
 
 	public static final String DATE = "date";

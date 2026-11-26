@@ -26,17 +26,30 @@ import {
 } from "~community/crm/types/CrmCommonTypes";
 import {
   getContactCompanyIds,
-  getContactDisplayName
+  getFieldsAddingOtherCompany
 } from "~community/crm/utils/contactUtil";
-import { isDealMatchingContacts } from "~community/crm/utils/dealUtil";
+import {
+  getSelectedDeal,
+  isDealMatchingContacts
+} from "~community/crm/utils/dealUtil";
 
 interface Props {
   formik: FormikProps<CrmLogEmailFormValues>;
 }
 
 const LogEmailModalForm: FC<Props> = ({ formik }) => {
-  const { values, errors, touched, handleChange, handleBlur, setFieldValue } =
-    formik;
+  const {
+    values,
+    errors,
+    status,
+    touched,
+    handleChange,
+    handleBlur,
+    setFieldValue,
+    submitCount,
+    isValidating,
+    isValid
+  } = formik;
 
   const translateText = useTranslator("crmModule", "activities");
   const translateAria = useTranslator(
@@ -45,6 +58,13 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
     "logEmail",
     "modal"
   );
+
+  const recipientsPlaceholder = translateText([
+    "logEmail",
+    "modal",
+    "placeholders",
+    "recipients"
+  ]);
 
   const [isBccOpen, setIsBccOpen] = useState(values.bccContactIds.length > 0);
   const [isCcOpen, setIsCcOpen] = useState(values.ccContactIds.length > 0);
@@ -71,17 +91,38 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
     new Set(getContactCompanyIds(contacts, recipientIds))
   );
 
-  const isDealMismatch = Boolean(
-    values.dealId &&
-    recipients.length > 0 &&
-    !isDealMatchingContacts(deals[values.dealId], recipients)
+  const differentCompaniesNotice = translateText([
+    "logEmail",
+    "modal",
+    "notices",
+    "differentCompanies"
+  ]);
+
+  const [toCompaniesWarning, ccCompaniesWarning, bccCompaniesWarning] =
+    getFieldsAddingOtherCompany([
+      getContactCompanyIds(contacts, values.toContactIds),
+      getContactCompanyIds(contacts, values.ccContactIds),
+      getContactCompanyIds(contacts, values.bccContactIds)
+    ]).map((isAddingOtherCompany) =>
+      isAddingOtherCompany ? differentCompaniesNotice : ""
+    );
+
+  const isDealMismatch =
+    Boolean(status) &&
+    status.mismatchedDealId === values.dealId &&
+    status.mismatchedContactIds === recipientIds.join();
+
+  const isCompanyMismatch = Boolean(
+    values.companyId &&
+    contacts[values.toContactIds[0]]?.companyId &&
+    values.companyId !== contacts[values.toContactIds[0]].companyId
   );
 
   const handleRecipientsChange = (
     nextFieldContacts: CrmContactEntity[],
     otherRecipientIds: number[]
   ): void => {
-    const selectedDeal = values.dealId ? deals[values.dealId] : null;
+    const selectedDeal = getSelectedDeal(deals, values.dealId);
 
     const nextRecipients = [
       ...nextFieldContacts,
@@ -100,6 +141,10 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
     }
   };
 
+  const subjectError = touched.subject ? errors.subject : "";
+
+  const fromAddressError = touched.fromAddress ? errors.fromAddress : "";
+
   const pickedDate = values.date ? toPickerDate(values.date) : null;
 
   const handleDateSelect = (date?: Date): void => {
@@ -107,7 +152,22 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
   };
 
   return (
-    <div className="flex flex-col gap-2 overflow-y-auto pr-1">
+    <div className="flex flex-col gap-2">
+      <InputField
+        id="log-email-subject-input"
+        name="subject"
+        value={values.subject}
+        label={translateText(["logActivity", "labels", "subject"])}
+        placeholder={translateText(["logActivity", "placeholders", "subject"])}
+        errorMessage={subjectError}
+        state={subjectError ? "error" : "default"}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        aria-label={translateAria(["subject"])}
+        fullWidth
+        required
+      />
+
       <InputField
         id="log-email-from-input"
         name="fromAddress"
@@ -119,8 +179,8 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
           "placeholders",
           "from"
         ])}
-        errorMessage={touched.fromAddress ? errors.fromAddress : ""}
-        state={touched.fromAddress && errors.fromAddress ? "error" : "default"}
+        errorMessage={fromAddressError}
+        state={fromAddressError ? "error" : "default"}
         onChange={handleChange}
         onBlur={handleBlur}
         aria-label={translateAria(["from"])}
@@ -135,26 +195,25 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
             onSelect={handleDateSelect}
             popperProps={{ position: "bottom-start", isFlip: true }}
           >
-            <div>
-              <InputField
-                id="log-email-date-input"
-                name="date"
-                value={pickedDate ? pickedDate.toLocaleDateString() : ""}
-                label={translateText(["logActivity", "labels", "date"])}
-                placeholder={translateText([
-                  "logActivity",
-                  "placeholders",
-                  "date"
-                ])}
-                errorMessage={errors.date}
-                state={errors.date ? "error" : "default"}
-                aria-label={translateAria(["date"])}
-                rightIcon={<CalendarIcon />}
-                fullWidth
-                readOnly
-                required
-              />
-            </div>
+            <InputField
+              role="combobox"
+              id="log-email-date-input"
+              name="date"
+              value={pickedDate ? pickedDate.toLocaleDateString() : ""}
+              label={translateText(["logActivity", "labels", "date"])}
+              placeholder={translateText([
+                "logActivity",
+                "placeholders",
+                "date"
+              ])}
+              errorMessage={errors.date}
+              state={errors.date ? "error" : "default"}
+              aria-label={translateAria(["date"])}
+              rightIcon={<CalendarIcon />}
+              fullWidth
+              readOnly
+              required
+            />
           </DatePicker>
         </div>
         <div className="flex-1">
@@ -181,14 +240,11 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
         formik={formik}
         name="toContactIds"
         label={translateText(["logEmail", "modal", "labels", "to"])}
-        placeholder={translateText([
-          "logEmail",
-          "modal",
-          "placeholders",
-          "recipients"
-        ])}
+        placeholder={recipientsPlaceholder}
+        searchPlaceholder={recipientsPlaceholder}
         groupAriaLabel={translateAria(["to"])}
         hiddenContactIds={[...values.ccContactIds, ...values.bccContactIds]}
+        warningMessage={toCompaniesWarning}
         onContactsChange={(nextContacts) =>
           handleRecipientsChange(nextContacts, [
             ...values.ccContactIds,
@@ -198,28 +254,30 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
         required
         fillsRelatedTo
         actions={
-          <>
-            {!isBccOpen && (
-              <button
-                type="button"
-                className="text-primary-text"
-                aria-label={translateAria(["bcc"])}
-                onClick={() => setIsBccOpen(true)}
-              >
-                {translateText(["logEmail", "modal", "labels", "bcc"])}
-              </button>
-            )}
-            {!isCcOpen && (
-              <button
-                type="button"
-                className="text-primary-text"
-                aria-label={translateAria(["cc"])}
-                onClick={() => setIsCcOpen(true)}
-              >
-                {translateText(["logEmail", "modal", "labels", "cc"])}
-              </button>
-            )}
-          </>
+          (!isBccOpen || !isCcOpen) && (
+            <div className="flex flex-row items-center gap-6 pr-2">
+              {!isBccOpen && (
+                <button
+                  type="button"
+                  className="text-primary-text"
+                  aria-label={translateAria(["bcc"])}
+                  onClick={() => setIsBccOpen(true)}
+                >
+                  {translateText(["logEmail", "modal", "labels", "bcc"])}
+                </button>
+              )}
+              {!isCcOpen && (
+                <button
+                  type="button"
+                  className="text-primary-text"
+                  aria-label={translateAria(["cc"])}
+                  onClick={() => setIsCcOpen(true)}
+                >
+                  {translateText(["logEmail", "modal", "labels", "cc"])}
+                </button>
+              )}
+            </div>
+          )
         }
       />
 
@@ -232,13 +290,10 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
                 formik={formik}
                 name="bccContactIds"
                 label={translateText(["logEmail", "modal", "labels", "bcc"])}
-                placeholder={translateText([
-                  "logEmail",
-                  "modal",
-                  "placeholders",
-                  "recipients"
-                ])}
+                placeholder={recipientsPlaceholder}
+                searchPlaceholder={recipientsPlaceholder}
                 groupAriaLabel={translateAria(["bcc"])}
+                warningMessage={bccCompaniesWarning}
                 hiddenContactIds={[
                   ...values.toContactIds,
                   ...values.ccContactIds
@@ -259,13 +314,10 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
                 formik={formik}
                 name="ccContactIds"
                 label={translateText(["logEmail", "modal", "labels", "cc"])}
-                placeholder={translateText([
-                  "logEmail",
-                  "modal",
-                  "placeholders",
-                  "recipients"
-                ])}
+                placeholder={recipientsPlaceholder}
+                searchPlaceholder={recipientsPlaceholder}
                 groupAriaLabel={translateAria(["cc"])}
+                warningMessage={ccCompaniesWarning}
                 hiddenContactIds={[
                   ...values.toContactIds,
                   ...values.bccContactIds
@@ -282,21 +334,6 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
         </div>
       )}
 
-      <InputField
-        id="log-email-subject-input"
-        name="subject"
-        value={values.subject}
-        label={translateText(["logActivity", "labels", "subject"])}
-        placeholder={translateText(["logActivity", "placeholders", "subject"])}
-        errorMessage={touched.subject ? errors.subject : ""}
-        state={touched.subject && errors.subject ? "error" : "default"}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        aria-label={translateAria(["subject"])}
-        fullWidth
-        required
-      />
-
       <TextArea
         name="description"
         value={values.description}
@@ -308,12 +345,17 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
           "description"
         ])}
         onChange={handleChange}
-        rows={4}
+        rows={2}
         aria-label={translateAria(["description"])}
       />
 
       <ActivityAssociations
-        isForcedOpen={isDealClearedNoticeVisible || isDealMismatch}
+        submitCount={submitCount}
+        isValidating={isValidating}
+        isValid={isValid}
+        isDealMismatch={isDealMismatch}
+        isDealClearedNoticeVisible={isDealClearedNoticeVisible}
+        isCompanyMismatch={isCompanyMismatch}
       >
         <ActivityDealField
           id="log-email-deal"
@@ -330,16 +372,13 @@ const LogEmailModalForm: FC<Props> = ({ formik }) => {
           id="log-email-related-to"
           formik={formik}
           fieldAriaLabel={translateAria(["relatedTo"])}
-          {...(values.companyId &&
-            values.toContactIds.length > 0 &&
-            values.companyId !== contacts[values.toContactIds[0]].companyId && {
-              mismatchTooltip: translateText(
-                ["logActivity", "tooltips", "relatedToMismatch"],
-                {
-                  name: getContactDisplayName(contacts[values.toContactIds[0]])
-                }
-              )
-            })}
+          {...(isCompanyMismatch && {
+            mismatchMessage: translateText([
+              "logActivity",
+              "notices",
+              "relatedToMismatch"
+            ])
+          })}
         />
       </ActivityAssociations>
     </div>

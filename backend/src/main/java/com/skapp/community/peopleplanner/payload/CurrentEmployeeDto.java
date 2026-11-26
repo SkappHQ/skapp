@@ -35,4 +35,8 @@ public class CurrentEmployeeDto {
 
 	private EmployeePeriod employeePeriod;
 
+	private Long requestAuthorizerId;
+
+	private String requestAuthorizerName;
+
 }

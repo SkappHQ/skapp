@@ -31,9 +31,10 @@ interface Props {
     | FormikProps<CrmLogMeetingFormValues>
     | FormikProps<CrmAddTaskFormValues>
     | FormikProps<CrmScheduleMeetingFormValues>;
+  required?: boolean;
 }
 
-const ActivityOwnerField: FC<Props> = ({ id, formik }) => {
+const ActivityOwnerField: FC<Props> = ({ id, formik, required = false }) => {
   const { values, errors, setFieldValue } = formik;
 
   const translateText = useTranslator("crmModule", "activities", "logActivity");
@@ -97,13 +98,28 @@ const ActivityOwnerField: FC<Props> = ({ id, formik }) => {
   };
 
   return selectedOwner ? (
-    <SelectedOwnerField
-      label={translateText(["labels", "activityOwner"])}
-      owner={selectedOwner}
-      onRemove={handleClear}
-      showRemoveButton={canChangeOwner}
-      ariaLabel={translateAria(["removeOwner"])}
-    />
+    <div
+      {...(!canChangeOwner && {
+        role: "group",
+        "aria-labelledby": `${id}-label`,
+        "aria-describedby": `${id}-description`
+      })}
+    >
+      <SelectedOwnerField
+        label={translateText(["labels", "activityOwner"])}
+        owner={selectedOwner}
+        onRemove={handleClear}
+        showRemoveButton={canChangeOwner}
+        ariaLabel={translateAria(["removeOwner"])}
+        required={required}
+        labelId={`${id}-label`}
+      />
+      {!canChangeOwner && (
+        <p id={`${id}-description`} className="body3 text-secondary-text">
+          {translateText(["notices", "ownerReadOnly"])}
+        </p>
+      )}
+    </div>
   ) : (
     <SearchableDropdown
       positionStrategy="fixed"
@@ -112,6 +128,7 @@ const ActivityOwnerField: FC<Props> = ({ id, formik }) => {
       onSelect={handleSelect}
       label={translateText(["labels", "activityOwner"])}
       placeholder={translateText(["placeholders", "activityOwner"])}
+      required={required}
       value={searchTerm}
       state={errors.ownerId ? "error" : "default"}
       errorMessage={errors.ownerId}

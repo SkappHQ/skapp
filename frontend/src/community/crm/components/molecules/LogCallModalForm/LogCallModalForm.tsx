@@ -34,7 +34,10 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
     touched,
     handleChange,
     handleBlur,
-    setFieldValue
+    setFieldValue,
+    submitCount,
+    isValidating,
+    isValid
   } = formik;
 
   const translateText = useTranslator("crmModule", "activities");
@@ -59,6 +62,18 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
     status.mismatchedDealId === values.dealId &&
     status.mismatchedContactId === values.contactId;
 
+  const isCompanyMismatch = Boolean(
+    values.companyId &&
+    contactCompanyId &&
+    values.companyId !== contactCompanyId
+  );
+
+  const subjectError = touched.subject ? errors.subject : "";
+  const durationError = touched.duration ? errors.duration : "";
+
+  const isSubjectInvalid = Boolean(subjectError);
+  const isDurationInvalid = Boolean(durationError);
+
   const pickedDate = values.date ? toPickerDate(values.date) : null;
 
   const handleDateSelect = (date?: Date): void => {
@@ -66,15 +81,15 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
   };
 
   return (
-    <div className="flex flex-col gap-2 overflow-y-auto pr-1">
+    <div className="flex flex-col gap-2">
       <InputField
         id="log-call-subject-input"
         name="subject"
         value={values.subject}
         label={translateText(["logActivity", "labels", "subject"])}
         placeholder={translateText(["logActivity", "placeholders", "subject"])}
-        errorMessage={touched.subject ? errors.subject : ""}
-        state={touched.subject && errors.subject ? "error" : "default"}
+        errorMessage={subjectError}
+        state={isSubjectInvalid ? "error" : "default"}
         onChange={handleChange}
         onBlur={handleBlur}
         aria-label={translateAria(["subject"])}
@@ -90,22 +105,21 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
             onSelect={handleDateSelect}
             popperProps={{ position: "bottom-start", isFlip: true }}
           >
-            <div>
-              <InputField
-                name="date"
-                value={pickedDate ? pickedDate.toLocaleDateString() : ""}
-                label={translateText(["logActivity", "labels", "date"])}
-                placeholder={translateText([
-                  "logActivity",
-                  "placeholders",
-                  "date"
-                ])}
-                aria-label={translateAria(["date"])}
-                rightIcon={<CalendarIcon />}
-                fullWidth
-                readOnly
-              />
-            </div>
+            <InputField
+              role="combobox"
+              name="date"
+              value={pickedDate ? pickedDate.toLocaleDateString() : ""}
+              label={translateText(["logActivity", "labels", "date"])}
+              placeholder={translateText([
+                "logActivity",
+                "placeholders",
+                "date"
+              ])}
+              aria-label={translateAria(["date"])}
+              rightIcon={<CalendarIcon />}
+              fullWidth
+              readOnly
+            />
           </DatePicker>
         </div>
         <div className="flex-1">
@@ -135,8 +149,8 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
           "placeholders",
           "duration"
         ])}
-        errorMessage={touched.duration ? errors.duration : ""}
-        state={touched.duration && errors.duration ? "error" : "default"}
+        errorMessage={durationError}
+        state={isDurationInvalid ? "error" : "default"}
         onChange={handleChange}
         onBlur={handleBlur}
         aria-label={translateAria(["duration"])}
@@ -152,11 +166,12 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
             fieldAriaLabel={translateAria(["contact"])}
             onDealCleared={() => setIsDealClearedNoticeVisible(true)}
             errorMessage={touched.contactId ? errors.contactId : ""}
+            fillsRelatedTo
             required
           />
         </div>
         <div className="flex-1">
-          <ActivityOwnerField id="log-call-ownerId" formik={formik} />
+          <ActivityOwnerField id="log-call-ownerId" formik={formik} required />
         </div>
       </div>
 
@@ -171,7 +186,12 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
       />
 
       <ActivityAssociations
-        isForcedOpen={isDealClearedNoticeVisible || isDealMismatch}
+        submitCount={submitCount}
+        isValidating={isValidating}
+        isValid={isValid}
+        isDealMismatch={isDealMismatch}
+        isDealClearedNoticeVisible={isDealClearedNoticeVisible}
+        isCompanyMismatch={isCompanyMismatch}
       >
         <ActivityDealField
           id="log-call-deal"
@@ -186,6 +206,13 @@ const LogCallModalForm: FC<Props> = ({ formik }) => {
           id="log-call-related-to"
           formik={formik}
           fieldAriaLabel={translateAria(["relatedTo"])}
+          {...(isCompanyMismatch && {
+            mismatchMessage: translateText([
+              "logActivity",
+              "notices",
+              "relatedToMismatch"
+            ])
+          })}
         />
       </ActivityAssociations>
     </div>

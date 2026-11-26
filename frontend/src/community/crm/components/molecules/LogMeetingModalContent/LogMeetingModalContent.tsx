@@ -1,6 +1,6 @@
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
-import { FC, useMemo } from "react";
+import { FC, ReactNode, useMemo } from "react";
 
 import { TIME_FORMAT_24_HOUR } from "~community/common/constants/timeConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -18,14 +18,25 @@ import LogActivityModal from "~community/crm/components/molecules/LogActivityMod
 import LogMeetingModalForm from "~community/crm/components/molecules/LogMeetingModalForm/LogMeetingModalForm";
 import { CrmErrorMessageKeyEnum } from "~community/crm/enums/common";
 import { useDefaultCrmOwner } from "~community/crm/hooks/useDefaultCrmOwner";
-import { CrmLogMeetingFormValues } from "~community/crm/types/CrmCommonTypes";
+import {
+  CrmActivityPrefill,
+  CrmLogMeetingFormValues
+} from "~community/crm/types/CrmCommonTypes";
 import { getMeetingValidationSchema } from "~community/crm/utils/meetingValidations";
 
 interface Props {
+  title: string;
+  prefill?: CrmActivityPrefill;
+  typeField?: (isDisabled: boolean) => ReactNode;
   onClose: () => void;
 }
 
-const LogMeetingModalContent: FC<Props> = ({ onClose }) => {
+const LogMeetingModalContent: FC<Props> = ({
+  title,
+  typeField,
+  prefill,
+  onClose
+}) => {
   const translateText = useTranslator("crmModule");
   const translateAria = useTranslator(
     "crmAria",
@@ -46,13 +57,13 @@ const LogMeetingModalContent: FC<Props> = ({ onClose }) => {
       date: now.startOf("day").toUTC().toISO(),
       startTime: slotStart.toFormat(TIME_FORMAT_24_HOUR),
       endTime: getActivityEndTimeSlot(slotStart).toFormat(TIME_FORMAT_24_HOUR),
-      contactIds: [],
+      contactIds: prefill?.contactId ? [prefill.contactId] : [],
       ownerId: defaultOwner ? defaultOwner.employeeId : null,
       comments: "",
-      dealId: null,
-      companyId: null
+      dealId: prefill ? prefill.dealId : null,
+      companyId: prefill ? prefill.companyId : null
     };
-  }, [defaultOwner]);
+  }, [defaultOwner, prefill]);
 
   const toPayload = (
     values: CrmLogMeetingFormValues
@@ -96,7 +107,7 @@ const LogMeetingModalContent: FC<Props> = ({ onClose }) => {
     enableReinitialize: true
   });
 
-  const { dirty, isSubmitting, setSubmitting, submitForm } = formik;
+  const { dirty, isSubmitting, setSubmitting, setStatus, submitForm } = formik;
 
   const handleSuccess = (): void => {
     setSubmitting(false);
@@ -128,8 +139,14 @@ const LogMeetingModalContent: FC<Props> = ({ onClose }) => {
       error.response?.data?.results?.[0]?.messageKey ===
       CrmErrorMessageKeyEnum.ACTIVITY_MEETING_DEAL_COMPANY_MISMATCH
     ) {
+      setStatus({
+        mismatchedDealId: formik.values.dealId,
+        mismatchedContactIds: formik.values.contactIds.join()
+      });
       requestAnimationFrame(() => {
-        document.getElementById("log-meeting-deal-input")?.focus();
+        document
+          .getElementById("log-meeting-deal-input")
+          ?.focus({ preventScroll: true });
       });
       return;
     }
@@ -161,7 +178,7 @@ const LogMeetingModalContent: FC<Props> = ({ onClose }) => {
 
   return (
     <LogActivityModal
-      title={translateText(["activities", "logMeeting", "modal", "title"])}
+      title={title}
       isDirty={dirty}
       isPending={isPending}
       isSubmitting={isSubmitting}
@@ -170,6 +187,7 @@ const LogMeetingModalContent: FC<Props> = ({ onClose }) => {
       onSave={submitForm}
       onClose={onClose}
     >
+      {typeField?.(isPending || isSubmitting)}
       <LogMeetingModalForm formik={formik} />
     </LogActivityModal>
   );

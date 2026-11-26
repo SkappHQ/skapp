@@ -1,18 +1,22 @@
 import { DateTime } from "luxon";
-import { FC, ReactNode } from "react";
+import { CSSProperties, FC, ReactNode, RefObject, useRef } from "react";
 
 import {
-  SHORT_MONTH_YEAR_FORMAT,
-  TIME_FORMAT_12_HOUR
+  TIME_FORMAT_12_HOUR,
+  TIME_FORMAT_24_HOUR
 } from "~community/common/constants/timeConstants";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { formatDayWithOrdinalIndicator } from "~community/common/utils/dateTimeUtils";
-import OwnerAvatarChip from "~community/crm/components/atoms/OwnerAvatarChip/OwnerAvatarChip";
+import OwnerPopupSearch from "~community/crm/components/molecules/OwnerPopupSearch/OwnerPopupSearch";
 import PropertyRow from "~community/crm/components/molecules/PropertyRow/PropertyRow";
-import SidePanelLinkButton from "~community/crm/components/molecules/SidePanelLinkButton/SidePanelLinkButton";
+import SidePanelCompanyField from "~community/crm/components/molecules/SidePanelCompanyField/SidePanelCompanyField";
+import SidePanelDateField from "~community/crm/components/molecules/SidePanelDateField/SidePanelDateField";
+import SidePanelTimeField from "~community/crm/components/molecules/SidePanelTimeField/SidePanelTimeField";
+import useCardAlignedPopup from "~community/crm/hooks/useCardAlignedPopup";
 import { CrmOwnerEntity } from "~community/crm/types/CrmCommonTypes";
 
 interface Props {
+  id?: string;
+  cardRef: RefObject<HTMLDivElement | null>;
   primaryRow?: ReactNode;
   date: DateTime;
   dateLabel: string;
@@ -21,11 +25,17 @@ interface Props {
   hideStartTime?: boolean;
   secondaryRow?: ReactNode;
   owner?: CrmOwnerEntity;
-  companyName?: string;
-  onCompanyClick: () => void;
+  companyId: number | null;
+  onCompanyClick: (companyId: number) => void;
+  onDateChange: (date: Date) => void;
+  onStartTimeChange?: (time: string) => void;
+  onOwnerChange: (ownerId: number) => void;
+  onCompanyChange: (companyId: number) => void;
 }
 
 const SidePanelActivityInfo: FC<Props> = ({
+  id,
+  cardRef,
   primaryRow,
   date,
   dateLabel,
@@ -34,56 +44,129 @@ const SidePanelActivityInfo: FC<Props> = ({
   hideStartTime,
   secondaryRow,
   owner,
-  companyName,
-  onCompanyClick
+  companyId,
+  onCompanyClick,
+  onDateChange,
+  onStartTimeChange,
+  onOwnerChange,
+  onCompanyChange
 }) => {
-  const translateText = useTranslator(
-    "crmModule",
+  const translateText = useTranslator("crmModule");
+  const translateAria = useTranslator(
+    "crmAria",
+    "activities",
+    "activitySidePanel"
+  );
+  const ownerFieldRef = useRef<HTMLDivElement>(null);
+  const ownerPopup = useCardAlignedPopup(cardRef, ownerFieldRef);
+
+  const noValue = translateText([
     "activities",
     "activitySidePanel",
-    "info"
-  );
+    "info",
+    "noValue"
+  ]);
+  const resolvedStartTimeLabel =
+    startTimeLabel ||
+    translateText(["activities", "activitySidePanel", "info", "startTime"]);
 
-  const noValue = translateText(["noValue"]);
+  const handleOwnerChange = (user: CrmOwnerEntity | null): void => {
+    if (user && user.employeeId !== owner?.employeeId) {
+      onOwnerChange(user.employeeId);
+    }
+  };
 
   return (
-    <div className="flex flex-col border border-secondary-accent rounded-xl p-3">
+    <div
+      ref={cardRef}
+      className="flex flex-col border border-secondary-accent rounded-xl p-3"
+    >
       {primaryRow}
 
       <PropertyRow label={dateLabel}>
-        <span className="body2">
-          {`${formatDayWithOrdinalIndicator(date)} ${date.toFormat(SHORT_MONTH_YEAR_FORMAT)}`}
-        </span>
+        <SidePanelDateField
+          id={`${id}-date`}
+          date={date}
+          ariaLabel={translateAria(["editDate"])}
+          onChange={onDateChange}
+        />
       </PropertyRow>
 
       {!hideStartTime && (
-        <PropertyRow label={startTimeLabel ?? translateText(["startTime"])}>
-          <span className="body2">
-            {startTime ? startTime.toFormat(TIME_FORMAT_12_HOUR) : noValue}
-          </span>
+        <PropertyRow label={resolvedStartTimeLabel}>
+          {onStartTimeChange ? (
+            <SidePanelTimeField
+              id={`${id}-start-time`}
+              value={startTime ? startTime.toFormat(TIME_FORMAT_24_HOUR) : ""}
+              placeholder={noValue}
+              ariaLabel={translateAria(["editStartTime"])}
+              onChange={onStartTimeChange}
+            />
+          ) : (
+            <span className="body2">
+              {startTime ? startTime.toFormat(TIME_FORMAT_12_HOUR) : noValue}
+            </span>
+          )}
         </PropertyRow>
       )}
 
       {secondaryRow}
 
-      <PropertyRow label={translateText(["activityOwner"])}>
-        {owner ? (
-          <OwnerAvatarChip
-            id={String(owner.employeeId)}
-            owner={owner}
-            size="xs"
+      <PropertyRow
+        label={translateText([
+          "activities",
+          "activitySidePanel",
+          "info",
+          "activityOwner"
+        ])}
+      >
+        <div
+          ref={ownerFieldRef}
+          className="flex flex-col w-full"
+          style={
+            { "--card-popup-width": `${ownerPopup.width}px` } as CSSProperties
+          }
+        >
+          <OwnerPopupSearch
+            selectedUser={owner || null}
+            onChange={handleOwnerChange}
+            placeholder={noValue}
+            popupWidth="w-[var(--card-popup-width)]"
+            popupAlignment="right"
+            popupOffset={{ x: ownerPopup.offsetX }}
+            searchPlaceholder={translateText([
+              "deals",
+              "common",
+              "placeholders",
+              "ownerSearch"
+            ])}
+            noResultsText={translateText([
+              "deals",
+              "common",
+              "placeholders",
+              "noResults"
+            ])}
           />
-        ) : (
-          <span className="body2">{noValue}</span>
-        )}
+        </div>
       </PropertyRow>
 
-      <PropertyRow label={translateText(["relatedTo"])}>
-        {companyName ? (
-          <SidePanelLinkButton label={companyName} onClick={onCompanyClick} />
-        ) : (
-          <span className="body2">{noValue}</span>
-        )}
+      <PropertyRow
+        label={translateText([
+          "activities",
+          "activitySidePanel",
+          "info",
+          "relatedTo"
+        ])}
+      >
+        <SidePanelCompanyField
+          id={`${id}-related-to`}
+          cardRef={cardRef}
+          companyId={companyId}
+          emptyLabel={noValue}
+          editAriaLabel={translateAria(["editRelatedTo"])}
+          onCompanyClick={onCompanyClick}
+          onChange={onCompanyChange}
+        />
       </PropertyRow>
     </div>
   );

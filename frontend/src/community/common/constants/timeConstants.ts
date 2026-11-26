@@ -27,6 +27,8 @@ export const MEDIUM_DATE_TIME_FORMAT = "dd MMM yyyy, h:mm a";
 
 export const FULL_MONTH_DATE_FORMAT = "dd MMMM";
 
+export const SHORT_MONTH_DATE_FORMAT = "dd MMM";
+
 export const YEAR_MONTH_FORMAT = "yyyy-MM";
 
 export const FULL_MONTH_YEAR_FORMAT = "MMMM yyyy";

@@ -25,10 +25,7 @@ import {
   CrmContactEntity,
   CrmLogMeetingFormValues
 } from "~community/crm/types/CrmCommonTypes";
-import {
-  getContactCompanyIds,
-  getContactDisplayName
-} from "~community/crm/utils/contactUtil";
+import { getContactCompanyIds } from "~community/crm/utils/contactUtil";
 import { isDealMatchingContacts } from "~community/crm/utils/dealUtil";
 
 interface Props {
@@ -36,8 +33,18 @@ interface Props {
 }
 
 const LogMeetingModalForm: FC<Props> = ({ formik }) => {
-  const { values, errors, touched, handleChange, handleBlur, setFieldValue } =
-    formik;
+  const {
+    values,
+    errors,
+    status,
+    touched,
+    handleChange,
+    handleBlur,
+    setFieldValue,
+    submitCount,
+    isValidating,
+    isValid
+  } = formik;
 
   const translateText = useTranslator("crmModule", "activities");
   const translateAria = useTranslator(
@@ -63,11 +70,10 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
     new Set(getContactCompanyIds(contacts, values.contactIds))
   );
 
-  const isDealMismatch = Boolean(
-    values.dealId &&
-    attendees.length > 0 &&
-    !isDealMatchingContacts(deals[values.dealId], attendees)
-  );
+  const isDealMismatch =
+    Boolean(status) &&
+    status.mismatchedDealId === values.dealId &&
+    status.mismatchedContactIds === values.contactIds.join();
 
   const handleAttendeesChange = (nextAttendees: CrmContactEntity[]): void => {
     const selectedDeal = values.dealId ? deals[values.dealId] : null;
@@ -88,7 +94,7 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
 
   const isCompanyMismatch = Boolean(
     values.companyId &&
-    primaryAttendee &&
+    primaryAttendee?.companyId &&
     values.companyId !== primaryAttendee.companyId
   );
 
@@ -99,7 +105,7 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
   };
 
   return (
-    <div className="flex flex-col gap-2 overflow-y-auto pr-1">
+    <div className="flex flex-col gap-2">
       <InputField
         id="log-meeting-subject-input"
         name="subject"
@@ -121,22 +127,21 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
         onSelect={handleDateSelect}
         popperProps={{ position: "bottom-start", isFlip: true }}
       >
-        <div>
-          <InputField
-            id="log-meeting-date-input"
-            name="date"
-            value={pickedDate ? pickedDate.toLocaleDateString() : ""}
-            label={translateText(["logActivity", "labels", "date"])}
-            placeholder={translateText(["logActivity", "placeholders", "date"])}
-            errorMessage={errors.date}
-            state={errors.date ? "error" : "default"}
-            aria-label={translateAria(["date"])}
-            rightIcon={<CalendarIcon />}
-            fullWidth
-            readOnly
-            required
-          />
-        </div>
+        <InputField
+          role="combobox"
+          id="log-meeting-date-input"
+          name="date"
+          value={pickedDate ? pickedDate.toLocaleDateString() : ""}
+          label={translateText(["logActivity", "labels", "date"])}
+          placeholder={translateText(["logActivity", "placeholders", "date"])}
+          errorMessage={errors.date}
+          state={errors.date ? "error" : "default"}
+          aria-label={translateAria(["date"])}
+          rightIcon={<CalendarIcon />}
+          fullWidth
+          readOnly
+          required
+        />
       </DatePicker>
 
       <div className="flex flex-row items-start gap-[0.625rem]">
@@ -196,13 +201,19 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
               "placeholders",
               "attendees"
             ])}
+            searchPlaceholder={translateText([
+              "logMeeting",
+              "modal",
+              "placeholders",
+              "searchAttendees"
+            ])}
             groupAriaLabel={translateAria(["attendees"])}
             fillsRelatedTo
             {...(attendeeCompanyIds.length > 1 && {
-              warningTooltip: translateText([
+              warningMessage: translateText([
                 "logMeeting",
                 "modal",
-                "tooltips",
+                "notices",
                 "differentCompanies"
               ])
             })}
@@ -211,7 +222,11 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
           />
         </div>
         <div className="flex-1">
-          <ActivityOwnerField id="log-meeting-ownerId" formik={formik} />
+          <ActivityOwnerField
+            id="log-meeting-ownerId"
+            formik={formik}
+            required
+          />
         </div>
       </div>
 
@@ -226,7 +241,12 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
       />
 
       <ActivityAssociations
-        isForcedOpen={isDealClearedNoticeVisible || isDealMismatch}
+        isDealMismatch={isDealMismatch}
+        isDealClearedNoticeVisible={isDealClearedNoticeVisible}
+        isCompanyMismatch={isCompanyMismatch}
+        submitCount={submitCount}
+        isValidating={isValidating}
+        isValid={isValid}
       >
         <ActivityDealField
           id="log-meeting-deal"
@@ -243,13 +263,13 @@ const LogMeetingModalForm: FC<Props> = ({ formik }) => {
           id="log-meeting-related-to"
           formik={formik}
           fieldAriaLabel={translateAria(["relatedTo"])}
-          {...(isCompanyMismatch &&
-            primaryAttendee && {
-              mismatchTooltip: translateText(
-                ["logActivity", "tooltips", "relatedToMismatch"],
-                { name: getContactDisplayName(primaryAttendee) }
-              )
-            })}
+          {...(isCompanyMismatch && {
+            mismatchMessage: translateText([
+              "logActivity",
+              "notices",
+              "relatedToMismatch"
+            ])
+          })}
         />
       </ActivityAssociations>
     </div>

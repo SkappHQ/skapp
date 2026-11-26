@@ -5,10 +5,12 @@ import com.skapp.community.common.service.NotificationService;
 import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.type.NotificationCategory;
 import com.skapp.community.common.type.NotificationType;
+import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy;
 import com.skapp.community.leaveplanner.model.LeaveEntitlement;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.leaveplanner.payload.email.LeaveEmailDynamicFields;
 import com.skapp.community.leaveplanner.service.LeaveNotificationService;
+import com.skapp.community.leaveplanner.util.EmployeeLeavePolicyUtil;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.repository.EmployeeManagerDao;
@@ -399,6 +401,21 @@ public class LeaveNotificationServiceImpl implements LeaveNotificationService {
 		notificationService.createNotification(leaveRequest.getEmployee(), leaveRequest.getLeaveRequestId().toString(),
 				NotificationType.LEAVE_REQUEST_NUDGE, EmailBodyTemplates.LEAVE_MODULE_MANAGER_NUDGE_MULTI_DAY_LEAVE,
 				leaveEmailDynamicFields, NotificationCategory.LEAVE);
+	}
+
+	@Override
+	public void sendPolicyAssignedEmployeeNotification(EmployeeLeavePolicy employeeLeavePolicy) {
+		log.info("sendPolicyAssignedEmployeeNotification: execution started");
+
+		LeaveEmailDynamicFields leaveEmailDynamicFields = new LeaveEmailDynamicFields();
+		leaveEmailDynamicFields.setPolicyName(employeeLeavePolicy.getPolicy().getName());
+
+		notificationService.createNotification(employeeLeavePolicy.getEmployee(),
+				employeeLeavePolicy.getId().toString(), NotificationType.LEAVE_ENTITLEMENT,
+				EmployeeLeavePolicyUtil.getPolicyAssignedTemplate(employeeLeavePolicy.getPolicy().getPolicyType()),
+				leaveEmailDynamicFields, NotificationCategory.LEAVE);
+
+		log.info("sendPolicyAssignedEmployeeNotification: execution ended");
 	}
 
 	private List<EmployeeManager> getOtherManagers(List<EmployeeManager> allManagers, User currentManager) {

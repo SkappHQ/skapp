@@ -34,8 +34,12 @@ export interface ActivityFeedProps {
   timeZone?: string;
   taskCompletions: Record<number, boolean>;
   emptyStateButton?: ButtonV2Props | null;
+  emptyStateSecondaryButton?: ButtonV2Props | null;
+  emptyStateText?: { title: string; description: string };
+  errorStateDescription: string;
+  isShowTaskCheckbox?: boolean;
   onLoadMore: () => void;
-  onRowClick: (row: ActivityRow) => void;
+  onRowClick?: (row: ActivityRow) => void;
   onToggleComplete: (row: ActivityRow, isCompleted: boolean) => void;
 }
 
@@ -51,6 +55,10 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
   timeZone,
   taskCompletions,
   emptyStateButton,
+  emptyStateSecondaryButton,
+  emptyStateText,
+  errorStateDescription,
+  isShowTaskCheckbox,
   onLoadMore,
   onRowClick,
   onToggleComplete
@@ -87,7 +95,9 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
     ? ["noResults"]
     : ["emptyState", activeTab.toLowerCase()];
 
-  const isShowCheckbox = activeTab === ActivityTab.TASKS;
+  const customEmptyStateText = trimmedSearchTerm ? null : emptyStateText;
+
+  const isShowCheckbox = isShowTaskCheckbox || activeTab === ActivityTab.TASKS;
 
   const renderContent = () => {
     if (isLoading) {
@@ -100,14 +110,15 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
       );
     }
 
-    if (isError) {
+    if (isError && pages.length === 0) {
       return (
-        <div
-          id={`${id}-error`}
-          role="alert"
-          className="flex items-center justify-center p-6 rounded-lg bg-secondary-background body2 text-center"
-        >
-          {translateText(["activities", "feed", "loadError"])}
+        <div id={`${id}-error`} role="alert">
+          <EmptyDataView
+            icon={<SearchIcon />}
+            title={translateText(["activities", "feed", "errorState", "title"])}
+            description={errorStateDescription}
+            className={{ wrapper: "bg-secondary-background rounded-lg" }}
+          />
         </div>
       );
     }
@@ -116,17 +127,30 @@ const ActivityFeed: FC<ActivityFeedProps> = ({
       return (
         <EmptyDataView
           icon={<SearchIcon />}
-          title={translateText(
-            ["activities", "feed", ...emptyStateKeys, "title"],
-            { term: trimmedSearchTerm }
-          )}
-          description={translateText([
-            "activities",
-            "feed",
-            ...emptyStateKeys,
-            "description"
-          ])}
+          title={
+            customEmptyStateText
+              ? customEmptyStateText.title
+              : translateText([
+                  "activities",
+                  "feed",
+                  ...emptyStateKeys,
+                  "title"
+                ])
+          }
+          description={
+            customEmptyStateText
+              ? customEmptyStateText.description
+              : translateText([
+                  "activities",
+                  "feed",
+                  ...emptyStateKeys,
+                  "description"
+                ])
+          }
           {...(emptyStateButton ? { button: emptyStateButton } : {})}
+          {...(emptyStateSecondaryButton
+            ? { secondaryButton: emptyStateSecondaryButton }
+            : {})}
           className={{ wrapper: "bg-secondary-background rounded-lg" }}
         />
       );

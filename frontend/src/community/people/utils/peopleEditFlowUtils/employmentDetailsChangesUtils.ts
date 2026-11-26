@@ -85,6 +85,15 @@ export const getEmploymentChanges = (
     changes.primarySupervisor = newEmployment?.primarySupervisor;
   }
 
+  if (
+    isFieldDifferentAndValid(
+      newEmployment?.requestAuthorizer?.employeeId?.toString(),
+      previousEmployement?.requestAuthorizer?.employeeId?.toString()
+    )
+  ) {
+    changes.requestAuthorizer = newEmployment?.requestAuthorizer;
+  }
+
   const previousOtherSupervisorIds = Array.isArray(
     previousEmployement?.otherSupervisors
   )

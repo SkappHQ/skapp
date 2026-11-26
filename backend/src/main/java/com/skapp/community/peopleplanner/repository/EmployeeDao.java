@@ -47,4 +47,6 @@ public interface EmployeeDao
 
 	long countByBusinessUnitBusinessUnitIdAndAccountStatusIn(Long businessUnitId, Set<AccountStatus> accountStatuses);
 
+	List<Employee> findByRequestAuthorizer(Employee requestAuthorizer);
+
 }

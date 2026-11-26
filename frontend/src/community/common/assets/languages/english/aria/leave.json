@@ -89,5 +89,9 @@
   "leaveTypeCard": {
     "entitlementOver": "{{name}} entitlements are over, please choose a different leave type",
     "available": "available"
+  },
+  "multiLevelRecipients": {
+    "approved": "{{name}} approved",
+    "pending": "Waiting for {{name}}"
   }
 }

@@ -29,8 +29,14 @@ public class CrmActivityListParams {
 
 	private Long relatedDealId;
 
+	private Boolean isWithoutDeal;
+
 	private Long excludedId;
 
-	private Integer maxResults;
+	private CrmActivityAssociation activityAssociation;
+
+	private Long recordId;
+
+	private CrmActivityType activityType;
 
 }

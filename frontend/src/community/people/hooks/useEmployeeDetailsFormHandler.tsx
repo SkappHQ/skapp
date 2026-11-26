@@ -65,6 +65,8 @@ const useEmployeeDetailsFormHandler = ({
     useState<boolean>(false);
   const [isSecondaryManagerPopperOpen, setIsSecondaryManagerPopperOpen] =
     useState<boolean>(false);
+  const [isRequestAuthorizerPopperOpen, setIsRequestAuthorizerPopperOpen] =
+    useState<boolean>(false);
 
   const [primaryManagerSearchTerm, setPrimaryManagerSearchTerm] =
     useState<string>(
@@ -75,6 +77,11 @@ const useEmployeeDetailsFormHandler = ({
     useState<string>(
       employee?.employment?.employmentDetails?.otherSupervisors?.[0]
         ?.firstName as string
+    );
+  const [requestAuthorizerSearchTerm, setRequestAuthorizerSearchTerm] =
+    useState<string>(
+      employee?.employment?.employmentDetails?.requestAuthorizer?.firstName ??
+        ""
     );
 
   const [selectedJoinedDate, setSelectedJoinedDate] = useState<
@@ -97,6 +104,11 @@ const useEmployeeDetailsFormHandler = ({
   const getSearchedEmployeesBySecondaryManager = useGetSearchedEmployees(
     secondaryManagerSearchTerm || "",
     SystemPermissionTypes.MANAGERS
+  );
+
+  const getSearchedEmployeesByRequestAuthorizer = useGetSearchedEmployees(
+    requestAuthorizerSearchTerm,
+    SystemPermissionTypes.EMPLOYEES
   );
 
   const { isProTier } = useSessionData();
@@ -285,26 +297,50 @@ const useEmployeeDetailsFormHandler = ({
     });
   };
 
-  let primaryManagers: EmployeeDataType[] = [];
-  let secondaryManagers: EmployeeDataType[] = [];
-  let isPrimaryManagersLoading: boolean = false;
-  let isSecondaryManagersLoading: boolean = false;
+  const onRequestAuthorizerSearchChange = async (
+    e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+  ): Promise<void> => {
+    await onManagerSearchChange({
+      managerType: "requestAuthorizer",
+      searchTerm: e.target.value.trimStart(),
+      setManagerSearchTerm: setRequestAuthorizerSearchTerm,
+      formik,
+      setSupervisor: setEmploymentDetails,
+      isProTier
+    });
+  };
 
-  if (!isManager && !isProfileView) {
-    ({ data: primaryManagers as any, isLoading: isPrimaryManagersLoading } =
-      getSearchedEmployeesByPrimaryManager);
-  }
+  const canSearchSupervisors = !isManager && !isProfileView;
 
-  if (!isManager && !isProfileView) {
-    ({ data: secondaryManagers as any, isLoading: isSecondaryManagersLoading } =
-      getSearchedEmployeesBySecondaryManager);
-  }
+  const primaryManagers: EmployeeDataType[] =
+    (canSearchSupervisors && getSearchedEmployeesByPrimaryManager.data) || [];
+  const secondaryManagers: EmployeeDataType[] =
+    (canSearchSupervisors && getSearchedEmployeesBySecondaryManager.data) || [];
+  const requestAuthorizers: EmployeeDataType[] =
+    (canSearchSupervisors && getSearchedEmployeesByRequestAuthorizer.data) ||
+    [];
+  const isPrimaryManagersLoading =
+    canSearchSupervisors && getSearchedEmployeesByPrimaryManager.isLoading;
+  const isSecondaryManagersLoading =
+    canSearchSupervisors && getSearchedEmployeesBySecondaryManager.isLoading;
+  const isRequestAuthorizersLoading =
+    canSearchSupervisors && getSearchedEmployeesByRequestAuthorizer.isLoading;
 
   const getSuggestions = (managerList: EmployeeDataType[]) => {
     let newManagerList = managerList;
 
     if (id) {
       newManagerList = filterByValue(newManagerList, id, "employeeId");
+    }
+
+    if (
+      employee?.employment?.employmentDetails?.requestAuthorizer?.employeeId
+    ) {
+      newManagerList = filterByValue(
+        newManagerList,
+        employee?.employment?.employmentDetails?.requestAuthorizer?.employeeId,
+        "employeeId"
+      );
     }
 
     if (
@@ -355,6 +391,32 @@ const useEmployeeDetailsFormHandler = ({
     !isSecondaryManagersLoading ? secondaryManagers : []
   );
 
+  const requestAuthorizerSuggestions: EmployeeDataType[] = getSuggestions(
+    !isRequestAuthorizersLoading ? requestAuthorizers : []
+  );
+
+  const handleRequestAuthorizerSelect = async (
+    user: EmployeeDataType
+  ): Promise<void> => {
+    await handleManagerSelect({
+      user,
+      fieldName: "requestAuthorizer",
+      formik,
+      searchTermSetter: setRequestAuthorizerSearchTerm,
+      setSupervisor: setEmploymentDetails,
+      setIsPopperOpen: setIsRequestAuthorizerPopperOpen
+    });
+  };
+
+  const handleRequestAuthorizerRemove = async (): Promise<void> => {
+    await onManagerRemove({
+      fieldName: "requestAuthorizer",
+      formik,
+      searchTermSetter: setRequestAuthorizerSearchTerm,
+      setSupervisor: setEmploymentDetails
+    });
+  };
+
   const handlePrimaryManagerSelect = async (
     user: EmployeeDataType
   ): Promise<void> => {
@@ -369,19 +431,24 @@ const useEmployeeDetailsFormHandler = ({
   };
 
   const handlePrimaryManagerRemove = async (): Promise<void> => {
-    await onManagerRemove({
-      fieldName: "primarySupervisor",
-      formik,
-      searchTermSetter: setPrimaryManagerSearchTerm,
-      setSupervisor: setEmploymentDetails
+    setPrimaryManagerSearchTerm("");
+    setRequestAuthorizerSearchTerm("");
+    await formik.setFieldValue("primarySupervisor", {});
+    await formik.setFieldValue("requestAuthorizer", {});
+
+    if (formik.values.otherSupervisors) {
+      setSecondaryManagerSearchTerm("");
+      await formik.setFieldValue("otherSupervisors", []);
+    }
+
+    setEmploymentDetails({
+      employmentDetails: {
+        ...formik.values,
+        primarySupervisor: {},
+        ...(formik.values.otherSupervisors && { otherSupervisors: [] }),
+        requestAuthorizer: {}
+      }
     });
-    formik?.values?.otherSupervisors &&
-      (await onManagerRemove({
-        fieldName: "otherSupervisors",
-        formik,
-        searchTermSetter: setSecondaryManagerSearchTerm,
-        setSupervisor: setEmploymentDetails
-      }));
   };
 
   const handleSecondaryManagerSelect = async (
@@ -512,10 +579,27 @@ const useEmployeeDetailsFormHandler = ({
   ) => {
     if (e.key === "Backspace") {
       setPrimaryManagerSearchTerm("");
+      setRequestAuthorizerSearchTerm("");
+      await formik.setFieldValue("requestAuthorizer", {});
       setEmploymentDetails({
         employmentDetails: {
           ...employee?.employment?.employmentDetails,
-          primarySupervisor: {}
+          primarySupervisor: {},
+          requestAuthorizer: {}
+        }
+      });
+    }
+  };
+
+  const handleBackspacePressRequestAuthorizer = async (
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (e.key === "Backspace") {
+      setRequestAuthorizerSearchTerm("");
+      setEmploymentDetails({
+        employmentDetails: {
+          ...employee?.employment?.employmentDetails,
+          requestAuthorizer: {}
         }
       });
     }
@@ -573,7 +657,15 @@ const useEmployeeDetailsFormHandler = ({
     refetch,
     handleBackspacePressPrimary,
     handleBackspacePressSecondary,
-    setSecondaryManagerSearchTerm
+    setSecondaryManagerSearchTerm,
+    isRequestAuthorizerPopperOpen,
+    setIsRequestAuthorizerPopperOpen,
+    requestAuthorizerSearchTerm,
+    requestAuthorizerSuggestions,
+    onRequestAuthorizerSearchChange,
+    handleRequestAuthorizerSelect,
+    handleRequestAuthorizerRemove,
+    handleBackspacePressRequestAuthorizer
   };
 };
 

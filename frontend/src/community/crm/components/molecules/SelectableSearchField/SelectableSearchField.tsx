@@ -26,6 +26,7 @@ interface Props {
   errorMessage?: string;
   positionStrategy?: NonNullable<SearchableDropdownProps["positionStrategy"]>;
   isFlip?: boolean;
+  isWrapperRelative?: boolean;
 }
 
 const SelectableSearchField: FC<Props> = ({
@@ -47,11 +48,13 @@ const SelectableSearchField: FC<Props> = ({
   required = false,
   errorMessage,
   positionStrategy = "absolute",
-  isFlip = true
+  isFlip = true,
+  isWrapperRelative = true
 }) => {
   if (selectedValue) {
     return (
       <InputField
+        id={`${id}-input`}
         label={label}
         value={selectedValue}
         title={selectedValue}
@@ -59,6 +62,8 @@ const SelectableSearchField: FC<Props> = ({
         readOnly
         fullWidth
         variant="md"
+        state={errorMessage ? "error" : "default"}
+        errorMessage={errorMessage}
         aria-label={fieldAriaLabel}
         {...(describedById && { "aria-describedby": describedById })}
         rightIcon={
@@ -91,6 +96,7 @@ const SelectableSearchField: FC<Props> = ({
       errorMessage={errorMessage}
       positionStrategy={positionStrategy}
       isFlip={isFlip}
+      isWrapperRelative={isWrapperRelative}
     />
   );
 };

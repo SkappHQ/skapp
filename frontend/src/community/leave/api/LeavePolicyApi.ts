@@ -11,6 +11,7 @@ import { AxiosError, AxiosResponse } from "axios";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { leavePolicyEndPoints } from "~community/leave/api/utils/ApiEndpoints";
 import { leavePolicyQueryKeys } from "~community/leave/api/utils/QueryKeys";
+import { LEAVE_POLICY_CONFIG_STALE_TIME_MS } from "~community/leave/constants/leavePolicyConstants";
 import {
   AddLeavePolicyPayload,
   CheckLeavePolicyNameAvailabilityParams,
@@ -164,7 +165,8 @@ export const useGetLeavePolicyConfig = (
     queryKey: leavePolicyQueryKeys.LEAVE_POLICY_CONFIG,
     queryFn: getLeavePolicyConfig,
     enabled,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    staleTime: LEAVE_POLICY_CONFIG_STALE_TIME_MS
   });
 };
 

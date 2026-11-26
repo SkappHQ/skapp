@@ -14,7 +14,7 @@ import {
 import {
   ActivityDatePreset,
   ActivityDateRange,
-  ActivityFeedFilters
+  ActivityFilterValues
 } from "~community/crm/activities/types/activityTypes";
 import { CrmOwnerEntity } from "~community/crm/types/CrmCommonTypes";
 
@@ -90,10 +90,27 @@ export const getMatchingPreset = (
 };
 
 export const areFilterValuesEqual = (
-  first: ActivityFeedFilters,
-  second: ActivityFeedFilters
+  first: ActivityFilterValues,
+  second: ActivityFilterValues
 ): boolean =>
-  first.ownerId === second.ownerId && isSameDateRange(first, second);
+  first.ownerId === second.ownerId &&
+  first.taskStatus === second.taskStatus &&
+  first.priority === second.priority &&
+  isSameDateRange(first, second);
+
+export const replaceFilterValues = (
+  previous: ActivityFilterValues,
+  clearedKeys: (keyof ActivityFilterValues)[],
+  changes: ActivityFilterValues
+): ActivityFilterValues => {
+  const next = { ...previous };
+
+  clearedKeys.forEach((key) => {
+    delete next[key];
+  });
+
+  return { ...next, ...changes };
+};
 
 export const filterCRMEmployees = (
   members: CrmOwnerEntity[],

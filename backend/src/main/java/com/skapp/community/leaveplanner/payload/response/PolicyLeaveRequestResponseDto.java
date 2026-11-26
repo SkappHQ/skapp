@@ -54,4 +54,12 @@ public class PolicyLeaveRequestResponseDto {
 
 	private Boolean isUnlimited;
 
+	private Boolean isMultiLevel;
+
+	private EmployeeBasicDetailsResponseDto requestAuthorizer;
+
+	private EmployeeBasicDetailsResponseDto primaryReviewer;
+
+	private Boolean isCurrentApprover;
+
 }

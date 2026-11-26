@@ -50,7 +50,6 @@
       "editContact": "Edit contact",
       "deleteContact": "Delete contact",
       "tabs": {
-        "tasks": "Tasks",
         "deals": "Deals"
       },
       "metrics": {
@@ -164,7 +163,6 @@
       "editCompany": "Edit company",
       "deleteCompany": "Delete company",
       "tabs": {
-        "tasks": "Tasks",
         "deals": "Deals",
         "contacts": "Contacts"
       },
@@ -172,9 +170,6 @@
         "accountValue": "Account value",
         "openDeals": "Open deals",
         "closedDeals": "Closed deals"
-      },
-      "tasks": {
-        "emptyDescription": "No tasks associated with this company"
       },
       "errors": {
         "companyNotFoundTitle": "Company not found",
@@ -382,10 +377,6 @@
       "buttons": {
         "save": "Save",
         "discard": "Discard"
-      },
-      "tasks": {
-        "title": "Tasks",
-        "emptyDescription": "No tasks yet. Create a task to follow up with this deal"
       },
       "toastMessages": {
         "editErrorTitle": "Oops! Something went wrong",
@@ -599,7 +590,8 @@
           "priority": "Priority is required"
         },
         "notices": {
-          "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
+          "dealCleared": "Deal cleared. It doesn't match the selected contact's company.",
+          "relatedToMismatch": "This doesn't match the contact's company"
         },
         "toastMessages": {
           "addSuccessTitle": "Task added successfully",
@@ -627,7 +619,9 @@
         "cc": "Cc",
         "bcc": "Bcc",
         "from": "From",
-        "time": "Time"
+        "time": "Time",
+        "selectedRecipients": "Selected recipients",
+        "searchContacts": "Search contacts"
       }
     },
     "callSidePanel": {
@@ -657,7 +651,10 @@
         },
         "validations": {
           "dateTime": "Date and time are required",
-          "to": "Please select at least one contact"
+          "to": "An activity must be linked to at least one contact."
+        },
+        "notices": {
+          "differentCompanies": "These contacts are linked to different companies."
         },
         "toastMessages": {
           "addSuccessTitle": "Email logged successfully",
@@ -678,7 +675,7 @@
           "duration": "Enter duration"
         },
         "validations": {
-          "contact": "Please select a contact",
+          "contact": "An activity must be linked to at least one contact.",
           "duration": "Please enter a valid duration (e.g. 1h 30m)"
         },
         "toastMessages": {
@@ -704,6 +701,11 @@
       "calls": "Calls",
       "meetings": "Meetings",
       "emails": "Emails"
+    },
+    "addActivity": {
+      "button": "Add activity",
+      "modalTitle": "Add activity",
+      "typeLabel": "Type"
     },
     "buckets": {
       "overdue": "Overdue",
@@ -750,10 +752,51 @@
         }
       },
       "noResults": {
-        "title": "No activities match '{{term}}'",
-        "description": "Try a different search term."
+        "title": "No results found.",
+        "description": "We couldn't find any results for your search. Please try a different term."
       },
-      "loadError": "Couldn't load your activities. Please refresh to try again."
+      "errorState": {
+        "title": "Oops! Something went wrong",
+        "description": "Couldn't load your activities. Please refresh to try again."
+      },
+      "errorToast": {
+        "title": "Oops! Something went wrong",
+        "description": "Failed to load activities"
+      }
+    },
+    "recordTab": {
+      "tabLabel": "Activities",
+      "typeFilter": {
+        "all": "All"
+      },
+      "emptyState": {
+        "all": {
+          "title": "No activities yet",
+          "description": "Activities linked to this record will show here."
+        },
+        "tasks": {
+          "title": "No tasks yet",
+          "description": "Tasks linked to this record will show here."
+        },
+        "calls": {
+          "title": "No calls yet",
+          "description": "Calls linked to this record will show here."
+        },
+        "meetings": {
+          "title": "No meetings yet",
+          "description": "Meetings linked to this record will show here."
+        },
+        "emails": {
+          "title": "No emails yet",
+          "description": "Emails linked to this record will show here."
+        }
+      },
+      "errorState": {
+        "description": "Couldn't load this record's activity history. Please refresh to try again."
+      },
+      "errorToast": {
+        "description": "Failed to load activity history"
+      }
     },
     "toolbar": {
       "addTaskBtn": "Add task",
@@ -763,16 +806,23 @@
         "label": "Search activities",
         "resultCount_one": "{{count}} activity found",
         "resultCount_other": "{{count}} activities found",
-        "placeholders": {
-          "all": "Search activities",
-          "tasks": "Search tasks",
-          "calls": "Search calls",
-          "meetings": "Search meetings",
-          "emails": "Search emails"
-        }
+        "placeholder": "Search by subject, contact and company",
+        "taskPlaceholder": "Search by task, contact and company"
       },
       "filters": {
         "title": "Filters",
+        "taskStatus": {
+          "label": "Task status",
+          "options": {
+            "overdue": "Overdue",
+            "today": "Today",
+            "upcoming": "Upcoming",
+            "completed": "Completed"
+          }
+        },
+        "priority": {
+          "label": "Priority"
+        },
         "dateRange": {
           "label": "Date range",
           "presets": {
@@ -803,7 +853,7 @@
       "modal": {
         "validations": {
           "date": "Date is required",
-          "attendees": "An activity must be linked to at least one contact",
+          "attendees": "An activity must be linked to at least one contact.",
           "endTime": "End time must be after start time"
         },
         "title": "Log a meeting",
@@ -818,10 +868,11 @@
           "errorDescription": "Failed to save meeting"
         },
         "placeholders": {
-          "attendees": "Select attendees"
+          "attendees": "Select attendees",
+          "searchAttendees": "Search attendees"
         },
-        "tooltips": {
-          "differentCompanies": "These contacts are linked to different companies. This activity will still be saved against all of them."
+        "notices": {
+          "differentCompanies": "These contacts are linked to different companies."
         }
       }
     },
@@ -842,7 +893,8 @@
         "activityOwner": "Search owner",
         "contact": "Enter name",
         "deal": "Search deals",
-        "relatedTo": "Search companies"
+        "relatedTo": "Search companies",
+        "selectedCount": "{count} selected"
       },
       "buttons": {
         "cancel": "Cancel",
@@ -860,16 +912,15 @@
       "validations": {
         "subject": "Subject is required",
         "owner": "Activity owner is required",
-        "dealMismatch": "This deal's company doesn't match any linked contact — add a contact from that company or choose a different deal"
+        "dealMismatch": "This deal's company doesn't match any linked contact. Add a contact from that company or choose a different deal."
       },
       "notices": {
-        "dealCleared": "Deal cleared — it doesn't match the selected contact's company."
+        "dealCleared": "Deal cleared. It doesn't match the selected contact's company.",
+        "ownerReadOnly": "Read only. Only admins and sales managers can change the activity owner.",
+        "relatedToMismatch": "This doesn't match the contact's company"
       },
       "toastMessages": {
         "errorTitle": "Oops! Something went wrong"
-      },
-      "tooltips": {
-        "relatedToMismatch": "This doesn't match {{name}}'s company on file."
       }
     },
     "activitySidePanel": {
@@ -886,7 +937,8 @@
       },
       "buttons": {
         "save": "Save",
-        "discard": "Discard"
+        "discard": "Discard",
+        "removeDeal": "Remove deal"
       },
       "deleteModal": {
         "title": "Are you sure?",
@@ -900,6 +952,9 @@
         "deleteSuccessTitle": "Activity deleted successfully",
         "saveErrorDescription": "Failed to save activity",
         "deleteErrorDescription": "Failed to delete activity"
+      },
+      "validations": {
+        "contactRequired": "An activity must be linked to at least one contact."
       }
     },
     "meetingSidePanel": {
@@ -907,7 +962,9 @@
       "deleteMeeting": "Delete meeting",
       "info": {
         "attendees": "Attendees",
-        "endTime": "End time"
+        "endTime": "End time",
+        "selectedAttendees": "Selected attendees",
+        "searchAttendees": "Search contacts"
       },
       "relatedTitle": "Related meetings"
     }

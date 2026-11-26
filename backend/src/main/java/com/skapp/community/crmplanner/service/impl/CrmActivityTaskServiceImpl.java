@@ -29,6 +29,7 @@ import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,6 +65,7 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 		validateActivityCreationLimit();
 
 		CrmValidations.validateTaskName(requestDto.getName());
+		CrmValidations.validateActivityTaskPriority(requestDto.getPriority());
 		CrmValidations.validateTaskDueAt(requestDto.getDueAt());
 		CrmValidations.validateTaskNotes(requestDto.getNotes());
 
@@ -73,8 +75,7 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 
 		CrmActivityTask task = new CrmActivityTask();
 		task.setName(requestDto.getName());
-		task.setPriority(requestDto.getPriority() != null ? requestDto.getPriority()
-				: CrmConstants.DEFAULT_ACTIVITY_TASK_PRIORITY);
+		task.setPriority(requestDto.getPriority());
 		task.setDueAt(requestDto.getDueAt());
 		task.setNotes(requestDto.getNotes());
 		task.setIsCompleted(false);
@@ -267,7 +268,9 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_VIEW_DENIED);
 		}
 
-		if (task.getContact() == null && task.getDeal() == null) {
+		boolean hasContact = task.getContact() != null && !Boolean.TRUE.equals(task.getContact().getIsDeleted());
+		boolean hasDeal = task.getDeal() != null && !Boolean.TRUE.equals(task.getDeal().getIsDeleted());
+		if (!hasContact && !hasDeal) {
 			log.info("getRelatedTasks: execution ended");
 			return new ResponseEntityDto(false, List.of());
 		}
@@ -277,16 +280,23 @@ public class CrmActivityTaskServiceImpl implements CrmActivityTaskService {
 		params.setSortOrder(Sort.Direction.DESC);
 		params.setCurrentEmployeeId(currentUser.getEmployee().getEmployeeId());
 		params.setIsRestrictedToOwner(CrmUtil.isCrmSalesRepresentative(currentUser));
-		if (task.getContact() != null) {
+		if (hasContact) {
 			params.setRelatedContactIds(List.of(task.getContact().getId()));
 		}
-		if (task.getDeal() != null) {
+		else {
+			params.setIsWithoutContact(true);
+		}
+		if (hasDeal) {
 			params.setRelatedDealId(task.getDeal().getId());
 		}
+		else {
+			params.setIsWithoutDeal(true);
+		}
 		params.setExcludedId(id);
-		params.setMaxResults(CrmConstants.RELATED_ACTIVITY_LIMIT);
 
-		List<CrmActivityTaskResponseDto> tasks = crmActivityTaskDao.findTasks(params);
+		List<CrmActivityTaskResponseDto> tasks = crmActivityTaskDao
+			.findTasks(params, PageRequest.of(0, CrmConstants.RELATED_ACTIVITY_LIMIT))
+			.getContent();
 
 		log.info("getRelatedTasks: execution ended");
 		return new ResponseEntityDto(false, tasks);

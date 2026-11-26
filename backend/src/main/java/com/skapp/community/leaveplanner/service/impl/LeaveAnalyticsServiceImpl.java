@@ -68,10 +68,10 @@ import com.skapp.community.leaveplanner.payload.response.LeaveRequestResponseDto
 import com.skapp.community.leaveplanner.repository.LeaveEntitlementDao;
 import com.skapp.community.leaveplanner.repository.LeaveRequestDao;
 import com.skapp.community.leaveplanner.repository.LeaveTypeDao;
+import com.skapp.community.leaveplanner.repository.projection.LeaveRequestPeriod;
 import com.skapp.community.leaveplanner.repository.projection.LeaveTrendByDay;
 import com.skapp.community.leaveplanner.repository.projection.LeaveTrendByMonth;
 import com.skapp.community.leaveplanner.repository.projection.LeaveTypeBreakDown;
-import com.skapp.community.leaveplanner.repository.projection.LeaveUtilizationByEmployeeMonthly;
 import com.skapp.community.leaveplanner.repository.projection.ManagerLeaveTrend;
 import com.skapp.community.leaveplanner.repository.projection.OrganizationLeaveTrendForTheYear;
 import com.skapp.community.leaveplanner.repository.projection.TeamLeaveCountByType;
@@ -100,6 +100,7 @@ import com.skapp.community.peopleplanner.repository.EmployeeTeamDao;
 import com.skapp.community.peopleplanner.repository.HolidayDao;
 import com.skapp.community.peopleplanner.repository.JobFamilyDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
+import com.skapp.community.peopleplanner.service.HolidayService;
 import com.skapp.community.peopleplanner.util.PeopleUtil;
 import com.skapp.community.timeplanner.model.TimeConfig;
 import com.skapp.community.timeplanner.repository.TimeConfigDao;
@@ -150,6 +151,8 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 	private final UserDao userDao;
 
 	private final HolidayDao holidayDao;
+
+	private final HolidayService holidayService;
 
 	private final TimeConfigDao timeConfigDao;
 
@@ -557,6 +560,7 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getEmployeeLeaveUtilization(LeaveUtilizationFilterDto leaveUtilizationFilterDto) {
 		User currentUser = userService.getCurrentUser();
 		log.info("getLeaveUtilization: execution started by user: {}", currentUser.getUserId());
@@ -604,23 +608,21 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_START_DATE_END_DATE_NOT_VALID);
 		}
 
-		List<LocalDate> holidayDates = holidayDao.findAllByIsActiveTrue().stream().map(Holiday::getDate).toList();
+		List<Holiday> holidays = holidayService.getActiveHolidaysForEmployee(employeeOptional.get());
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
-		List<LeaveUtilizationByEmployeeMonthly> leaveUtilizationByEmployeeMonthly = leaveRequestDao
-			.findLeaveUtilizationByEmployeeMonthly(startDate, endDate,
-					CommonModuleUtils.getWorkingDaysIndex(timeConfigs), holidayDates, employeeId, leaveTypeIds);
+		List<LeaveRequestPeriod> leavePeriods = leaveRequestDao
+			.findApprovedLeavePeriodsOfActiveEmployeeInRange(employeeId, leaveTypeIds, startDate, endDate);
 
-		Map<Integer, Double> totalLeavesWithMonths = leaveUtilizationByEmployeeMonthly.stream()
-			.collect(Collectors.groupingBy(LeaveUtilizationByEmployeeMonthly::getMonthValue,
-					Collectors.summingDouble(LeaveUtilizationByEmployeeMonthly::getLeaveCount)));
+		Map<Integer, Map<Integer, Double>> result = LeaveModuleUtil.getLeaveDaysByTypeAndMonth(leavePeriods, startDate,
+				endDate, timeConfigs, holidays);
+
+		Map<Integer, Double> totalLeavesWithMonths = new HashMap<>();
+		result.values()
+			.forEach(leaveDaysByMonth -> leaveDaysByMonth
+				.forEach((month, leaveDays) -> totalLeavesWithMonths.merge(month, leaveDays, Double::sum)));
 
 		Map<String, Float> totalLeavesWithMonthsResultsSet = mapMonthKeysToName(startDate, endDate,
 				totalLeavesWithMonths);
-
-		Map<Integer, Map<Integer, Double>> result = leaveUtilizationByEmployeeMonthly.stream()
-			.collect(Collectors.groupingBy(LeaveUtilizationByEmployeeMonthly::getLeaveType,
-					Collectors.groupingBy(LeaveUtilizationByEmployeeMonthly::getMonthValue,
-							Collectors.summingDouble(LeaveUtilizationByEmployeeMonthly::getLeaveCount))));
 
 		LeaveUtilizationResponseDto response = getLeaveUtilizationDataResponseDto(leaveTypes, result,
 				totalLeavesWithMonthsResultsSet, startDate, endDate);

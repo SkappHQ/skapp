@@ -8,6 +8,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { ActivityRow } from "~community/crm/activities/types/activityTypes";
 import { toTaskRow } from "~community/crm/activities/utils/activityFeedUtil";
+import { toDealEditPayload } from "~community/crm/activities/utils/activityUtil";
 import {
   useDeleteActivityTask,
   useGetActivityTaskById,
@@ -23,7 +24,7 @@ import { CrmSidePanelTypes } from "~community/crm/types/CrmTypes";
 
 interface Props {
   taskId: number;
-  onCompletionChange: (taskId: number) => void;
+  onCompletionChange?: (taskId: number) => void;
 }
 
 const ActivityTaskSidePanel: FC<Props> = ({ taskId, onCompletionChange }) => {
@@ -94,20 +95,16 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId, onCompletionChange }) => {
     router.push(url);
   };
 
-  const handleContactClick = (): void => {
-    if (task?.contact?.id) {
-      openRecord(ROUTES.CRM.CONTACT_DETAIL(task.contact.id));
-    }
+  const handleContactClick = (contactId: number): void => {
+    openRecord(ROUTES.CRM.CONTACT_DETAIL(contactId));
   };
 
-  const handleCompanyClick = (): void => {
-    if (task?.company?.id) {
-      openRecord(ROUTES.CRM.COMPANY_DETAIL(task.company.id));
-    }
+  const handleCompanyClick = (companyId: number): void => {
+    openRecord(ROUTES.CRM.COMPANY_DETAIL(companyId));
   };
 
   const handleCompletionChange = (isCompleted: boolean): void => {
-    onCompletionChange(taskId);
+    onCompletionChange?.(taskId);
     updateTask({ id: taskId, isCompleted });
   };
 
@@ -138,6 +135,8 @@ const ActivityTaskSidePanel: FC<Props> = ({ taskId, onCompletionChange }) => {
         onTitleSave={(name) => updateTask({ id: taskId, name })}
         onCommentsSave={(notes) => updateTask({ id: taskId, notes })}
         onDelete={openDeleteModal}
+        onDealChange={(dealId) => updateTask(toDealEditPayload(taskId, dealId))}
+        onDetailsSave={updateTask}
         onMarkAsDone={() => handleCompletionChange(true)}
         onReopen={() => handleCompletionChange(false)}
         onContactClick={handleContactClick}

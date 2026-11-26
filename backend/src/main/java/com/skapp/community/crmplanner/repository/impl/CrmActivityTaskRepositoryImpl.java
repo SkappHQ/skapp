@@ -6,12 +6,14 @@ import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmContact_;
+import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.payload.response.CrmActivityTaskResponseDto;
 import com.skapp.community.crmplanner.repository.CrmActivityTaskRepository;
 import com.skapp.community.crmplanner.type.CrmActivityTaskFilterParams;
 import com.skapp.community.crmplanner.type.CrmActivityTaskPriority;
 import com.skapp.community.crmplanner.type.CrmActivityTaskSort;
+import com.skapp.community.crmplanner.type.CrmActivityTaskStatus;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
@@ -26,11 +28,17 @@ import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 @RequiredArgsConstructor
@@ -39,7 +47,7 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 	private final EntityManager entityManager;
 
 	@Override
-	public List<CrmActivityTaskResponseDto> findTasks(CrmActivityTaskFilterParams params) {
+	public Page<CrmActivityTaskResponseDto> findTasks(CrmActivityTaskFilterParams params, Pageable pageable) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Tuple> query = cb.createTupleQuery();
 		Root<CrmActivityTask> task = query.from(CrmActivityTask.class);
@@ -70,8 +78,37 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 		if (params.getRelatedDealId() != null) {
 			predicates.add(cb.equal(task.get(CrmActivityTask_.deal).get(CrmDeal_.id), params.getRelatedDealId()));
 		}
+		if (Boolean.TRUE.equals(params.getIsWithoutDeal())) {
+			Join<CrmActivityTask, CrmDeal> deal = task.join(CrmActivityTask_.deal, JoinType.LEFT);
+			deal.on(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+			predicates.add(cb.isNull(deal.get(CrmDeal_.id)));
+		}
+		if (Boolean.TRUE.equals(params.getIsWithoutContact())) {
+			Join<CrmActivityTask, CrmContact> contact = task.join(CrmActivityTask_.contact, JoinType.LEFT);
+			contact.on(cb.isFalse(contact.get(CrmContact_.isDeleted)));
+			predicates.add(cb.isNull(contact.get(CrmContact_.id)));
+		}
 		if (params.getExcludedId() != null) {
 			predicates.add(cb.notEqual(task.get(CrmActivityTask_.id), params.getExcludedId()));
+		}
+		if (params.getPriority() != null) {
+			predicates.add(cb.equal(task.get(CrmActivityTask_.priority), params.getPriority()));
+		}
+		if (params.getTaskStatus() == CrmActivityTaskStatus.COMPLETED) {
+			predicates.add(cb.isTrue(task.get(CrmActivityTask_.isCompleted)));
+		}
+		if (params.getTaskStatus() == CrmActivityTaskStatus.OVERDUE) {
+			predicates.add(cb.isFalse(task.get(CrmActivityTask_.isCompleted)));
+			predicates.add(cb.lessThan(dueAt, params.getTodayStart()));
+		}
+		if (params.getTaskStatus() == CrmActivityTaskStatus.TODAY) {
+			predicates.add(cb.isFalse(task.get(CrmActivityTask_.isCompleted)));
+			predicates.add(cb.greaterThanOrEqualTo(dueAt, params.getTodayStart()));
+			predicates.add(cb.lessThan(dueAt, params.getTodayEnd()));
+		}
+		if (params.getTaskStatus() == CrmActivityTaskStatus.UPCOMING) {
+			predicates.add(cb.isFalse(task.get(CrmActivityTask_.isCompleted)));
+			predicates.add(cb.greaterThanOrEqualTo(dueAt, params.getTodayEnd()));
 		}
 
 		if (params.getSearchPattern() != null) {
@@ -94,6 +131,9 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 			orders.add(cb.desc(task.get(CrmActivityTask_.id)));
 		}
 		else {
+			orders.add(cb.asc(task.get(CrmActivityTask_.isCompleted)));
+			orders
+				.add(cb.asc(cb.<Instant>selectCase().when(cb.isFalse(task.get(CrmActivityTask_.isCompleted)), dueAt)));
 			orders.add(ascending ? cb.asc(dueAt) : cb.desc(dueAt));
 			orders.add(ascending ? cb.asc(task.get(CrmActivityTask_.id)) : cb.desc(task.get(CrmActivityTask_.id)));
 		}
@@ -108,10 +148,84 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 			.orderBy(orders);
 
 		TypedQuery<Tuple> typedQuery = entityManager.createQuery(query);
-		if (params.getMaxResults() != null) {
-			typedQuery.setMaxResults(params.getMaxResults());
+		typedQuery.setFirstResult((int) pageable.getOffset());
+		typedQuery.setMaxResults(pageable.getPageSize());
+		List<Tuple> results = typedQuery.getResultList();
+
+		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+		Root<CrmActivityTask> countRoot = countQuery.from(CrmActivityTask.class);
+		Path<Long> countOwnerId = countRoot.get(CrmActivityTask_.owner).get(Employee_.employeeId);
+		Path<Instant> countDueAt = countRoot.get(CrmActivityTask_.dueAt);
+		List<Predicate> countPredicates = new ArrayList<>();
+		if (Boolean.TRUE.equals(params.getIsRestrictedToOwner())) {
+			countPredicates.add(cb.equal(countOwnerId, params.getCurrentEmployeeId()));
 		}
-		return typedQuery.getResultList().stream().map(row -> {
+		if (params.getOwnerId() != null) {
+			countPredicates.add(cb.equal(countOwnerId, params.getOwnerId()));
+		}
+		if (params.getRangeStart() != null) {
+			countPredicates.add(cb.greaterThanOrEqualTo(countDueAt, params.getRangeStart()));
+		}
+		if (params.getRangeEnd() != null) {
+			countPredicates.add(cb.lessThan(countDueAt, params.getRangeEnd()));
+		}
+		countPredicates.add(cb.isFalse(countRoot.get(CrmActivityTask_.isDeleted)));
+		if (params.getRelatedContactIds() != null) {
+			countPredicates
+				.add(countRoot.get(CrmActivityTask_.contact).get(CrmContact_.id).in(params.getRelatedContactIds()));
+		}
+		if (params.getRelatedDealId() != null) {
+			countPredicates
+				.add(cb.equal(countRoot.get(CrmActivityTask_.deal).get(CrmDeal_.id), params.getRelatedDealId()));
+		}
+		if (Boolean.TRUE.equals(params.getIsWithoutDeal())) {
+			Join<CrmActivityTask, CrmDeal> deal = countRoot.join(CrmActivityTask_.deal, JoinType.LEFT);
+			deal.on(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+			countPredicates.add(cb.isNull(deal.get(CrmDeal_.id)));
+		}
+		if (Boolean.TRUE.equals(params.getIsWithoutContact())) {
+			Join<CrmActivityTask, CrmContact> contact = countRoot.join(CrmActivityTask_.contact, JoinType.LEFT);
+			contact.on(cb.isFalse(contact.get(CrmContact_.isDeleted)));
+			countPredicates.add(cb.isNull(contact.get(CrmContact_.id)));
+		}
+		if (params.getExcludedId() != null) {
+			countPredicates.add(cb.notEqual(countRoot.get(CrmActivityTask_.id), params.getExcludedId()));
+		}
+		if (params.getPriority() != null) {
+			countPredicates.add(cb.equal(countRoot.get(CrmActivityTask_.priority), params.getPriority()));
+		}
+		if (params.getTaskStatus() == CrmActivityTaskStatus.COMPLETED) {
+			countPredicates.add(cb.isTrue(countRoot.get(CrmActivityTask_.isCompleted)));
+		}
+		if (params.getTaskStatus() == CrmActivityTaskStatus.OVERDUE) {
+			countPredicates.add(cb.isFalse(countRoot.get(CrmActivityTask_.isCompleted)));
+			countPredicates.add(cb.lessThan(countDueAt, params.getTodayStart()));
+		}
+		if (params.getTaskStatus() == CrmActivityTaskStatus.TODAY) {
+			countPredicates.add(cb.isFalse(countRoot.get(CrmActivityTask_.isCompleted)));
+			countPredicates.add(cb.greaterThanOrEqualTo(countDueAt, params.getTodayStart()));
+			countPredicates.add(cb.lessThan(countDueAt, params.getTodayEnd()));
+		}
+		if (params.getTaskStatus() == CrmActivityTaskStatus.UPCOMING) {
+			countPredicates.add(cb.isFalse(countRoot.get(CrmActivityTask_.isCompleted)));
+			countPredicates.add(cb.greaterThanOrEqualTo(countDueAt, params.getTodayEnd()));
+		}
+
+		if (params.getSearchPattern() != null) {
+			Join<CrmActivityTask, CrmContact> contact = countRoot.join(CrmActivityTask_.contact, JoinType.LEFT);
+			contact.on(cb.isFalse(contact.get(CrmContact_.isDeleted)));
+			Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
+			contactCompany.on(cb.isFalse(contactCompany.get(CrmCompany_.isDeleted)));
+
+			countPredicates
+				.add(cb.or(cb.like(cb.lower(countRoot.get(CrmActivityTask_.name)), params.getSearchPattern()),
+						cb.like(cb.lower(contact.get(CrmContact_.name)), params.getSearchPattern()),
+						cb.like(cb.lower(contactCompany.get(CrmCompany_.name)), params.getSearchPattern())));
+		}
+
+		countQuery.select(cb.count(countRoot)).where(countPredicates.toArray(new Predicate[0]));
+		long total = entityManager.createQuery(countQuery).getSingleResult();
+		List<CrmActivityTaskResponseDto> tasks = results.stream().map(row -> {
 			CrmActivityTaskResponseDto dto = new CrmActivityTaskResponseDto();
 			dto.setId(row.get(0, Long.class));
 			dto.setName(row.get(1, String.class));
@@ -126,6 +240,8 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 			dto.setCompanyId(row.get(10, Long.class));
 			return dto;
 		}).toList();
+
+		return new PageImpl<>(tasks, pageable, total);
 	}
 
 	@Override
@@ -142,6 +258,36 @@ public class CrmActivityTaskRepositoryImpl implements CrmActivityTaskRepository 
 			.where(cb.equal(task.get(CrmActivityTask_.id), id), cb.isFalse(task.get(CrmActivityTask_.isDeleted)));
 
 		return entityManager.createQuery(query).getResultStream().findFirst().orElse(null);
+	}
+
+	@Override
+	public Map<Long, Long> countTasksByDealIds(List<Long> dealIds, Long ownerId) {
+		if (dealIds == null || dealIds.isEmpty()) {
+			return Collections.emptyMap();
+		}
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Tuple> query = cb.createTupleQuery();
+		Root<CrmActivityTask> task = query.from(CrmActivityTask.class);
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(task.get(CrmActivityTask_.deal).get(CrmDeal_.id).in(dealIds));
+		predicates.add(cb.isFalse(task.get(CrmActivityTask_.isDeleted)));
+		predicates.add(cb.isFalse(task.get(CrmActivityTask_.isCompleted)));
+
+		if (ownerId != null) {
+			predicates.add(cb.equal(task.get(CrmActivityTask_.owner).get(Employee_.employeeId), ownerId));
+		}
+
+		query.select(
+				cb.tuple(task.get(CrmActivityTask_.deal).get(CrmDeal_.id), cb.count(task.get(CrmActivityTask_.id))));
+		query.where(predicates.toArray(new Predicate[0]));
+		query.groupBy(task.get(CrmActivityTask_.deal).get(CrmDeal_.id));
+
+		Map<Long, Long> counts = new HashMap<>();
+		entityManager.createQuery(query)
+			.getResultList()
+			.forEach(t -> counts.put(t.get(0, Long.class), t.get(1, Long.class)));
+		return counts;
 	}
 
 }

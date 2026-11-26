@@ -57,6 +57,7 @@ export interface SearchableDropdownProps {
   variant?: "sm" | "md" | "lg";
   positionStrategy?: "absolute" | "fixed";
   isFlip?: boolean;
+  isWrapperRelative?: boolean;
   onClose?: () => void;
   isOpenOnFocus?: boolean;
 }
@@ -79,6 +80,7 @@ const SearchableDropdown: FC<SearchableDropdownProps> = ({
   variant = "md",
   positionStrategy = "absolute",
   isFlip = true,
+  isWrapperRelative = true,
   onClose,
   isOpenOnFocus = false
 }) => {
@@ -173,7 +175,7 @@ const SearchableDropdown: FC<SearchableDropdownProps> = ({
 
   return (
     <div
-      className="w-full relative input-plain-text"
+      className={`w-full ${isWrapperRelative ? "relative" : ""} input-plain-text`}
       ref={inputWrapperRef}
       onFocus={() => {
         if (value.trim().length > 0 || (isOpenOnFocus && items.length > 0)) {
@@ -193,7 +195,7 @@ const SearchableDropdown: FC<SearchableDropdownProps> = ({
         onChange={handleInputChange}
         onKeyDown={handleInputKeyDown}
         variant={variant}
-        state={state}
+        state={isDropdownOpen ? "default" : state}
         errorMessage={errorMessage}
         styleOverrides={{
           labelContainer:

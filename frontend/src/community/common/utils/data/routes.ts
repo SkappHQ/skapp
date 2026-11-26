@@ -272,18 +272,6 @@ const routes = [
         ]
       },
       {
-        id: "4D",
-        name: "Tasks",
-        url: ROUTES.CRM.TASKS,
-        hasSubTree: false,
-        requiredAuthLevel: [
-          AdminTypes.SUPER_ADMIN,
-          AdminTypes.CRM_ADMIN,
-          ManagerTypes.CRM_SALES_MANAGER,
-          RepresentativeTypes.CRM_SALES_REPRESENTATIVE
-        ]
-      },
-      {
         id: "4E",
         name: "Activities",
         url: ROUTES.CRM.ACTIVITIES,
@@ -431,6 +419,13 @@ const routes = [
           AdminTypes.SUPER_ADMIN,
           ManagerTypes.INVOICE_MANAGER
         ]
+      },
+      {
+        id: "7C",
+        name: "Time Approvals",
+        url: ROUTES.INVOICE.TIME_APPROVALS.BASE,
+        hasSubTree: false,
+        requiredAuthLevel: [AdminTypes.INVOICE_ADMIN]
       }
     ]
   },

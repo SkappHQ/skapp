@@ -1,6 +1,9 @@
 import { ReactNode } from "react";
 
-import { CrmPriorityEnum } from "~community/crm/enums/common";
+import {
+  CrmActivityAssociationEnum,
+  CrmPriorityEnum
+} from "~community/crm/enums/common";
 import { CrmMeetingVenueDetails } from "~enterprise/crm/types/ScheduleMeetingTypes";
 
 export enum ActivityType {
@@ -55,11 +58,20 @@ export interface ActivityRowSubtitlePart {
   content: ReactNode;
 }
 
-export interface ActivityFeedResponse {
-  items: ActivityRow[];
+export interface ActivityListPage<T> {
+  items: T[];
   currentPage: number;
   totalItems: number;
   totalPages: number;
+}
+
+export type ActivityFeedResponse = ActivityListPage<ActivityRow>;
+
+export enum ActivityTaskStatus {
+  OVERDUE = "OVERDUE",
+  TODAY = "TODAY",
+  UPCOMING = "UPCOMING",
+  COMPLETED = "COMPLETED"
 }
 
 export interface ActivityFeedFilters {
@@ -72,10 +84,27 @@ export interface ActivityFeedFilters {
   size?: number;
 }
 
-export type ActivityFilterValues = Pick<
-  ActivityFeedFilters,
-  "ownerId" | "fromDate" | "toDate"
->;
+export interface ActivityChipFilterOption {
+  value: ActivityTaskStatus | CrmPriorityEnum;
+  label: string;
+}
+
+export interface ActivityFilterValues {
+  ownerId?: number;
+  fromDate?: string;
+  toDate?: string;
+  taskStatus?: ActivityTaskStatus;
+  priority?: CrmPriorityEnum;
+}
+
+export interface RecordActivityFilters {
+  activityAssociation: CrmActivityAssociationEnum;
+  recordId: number;
+  type?: ActivityType;
+  search?: string;
+  page?: number;
+  size?: number;
+}
 
 export interface ActivityDateRange {
   fromDate?: string;
@@ -94,6 +123,10 @@ export interface ActivityListFilters {
   ownerId?: number;
   startDate?: string;
   endDate?: string;
+  taskStatus?: ActivityTaskStatus;
+  priority?: CrmPriorityEnum;
+  page?: number;
+  size?: number;
 }
 
 interface ActivityListItemBase {
@@ -178,21 +211,63 @@ export interface ActivityTaskCreatePayload {
   notes: string;
 }
 
-export interface ActivityCallEditPayload {
+export interface ActivityLinkEditPayload {
+  ownerId?: number;
+  dealId?: number;
+  isDealRemoved?: boolean;
+  companyId?: number;
+  isCompanyRemoved?: boolean;
+}
+
+export interface ActivityDealEditPayload {
+  id: number;
+  dealId?: number;
+  isDealRemoved?: boolean;
+}
+
+export interface ActivityCallEditPayload extends ActivityLinkEditPayload {
   id: number;
   subject?: string;
   comments?: string;
+  loggedAt?: string | null;
+  durationMinutes?: number | null;
+  contactId?: number;
 }
 
-export interface ActivityMeetingEditPayload {
+export interface ActivityMeetingEditPayload extends ActivityLinkEditPayload {
   id: number;
   name?: string;
   comments?: string;
+  meetingDate?: string | null;
+  startAt?: string | null;
+  endAt?: string | null;
+  contactIds?: number[];
 }
 
-export interface ActivityTaskEditPayload {
+export interface ActivityTaskEditPayload extends ActivityLinkEditPayload {
   id: number;
   name?: string;
   notes?: string;
   isCompleted?: boolean;
+  priority?: CrmPriorityEnum;
+  dueAt?: string | null;
+  contactId?: number;
+}
+
+export type EmailRecipientField =
+  "toContactIds" | "ccContactIds" | "bccContactIds";
+
+export type EmailRecipientLabelKey = "to" | "cc" | "bcc";
+
+export type EmailRecipientAriaKey = "editTo" | "editCc" | "editBcc";
+
+export interface ActivityEmailEditPayload extends ActivityLinkEditPayload {
+  id: number;
+  subject?: string;
+  description?: string;
+  fromAddress?: string;
+  loggedAt?: string | null;
+  toContactIds?: number[];
+  ccContactIds?: number[];
+  bccContactIds?: number[];
 }

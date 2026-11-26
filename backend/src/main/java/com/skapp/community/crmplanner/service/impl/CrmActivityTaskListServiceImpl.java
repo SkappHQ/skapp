@@ -1,6 +1,7 @@
 package com.skapp.community.crmplanner.service.impl;
 
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
@@ -14,12 +15,14 @@ import com.skapp.community.crmplanner.type.CrmActivityTaskSort;
 import com.skapp.community.crmplanner.util.CrmUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.List;
 
 @Service
 @Slf4j
@@ -63,11 +66,25 @@ public class CrmActivityTaskListServiceImpl implements CrmActivityTaskListServic
 		if (filterDto.getEndDate() != null) {
 			params.setRangeEnd(filterDto.getEndDate().plusDays(1).atStartOfDay(zone).toInstant());
 		}
+		params.setPriority(filterDto.getPriority());
+		params.setTaskStatus(filterDto.getTaskStatus());
+		if (filterDto.getTaskStatus() != null) {
+			LocalDate today = LocalDate.now(zone);
+			params.setTodayStart(today.atStartOfDay(zone).toInstant());
+			params.setTodayEnd(today.plusDays(1).atStartOfDay(zone).toInstant());
+		}
 
-		List<CrmActivityTaskResponseDto> tasks = crmActivityTaskDao.findTasks(params);
+		PageRequest pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
+		Page<CrmActivityTaskResponseDto> taskPage = crmActivityTaskDao.findTasks(params, pageable);
+
+		PageDto pageDto = new PageDto();
+		pageDto.setItems(taskPage.getContent());
+		pageDto.setCurrentPage(taskPage.getNumber());
+		pageDto.setTotalItems(taskPage.getTotalElements());
+		pageDto.setTotalPages(taskPage.getTotalPages());
 
 		log.info("getTasks: execution ended");
-		return new ResponseEntityDto(false, tasks);
+		return new ResponseEntityDto(false, pageDto);
 	}
 
 }

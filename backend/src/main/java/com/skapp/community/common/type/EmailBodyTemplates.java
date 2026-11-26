@@ -106,6 +106,8 @@ public enum EmailBodyTemplates implements EmailTemplates {
 	LEAVE_MODULE_MANAGER_NUDGE_MULTI_DAY_LEAVE("leave-module-manager-nudge-multi-day-leave"),
 	LEAVE_MODULE_MANAGER_AUTO_APPROVED_SINGLE_DAY_LEAVE("leave-module-manager-auto-approved-single-day-leave"),
 	LEAVE_MODULE_MANAGER_AUTO_APPROVED_MULTI_DAY_LEAVE("leave-module-manager-auto-approved-multi-day-leave"),
+	LEAVE_MODULE_EMPLOYEE_ACCRUAL_POLICY_ASSIGNED("leave-module-employee-accrual-policy-assigned"),
+	LEAVE_MODULE_EMPLOYEE_FLEXIBLE_POLICY_ASSIGNED("leave-module-employee-flexible-policy-assigned"),
 
 	// E-Sign Templates
 	ESIGN_DOCUMENT_SIGN_REQUEST("esign-document-sign-request"), ESIGN_DOCUMENT_COMPLETED("esign-document-completed"),
