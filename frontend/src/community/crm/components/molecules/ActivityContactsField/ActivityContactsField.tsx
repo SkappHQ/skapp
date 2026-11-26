@@ -71,9 +71,10 @@ const ActivityContactsField: FC<Props> = ({
   const [hasMenuOpened, setHasMenuOpened] = useState(false);
   const [pinnedContactIds, setPinnedContactIds] = useState<number[]>([]);
 
-  const { isSearchActive, lookupItems } = useContactLookup(
+  const { isSearchActive, isLoading, lookupItems } = useContactLookup(
     searchTerm,
-    hasMenuOpened
+    hasMenuOpened,
+    true
   );
 
   const fillRelatedToFromContact = useRelatedToAutoFill(formik, fillsRelatedTo);
@@ -161,7 +162,12 @@ const ActivityContactsField: FC<Props> = ({
             texts={{
               placeholder,
               selectedCount: translateText(["placeholders", "selectedCount"]),
-              noOptions: translateText(["emptyStates", "noContacts"])
+              noOptions: translateText([
+                "emptyStates",
+                isLoading && lookupItems.length === 0
+                  ? "searching"
+                  : "noContacts"
+              ])
             }}
           />
         </div>

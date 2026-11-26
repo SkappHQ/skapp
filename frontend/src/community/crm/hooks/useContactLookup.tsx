@@ -20,7 +20,8 @@ interface ContactLookup {
 
 export const useContactLookup = (
   searchTerm: string,
-  shouldLoadWithoutSearch: boolean
+  shouldLoadWithoutSearch: boolean,
+  shouldKeepPreviousData?: boolean
 ): ContactLookup => {
   const debouncedSearch = useDebounce(searchTerm.trim(), SEARCH_DEBOUNCE_DELAY);
 
@@ -37,7 +38,7 @@ export const useContactLookup = (
   const { data: lookupData, isFetching } = useGetContactLookup(
     lookupFilter,
     isSearchActive || shouldLoadWithoutSearch,
-    shouldLoadWithoutSearch
+    shouldKeepPreviousData
   );
 
   const lookupItems = useMemo(
