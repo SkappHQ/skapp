@@ -48,7 +48,7 @@ const ActivityDealField: FC<Props> = ({
   onDealChange,
   filterCompanyId
 }) => {
-  const { values, setFieldValue } = formik;
+  const { values, submitCount, setFieldValue } = formik;
 
   const translateText = useTranslator("crmModule", "activities", "logActivity");
   const translateAria = useTranslator("crmAria", "activities", "logActivity");
@@ -115,6 +115,20 @@ const ActivityDealField: FC<Props> = ({
     }
   }, [fetchedDeals]);
 
+  useEffect(() => {
+    if (!isMismatch) return;
+    document
+      .getElementById(`${id}-input-error`)
+      ?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [isMismatch, submitCount]);
+
+  useEffect(() => {
+    if (!isClearedNoticeVisible) return;
+    document
+      .getElementById(`${id}-cleared`)
+      ?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [isClearedNoticeVisible, submitCount]);
+
   const selectedDeal = values.dealId ? deals[values.dealId] : null;
 
   const handleSelect = (item: SearchableDropdownItem): void => {
@@ -161,7 +175,10 @@ const ActivityDealField: FC<Props> = ({
         })}
       />
       {isClearedNoticeVisible && (
-        <output className="text-sm text-semantic-amber-text">
+        <output
+          id={`${id}-cleared`}
+          className="text-sm text-semantic-amber-text"
+        >
           {translateText(["notices", "dealCleared"])}
         </output>
       )}

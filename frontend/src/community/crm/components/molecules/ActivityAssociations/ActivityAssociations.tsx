@@ -4,10 +4,15 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 
 interface Props {
   isForcedOpen: boolean;
+  submitCount: number;
   children: ReactNode;
 }
 
-const ActivityAssociations: FC<Props> = ({ isForcedOpen, children }) => {
+const ActivityAssociations: FC<Props> = ({
+  isForcedOpen,
+  submitCount,
+  children
+}) => {
   const translateText = useTranslator(
     "crmModule",
     "activities",
@@ -20,6 +25,13 @@ const ActivityAssociations: FC<Props> = ({ isForcedOpen, children }) => {
 
   if (isForcedOpen !== wasForcedOpen) {
     setWasForcedOpen(isForcedOpen);
+    if (isForcedOpen) setIsOpen(true);
+  }
+
+  const [lastSubmitCount, setLastSubmitCount] = useState(submitCount);
+
+  if (submitCount !== lastSubmitCount) {
+    setLastSubmitCount(submitCount);
     if (isForcedOpen) setIsOpen(true);
   }
 

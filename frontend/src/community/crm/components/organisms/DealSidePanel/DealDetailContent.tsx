@@ -113,9 +113,9 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
               <RecordActivityActions
                 id="deal-activity-actions"
                 prefill={{
-                  contactId: null,
+                  contactId: deal.contactId ? deal.contactId : null,
                   dealId,
-                  companyId: null
+                  companyId: deal.companyId ? deal.companyId : null
                 }}
               />
             </div>
