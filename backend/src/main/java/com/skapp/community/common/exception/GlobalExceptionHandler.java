@@ -21,6 +21,7 @@ import org.springframework.security.authentication.InternalAuthenticationService
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -47,7 +48,10 @@ public class GlobalExceptionHandler {
 				CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR);
 
 		for (FieldError fieldError : e.getBindingResult().getFieldErrors()) {
-			errorResponse.addValidationError(fieldError.getField(), fieldError.getDefaultMessage());
+			String errorMessage = fieldError.isBindingFailure()
+					? messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR)
+					: fieldError.getDefaultMessage();
+			errorResponse.addValidationError(fieldError.getField(), errorMessage);
 			log.debug("Validation error on field '{}': {}", fieldError.getField(), fieldError.getDefaultMessage());
 		}
 
@@ -60,6 +64,18 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ResponseEntityDto> handleHttpMessageNotReadableException() {
 		HttpStatus status = HttpStatus.BAD_REQUEST;
 		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR);
+
+		return new ResponseEntity<>(
+				new ResponseEntityDto(true,
+						new ErrorResponse(status, message, CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR)),
+				status);
+	}
+
+	@ExceptionHandler(MissingPathVariableException.class)
+	public ResponseEntity<ResponseEntityDto> handleMissingPathVariableException(MissingPathVariableException e) {
+		HttpStatus status = HttpStatus.BAD_REQUEST;
+		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR);
+		handleException(e, CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR.name(), status);
 
 		return new ResponseEntity<>(
 				new ResponseEntityDto(true,
