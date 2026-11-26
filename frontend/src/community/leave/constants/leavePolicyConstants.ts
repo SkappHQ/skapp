@@ -14,6 +14,8 @@ export const USER_ASSIGNED_LEAVE_TYPES_PAGE_SIZE = 8;
 
 export const LEAVE_POLICY_SEARCH_DEBOUNCE_MS = 500;
 
+export const LEAVE_POLICY_CONFIG_STALE_TIME_MS = 5 * 60 * 1000;
+
 export const MAX_POLICY_DAYS = 365;
 
 export const MIN_POLICY_DAYS = 0.5;

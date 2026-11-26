@@ -1,7 +1,8 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 
 import { usePeopleStore } from "../store/store";
 
@@ -16,6 +17,18 @@ const useStepper = () => {
 
   const { isLeaveModuleEnabled } = useSessionData();
 
+  const {
+    isLeavePoliciesEnabled,
+    isLoading: isLeavePolicyConfigLoading,
+    isError: isLeavePolicyConfigError
+  } = useLeavePoliciesEnabled(isLeaveModuleEnabled);
+
+  const isEntitlementsStepVisible =
+    isLeaveModuleEnabled &&
+    !isLeavePolicyConfigLoading &&
+    !isLeavePolicyConfigError &&
+    !isLeavePoliciesEnabled;
+
   const steps = useMemo(() => {
     let steps = [
       translateText(["personal"]),
@@ -25,14 +38,22 @@ const useStepper = () => {
       translateText(["entitlements"])
     ];
 
-    if (!isLeaveModuleEnabled) {
+    if (!isEntitlementsStepVisible) {
       steps = steps.filter((step) => step !== translateText(["entitlements"]));
     }
 
     return steps;
-  }, [isLeaveModuleEnabled, translateText]);
+  }, [isEntitlementsStepVisible, translateText]);
 
-  const isLastStep = activeStep === steps.length - 1;
+  const lastStepIndex = steps.length - 1;
+
+  useEffect(() => {
+    if (activeStep > lastStepIndex) {
+      setActiveStep(lastStepIndex);
+    }
+  }, [activeStep, lastStepIndex]);
+
+  const isLastStep = activeStep >= lastStepIndex;
 
   const goToStep = (stepIndex: number) => {
     if (stepIndex === activeStep) return;
@@ -41,8 +62,7 @@ const useStepper = () => {
   };
 
   const handleNext = () => {
-    const nextIndex =
-      activeStep < steps.length - 1 ? activeStep + 1 : activeStep;
+    const nextIndex = activeStep < lastStepIndex ? activeStep + 1 : activeStep;
     goToStep(nextIndex);
   };
 
