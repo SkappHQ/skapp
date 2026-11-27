@@ -109,7 +109,8 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 	private static final String SEED_FLEXIBLE_LEAVE_REQUESTS = "INSERT INTO lv_leave_request (id, employee_id, policy_id, start_date, end_date, leave_state, status, duration_days) VALUES "
 			+ "(950, 1, 700, CURRENT_DATE, CURRENT_DATE, 'FULLDAY', 'APPROVED', 1), "
 			+ "(951, 1, 700, CURRENT_DATE, CURRENT_DATE, 'HALFDAY_MORNING', 'PENDING', 0.5), "
-			+ "(952, 1, 700, CURRENT_DATE, CURRENT_DATE, 'FULLDAY', 'DENIED', 1)";
+			+ "(952, 1, 700, CURRENT_DATE, CURRENT_DATE, 'FULLDAY', 'DENIED', 1), "
+			+ "(953, 1, 700, DATEADD('YEAR', -1, CURRENT_DATE), DATEADD('YEAR', -1, CURRENT_DATE), 'FULLDAY', 'APPROVED', 1)";
 
 	private static final String NULL_JOIN_DATE_EMPLOYEE_2 = "UPDATE employee SET join_date = NULL WHERE employee_id = 2";
 
@@ -439,7 +440,7 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("A flexible assignment reports the days used by its pending and approved requests")
+		@DisplayName("A flexible assignment reports the days used by its pending and approved requests in the current cycle")
 		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES, SEED_FLEXIBLE_ASSIGNMENT, SEED_FLEXIBLE_LEAVE_REQUESTS })
 		void get_FlexibleAssignmentWithLeaveTaken_ReturnsUsedDays() throws Exception {
 			performGet(leaveAdminToken(), 1).andDo(print())
@@ -447,7 +448,9 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 				.andExpect(jsonPath("$.results[0].items", hasSize(1)))
 				.andExpect(jsonPath("$.results[0].items[0].policyId").value(700))
 				.andExpect(jsonPath("$.results[0].items[0].isUnlimited").value(true))
-				.andExpect(jsonPath("$.results[0].items[0].totalDaysUsed").value(1.5));
+				.andExpect(jsonPath("$.results[0].items[0].totalDaysUsed").value(1.5))
+				.andExpect(jsonPath("$.results[0].items[0].totalDaysAllocated").value(0.0))
+				.andExpect(jsonPath("$.results[0].items[0].balanceInDays").value(0.0));
 		}
 
 		@Test
