@@ -22,6 +22,8 @@ import {
   EffectiveDateType
 } from "~community/leave/types/LeavePolicyTypes";
 
+const JOIN_DATE_ERROR_ID = "assign-leave-policy-join-date-error";
+
 export interface PolicyOption {
   id: string;
   label: string;
@@ -32,7 +34,7 @@ interface Props {
   selectedPolicyId: string;
   policyOptions: PolicyOption[];
   onPolicyChange: (value: string) => void;
-  effectiveDateType: EffectiveDateType;
+  effectiveDateType: EffectiveDateType | null;
   onEffectiveDateTypeChange: (type: EffectiveDateType) => void;
   joinDateLabel: string;
   specificDate: string;
@@ -42,7 +44,7 @@ interface Props {
   isFlexiblePolicy: boolean;
   conflictWarning: string;
   joinDateWarning: string;
-  joinDateError: string;
+  isJoinDateErrorVisible: boolean;
 }
 
 const AssignLeavePolicyForm: FC<Props> = ({
@@ -59,7 +61,7 @@ const AssignLeavePolicyForm: FC<Props> = ({
   isFlexiblePolicy,
   conflictWarning,
   joinDateWarning,
-  joinDateError
+  isJoinDateErrorVisible
 }) => {
   const translateText = useTranslator("leaveModule", "leavePolicyAssignment");
 
@@ -120,6 +122,10 @@ const AssignLeavePolicyForm: FC<Props> = ({
               type="button"
               role="radio"
               aria-checked={effectiveDateType === EffectiveDateType.JOIN_DATE}
+              aria-invalid={isJoinDateErrorVisible}
+              aria-describedby={
+                isJoinDateErrorVisible ? JOIN_DATE_ERROR_ID : undefined
+              }
               onClick={() =>
                 onEffectiveDateTypeChange(EffectiveDateType.JOIN_DATE)
               }
@@ -144,13 +150,12 @@ const AssignLeavePolicyForm: FC<Props> = ({
                 </span>
               </Tooltip>
             </button>
-            {joinDateError && (
+            {isJoinDateErrorVisible && (
               <p
-                role="alert"
-                aria-live="assertive"
+                id={JOIN_DATE_ERROR_ID}
                 className="body2 text-semantic-red-text"
               >
-                {joinDateError}
+                {translateText(["assignModal", "joinDateNotSetError"])}
               </p>
             )}
             <button
