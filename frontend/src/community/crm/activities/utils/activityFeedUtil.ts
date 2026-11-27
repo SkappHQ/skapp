@@ -207,7 +207,7 @@ export const toMeetingRow = (
   loggedAt: meeting.startAt,
   startAt: meeting.startAt,
   completedAt: meeting.meetingDate,
-  isCompleted: true,
+  isCompleted: false,
   priority: null,
   ownerId: meeting.ownerId,
   dealId: meeting.dealId,
