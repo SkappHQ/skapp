@@ -528,6 +528,26 @@ export const checkRestrictedRoutesAndRedirect = (
   return null;
 };
 
+export const checkAdminRestrictedRoutesAndRedirect = (
+  request: NextRequest,
+  restrictedRoutes: string[],
+  requiredRole: string,
+  roles: string[]
+): NextResponse | null => {
+  const currentPath = request.nextUrl.pathname.toLowerCase();
+
+  if (
+    restrictedRoutes.some((url) => currentPath.startsWith(url)) &&
+    !roles.includes(requiredRole) &&
+    !roles.includes(AdminTypes.SUPER_ADMIN)
+  ) {
+    return NextResponse.redirect(
+      new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
+    );
+  }
+  return null;
+};
+
 export const getLabelForReadOnlyChip = (
   isBelow1024?: boolean,
   isResponsive?: boolean,

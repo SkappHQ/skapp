@@ -39,6 +39,7 @@ import {
   SuperAdminType
 } from "~community/common/types/AuthTypes";
 import {
+  checkAdminRestrictedRoutesAndRedirect,
   checkRestrictedRoutesAndRedirect,
   isEnterpriseMode
 } from "~community/common/utils/commonUtil";
@@ -381,31 +382,21 @@ const resolveLeavePolicyManagementAccess: AccessGuard = ({
     ? redirectToUnauthorized(request)
     : null;
 
-const resolveLeaveBalanceReportAccess: AccessGuard = ({
-  request,
-  currentPath,
-  roles
-}) =>
-  leaveReportRestrictedRoutes.some((url) =>
-    currentPath.toLowerCase().startsWith(url)
-  ) &&
-  !roles.includes(AdminTypes.LEAVE_ADMIN) &&
-  !roles.includes(ROLE_SUPER_ADMIN)
-    ? redirectToUnauthorized(request)
-    : null;
+const resolveLeaveBalanceReportAccess: AccessGuard = ({ request, roles }) =>
+  checkAdminRestrictedRoutesAndRedirect(
+    request,
+    leaveReportRestrictedRoutes,
+    AdminTypes.LEAVE_ADMIN,
+    roles
+  );
 
-const resolveTenureReportAccess: AccessGuard = ({
-  request,
-  currentPath,
-  roles
-}) =>
-  tenureReportRestrictedRoutes.some((url) =>
-    currentPath.toLowerCase().startsWith(url)
-  ) &&
-  !roles.includes(AdminTypes.PEOPLE_ADMIN) &&
-  !roles.includes(ROLE_SUPER_ADMIN)
-    ? redirectToUnauthorized(request)
-    : null;
+const resolveTenureReportAccess: AccessGuard = ({ request, roles }) =>
+  checkAdminRestrictedRoutesAndRedirect(
+    request,
+    tenureReportRestrictedRoutes,
+    AdminTypes.PEOPLE_ADMIN,
+    roles
+  );
 
 // Attendance-only employees land on their timesheet instead of the dashboard
 const resolveDashboardAccess: AccessGuard = ({
