@@ -156,13 +156,11 @@ export const getHolidaysOnDate = (
 export const getAllWorkLocationHolidays = (
   recordData: TimeRecordDataResponseType
 ): Holiday[] => {
-  const holidaysById = new Map<number, Holiday>();
+  const [firstRecord] = recordData.items;
 
-  recordData.items.forEach((record) =>
-    record.holidays
-      .filter((holiday) => !holiday.workLocations?.length)
-      .forEach((holiday) => holidaysById.set(holiday.id, holiday))
+  if (!firstRecord) return [];
+
+  return firstRecord.holidays.filter(
+    (holiday) => !holiday.workLocations?.length
   );
-
-  return Array.from(holidaysById.values());
 };

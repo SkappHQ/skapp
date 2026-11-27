@@ -151,7 +151,7 @@ export interface HolidaysInfiniteParams {
   year?: string;
   sortOrder?: string;
   workLocationId?: number;
-  onlyCurrentUserWorkLocation?: boolean;
+  isCurrentUserWorkLocationOnly?: boolean;
   enabled?: boolean;
 }
 

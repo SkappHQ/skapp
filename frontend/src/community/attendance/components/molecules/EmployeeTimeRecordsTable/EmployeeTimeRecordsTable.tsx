@@ -149,7 +149,7 @@ const EmployeeTimeRecordsTable = ({
       return;
     }
 
-    const { employeeId, employeeName, date } = pendingCell;
+    const { employeeId, employeeName, date, holidays } = pendingCell;
 
     const cellKey = `${employeeId}-${date}`;
     if (handledCell === cellKey || isPendingDayFetching) return;
@@ -186,7 +186,11 @@ const EmployeeTimeRecordsTable = ({
 
     if (modalType === null) return;
 
-    setDirectManualTimeEntryEligibleEmployee({ employeeId, employeeName });
+    setDirectManualTimeEntryEligibleEmployee({
+      employeeId,
+      employeeName,
+      holidays
+    });
     setIsSelfDirectTimeEntry(false);
     setSelectedDailyRecord(dayRecord);
     setEmployeeTimesheetModalType(modalType);
@@ -277,12 +281,14 @@ const EmployeeTimeRecordsTable = ({
     timeSheetRecord,
     employeeId,
     employeeName,
+    holidays,
     isFutureDate
   }: {
     cellContent: JSX.Element;
     timeSheetRecord: TimeRecordType;
     employeeId?: number;
     employeeName: string;
+    holidays: Holiday[];
     isFutureDate: boolean;
   }): JSX.Element => {
     if (!canDirectlyAddOrEditEntry || isFutureDate || !employeeId) {
@@ -296,7 +302,8 @@ const EmployeeTimeRecordsTable = ({
     return getDirectEntryCell(cellContent, {
       employeeId,
       employeeName,
-      date: timeSheetRecord.date
+      date: timeSheetRecord.date,
+      holidays
     });
   };
 
@@ -429,6 +436,7 @@ const EmployeeTimeRecordsTable = ({
               timeSheetRecord,
               employeeId: employeeData?.employeeId,
               employeeName,
+              holidays: record.holidays,
               isFutureDate
             });
             return acc;

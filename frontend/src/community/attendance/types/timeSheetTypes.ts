@@ -234,6 +234,7 @@ export interface DirectEntryEmployeeType {
   employeeId: number;
   employeeName: string;
   date?: string;
+  holidays?: Holiday[];
 }
 
 export interface DirectManualTimeEntryVariablesType {
