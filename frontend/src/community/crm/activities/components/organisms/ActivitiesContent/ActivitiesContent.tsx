@@ -184,8 +184,16 @@ const ActivitiesContent: FC = () => {
   const resultCount = pages.length > 0 ? pages[0].totalItems : rows.length;
   const hasActiveFilters =
     searchTerm.length > 0 || Object.keys(filters).length > 0;
-  const showControls =
-    hasActiveFilters || (!isLoading && (isError || rows.length > 0));
+  const showLoadedControls = hasActiveFilters || isError || rows.length > 0;
+  const [showLastLoadedControls, setShowLastLoadedControls] = useState(false);
+
+  if (!isLoading && showLastLoadedControls !== showLoadedControls) {
+    setShowLastLoadedControls(showLoadedControls);
+  }
+
+  const showControls = isLoading
+    ? hasActiveFilters || showLastLoadedControls
+    : showLoadedControls;
 
   const handleTabChange = (tab: ActivityTab): void => {
     setActiveTab(tab);
