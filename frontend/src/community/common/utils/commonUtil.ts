@@ -358,7 +358,7 @@ export const testPassiveEventSupport = () => {
 
     window?.addEventListener("testPassive", noop, options);
     window?.removeEventListener("testPassive", noop, options);
-  } catch (error) {
+  } catch {
     // Silencing the error is intentional.
     // This block is only used for feature detection.
   }
