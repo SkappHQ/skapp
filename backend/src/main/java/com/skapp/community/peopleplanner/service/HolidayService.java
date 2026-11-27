@@ -22,6 +22,8 @@ public interface HolidayService {
 
 	ResponseEntityDto deleteSelectedHolidays(HolidaysDeleteRequestDto holidayDeleteDto);
 
+	void validateNoLeaveRequestsOnHolidays(List<Holiday> holidays);
+
 	List<Holiday> getActiveHolidaysForEmployee(Employee employee);
 
 }
