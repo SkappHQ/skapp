@@ -1019,7 +1019,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		LocalDate effectiveFrom = assignment.getEffectiveFrom();
 
 		if (policy.getPolicyType() == PolicyType.FLEXIBLE) {
-			return unlimitedBalance(policy, effectiveFrom, cycle);
+			return unlimitedBalance(policy, effectiveFrom, cycle,
+					usageLookupSupplier.get().usedBetween(cycle.getStartDate(), cycle.getEndDate()));
 		}
 
 		if (cycle.getEndDate().isBefore(effectiveFrom)) {
@@ -1121,8 +1122,9 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 	}
 
 	private PolicyLeaveBalanceDto unlimitedBalance(LeavePolicy policy, LocalDate effectiveFrom,
-			PolicyLeaveDateWindowDto cycle) {
+			PolicyLeaveDateWindowDto cycle, float totalDaysUsed) {
 		PolicyLeaveBalanceDto balance = zeroedBalance(policy, effectiveFrom, cycle);
+		balance.setTotalDaysUsed(totalDaysUsed);
 		balance.setUnlimited(true);
 		balance.setDerived(true);
 		return balance;

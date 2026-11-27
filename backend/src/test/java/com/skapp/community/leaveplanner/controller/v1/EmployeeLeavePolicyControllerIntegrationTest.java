@@ -103,6 +103,14 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 			+ "(915, 1, 815, 'SPECIFIC', '2024-01-06', 'ACTIVE'), "
 			+ "(916, 1, 816, 'SPECIFIC', '2024-01-07', 'ACTIVE')";
 
+	private static final String SEED_FLEXIBLE_ASSIGNMENT = "INSERT INTO lv_employee_leave_policy (id, employee_id, policy_id, effective_date_type, effective_from, status) "
+			+ "VALUES (901, 1, 700, 'SPECIFIC', '2023-01-01', 'ACTIVE')";
+
+	private static final String SEED_FLEXIBLE_LEAVE_REQUESTS = "INSERT INTO lv_leave_request (id, employee_id, policy_id, start_date, end_date, leave_state, status, duration_days) VALUES "
+			+ "(950, 1, 700, CURRENT_DATE, CURRENT_DATE, 'FULLDAY', 'APPROVED', 1), "
+			+ "(951, 1, 700, CURRENT_DATE, CURRENT_DATE, 'HALFDAY_MORNING', 'PENDING', 0.5), "
+			+ "(952, 1, 700, CURRENT_DATE, CURRENT_DATE, 'FULLDAY', 'DENIED', 1)";
+
 	private static final String NULL_JOIN_DATE_EMPLOYEE_2 = "UPDATE employee SET join_date = NULL WHERE employee_id = 2";
 
 	private static final String DOWNGRADE_USER2_TO_EMPLOYEE = "UPDATE employee_role SET leave_role = 'LEAVE_EMPLOYEE', people_role = 'PEOPLE_EMPLOYEE', attendance_role = 'ATTENDANCE_EMPLOYEE' WHERE employee_id = 2";
@@ -428,6 +436,18 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 			performGet(leaveAdminToken(), 9999).andDo(print())
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.results[0].items", hasSize(0)));
+		}
+
+		@Test
+		@DisplayName("A flexible assignment reports the days used by its pending and approved requests")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES, SEED_FLEXIBLE_ASSIGNMENT, SEED_FLEXIBLE_LEAVE_REQUESTS })
+		void get_FlexibleAssignmentWithLeaveTaken_ReturnsUsedDays() throws Exception {
+			performGet(leaveAdminToken(), 1).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].items", hasSize(1)))
+				.andExpect(jsonPath("$.results[0].items[0].policyId").value(700))
+				.andExpect(jsonPath("$.results[0].items[0].isUnlimited").value(true))
+				.andExpect(jsonPath("$.results[0].items[0].totalDaysUsed").value(1.5));
 		}
 
 		@Test
