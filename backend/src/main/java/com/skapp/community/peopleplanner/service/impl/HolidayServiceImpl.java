@@ -329,7 +329,7 @@ public class HolidayServiceImpl implements HolidayService {
 
 	private Page<Holiday> findHolidaysVisibleToCurrentUser(HolidayFilterDto holidayFilterDto, Pageable pageable) {
 		boolean canViewAllWorkLocations = PeopleUtil.isSuperAdminOrPeopleAdmin(userService.getCurrentUserRoles());
-		if (canViewAllWorkLocations && !Boolean.TRUE.equals(holidayFilterDto.getOnlyCurrentUserWorkLocation())) {
+		if (canViewAllWorkLocations && !Boolean.TRUE.equals(holidayFilterDto.getIsCurrentUserWorkLocationOnly())) {
 			return holidayDao.findAllHolidays(holidayFilterDto, pageable);
 		}
 

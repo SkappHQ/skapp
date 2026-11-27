@@ -3,6 +3,7 @@ package com.skapp.community.peopleplanner.util;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.model.WorkLocation;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.RoleLevel;
 import com.skapp.community.common.util.AuthUtil;
@@ -143,6 +144,10 @@ public class PeopleUtil {
 		if (billableRate != null && billableRate <= 0) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_INVALID_BILLABLE_RATE);
 		}
+	}
+
+	public static List<Holiday> getHolidaysForWorkLocation(List<Holiday> holidays, WorkLocation workLocation) {
+		return getHolidaysForWorkLocation(holidays, workLocation != null ? workLocation.getWorkLocationId() : null);
 	}
 
 	public static List<Holiday> getHolidaysForWorkLocation(List<Holiday> holidays, Long workLocationId) {

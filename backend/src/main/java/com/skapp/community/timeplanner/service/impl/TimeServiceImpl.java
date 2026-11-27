@@ -2268,10 +2268,8 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	private List<HolidayResponseDto> getEmployeeHolidays(List<Holiday> holidays, Employee employee) {
-		Long workLocationId = employee.getWorkLocation() != null ? employee.getWorkLocation().getWorkLocationId()
-				: null;
-		return peopleMapper
-			.holidaysToHolidayResponseDtoList(PeopleUtil.getHolidaysForWorkLocation(holidays, workLocationId));
+		return peopleMapper.holidaysToHolidayResponseDtoList(
+				PeopleUtil.getHolidaysForWorkLocation(holidays, employee.getWorkLocation()));
 	}
 
 	private void handleTimeSheetSummary(TeamTimeRecordSummaryResponseDto teamTimeRecordSummaryResponseDto,

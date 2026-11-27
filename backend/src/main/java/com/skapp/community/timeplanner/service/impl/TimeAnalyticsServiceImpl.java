@@ -66,8 +66,8 @@ import java.time.Month;
 import java.time.Year;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -384,9 +384,7 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 	}
 
 	private HolidayResponseDto getHoliday(List<Holiday> holidays, Employee employee) {
-		Long workLocationId = employee.getWorkLocation() != null ? employee.getWorkLocation().getWorkLocationId()
-				: null;
-		return PeopleUtil.getHolidaysForWorkLocation(holidays, workLocationId)
+		return PeopleUtil.getHolidaysForWorkLocation(holidays, employee.getWorkLocation())
 			.stream()
 			.min(Comparator.comparing(holiday -> holiday.getHolidayDuration() != HolidayDuration.FULL_DAY))
 			.map(commonMapper::holidayToHolidayResponseDto)

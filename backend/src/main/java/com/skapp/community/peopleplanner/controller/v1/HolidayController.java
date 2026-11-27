@@ -34,7 +34,10 @@ public class HolidayController {
 	private final HolidayService holidayService;
 
 	@Operation(summary = "Get all holidays",
-			description = "Retrieve all holidays with optional pagination, sorting, and filtering.")
+			description = "Retrieve all holidays with optional pagination, sorting, and filtering. Users other than "
+					+ "Super Admin and People Admin, and any caller sending isCurrentUserWorkLocationOnly=true, get only "
+					+ "their own work location's holidays and holidays for all locations; workLocationId is ignored "
+					+ "for them.")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_PEOPLE_EMPLOYEE')")
 	@GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> getAllHolidays(@Valid HolidayFilterDto holidayFilterDto) {
