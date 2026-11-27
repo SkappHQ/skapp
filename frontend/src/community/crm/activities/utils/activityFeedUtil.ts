@@ -46,7 +46,7 @@ const getMeetingScheduledAt = (
 ): string | null => {
   if (!row.isScheduled) return null;
 
-  if (row.startAt) return isInFuture(row.startAt) ? row.startAt : null;
+  if (row.startAt) return isOverdue(row.startAt, zone) ? null : row.startAt;
 
   if (!row.meetingDate) return null;
 
