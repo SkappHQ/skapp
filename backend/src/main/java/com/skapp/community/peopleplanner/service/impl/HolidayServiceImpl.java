@@ -286,7 +286,9 @@ public class HolidayServiceImpl implements HolidayService {
 			.stream()
 			.filter(Holiday::isActive)
 			.toList();
+
 		Set<Long> foundHolidayIds = holidaysToDelete.stream().map(Holiday::getId).collect(Collectors.toSet());
+
 		holidayDeleteDto.getHolidayIds()
 			.stream()
 			.filter(holidayId -> !foundHolidayIds.contains(holidayId))
@@ -295,6 +297,7 @@ public class HolidayServiceImpl implements HolidayService {
 				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SPECIFIC_HOLIDAY_NOT_FOUND,
 						new String[] { String.valueOf(holidayId) });
 			});
+
 		if (!holidaysToDelete.stream().allMatch(this::canDeleteHoliday)) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_CANNOT_BE_DELETED);
 		}
