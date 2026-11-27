@@ -34,6 +34,8 @@ export const CARRYOVER_EXPIRY_DATE_FORMAT = "MM-dd";
 
 export const CARRYOVER_EXPIRY_REFERENCE_YEAR = 2025;
 
+export const JOIN_DATE_ERROR_ID = "assign-leave-policy-join-date-error";
+
 export const leavePolicyFormInitialValues: LeavePolicyFormData = {
   policyType: null,
   policyName: "",

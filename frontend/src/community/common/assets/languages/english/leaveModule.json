@@ -530,6 +530,7 @@
       "flexibleInfoLabel": "This is a flexible policy. Leave taken will be recorded but is not deducted from any balance.",
       "conflictWarning": "{{employeeName}} has an existing {{leaveType}} policy. Assigning this policy will replace it.",
       "joinDateMissingLabel": "{{employeeName}} doesn't have a join date yet. Set one to accrue leave from their join date, or choose a specific date instead.",
+      "joinDateNotSetError": "Join date not set. Ask a People Admin or choose a specific date.",
       "colDate": "DATE",
       "colDays": "DAYS",
       "colBalance": "BALANCE",

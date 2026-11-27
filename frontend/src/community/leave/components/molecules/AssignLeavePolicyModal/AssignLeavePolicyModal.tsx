@@ -16,6 +16,7 @@ import AssignLeavePolicyForm, {
 } from "~community/leave/components/molecules/AssignLeavePolicyModal/AssignLeavePolicyForm";
 import SetJoinDateModal from "~community/leave/components/molecules/SetJoinDateModal/SetJoinDateModal";
 import { UNPAGINATED_SIZE } from "~community/leave/constants/policyLeaveTypeConstants";
+import useCanSetJoinDate from "~community/leave/hooks/useCanSetJoinDate";
 import {
   EffectiveDateType,
   LeavePolicyStatus,
@@ -41,11 +42,11 @@ const AssignLeavePolicyModal: FC<Props> = ({
 }) => {
   const translateText = useTranslator("leaveModule", "leavePolicyAssignment");
   const { setToastMessage } = useToast();
+  const canSetJoinDate = useCanSetJoinDate();
 
   const [selectedPolicyId, setSelectedPolicyId] = useState<string>("");
-  const [effectiveDateType, setEffectiveDateType] = useState<EffectiveDateType>(
-    EffectiveDateType.JOIN_DATE
-  );
+  const [selectedEffectiveDateType, setSelectedEffectiveDateType] =
+    useState<EffectiveDateType>();
   const [specificDate, setSpecificDate] = useState<string>("");
   const [specificDateError, setSpecificDateError] = useState<string>("");
   const [isSetJoinDateOpen, setIsSetJoinDateOpen] = useState<boolean>(false);
@@ -55,10 +56,24 @@ const AssignLeavePolicyModal: FC<Props> = ({
 
   const joinedDate = employee?.employment?.employmentDetails?.joinedDate;
 
+  const isJoinDateMissing = !!employee && !joinedDate;
+
+  const isJoinDateBlocked = isJoinDateMissing && !canSetJoinDate;
+
+  const defaultEffectiveDateType = isJoinDateBlocked
+    ? EffectiveDateType.SPECIFIC
+    : EffectiveDateType.JOIN_DATE;
+
+  const effectiveDateType =
+    selectedEffectiveDateType ??
+    (isEmployeeLoading ? undefined : defaultEffectiveDateType);
+
+  const isJoinDateSelected = effectiveDateType === EffectiveDateType.JOIN_DATE;
+
   const needsJoinDate =
-    effectiveDateType === EffectiveDateType.JOIN_DATE &&
-    !isEmployeeLoading &&
-    !joinedDate;
+    isJoinDateSelected && isJoinDateMissing && canSetJoinDate;
+
+  const isJoinDateErrorVisible = isJoinDateSelected && isJoinDateBlocked;
 
   const { data: policyPages } = useGetLeavePoliciesInfinite({
     searchKeyword: "",
@@ -87,7 +102,7 @@ const AssignLeavePolicyModal: FC<Props> = ({
 
   const resetForm = (): void => {
     setSelectedPolicyId("");
-    setEffectiveDateType(EffectiveDateType.JOIN_DATE);
+    setSelectedEffectiveDateType(undefined);
     setSpecificDate("");
     setSpecificDateError("");
   };
@@ -165,7 +180,7 @@ const AssignLeavePolicyModal: FC<Props> = ({
     : "";
 
   const handleEffectiveDateTypeChange = (type: EffectiveDateType): void => {
-    setEffectiveDateType(type);
+    setSelectedEffectiveDateType(type);
     setSpecificDateError("");
   };
 
@@ -205,7 +220,7 @@ const AssignLeavePolicyModal: FC<Props> = ({
   );
 
   const handleSave = (): void => {
-    if (!selectedPolicyId) {
+    if (!selectedPolicyId || !effectiveDateType || isJoinDateErrorVisible) {
       return;
     }
     if (effectiveDateType === EffectiveDateType.SPECIFIC && !specificDate) {
@@ -247,6 +262,7 @@ const AssignLeavePolicyModal: FC<Props> = ({
             isFlexiblePolicy={isFlexiblePolicy}
             conflictWarning={conflictWarning}
             joinDateWarning={joinDateWarning}
+            isJoinDateErrorVisible={isJoinDateErrorVisible}
           />
         }
         buttons={{

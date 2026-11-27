@@ -17,6 +17,7 @@ import type {
 } from "~community/common/components/organisms/TableView/types";
 import { useCalendarPopperPlacement } from "~community/common/hooks/useCalendarPopperPlacement";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { JOIN_DATE_ERROR_ID } from "~community/leave/constants/leavePolicyConstants";
 import {
   AccrualPreviewRow,
   EffectiveDateType
@@ -32,7 +33,7 @@ interface Props {
   selectedPolicyId: string;
   policyOptions: PolicyOption[];
   onPolicyChange: (value: string) => void;
-  effectiveDateType: EffectiveDateType;
+  effectiveDateType?: EffectiveDateType;
   onEffectiveDateTypeChange: (type: EffectiveDateType) => void;
   joinDateLabel: string;
   specificDate: string;
@@ -42,6 +43,7 @@ interface Props {
   isFlexiblePolicy: boolean;
   conflictWarning: string;
   joinDateWarning: string;
+  isJoinDateErrorVisible: boolean;
 }
 
 const AssignLeavePolicyForm: FC<Props> = ({
@@ -57,7 +59,8 @@ const AssignLeavePolicyForm: FC<Props> = ({
   accrualPreview,
   isFlexiblePolicy,
   conflictWarning,
-  joinDateWarning
+  joinDateWarning,
+  isJoinDateErrorVisible
 }) => {
   const translateText = useTranslator("leaveModule", "leavePolicyAssignment");
 
@@ -118,6 +121,10 @@ const AssignLeavePolicyForm: FC<Props> = ({
               type="button"
               role="radio"
               aria-checked={effectiveDateType === EffectiveDateType.JOIN_DATE}
+              aria-invalid={isJoinDateErrorVisible}
+              aria-describedby={
+                isJoinDateErrorVisible ? JOIN_DATE_ERROR_ID : undefined
+              }
               onClick={() =>
                 onEffectiveDateTypeChange(EffectiveDateType.JOIN_DATE)
               }
@@ -142,6 +149,14 @@ const AssignLeavePolicyForm: FC<Props> = ({
                 </span>
               </Tooltip>
             </button>
+            {isJoinDateErrorVisible && (
+              <p
+                id={JOIN_DATE_ERROR_ID}
+                className="body2 text-semantic-red-text"
+              >
+                {translateText(["assignModal", "joinDateNotSetError"])}
+              </p>
+            )}
             <button
               type="button"
               role="radio"
