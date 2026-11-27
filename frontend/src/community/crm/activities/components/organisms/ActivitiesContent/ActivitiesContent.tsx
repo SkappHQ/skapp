@@ -185,7 +185,7 @@ const ActivitiesContent: FC = () => {
   const hasActiveFilters =
     searchTerm.length > 0 || Object.keys(filters).length > 0;
   const showControls =
-    isLoading || isError || hasActiveFilters || rows.length > 0;
+    hasActiveFilters || (!isLoading && (isError || rows.length > 0));
 
   const handleTabChange = (tab: ActivityTab): void => {
     setActiveTab(tab);
