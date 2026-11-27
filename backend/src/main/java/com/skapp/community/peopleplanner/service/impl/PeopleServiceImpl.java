@@ -655,8 +655,7 @@ public class PeopleServiceImpl implements PeopleService {
 		}
 
 		Set<String> userRoles = userService.getCurrentUserRoles();
-		boolean canModifyBusinessUnit = userRoles.contains(AuthUtil.withRolePrefix(Role.SUPER_ADMIN))
-				|| userRoles.contains(AuthUtil.withRolePrefix(Role.PEOPLE_ADMIN));
+		boolean canModifyBusinessUnit = PeopleUtil.isSuperAdminOrPeopleAdmin(userRoles);
 		if (!canModifyBusinessUnit) {
 			return;
 		}
@@ -691,8 +690,7 @@ public class PeopleServiceImpl implements PeopleService {
 		}
 
 		Set<String> userRoles = userService.getCurrentUserRoles();
-		boolean canModifyAdminOnlyIdentifiers = userRoles.contains(AuthUtil.withRolePrefix(Role.SUPER_ADMIN))
-				|| userRoles.contains(AuthUtil.withRolePrefix(Role.PEOPLE_ADMIN));
+		boolean canModifyAdminOnlyIdentifiers = PeopleUtil.isSuperAdminOrPeopleAdmin(userRoles);
 		if (!canModifyAdminOnlyIdentifiers) {
 			return;
 		}

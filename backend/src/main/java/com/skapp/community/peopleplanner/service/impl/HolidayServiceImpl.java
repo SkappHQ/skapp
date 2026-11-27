@@ -2,7 +2,6 @@ package com.skapp.community.peopleplanner.service.impl;
 
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
-import com.skapp.community.common.util.AuthUtil;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.WorkLocation;
 import com.skapp.community.common.payload.response.BulkStatusSummary;
@@ -45,6 +44,7 @@ import com.skapp.community.peopleplanner.service.PeopleEmailService;
 import com.skapp.community.peopleplanner.service.PeopleNotificationService;
 import com.skapp.community.peopleplanner.type.BulkRecordStatus;
 import com.skapp.community.peopleplanner.type.HolidayDuration;
+import com.skapp.community.peopleplanner.util.PeopleUtil;
 import com.skapp.community.timeplanner.model.TimeConfig;
 import com.skapp.community.timeplanner.repository.TimeConfigDao;
 import lombok.RequiredArgsConstructor;
@@ -328,9 +328,7 @@ public class HolidayServiceImpl implements HolidayService {
 	}
 
 	private Page<Holiday> findHolidaysVisibleToCurrentUser(HolidayFilterDto holidayFilterDto, Pageable pageable) {
-		Set<String> userRoles = userService.getCurrentUserRoles();
-		boolean canViewAllWorkLocations = userRoles.contains(AuthUtil.withRolePrefix(Role.SUPER_ADMIN))
-				|| userRoles.contains(AuthUtil.withRolePrefix(Role.PEOPLE_ADMIN));
+		boolean canViewAllWorkLocations = PeopleUtil.isSuperAdminOrPeopleAdmin(userService.getCurrentUserRoles());
 		if (canViewAllWorkLocations && !Boolean.TRUE.equals(holidayFilterDto.getOnlyCurrentUserWorkLocation())) {
 			return holidayDao.findAllHolidays(holidayFilterDto, pageable);
 		}

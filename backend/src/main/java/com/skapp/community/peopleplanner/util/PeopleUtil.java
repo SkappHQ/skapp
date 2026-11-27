@@ -5,6 +5,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.RoleLevel;
+import com.skapp.community.common.util.AuthUtil;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
@@ -151,6 +152,11 @@ public class PeopleUtil {
 						.stream()
 						.anyMatch(workLocation -> workLocationId.equals(workLocation.getWorkLocationId()))))
 			.toList();
+	}
+
+	public static boolean isSuperAdminOrPeopleAdmin(Set<String> userRoles) {
+		return userRoles.contains(AuthUtil.withRolePrefix(Role.SUPER_ADMIN))
+				|| userRoles.contains(AuthUtil.withRolePrefix(Role.PEOPLE_ADMIN));
 	}
 
 }
