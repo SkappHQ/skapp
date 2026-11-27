@@ -382,6 +382,7 @@ class PeopleControllerIntegrationTest {
 			managerRole.setIsSuperAdmin(false);
 			EmployeeRole peopleAdminRole = employeeDao.findById(PEOPLE_ADMIN_ID).orElseThrow().getEmployeeRole();
 			peopleAdminRole.setPeopleRole(Role.PEOPLE_ADMIN);
+			peopleAdminRole.setLeaveRole(Role.LEAVE_EMPLOYEE);
 			peopleAdminRole.setIsSuperAdmin(false);
 			employeeRoleDao.flush();
 
@@ -626,7 +627,7 @@ class PeopleControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Leave admin replaces an existing joined date - Returns Bad Request")
+		@DisplayName("Super admin replaces an existing joined date - Returns Bad Request")
 		void updateEmployeeJoinedDate_WithExistingJoinedDate_ReturnsBadRequest() throws Exception {
 			LocalDate existingJoinDate = joinDateOf(EMPLOYEE_ID);
 
@@ -680,7 +681,7 @@ class PeopleControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Leave admin sets a future joined date - Returns Unprocessable")
+		@DisplayName("Super admin sets a future joined date - Returns Unprocessable")
 		void updateEmployeeJoinedDate_WithFutureDate_IsRefused() throws Exception {
 			employeeDao.findById(EMPLOYEE_ID).orElseThrow().setJoinDate(null);
 			employeeDao.flush();
@@ -696,7 +697,7 @@ class PeopleControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Leave admin sets no joined date - Returns the required error")
+		@DisplayName("Super admin sets no joined date - Returns the required error")
 		void updateEmployeeJoinedDate_WithoutDate_IsRefused() throws Exception {
 			patchEmployee(authToken, "/v1/people/employee/" + EMPLOYEE_ID + "/joined-date", joinedDateRequest(null))
 				.andDo(print())
@@ -706,7 +707,7 @@ class PeopleControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Leave admin sets a joined date for an unknown employee - Returns Not Found")
+		@DisplayName("Super admin sets a joined date for an unknown employee - Returns Not Found")
 		void updateEmployeeJoinedDate_ForUnknownEmployee_ReturnsNotFound() throws Exception {
 			patchEmployee(authToken, "/v1/people/employee/99999/joined-date",
 					joinedDateRequest(LocalDate.of(2020, 1, 15)))

@@ -368,6 +368,8 @@ public class PeopleServiceImpl implements PeopleService {
 	@Transactional
 	public ResponseEntityDto updateEmployeeJoinedDate(Long employeeId,
 			EmployeeJoinedDateRequestDto joinedDateRequestDto) {
+		log.info("updateEmployeeJoinedDate: execution started");
+
 		if (joinedDateRequestDto.getJoinedDate() == null) {
 			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_JOINED_DATE_REQUIRED);
 		}
@@ -390,6 +392,7 @@ public class PeopleServiceImpl implements PeopleService {
 		requestDto.setEmployment(employmentDetails);
 		applyEmployeeUpdate(user, requestDto);
 
+		log.info("updateEmployeeJoinedDate: execution ended");
 		return new ResponseEntityDto(false, joinedDateRequestDto);
 	}
 

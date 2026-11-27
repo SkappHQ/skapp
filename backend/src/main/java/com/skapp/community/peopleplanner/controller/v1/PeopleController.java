@@ -78,9 +78,12 @@ public class PeopleController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Set an employee's joined date",
+			description = "This endpoint sets the joined date of an employee who does not have one yet.")
 	@PatchMapping(value = "/employee/{id}/joined-date", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_PEOPLE_ADMIN')")
-	public ResponseEntity<ResponseEntityDto> updateEmployeeJoinedDate(@PathVariable Long id,
+	public ResponseEntity<ResponseEntityDto> updateEmployeeJoinedDate(
+			@PathVariable @Schema(description = "ID of the employee to update", example = "1") Long id,
 			@RequestBody EmployeeJoinedDateRequestDto joinedDateRequestDto) {
 		ResponseEntityDto response = peopleService.updateEmployeeJoinedDate(id, joinedDateRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
