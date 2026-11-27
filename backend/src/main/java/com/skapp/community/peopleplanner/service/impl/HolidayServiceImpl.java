@@ -331,7 +331,7 @@ public class HolidayServiceImpl implements HolidayService {
 		Set<String> userRoles = userService.getCurrentUserRoles();
 		boolean canViewAllWorkLocations = userRoles.contains(AuthUtil.withRolePrefix(Role.SUPER_ADMIN))
 				|| userRoles.contains(AuthUtil.withRolePrefix(Role.PEOPLE_ADMIN));
-		if (canViewAllWorkLocations) {
+		if (canViewAllWorkLocations && !Boolean.TRUE.equals(holidayFilterDto.getIsCurrentUserWorkLocation())) {
 			return holidayDao.findAllHolidays(holidayFilterDto, pageable);
 		}
 
