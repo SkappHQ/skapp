@@ -61,7 +61,9 @@ const HolidayModalController: FC = () => {
     holidayBulkUploadResponse | undefined
   >();
 
-  const { data: holidays, refetch } = useGetAllHolidaysInfinite(selectedYear);
+  const { data: holidays, refetch } = useGetAllHolidaysInfinite({
+    year: selectedYear
+  });
 
   const getModalTitle = (): string => {
     switch (holidayModalType) {

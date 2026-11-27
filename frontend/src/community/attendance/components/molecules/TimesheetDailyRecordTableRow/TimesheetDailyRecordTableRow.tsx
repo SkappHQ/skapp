@@ -215,7 +215,8 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
         employeeName: concatStrings([
           employeeGeneralDetails?.firstName ?? "",
           employeeGeneralDetails?.lastName ?? ""
-        ]).trim()
+        ]).trim(),
+        holidays: record.holiday ? [record.holiday] : []
       });
       setIsSelfDirectTimeEntry(isSelfTargetEntry);
       handleEdit();

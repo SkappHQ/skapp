@@ -147,6 +147,14 @@ export type Holiday = {
     | HolidayDurationType.HALFDAY_MORNING;
 };
 
+export interface HolidaysInfiniteParams {
+  year?: string;
+  sortOrder?: string;
+  workLocationId?: number;
+  isCurrentUserWorkLocationOnly?: boolean;
+  enabled?: boolean;
+}
+
 export type HolidayDataResponse = {
   currentPage?: number;
   items: Holiday[];

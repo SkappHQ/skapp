@@ -1,6 +1,13 @@
 import { type Theme, useTheme } from "@mui/material/styles";
 import { LocationPinIcon, Tooltip } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, JSX, useEffect, useMemo, useState } from "react";
+import {
+  ChangeEvent,
+  JSX,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { useGetDailyLogsByEmployeeId } from "~community/attendance/api/AttendanceEmployeeApi";
@@ -18,9 +25,11 @@ import {
   TimeRecordType
 } from "~community/attendance/types/timeSheetTypes";
 import {
+  getAllWorkLocationHolidays,
   getBorderClassName,
   getHeadersWithSubtitles,
-  getHolidayDurationType
+  getHolidayDurationType,
+  getHolidaysOnDate
 } from "~community/attendance/utils/AllTimeSheetTableUtils";
 import {
   createEmptyDailyLog,
@@ -35,17 +44,19 @@ import Table from "~community/common/components/molecules/HtmlTable/Table";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { TableNames } from "~community/common/enums/Table";
 import { useOrganizationZone } from "~community/common/hooks/useDisplayZone";
-import useGetHoliday from "~community/common/hooks/useGetHoliday";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { concatStrings } from "~community/common/utils/commonUtil";
 import {
-  convertYYYYMMDDToDateTime,
+  convertToYYYYMMDDFromDate,
   currentDateIn
 } from "~community/common/utils/dateTimeUtils";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
 import { getEmoji } from "~community/leave/utils/leaveTypes/LeaveTypeUtils";
-import { HolidayDurationType } from "~community/people/types/HolidayTypes";
+import {
+  Holiday,
+  HolidayDurationType
+} from "~community/people/types/HolidayTypes";
 
 interface Props {
   recordData: TimeRecordDataResponseType;
@@ -95,7 +106,19 @@ const EmployeeTimeRecordsTable = ({
 
   const { data: timeConfigData } = useDefaultCapacity();
 
-  const { getHolidaysArrayByDate } = useGetHoliday();
+  const allWorkLocationHolidays = useMemo(
+    () => (recordData ? getAllWorkLocationHolidays(recordData) : []),
+    [recordData]
+  );
+
+  const getHeaderHolidaysByDate = useCallback(
+    (date: Date): Holiday[] =>
+      getHolidaysOnDate(
+        allWorkLocationHolidays,
+        convertToYYYYMMDDFromDate(date)
+      ),
+    [allWorkLocationHolidays]
+  );
 
   const organizationZone = useOrganizationZone();
 
@@ -126,7 +149,7 @@ const EmployeeTimeRecordsTable = ({
       return;
     }
 
-    const { employeeId, employeeName, date } = pendingCell;
+    const { employeeId, employeeName, date, holidays } = pendingCell;
 
     const cellKey = `${employeeId}-${date}`;
     if (handledCell === cellKey || isPendingDayFetching) return;
@@ -163,7 +186,11 @@ const EmployeeTimeRecordsTable = ({
 
     if (modalType === null) return;
 
-    setDirectManualTimeEntryEligibleEmployee({ employeeId, employeeName });
+    setDirectManualTimeEntryEligibleEmployee({
+      employeeId,
+      employeeName,
+      holidays
+    });
     setIsSelfDirectTimeEntry(false);
     setSelectedDailyRecord(dayRecord);
     setEmployeeTimesheetModalType(modalType);
@@ -181,9 +208,9 @@ const EmployeeTimeRecordsTable = ({
     return getHeadersWithSubtitles({
       translateText,
       recordData,
-      getHolidaysArrayByDate
+      getHolidaysArrayByDate: getHeaderHolidaysByDate
     });
-  }, [recordData, getHolidaysArrayByDate, translateText]);
+  }, [recordData, getHeaderHolidaysByDate, translateText]);
 
   const getLocationMessage = (
     status: RecordLocationStatus | undefined
@@ -254,12 +281,14 @@ const EmployeeTimeRecordsTable = ({
     timeSheetRecord,
     employeeId,
     employeeName,
+    holidays,
     isFutureDate
   }: {
     cellContent: JSX.Element;
     timeSheetRecord: TimeRecordType;
     employeeId?: number;
     employeeName: string;
+    holidays: Holiday[];
     isFutureDate: boolean;
   }): JSX.Element => {
     if (!canDirectlyAddOrEditEntry || isFutureDate || !employeeId) {
@@ -273,7 +302,8 @@ const EmployeeTimeRecordsTable = ({
     return getDirectEntryCell(cellContent, {
       employeeId,
       employeeName,
-      date: timeSheetRecord.date
+      date: timeSheetRecord.date,
+      holidays
     });
   };
 
@@ -303,17 +333,15 @@ const EmployeeTimeRecordsTable = ({
             const hasNotWorkedAllHours =
               timeSheetRecord?.workedHours < totalWorkedHours;
 
-            const dateAsISOString = convertYYYYMMDDToDateTime(
-              timeSheetRecord.date
-            ).toJSDate();
-
             const isFutureDate =
               timeSheetRecord.date > currentDateIn(organizationZone);
 
-            const holidays = getHolidaysArrayByDate(dateAsISOString);
+            const holidays = getHolidaysOnDate(
+              record.holidays,
+              timeSheetRecord.date
+            );
 
-            const hasHolidays =
-              getHolidaysArrayByDate(dateAsISOString).length > 0;
+            const hasHolidays = holidays.length > 0;
 
             const holidayDuration = getHolidayDurationType(holidays);
 
@@ -408,6 +436,7 @@ const EmployeeTimeRecordsTable = ({
               timeSheetRecord,
               employeeId: employeeData?.employeeId,
               employeeName,
+              holidays: record.holidays,
               isFutureDate
             });
             return acc;
@@ -443,7 +472,6 @@ const EmployeeTimeRecordsTable = ({
     isRecordLoading,
     theme,
     timeConfigData,
-    getHolidaysArrayByDate,
     translateText,
     translateAria,
     canDirectlyAddOrEditEntry,

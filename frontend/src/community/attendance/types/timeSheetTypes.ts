@@ -3,6 +3,7 @@ import { DateTime } from "luxon";
 import { RecordLocationStatus } from "~community/attendance/enums/timesheetEnums";
 import { daysTypes } from "~community/common/constants/stringConstants";
 import { LeaveStates } from "~community/common/types/CommonTypes";
+import { Holiday } from "~community/people/types/HolidayTypes";
 
 export interface TimesheetEmployeeType {
   employeeId: number;
@@ -29,6 +30,7 @@ export interface TimeRecordType {
 
 export interface TimeRecordDataType {
   timeRecords: TimeRecordType[];
+  holidays: Holiday[];
   employee?: {
     employee?: {
       firstName?: string;
@@ -150,11 +152,6 @@ export interface LeaveRequestType {
   createdDate: string;
 }
 
-export interface HolidayType {
-  name: string;
-  holidayDuration: string;
-}
-
 export interface DailyLogType {
   timeRecordId: number | null;
   date: string;
@@ -163,7 +160,7 @@ export interface DailyLogType {
   breakHours: number;
   timeSlots: TimeSlotsType[];
   leaveRequest: LeaveRequestType | null;
-  holiday: HolidayType | null;
+  holiday: Holiday | null;
 }
 
 export interface TimeAvailabilityType {
@@ -232,6 +229,7 @@ export interface DirectEntryEmployeeType {
   employeeId: number;
   employeeName: string;
   date?: string;
+  holidays: Holiday[];
 }
 
 export interface DirectManualTimeEntryVariablesType {

@@ -83,10 +83,6 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
   const classes = styles(theme);
   const { data: timeConfigData } = useDefaultCapacity();
 
-  const { data: allHolidays } = useGetAllHolidaysInfinite(
-    currentYear.toString()
-  );
-
   const { isLeavePoliciesEnabled, isLoading: isLeavePolicyConfigLoading } =
     useLeavePoliciesEnabled();
 
@@ -135,6 +131,19 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
     directManualTimeEntryEligibleEmployee,
     isSelfDirectTimeEntry
   } = useAttendanceStore((state) => state);
+
+  const isOtherEmployeeEntry =
+    Boolean(directManualTimeEntryEligibleEmployee) && !isSelfDirectTimeEntry;
+
+  const { data: myHolidays } = useGetAllHolidaysInfinite({
+    year: currentYear.toString(),
+    isCurrentUserWorkLocationOnly: true,
+    enabled: !isOtherEmployeeEntry
+  });
+
+  const allHolidays = isOtherEmployeeEntry
+    ? directManualTimeEntryEligibleEmployee?.holidays
+    : myHolidays?.pages[0]?.items;
 
   const {
     handleTimeEntrySubmit,

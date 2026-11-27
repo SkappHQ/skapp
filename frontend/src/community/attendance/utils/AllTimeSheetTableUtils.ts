@@ -147,3 +147,20 @@ export const getHeadersWithSubtitles = ({
 
   return baseColumns;
 };
+
+export const getHolidaysOnDate = (
+  holidays: Holiday[],
+  date: string
+): Holiday[] => holidays.filter((holiday) => holiday.date === date);
+
+export const getAllWorkLocationHolidays = (
+  recordData: TimeRecordDataResponseType
+): Holiday[] => {
+  const [firstRecord] = recordData.items;
+
+  if (!firstRecord) return [];
+
+  return firstRecord.holidays.filter(
+    (holiday) => !holiday.workLocations?.length
+  );
+};

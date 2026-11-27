@@ -47,10 +47,6 @@ import {
   getDurationSelectorDisabledOptions
 } from "~community/leave/utils/myRequests/applyLeaveModalUtils";
 import { useGetAllHolidays } from "~community/people/api/HolidayApi";
-import {
-  useGetEmployeeById,
-  useGetUserPersonalDetails
-} from "~community/people/api/PeopleApi";
 import { useGetMyTeams } from "~community/people/api/TeamApi";
 import {
   useIsGoogleCalendarConnected,
@@ -138,24 +134,11 @@ const ApplyLeaveModal = () => {
 
   const { data: myLeaveRequests } = useGetMyRequests({ isExport: true });
 
-  const { data: currentEmployee } = useGetUserPersonalDetails();
-
-  // Pass 0 instead of undefined when employeeId is not yet available,
-  // since useGetEmployeeById disables the query only when memberId === 0.
-  const { data: employeeData, isLoading: isEmployeeDataLoading } =
-    useGetEmployeeById(
-      currentEmployee?.employeeId ? Number(currentEmployee.employeeId) : 0
-    );
-
-  const workLocationId =
-    employeeData?.employment?.employmentDetails?.workLocationId;
-
   const { data: allHolidays } = useGetAllHolidays(
     currentYear.toString(),
     true,
     undefined,
-    workLocationId,
-    !isEmployeeDataLoading
+    true
   );
 
   const { data: leaveEntitlementBalance } = useGetLeaveEntitlementBalance(

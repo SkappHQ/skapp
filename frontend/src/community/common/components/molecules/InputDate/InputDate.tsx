@@ -42,11 +42,7 @@ import {
 } from "~community/common/utils/keyboardUtils";
 import { LeaveState } from "~community/leave/types/EmployeeLeaveRequestTypes";
 import { MyLeaveRequestPayloadType } from "~community/leave/types/MyRequests";
-import {
-  HolidayDataResponse,
-  HolidayType,
-  addedHolidays
-} from "~community/people/types/HolidayTypes";
+import { Holiday, addedHolidays } from "~community/people/types/HolidayTypes";
 
 import CalendarHeader from "./CalendarHeader/CalendarHeader";
 import styles from "./styles";
@@ -75,7 +71,7 @@ interface Props {
   disabled?: boolean;
   isEditable?: boolean;
   isPreviousHolidayDisabled?: boolean;
-  holidays?: HolidayDataResponse | undefined;
+  holidays?: Holiday[];
   placeHolder?: string;
   name?: string;
   popperStyles?: SxProps;
@@ -120,9 +116,6 @@ const InputDate: FC<Props> = ({
 
   const lowerCaseLabel = label.toLowerCase();
 
-  const [alreadyAppliedHolidays, setAlreadyAppliedHolidays] = useState<
-    HolidayType[]
-  >([]);
   const [leaveRequests, setLeaveRequests] = useState<
     { date: string; leaveStates: string }[]
   >([]);
@@ -131,18 +124,6 @@ const InputDate: FC<Props> = ({
   const open: boolean = Boolean(anchorEl);
 
   useEffect(() => {
-    if (holidays) {
-      const appliedHolidays = holidays?.pages[0]?.items?.map(
-        // TODO: fix type issue
-        (item: HolidayType) => ({
-          date: item.date,
-          name: item.name,
-          holidayType: item.holidayDuration || undefined
-        })
-      );
-      setAlreadyAppliedHolidays(appliedHolidays);
-    }
-
     if (myLeaveRequests) {
       const appliedLeaves = myLeaveRequests?.map((leave) => ({
         date: leave.startDate,
@@ -150,11 +131,11 @@ const InputDate: FC<Props> = ({
       }));
       setLeaveRequests(appliedLeaves);
     }
-  }, [holidays, myLeaveRequests]);
+  }, [myLeaveRequests]);
 
   // TODO: Move the isHoliday function to a separate file and write tests for it
   const isHoliday = (day: DateTime) => {
-    return alreadyAppliedHolidays?.find((holiday) => {
+    return holidays?.find((holiday) => {
       const holidayDate = DateTime.fromISO(holiday?.date);
       if (!holidayDate.isValid) {
         return false;
@@ -179,7 +160,7 @@ const InputDate: FC<Props> = ({
     const { day, outsideCurrentMonth, ...other } = props;
     let backgroundStyle = {};
 
-    const appliedHoliday = alreadyAppliedHolidays && isHoliday(day);
+    const appliedHoliday = isHoliday(day);
     const appliedLeave = leaveRequests && isLeave(day);
 
     if (appliedHoliday) {

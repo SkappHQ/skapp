@@ -165,28 +165,23 @@ const ApplyPolicyLeaveModal = () => {
   );
   const { data: currentEmployee } = useGetUserPersonalDetails();
 
-  const { data: employeeData, isLoading: isEmployeeDataLoading } =
-    useGetEmployeeById(
-      currentEmployee?.employeeId ? Number(currentEmployee.employeeId) : 0
-    );
-
-  const workLocationId =
-    employeeData?.employment?.employmentDetails?.workLocationId;
+  const { data: employeeData } = useGetEmployeeById(
+    currentEmployee?.employeeId ? Number(currentEmployee.employeeId) : 0
+  );
 
   const { data: holidaysInStartYear } = useGetAllHolidays(
     policyStartYear,
     true,
     undefined,
-    workLocationId,
-    !isEmployeeDataLoading
+    true
   );
 
   const { data: holidaysInEndYear } = useGetAllHolidays(
     policyEndYear,
     true,
     undefined,
-    workLocationId,
-    !isEmployeeDataLoading && spansTwoYears
+    true,
+    spansTwoYears
   );
 
   const allHolidays = useMemo(
