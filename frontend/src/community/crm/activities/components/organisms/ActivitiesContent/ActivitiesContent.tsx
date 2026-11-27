@@ -71,6 +71,7 @@ const ActivitiesContent: FC = () => {
   const { scheduleMeetingButton, scheduleMeetingModals } = useScheduleMeeting();
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [isLogEmailModalOpen, setIsLogEmailModalOpen] = useState(false);
+  const [hasLastLoadedControls, setHasLastLoadedControls] = useState(false);
 
   const actionButtonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -184,16 +185,16 @@ const ActivitiesContent: FC = () => {
   const resultCount = pages.length > 0 ? pages[0].totalItems : rows.length;
   const hasActiveFilters =
     searchTerm.length > 0 || Object.keys(filters).length > 0;
-  const showLoadedControls = hasActiveFilters || isError || rows.length > 0;
-  const [showLastLoadedControls, setShowLastLoadedControls] = useState(false);
+  const shouldShowLoadedControls =
+    hasActiveFilters || isError || rows.length > 0;
 
-  if (!isLoading && showLastLoadedControls !== showLoadedControls) {
-    setShowLastLoadedControls(showLoadedControls);
+  if (!isLoading && hasLastLoadedControls !== shouldShowLoadedControls) {
+    setHasLastLoadedControls(shouldShowLoadedControls);
   }
 
   const showControls = isLoading
-    ? hasActiveFilters || showLastLoadedControls
-    : showLoadedControls;
+    ? hasActiveFilters || hasLastLoadedControls
+    : shouldShowLoadedControls;
 
   const handleTabChange = (tab: ActivityTab): void => {
     setActiveTab(tab);
