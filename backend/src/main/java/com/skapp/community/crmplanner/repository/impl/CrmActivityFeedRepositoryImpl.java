@@ -374,6 +374,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		Expression<Instant> feedAt = cb.<Instant>coalesce()
 			.value(activity.<Instant>get(CrmActivityCall_.LOGGED_AT))
 			.value(activity.<Instant>get(CrmActivityMeeting_.START_AT))
+			.value(activity.<LocalDate>get(CrmActivityMeeting_.MEETING_DATE).cast(Instant.class))
 			.value(taskAt);
 		Path<Long> activityId = activity.get(CrmActivityTask_.ID);
 		boolean ascending = params.getSortOrder().isAscending();
