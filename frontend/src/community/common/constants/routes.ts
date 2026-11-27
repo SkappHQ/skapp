@@ -149,7 +149,8 @@ const ROUTES = {
     WORKFORCE_DEMOGRAPHICS: "/report/workforce-demographics",
     ATTENDANCE_OVERVIEW: "/report/attendance-overview",
     CLOCK_IN_OVERVIEW: "/report/clock-in-overview",
-    LEAVE_BALANCE_UTILIZATION: "/report/leave-balance-utilization"
+    LEAVE_BALANCE_UTILIZATION: "/report/leave-balance-utilization",
+    TENURE: "/report/tenure"
   },
   CRM: {
     BASE: "/crm",
@@ -249,6 +250,8 @@ export const attendanceReportRestrictedRoutes = [
   ROUTES.REPORT.ATTENDANCE_OVERVIEW,
   ROUTES.REPORT.CLOCK_IN_OVERVIEW
 ];
+
+export const tenureReportRestrictedRoutes = [ROUTES.REPORT.TENURE];
 
 export const userRolesRestrictedRoutes = [ROUTES.CONFIGURATIONS.USER_ROLES];
 

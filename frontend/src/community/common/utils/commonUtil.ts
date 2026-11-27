@@ -358,7 +358,7 @@ export const testPassiveEventSupport = () => {
 
     window?.addEventListener("testPassive", noop, options);
     window?.removeEventListener("testPassive", noop, options);
-  } catch (error) {
+  } catch {
     // Silencing the error is intentional.
     // This block is only used for feature detection.
   }
@@ -517,8 +517,10 @@ export const checkRestrictedRoutesAndRedirect = (
   requiredRole: string,
   roles: string[]
 ): NextResponse | null => {
+  const currentPath = request.nextUrl.pathname.toLowerCase();
+
   if (
-    restrictedRoutes.some((url) => request.nextUrl.pathname.startsWith(url)) &&
+    restrictedRoutes.some((url) => currentPath.startsWith(url.toLowerCase())) &&
     !roles.includes(requiredRole)
   ) {
     return NextResponse.redirect(
@@ -527,6 +529,21 @@ export const checkRestrictedRoutesAndRedirect = (
   }
   return null;
 };
+
+export const checkAdminRestrictedRoutesAndRedirect = (
+  request: NextRequest,
+  restrictedRoutes: string[],
+  requiredRole: AdminTypes,
+  roles: string[]
+): NextResponse | null =>
+  roles.includes(AdminTypes.SUPER_ADMIN)
+    ? null
+    : checkRestrictedRoutesAndRedirect(
+        request,
+        restrictedRoutes,
+        requiredRole,
+        roles
+      );
 
 export const getLabelForReadOnlyChip = (
   isBelow1024?: boolean,

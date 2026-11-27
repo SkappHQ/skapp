@@ -1,11 +1,15 @@
 import { SxProps, Theme } from "@mui/material";
+import { NextRequest, NextResponse } from "next/server";
 
+import ROUTES from "~community/common/constants/routes";
+import { AdminTypes } from "~community/common/types/AuthTypes";
 import {
   DropdownListType,
   FileUploadType
 } from "~community/common/types/CommonTypes";
 import {
   arraysEqual,
+  checkAdminRestrictedRoutesAndRedirect,
   getEmoji,
   getHoursArray,
   getLabelByValue,
@@ -17,6 +21,12 @@ import {
   removeDuplicates
 } from "~community/common/utils/commonUtil";
 import { WorkingDaysTypes } from "~community/configurations/types/TimeConfigurationsTypes";
+
+jest.mock("next/server", () => ({
+  NextResponse: {
+    redirect: jest.fn((url: URL) => ({ redirectedTo: url.toString() }))
+  }
+}));
 
 describe("Utility Functions", () => {
   describe("getLabelByValue", () => {
@@ -495,6 +505,79 @@ describe("device detection", () => {
       setNavigator(undefined);
       expect(() => isMobileDevice()).not.toThrow();
       expect(isMobileDevice()).toBe(false);
+    });
+  });
+
+  describe("checkAdminRestrictedRoutesAndRedirect", () => {
+    const createRequest = (pathname: string) =>
+      ({
+        nextUrl: { pathname },
+        url: `http://localhost${pathname}`
+      }) as NextRequest;
+
+    const restrictedRoutes = [ROUTES.REPORT.TENURE];
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it("should redirect to unauthorized when the role is missing", () => {
+      const result = checkAdminRestrictedRoutesAndRedirect(
+        createRequest(ROUTES.REPORT.TENURE),
+        restrictedRoutes,
+        AdminTypes.PEOPLE_ADMIN,
+        [AdminTypes.LEAVE_ADMIN]
+      );
+
+      expect(NextResponse.redirect).toHaveBeenCalledTimes(1);
+      expect(result).toEqual({
+        redirectedTo: `http://localhost${ROUTES.AUTH.UNAUTHORIZED}`
+      });
+    });
+
+    it("should match the restricted route regardless of case", () => {
+      const result = checkAdminRestrictedRoutesAndRedirect(
+        createRequest("/Report/Tenure"),
+        restrictedRoutes,
+        AdminTypes.PEOPLE_ADMIN,
+        []
+      );
+
+      expect(result).not.toBeNull();
+    });
+
+    it("should allow users with the required role", () => {
+      const result = checkAdminRestrictedRoutesAndRedirect(
+        createRequest(ROUTES.REPORT.TENURE),
+        restrictedRoutes,
+        AdminTypes.PEOPLE_ADMIN,
+        [AdminTypes.PEOPLE_ADMIN]
+      );
+
+      expect(result).toBeNull();
+    });
+
+    it("should allow super admins without the required role", () => {
+      const result = checkAdminRestrictedRoutesAndRedirect(
+        createRequest(ROUTES.REPORT.TENURE),
+        restrictedRoutes,
+        AdminTypes.PEOPLE_ADMIN,
+        [AdminTypes.SUPER_ADMIN]
+      );
+
+      expect(result).toBeNull();
+    });
+
+    it("should allow routes that are not restricted", () => {
+      const result = checkAdminRestrictedRoutesAndRedirect(
+        createRequest(ROUTES.DASHBOARD.BASE),
+        restrictedRoutes,
+        AdminTypes.PEOPLE_ADMIN,
+        []
+      );
+
+      expect(result).toBeNull();
+      expect(NextResponse.redirect).not.toHaveBeenCalled();
     });
   });
 });
