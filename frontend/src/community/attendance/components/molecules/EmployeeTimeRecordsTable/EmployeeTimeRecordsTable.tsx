@@ -107,7 +107,7 @@ const EmployeeTimeRecordsTable = ({
   const { data: timeConfigData } = useDefaultCapacity();
 
   const allWorkLocationHolidays = useMemo(
-    () => getAllWorkLocationHolidays(recordData),
+    () => (recordData ? getAllWorkLocationHolidays(recordData) : []),
     [recordData]
   );
 
