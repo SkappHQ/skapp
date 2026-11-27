@@ -43,6 +43,8 @@ export interface ActivityRow extends CrmMeetingVenueDetails {
   loggedAt: string | null;
   startAt: string | null;
   completedAt: string | null;
+  meetingDate: string | null;
+  isScheduled: boolean;
   isCompleted: boolean;
   priority: CrmPriorityEnum | null;
   ownerId: number | null;
@@ -165,6 +167,7 @@ export interface ActivityMeetingResponse
   name: string;
   meetingDate: string | null;
   startAt: string | null;
+  isScheduled: boolean;
   contactIds: number[];
 }
 
