@@ -56,7 +56,9 @@ const MyTimeSheet: NextPage = () => {
       onPrimaryButtonClick={() => {
         const isEligible = canDirectlyAddOrEditEntry && !!user?.userId;
         setDirectManualTimeEntryEligibleEmployee(
-          isEligible ? { employeeId: user.userId, employeeName: "" } : null
+          isEligible
+            ? { employeeId: user.userId, employeeName: "", holidays: [] }
+            : null
         );
         setIsSelfDirectTimeEntry(isEligible);
         setIsEmployeeTimesheetModalOpen(true);

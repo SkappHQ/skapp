@@ -152,11 +152,6 @@ export interface LeaveRequestType {
   createdDate: string;
 }
 
-export interface HolidayType {
-  name: string;
-  holidayDuration: string;
-}
-
 export interface DailyLogType {
   timeRecordId: number | null;
   date: string;

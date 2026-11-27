@@ -116,9 +116,6 @@ const InputDate: FC<Props> = ({
 
   const lowerCaseLabel = label.toLowerCase();
 
-  const [alreadyAppliedHolidays, setAlreadyAppliedHolidays] = useState<
-    Holiday[]
-  >([]);
   const [leaveRequests, setLeaveRequests] = useState<
     { date: string; leaveStates: string }[]
   >([]);
@@ -127,10 +124,6 @@ const InputDate: FC<Props> = ({
   const open: boolean = Boolean(anchorEl);
 
   useEffect(() => {
-    if (holidays) {
-      setAlreadyAppliedHolidays(holidays);
-    }
-
     if (myLeaveRequests) {
       const appliedLeaves = myLeaveRequests?.map((leave) => ({
         date: leave.startDate,
@@ -138,11 +131,11 @@ const InputDate: FC<Props> = ({
       }));
       setLeaveRequests(appliedLeaves);
     }
-  }, [holidays, myLeaveRequests]);
+  }, [myLeaveRequests]);
 
   // TODO: Move the isHoliday function to a separate file and write tests for it
   const isHoliday = (day: DateTime) => {
-    return alreadyAppliedHolidays?.find((holiday) => {
+    return holidays?.find((holiday) => {
       const holidayDate = DateTime.fromISO(holiday?.date);
       if (!holidayDate.isValid) {
         return false;
@@ -167,7 +160,7 @@ const InputDate: FC<Props> = ({
     const { day, outsideCurrentMonth, ...other } = props;
     let backgroundStyle = {};
 
-    const appliedHoliday = alreadyAppliedHolidays && isHoliday(day);
+    const appliedHoliday = holidays && isHoliday(day);
     const appliedLeave = leaveRequests && isLeave(day);
 
     if (appliedHoliday) {
