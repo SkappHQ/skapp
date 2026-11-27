@@ -1,10 +1,15 @@
+import { DateTime } from "luxon";
+
 import {
   ManagerTimesheetHeaderType,
   TimeRecordDataResponseType
 } from "~community/attendance/types/timeSheetTypes";
 import { HTMLTableHeaderTypes } from "~community/common/types/CommonTypes";
 import { LeaveStates } from "~community/common/types/CommonTypes";
-import { convertToYYYYMMDDFromDate } from "~community/common/utils/dateTimeUtils";
+import {
+  convertToYYYYMMDDFromDate,
+  convertYYYYMMDDToDateTime
+} from "~community/common/utils/dateTimeUtils";
 import {
   Holiday,
   HolidayDurationType
@@ -146,4 +151,30 @@ export const getHeadersWithSubtitles = ({
   }
 
   return baseColumns;
+};
+
+export const getHolidaysOnDate = (
+  holidays: Holiday[] | undefined,
+  date: Date
+): Holiday[] => {
+  if (!holidays) return [];
+
+  return holidays.filter((holiday) =>
+    convertYYYYMMDDToDateTime(holiday.date).hasSame(
+      DateTime.fromJSDate(date),
+      "day"
+    )
+  );
+};
+
+export const getRecordDataHolidays = (
+  recordData?: TimeRecordDataResponseType
+): Holiday[] => {
+  const holidaysById = new Map<number, Holiday>();
+
+  recordData?.items?.forEach((record) =>
+    record.holidays?.forEach((holiday) => holidaysById.set(holiday.id, holiday))
+  );
+
+  return Array.from(holidaysById.values());
 };

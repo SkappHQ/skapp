@@ -3,6 +3,7 @@ import { DateTime } from "luxon";
 import { RecordLocationStatus } from "~community/attendance/enums/timesheetEnums";
 import { daysTypes } from "~community/common/constants/stringConstants";
 import { LeaveStates } from "~community/common/types/CommonTypes";
+import { Holiday } from "~community/people/types/HolidayTypes";
 
 export interface TimesheetEmployeeType {
   employeeId: number;
@@ -29,6 +30,7 @@ export interface TimeRecordType {
 
 export interface TimeRecordDataType {
   timeRecords: TimeRecordType[];
+  holidays?: Holiday[];
   employee?: {
     employee?: {
       firstName?: string;

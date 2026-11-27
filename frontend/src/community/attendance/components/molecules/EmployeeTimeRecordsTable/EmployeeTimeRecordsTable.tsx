@@ -1,6 +1,13 @@
 import { type Theme, useTheme } from "@mui/material/styles";
 import { LocationPinIcon, Tooltip } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, JSX, useEffect, useMemo, useState } from "react";
+import {
+  ChangeEvent,
+  JSX,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { useGetDailyLogsByEmployeeId } from "~community/attendance/api/AttendanceEmployeeApi";
@@ -20,7 +27,9 @@ import {
 import {
   getBorderClassName,
   getHeadersWithSubtitles,
-  getHolidayDurationType
+  getHolidayDurationType,
+  getHolidaysOnDate,
+  getRecordDataHolidays
 } from "~community/attendance/utils/AllTimeSheetTableUtils";
 import {
   createEmptyDailyLog,
@@ -35,7 +44,6 @@ import Table from "~community/common/components/molecules/HtmlTable/Table";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { TableNames } from "~community/common/enums/Table";
 import { useOrganizationZone } from "~community/common/hooks/useDisplayZone";
-import useGetHoliday from "~community/common/hooks/useGetHoliday";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { concatStrings } from "~community/common/utils/commonUtil";
@@ -95,7 +103,10 @@ const EmployeeTimeRecordsTable = ({
 
   const { data: timeConfigData } = useDefaultCapacity();
 
-  const { getHolidaysArrayByDate } = useGetHoliday();
+  const getTeamHolidaysByDate = useCallback(
+    (date: Date) => getHolidaysOnDate(getRecordDataHolidays(recordData), date),
+    [recordData]
+  );
 
   const organizationZone = useOrganizationZone();
 
@@ -181,9 +192,9 @@ const EmployeeTimeRecordsTable = ({
     return getHeadersWithSubtitles({
       translateText,
       recordData,
-      getHolidaysArrayByDate
+      getHolidaysArrayByDate: getTeamHolidaysByDate
     });
-  }, [recordData, getHolidaysArrayByDate, translateText]);
+  }, [recordData, getTeamHolidaysByDate, translateText]);
 
   const getLocationMessage = (
     status: RecordLocationStatus | undefined
@@ -310,10 +321,12 @@ const EmployeeTimeRecordsTable = ({
             const isFutureDate =
               timeSheetRecord.date > currentDateIn(organizationZone);
 
-            const holidays = getHolidaysArrayByDate(dateAsISOString);
+            const holidays = getHolidaysOnDate(
+              record.holidays,
+              dateAsISOString
+            );
 
-            const hasHolidays =
-              getHolidaysArrayByDate(dateAsISOString).length > 0;
+            const hasHolidays = holidays.length > 0;
 
             const holidayDuration = getHolidayDurationType(holidays);
 
@@ -443,7 +456,6 @@ const EmployeeTimeRecordsTable = ({
     isRecordLoading,
     theme,
     timeConfigData,
-    getHolidaysArrayByDate,
     translateText,
     translateAria,
     canDirectlyAddOrEditEntry,
