@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -36,6 +37,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -113,30 +115,75 @@ public class PolicyHolidayLeaveServiceImpl implements PolicyHolidayLeaveService 
 	public boolean hasLeaveRequestsOnHolidays(List<Holiday> holidays) {
 		log.info("hasLeaveRequestsOnHolidays: execution started");
 
-		LocalDate firstDate = holidays.stream().map(Holiday::getDate).min(LocalDate::compareTo).orElseThrow();
-		LocalDate lastDate = holidays.stream().map(Holiday::getDate).max(LocalDate::compareTo).orElseThrow();
+		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
+		List<Holiday> adjustableHolidays = holidays == null ? List.of()
+				: holidays.stream()
+					.filter(holiday -> holiday.getHolidayDuration() != HolidayDuration.EXTENDED)
+					.filter(holiday -> timeConfigs.isEmpty()
+							|| CommonModuleUtils.checkIfDayIsWorkingDay(holiday.getDate(), timeConfigs))
+					.toList();
+		if (adjustableHolidays.isEmpty()) {
+			log.info("hasLeaveRequestsOnHolidays: execution ended with no holidays on working days");
+			return false;
+		}
+
+		LocalDate firstDate = adjustableHolidays.stream().map(Holiday::getDate).min(LocalDate::compareTo).orElseThrow();
+		LocalDate lastDate = adjustableHolidays.stream().map(Holiday::getDate).max(LocalDate::compareTo).orElseThrow();
+		Set<Long> deletedHolidayIds = holidays.stream().map(Holiday::getId).collect(Collectors.toSet());
+		List<Holiday> remainingHolidays = holidayDao.findAllByIsActiveTrueAndDateBetween(firstDate, lastDate)
+			.stream()
+			.filter(holiday -> !deletedHolidayIds.contains(holiday.getId()))
+			.toList();
 		List<PolicyLeaveRequest> requests = policyLeaveRequestDao
 			.findRequestsInRange(PolicyLeaveConstant.ATTENDANCE_LEAVE_STATUSES, firstDate, lastDate);
 
-		boolean hasLeaveRequests = holidays.stream()
-			.anyMatch(holiday -> requests.stream().anyMatch(request -> isAffectedByHoliday(request, holiday)));
+		boolean hasLeaveRequests = adjustableHolidays.stream()
+			.anyMatch(holiday -> requests.stream()
+				.anyMatch(request -> isAffectedByHoliday(request, holiday, remainingHolidays)));
 
 		log.info("hasLeaveRequestsOnHolidays: execution ended for {} holiday(s) with result {}", holidays.size(),
 				hasLeaveRequests);
 		return hasLeaveRequests;
 	}
 
-	private boolean isAffectedByHoliday(PolicyLeaveRequest request, Holiday holiday) {
+	private boolean isAffectedByHoliday(PolicyLeaveRequest request, Holiday holiday, List<Holiday> remainingHolidays) {
 		LocalDate holidayDate = holiday.getDate();
+		Employee employee = request.getEmployee();
 		if (holidayDate.isBefore(request.getStartDate()) || holidayDate.isAfter(request.getEndDate())
-				|| !appliesToEmployee(holiday, request.getEmployee())) {
+				|| !appliesToEmployee(holiday, employee)) {
 			return false;
 		}
 
-		if (request.getStartDate().equals(request.getEndDate()) && LeaveModuleUtil.isHalfDay(request.getLeaveState())) {
-			return getHalves(holiday.getHolidayDuration()).contains(request.getLeaveState());
+		List<Holiday> otherHolidaysOnDate = remainingHolidays.stream()
+			.filter(other -> holidayDate.equals(other.getDate()))
+			.toList();
+		Set<LeaveState> addedHalves = getHalves(holiday.getHolidayDuration());
+		addedHalves.removeAll(getCoveredHalves(otherHolidaysOnDate, employee));
+		if (addedHalves.isEmpty()) {
+			return false;
+		}
+
+		if (request.getStartDate().equals(request.getEndDate()) && LeaveModuleUtil.isHalfDay(request.getLeaveState())
+				&& !addedHalves.contains(request.getLeaveState())) {
+			return couldBeShortenedByHoliday(request, holiday);
 		}
 		return true;
+	}
+
+	// A half day on the other half looks the same whether it was booked that way or was a
+	// full day the holiday
+	// shortened, so it only passes when it was booked after the holiday or last changed
+	// before it.
+	private boolean couldBeShortenedByHoliday(PolicyLeaveRequest request, Holiday holiday) {
+		Instant holidayCreatedDate = holiday.getCreatedDate();
+		Instant requestCreatedDate = request.getCreatedDate();
+		if (holidayCreatedDate == null || requestCreatedDate == null) {
+			return true;
+		}
+
+		Instant requestModifiedDate = request.getLastModifiedDate() != null ? request.getLastModifiedDate()
+				: requestCreatedDate;
+		return requestCreatedDate.isBefore(holidayCreatedDate) && !requestModifiedDate.isBefore(holidayCreatedDate);
 	}
 
 	private Adjustment adjustLeaveRequest(PolicyLeaveRequest request, Set<LeaveState> coveredBefore,

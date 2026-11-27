@@ -235,10 +235,12 @@ public class HolidayServiceImpl implements HolidayService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public void validateNoLeaveRequestsOnHolidays(List<Holiday> holidays) {
 		log.info("validateNoLeaveRequestsOnHolidays: execution started");
 
 		if (holidays.isEmpty()) {
+			log.info("validateNoLeaveRequestsOnHolidays: execution ended with no holidays");
 			return;
 		}
 
