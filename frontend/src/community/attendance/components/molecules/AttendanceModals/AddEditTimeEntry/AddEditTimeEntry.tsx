@@ -61,6 +61,7 @@ import {
   uniqueByLeaveRequestId
 } from "~community/leave/utils/policyLeave/policyLeaveUtils";
 import { useGetAllHolidaysInfinite } from "~community/people/api/HolidayApi";
+import { useGetEmployeeById } from "~community/people/api/PeopleApi";
 
 import styles from "./styles";
 
@@ -82,13 +83,6 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
     useState<TimeAvailabilityType>();
   const classes = styles(theme);
   const { data: timeConfigData } = useDefaultCapacity();
-
-  const { data: allHolidays } = useGetAllHolidaysInfinite(
-    currentYear.toString(),
-    undefined,
-    undefined,
-    true
-  );
 
   const { isLeavePoliciesEnabled, isLoading: isLeavePolicyConfigLoading } =
     useLeavePoliciesEnabled();
@@ -138,6 +132,23 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
     directManualTimeEntryEligibleEmployee,
     isSelfDirectTimeEntry
   } = useAttendanceStore((state) => state);
+
+  const isOtherEmployeeEntry =
+    Boolean(directManualTimeEntryEligibleEmployee) && !isSelfDirectTimeEntry;
+
+  const { data: otherEmployee } = useGetEmployeeById(
+    isOtherEmployeeEntry
+      ? Number(directManualTimeEntryEligibleEmployee?.employeeId)
+      : 0
+  );
+
+  const { data: allHolidays } = useGetAllHolidaysInfinite(
+    currentYear.toString(),
+    undefined,
+    otherEmployee?.employment?.employmentDetails?.workLocationId,
+    !isOtherEmployeeEntry,
+    !isOtherEmployeeEntry || Boolean(otherEmployee)
+  );
 
   const {
     handleTimeEntrySubmit,

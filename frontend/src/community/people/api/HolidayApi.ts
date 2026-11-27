@@ -9,6 +9,7 @@ import {
 import { rejects } from "assert";
 import { AxiosResponse } from "axios";
 
+import { attendanceQueryKeys } from "~community/attendance/api/utils/attendanceQueryKeys";
 import { ALL_LOCATIONS_ID } from "~community/common/constants/workLocationConstants";
 import { ErrorResponse } from "~community/common/types/CommonTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
@@ -26,7 +27,7 @@ export const useGetAllHolidays = (
   year?: string,
   isExport?: boolean,
   sortOrder?: string,
-  isCurrentUserWorkLocation?: boolean,
+  onlyCurrentUserWorkLocation?: boolean,
   enabled: boolean = true
 ): UseQueryResult<Holiday[]> => {
   return useQuery({
@@ -35,7 +36,7 @@ export const useGetAllHolidays = (
       year,
       sortOrder,
       isExport,
-      isCurrentUserWorkLocation
+      onlyCurrentUserWorkLocation
     ],
     queryFn: () =>
       authFetch.get(holidayEndpoints.HOLIDAY, {
@@ -43,7 +44,7 @@ export const useGetAllHolidays = (
           year: year,
           sortOrder: sortOrder,
           isExport: isExport,
-          isCurrentUserWorkLocation: isCurrentUserWorkLocation
+          onlyCurrentUserWorkLocation: onlyCurrentUserWorkLocation
         }
       }),
     select: (data) => data?.data?.results[0].items,
@@ -55,14 +56,15 @@ export const useGetAllHolidaysInfinite = (
   year?: string | undefined,
   sortOrder?: string | undefined,
   workLocationId: number = ALL_LOCATIONS_ID,
-  isCurrentUserWorkLocation: boolean = false
+  onlyCurrentUserWorkLocation: boolean = false,
+  enabled: boolean = true
 ): UseInfiniteQueryResult<HolidayDataResponse> => {
   const params = {
     year: year,
     sortOrder: sortOrder,
     isExport: false,
     workLocationId,
-    isCurrentUserWorkLocation
+    onlyCurrentUserWorkLocation
   };
 
   return useInfiniteQuery({
@@ -93,7 +95,8 @@ export const useGetAllHolidaysInfinite = (
         return lastPage.currentPage + 1;
       }
       return undefined;
-    }
+    },
+    enabled
   });
 };
 const holidayBulkUpload = async ({
@@ -168,6 +171,11 @@ export const useAddIndividualHoliday = (
           queryKey: holidayQueryKeys.ALL_HOLIDAYS()
         })
         .catch(rejects);
+      queryClient
+        .invalidateQueries({
+          queryKey: attendanceQueryKeys.getManagerRecords()
+        })
+        .catch(rejects);
     },
     onError: () => {
       onError();
@@ -205,6 +213,11 @@ export const useDeleteSelectedHolidays = (
           queryKey: holidayQueryKeys.ALL_HOLIDAYS()
         })
         .catch(rejects);
+      queryClient
+        .invalidateQueries({
+          queryKey: attendanceQueryKeys.getManagerRecords()
+        })
+        .catch(rejects);
     },
     onError: (error: ErrorResponse) => {
       onError(error?.response?.data?.results[0]?.message || "");
@@ -230,6 +243,11 @@ export const useDeleteAllHolidays = (
       queryClient
         .invalidateQueries({
           queryKey: holidayQueryKeys.ALL_HOLIDAYS()
+        })
+        .catch(rejects);
+      queryClient
+        .invalidateQueries({
+          queryKey: attendanceQueryKeys.getManagerRecords()
         })
         .catch(rejects);
     },

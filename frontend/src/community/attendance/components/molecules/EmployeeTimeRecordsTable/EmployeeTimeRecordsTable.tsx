@@ -25,11 +25,11 @@ import {
   TimeRecordType
 } from "~community/attendance/types/timeSheetTypes";
 import {
+  getAllWorkLocationHolidays,
   getBorderClassName,
   getHeadersWithSubtitles,
   getHolidayDurationType,
-  getHolidaysOnDate,
-  getRecordDataHolidays
+  getHolidaysOnDate
 } from "~community/attendance/utils/AllTimeSheetTableUtils";
 import {
   createEmptyDailyLog,
@@ -48,12 +48,15 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { concatStrings } from "~community/common/utils/commonUtil";
 import {
-  convertYYYYMMDDToDateTime,
+  convertToYYYYMMDDFromDate,
   currentDateIn
 } from "~community/common/utils/dateTimeUtils";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
 import { getEmoji } from "~community/leave/utils/leaveTypes/LeaveTypeUtils";
-import { HolidayDurationType } from "~community/people/types/HolidayTypes";
+import {
+  Holiday,
+  HolidayDurationType
+} from "~community/people/types/HolidayTypes";
 
 interface Props {
   recordData: TimeRecordDataResponseType;
@@ -103,9 +106,18 @@ const EmployeeTimeRecordsTable = ({
 
   const { data: timeConfigData } = useDefaultCapacity();
 
-  const getTeamHolidaysByDate = useCallback(
-    (date: Date) => getHolidaysOnDate(getRecordDataHolidays(recordData), date),
+  const allWorkLocationHolidays = useMemo(
+    () => getAllWorkLocationHolidays(recordData),
     [recordData]
+  );
+
+  const getHeaderHolidaysByDate = useCallback(
+    (date: Date): Holiday[] =>
+      getHolidaysOnDate(
+        allWorkLocationHolidays,
+        convertToYYYYMMDDFromDate(date)
+      ),
+    [allWorkLocationHolidays]
   );
 
   const organizationZone = useOrganizationZone();
@@ -192,9 +204,9 @@ const EmployeeTimeRecordsTable = ({
     return getHeadersWithSubtitles({
       translateText,
       recordData,
-      getHolidaysArrayByDate: getTeamHolidaysByDate
+      getHolidaysArrayByDate: getHeaderHolidaysByDate
     });
-  }, [recordData, getTeamHolidaysByDate, translateText]);
+  }, [recordData, getHeaderHolidaysByDate, translateText]);
 
   const getLocationMessage = (
     status: RecordLocationStatus | undefined
@@ -314,16 +326,12 @@ const EmployeeTimeRecordsTable = ({
             const hasNotWorkedAllHours =
               timeSheetRecord?.workedHours < totalWorkedHours;
 
-            const dateAsISOString = convertYYYYMMDDToDateTime(
-              timeSheetRecord.date
-            ).toJSDate();
-
             const isFutureDate =
               timeSheetRecord.date > currentDateIn(organizationZone);
 
             const holidays = getHolidaysOnDate(
               record.holidays,
-              dateAsISOString
+              timeSheetRecord.date
             );
 
             const hasHolidays = holidays.length > 0;

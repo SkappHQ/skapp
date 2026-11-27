@@ -1,15 +1,10 @@
-import { DateTime } from "luxon";
-
 import {
   ManagerTimesheetHeaderType,
   TimeRecordDataResponseType
 } from "~community/attendance/types/timeSheetTypes";
 import { HTMLTableHeaderTypes } from "~community/common/types/CommonTypes";
 import { LeaveStates } from "~community/common/types/CommonTypes";
-import {
-  convertToYYYYMMDDFromDate,
-  convertYYYYMMDDToDateTime
-} from "~community/common/utils/dateTimeUtils";
+import { convertToYYYYMMDDFromDate } from "~community/common/utils/dateTimeUtils";
 import {
   Holiday,
   HolidayDurationType
@@ -155,25 +150,18 @@ export const getHeadersWithSubtitles = ({
 
 export const getHolidaysOnDate = (
   holidays: Holiday[] | undefined,
-  date: Date
-): Holiday[] => {
-  if (!holidays) return [];
+  date: string
+): Holiday[] => holidays?.filter((holiday) => holiday.date === date) ?? [];
 
-  return holidays.filter((holiday) =>
-    convertYYYYMMDDToDateTime(holiday.date).hasSame(
-      DateTime.fromJSDate(date),
-      "day"
-    )
-  );
-};
-
-export const getRecordDataHolidays = (
+export const getAllWorkLocationHolidays = (
   recordData?: TimeRecordDataResponseType
 ): Holiday[] => {
   const holidaysById = new Map<number, Holiday>();
 
   recordData?.items?.forEach((record) =>
-    record.holidays?.forEach((holiday) => holidaysById.set(holiday.id, holiday))
+    record.holidays
+      ?.filter((holiday) => !holiday.workLocations?.length)
+      .forEach((holiday) => holidaysById.set(holiday.id, holiday))
   );
 
   return Array.from(holidaysById.values());
