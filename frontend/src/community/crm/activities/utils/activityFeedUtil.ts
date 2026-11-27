@@ -9,6 +9,7 @@ import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import {
   formatDateTimeWithOrdinalIndicatorWithoutYear,
   instantInZone,
+  nowInZone,
   parseInstant
 } from "~community/common/utils/dateTimeUtils";
 import { ACTIVITY_SECTION_ORDER } from "~community/crm/activities/constants/activityConstants";
@@ -38,14 +39,28 @@ const isRowOverdue = (row: ActivityRow, zone?: string): boolean =>
   row.dueAt !== null &&
   isOverdue(row.dueAt, zone);
 
+const getMeetingScheduledAt = (
+  row: ActivityRow,
+  zone?: string
+): string | null => {
+  if (row.startAt) return isInFuture(row.startAt) ? row.startAt : null;
+
+  if (!row.completedAt) return null;
+
+  const meetingDayStart = DateTime.fromISO(row.completedAt, { zone });
+
+  if (meetingDayStart < nowInZone(zone).startOf("day")) return null;
+
+  return meetingDayStart.toUTC().toISO();
+};
+
 const getRowSection = (row: ActivityRow, zone?: string): ActivitySection => {
   if (isRowOverdue(row, zone)) return ActivitySection.OVERDUE;
 
-  let scheduledAt = row.dueAt;
-
-  if (row.type === ActivityType.MEETING) {
-    scheduledAt = row.startAt && isInFuture(row.startAt) ? row.startAt : null;
-  }
+  const scheduledAt =
+    row.type === ActivityType.MEETING
+      ? getMeetingScheduledAt(row, zone)
+      : row.dueAt;
 
   if (!row.isCompleted && scheduledAt) {
     if (isDueToday(scheduledAt, zone)) return ActivitySection.TODAY;
@@ -139,14 +154,13 @@ export const getRowSubtitle = (
     });
   }
 
-  if (
-    row.type === ActivityType.MEETING &&
-    row.startAt &&
-    isInFuture(row.startAt)
-  ) {
+  const meetingScheduledAt =
+    row.type === ActivityType.MEETING && getMeetingScheduledAt(row, zone);
+
+  if (meetingScheduledAt) {
     return translate(["activities", "row", "subtitle", "scheduledOn"], {
       date: formatDateTimeWithOrdinalIndicatorWithoutYear(
-        instantInZone(row.startAt, zone)
+        instantInZone(meetingScheduledAt, zone)
       )
     });
   }
