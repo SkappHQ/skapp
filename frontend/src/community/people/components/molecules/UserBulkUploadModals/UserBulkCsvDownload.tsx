@@ -56,7 +56,7 @@ const UserBulkCsvDownload = () => {
   return (
     <div>
       <div>
-        <p className=" font-normal pb-6">{translateText(["downloadCsvDes"])}</p>
+        <p className=" font-normal pb-6">{translateText(["downloadExcelDes"])}</p>
         <div className="flex flex-row justify-end gap-3 mb-4">
           <a
             href={template.url}
@@ -77,7 +77,7 @@ const UserBulkCsvDownload = () => {
               }
               iconPosition="end"
             >
-              {translateText(["downloadCsvButton"])}
+              {translateText(["downloadExcelButton"])}
             </ButtonV2>
           </a>
           <ButtonV2
