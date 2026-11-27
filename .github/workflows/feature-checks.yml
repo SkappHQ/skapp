@@ -1,0 +1,69 @@
+name: feature checks
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [develop]
+
+permissions: {}
+
+concurrency:
+  group: feature-checks-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  ORCHESTRATOR: rootcodelabs/skapp-ep
+
+jobs:
+  request:
+    name: Request
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pull-requests: read
+      statuses: write
+    steps:
+      - name: Request the feature's checks
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DISPATCH_TOKEN: ${{ secrets.FEATURE_CHECKS_TOKEN }}
+          PULL_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          shopt -s inherit_errexit
+          if [ -z "$DISPATCH_TOKEN" ]; then
+            echo "::error::FEATURE_CHECKS_TOKEN is not available to this repository"
+            exit 1
+          fi
+          pull_pattern='^https://github\.com/[a-z0-9][a-z0-9_.-]{0,99}/[a-z0-9][a-z0-9_.-]{0,99}/pull/[0-9]{1,7}$'
+          own=$(printf 'https://github.com/%s/pull/%s' "$GITHUB_REPOSITORY" "$PULL_NUMBER" | tr '[:upper:]' '[:lower:]')
+          post_status() {
+            gh api "repos/$GITHUB_REPOSITORY/statuses/$HEAD_SHA" -f state="$1" -f context=feature-checks -f description="$2" \
+              -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > /dev/null
+          }
+          author=$(GH_TOKEN="$DISPATCH_TOKEN" gh api user --jq .login)
+          encoded=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PULL_NUMBER/comments" --paginate \
+            | jq -r --arg author "$author" '.[] | select(.user.login == $author) | .body
+              | capture("^<!-- feature-checks:(?<payload>[A-Za-z0-9+/=]+) -->") | .payload' | tail -n 1)
+          if [ -z "$encoded" ]; then
+            post_status pending "Waiting for the feature to be added to the PR dashboard"
+            exit 0
+          fi
+          decoded=$(printf '%s' "$encoded" | base64 -d)
+          mapfile -t pulls < <(jq -r 'arrays | .[]' <<<"$decoded")
+          valid=$(printf '%s\n' "${pulls[@]}" | grep -cE "$pull_pattern" || true)
+          if [ "${#pulls[@]}" -eq 0 ] || [ "$valid" -ne "${#pulls[@]}" ]; then
+            post_status failure "The feature marker on this pull request is not valid"
+            echo "::error::The feature marker on this pull request is not valid"
+            exit 1
+          fi
+          if ! printf '%s\n' "${pulls[@]}" | grep -qxF "$own"; then
+            post_status pending "Waiting for the feature to be added to the PR dashboard"
+            exit 0
+          fi
+          post_status pending "Feature checks requested"
+          jq -n '{event_type: "feature-checks", client_payload: {pulls: $ARGS.positional}}' --args "${pulls[@]}" \
+            | GH_TOKEN="$DISPATCH_TOKEN" gh api "repos/$ORCHESTRATOR/dispatches" --input -
