@@ -165,7 +165,7 @@ export interface DailyLogType {
   breakHours: number;
   timeSlots: TimeSlotsType[];
   leaveRequest: LeaveRequestType | null;
-  holiday: HolidayType | null;
+  holiday: Holiday | null;
 }
 
 export interface TimeAvailabilityType {
@@ -234,7 +234,7 @@ export interface DirectEntryEmployeeType {
   employeeId: number;
   employeeName: string;
   date?: string;
-  holidays?: Holiday[];
+  holidays: Holiday[];
 }
 
 export interface DirectManualTimeEntryVariablesType {

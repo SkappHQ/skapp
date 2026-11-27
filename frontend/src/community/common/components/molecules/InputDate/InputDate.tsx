@@ -42,11 +42,7 @@ import {
 } from "~community/common/utils/keyboardUtils";
 import { LeaveState } from "~community/leave/types/EmployeeLeaveRequestTypes";
 import { MyLeaveRequestPayloadType } from "~community/leave/types/MyRequests";
-import {
-  HolidayDataResponse,
-  HolidayType,
-  addedHolidays
-} from "~community/people/types/HolidayTypes";
+import { Holiday, addedHolidays } from "~community/people/types/HolidayTypes";
 
 import CalendarHeader from "./CalendarHeader/CalendarHeader";
 import styles from "./styles";
@@ -75,7 +71,7 @@ interface Props {
   disabled?: boolean;
   isEditable?: boolean;
   isPreviousHolidayDisabled?: boolean;
-  holidays?: HolidayDataResponse | undefined;
+  holidays?: Holiday[];
   placeHolder?: string;
   name?: string;
   popperStyles?: SxProps;
@@ -121,7 +117,7 @@ const InputDate: FC<Props> = ({
   const lowerCaseLabel = label.toLowerCase();
 
   const [alreadyAppliedHolidays, setAlreadyAppliedHolidays] = useState<
-    HolidayType[]
+    Holiday[]
   >([]);
   const [leaveRequests, setLeaveRequests] = useState<
     { date: string; leaveStates: string }[]
@@ -132,15 +128,7 @@ const InputDate: FC<Props> = ({
 
   useEffect(() => {
     if (holidays) {
-      const appliedHolidays = holidays?.pages[0]?.items?.map(
-        // TODO: fix type issue
-        (item: HolidayType) => ({
-          date: item.date,
-          name: item.name,
-          holidayType: item.holidayDuration || undefined
-        })
-      );
-      setAlreadyAppliedHolidays(appliedHolidays);
+      setAlreadyAppliedHolidays(holidays);
     }
 
     if (myLeaveRequests) {

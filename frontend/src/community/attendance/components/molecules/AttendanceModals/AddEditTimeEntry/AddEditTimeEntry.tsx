@@ -61,8 +61,6 @@ import {
   uniqueByLeaveRequestId
 } from "~community/leave/utils/policyLeave/policyLeaveUtils";
 import { useGetAllHolidaysInfinite } from "~community/people/api/HolidayApi";
-import { useGetEmployeeById } from "~community/people/api/PeopleApi";
-import { HolidayDataResponse } from "~community/people/types/HolidayTypes";
 
 import styles from "./styles";
 
@@ -137,38 +135,15 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
   const isOtherEmployeeEntry =
     Boolean(directManualTimeEntryEligibleEmployee) && !isSelfDirectTimeEntry;
 
-  const otherEmployeeHolidays = directManualTimeEntryEligibleEmployee?.holidays;
-
-  const hasOtherEmployeeHolidays =
-    isOtherEmployeeEntry && otherEmployeeHolidays !== undefined;
-
-  const { data: otherEmployee } = useGetEmployeeById(
-    isOtherEmployeeEntry && !hasOtherEmployeeHolidays
-      ? Number(directManualTimeEntryEligibleEmployee?.employeeId)
-      : 0
-  );
-
-  const { data: fetchedHolidays } = useGetAllHolidaysInfinite({
+  const { data: myHolidays } = useGetAllHolidaysInfinite({
     year: currentYear.toString(),
-    workLocationId:
-      otherEmployee?.employment?.employmentDetails?.workLocationId,
-    isCurrentUserWorkLocationOnly: !isOtherEmployeeEntry,
-    enabled:
-      !isOtherEmployeeEntry ||
-      (!hasOtherEmployeeHolidays && Boolean(otherEmployee))
+    isCurrentUserWorkLocationOnly: true,
+    enabled: !isOtherEmployeeEntry
   });
 
-  const allHolidays = useMemo((): HolidayDataResponse | undefined => {
-    if (!hasOtherEmployeeHolidays || !otherEmployeeHolidays) {
-      return fetchedHolidays;
-    }
-
-    return {
-      items: otherEmployeeHolidays,
-      pages: [{ items: otherEmployeeHolidays }],
-      pageParams: [0]
-    };
-  }, [hasOtherEmployeeHolidays, otherEmployeeHolidays, fetchedHolidays]);
+  const allHolidays = isOtherEmployeeEntry
+    ? directManualTimeEntryEligibleEmployee?.holidays
+    : myHolidays?.pages[0]?.items;
 
   const {
     handleTimeEntrySubmit,
