@@ -149,18 +149,18 @@ export const getHeadersWithSubtitles = ({
 };
 
 export const getHolidaysOnDate = (
-  holidays: Holiday[] | undefined,
+  holidays: Holiday[],
   date: string
-): Holiday[] => holidays?.filter((holiday) => holiday.date === date) ?? [];
+): Holiday[] => holidays.filter((holiday) => holiday.date === date);
 
 export const getAllWorkLocationHolidays = (
-  recordData?: TimeRecordDataResponseType
+  recordData: TimeRecordDataResponseType
 ): Holiday[] => {
   const holidaysById = new Map<number, Holiday>();
 
-  recordData?.items?.forEach((record) =>
+  recordData.items.forEach((record) =>
     record.holidays
-      ?.filter((holiday) => !holiday.workLocations?.length)
+      .filter((holiday) => !holiday.workLocations?.length)
       .forEach((holiday) => holidaysById.set(holiday.id, holiday))
   );
 

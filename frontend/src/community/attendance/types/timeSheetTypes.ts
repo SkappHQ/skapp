@@ -30,7 +30,7 @@ export interface TimeRecordType {
 
 export interface TimeRecordDataType {
   timeRecords: TimeRecordType[];
-  holidays?: Holiday[];
+  holidays: Holiday[];
   employee?: {
     employee?: {
       firstName?: string;

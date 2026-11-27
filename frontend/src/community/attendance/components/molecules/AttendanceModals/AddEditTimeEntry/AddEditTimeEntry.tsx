@@ -142,13 +142,13 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
       : 0
   );
 
-  const { data: allHolidays } = useGetAllHolidaysInfinite(
-    currentYear.toString(),
-    undefined,
-    otherEmployee?.employment?.employmentDetails?.workLocationId,
-    !isOtherEmployeeEntry,
-    !isOtherEmployeeEntry || Boolean(otherEmployee)
-  );
+  const { data: allHolidays } = useGetAllHolidaysInfinite({
+    year: currentYear.toString(),
+    workLocationId:
+      otherEmployee?.employment?.employmentDetails?.workLocationId,
+    onlyCurrentUserWorkLocation: !isOtherEmployeeEntry,
+    enabled: !isOtherEmployeeEntry || Boolean(otherEmployee)
+  });
 
   const {
     handleTimeEntrySubmit,

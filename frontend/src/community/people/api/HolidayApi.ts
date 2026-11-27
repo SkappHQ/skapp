@@ -19,6 +19,7 @@ import {
   BulkHolidayUploadParams,
   Holiday,
   HolidayDataResponse,
+  HolidaysInfiniteParams,
   holidayBulkUploadResponse,
   holidayIndividualAddParams
 } from "~community/people/types/HolidayTypes";
@@ -52,19 +53,20 @@ export const useGetAllHolidays = (
   });
 };
 
-export const useGetAllHolidaysInfinite = (
-  year?: string | undefined,
-  sortOrder?: string | undefined,
-  workLocationId: number = ALL_LOCATIONS_ID,
-  onlyCurrentUserWorkLocation: boolean = false,
-  enabled: boolean = true
-): UseInfiniteQueryResult<HolidayDataResponse> => {
+export const useGetAllHolidaysInfinite = ({
+  year,
+  sortOrder,
+  workLocationId = ALL_LOCATIONS_ID,
+  onlyCurrentUserWorkLocation = false,
+  enabled = true
+}: HolidaysInfiniteParams = {}): UseInfiniteQueryResult<HolidayDataResponse> => {
   const params = {
     year: year,
     sortOrder: sortOrder,
     isExport: false,
-    workLocationId,
-    onlyCurrentUserWorkLocation
+    ...(onlyCurrentUserWorkLocation
+      ? { onlyCurrentUserWorkLocation }
+      : { workLocationId })
   };
 
   return useInfiniteQuery({

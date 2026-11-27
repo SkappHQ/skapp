@@ -77,7 +77,8 @@ export const timeRecordPreProcessor = (
   const newItemList = items?.map((item) => {
     return {
       employee: item?.employee,
-      timeRecords: item?.timeRecords
+      timeRecords: item?.timeRecords,
+      holidays: item?.holidays
     };
   });
   newItemList?.[0]?.timeRecords?.forEach((item) => {

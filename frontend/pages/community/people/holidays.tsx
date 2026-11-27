@@ -42,11 +42,11 @@ const Holidays: NextPage = () => {
     fetchNextPage,
     isFetchingNextPage,
     isLoading: isHolidayDataLoading
-  } = useGetAllHolidaysInfinite(
-    selectedYear,
-    holidayDataParams.sortOrder,
-    selectedWorkLocationId
-  );
+  } = useGetAllHolidaysInfinite({
+    year: selectedYear,
+    sortOrder: holidayDataParams.sortOrder,
+    workLocationId: selectedWorkLocationId
+  });
 
   const handleAddHoliday = () => {
     setHolidayModalType(holidayModalTypes.ADD_EDIT_HOLIDAY);
