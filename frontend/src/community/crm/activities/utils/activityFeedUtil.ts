@@ -7,6 +7,7 @@ import {
 } from "~community/common/constants/timeConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import {
+  calendarDayStartMillis,
   formatDateTimeWithOrdinalIndicatorWithoutYear,
   instantInZone,
   nowInZone,
@@ -47,11 +48,11 @@ const getMeetingScheduledAt = (
 
   if (!row.completedAt) return null;
 
-  const meetingDayStart = DateTime.fromISO(row.completedAt, { zone });
+  const meetingDayStart = calendarDayStartMillis(row.completedAt, zone);
 
-  if (meetingDayStart < nowInZone(zone).startOf("day")) return null;
+  if (meetingDayStart < nowInZone(zone).startOf("day").toMillis()) return null;
 
-  return meetingDayStart.toUTC().toISO();
+  return DateTime.fromMillis(meetingDayStart).toUTC().toISO();
 };
 
 const getRowSection = (row: ActivityRow, zone?: string): ActivitySection => {
@@ -154,15 +155,16 @@ export const getRowSubtitle = (
     });
   }
 
-  const meetingScheduledAt =
-    row.type === ActivityType.MEETING && getMeetingScheduledAt(row, zone);
+  if (row.type === ActivityType.MEETING) {
+    const meetingScheduledAt = getMeetingScheduledAt(row, zone);
 
-  if (meetingScheduledAt) {
-    return translate(["activities", "row", "subtitle", "scheduledOn"], {
-      date: formatDateTimeWithOrdinalIndicatorWithoutYear(
-        instantInZone(meetingScheduledAt, zone)
-      )
-    });
+    if (meetingScheduledAt) {
+      return translate(["activities", "row", "subtitle", "scheduledOn"], {
+        date: formatDateTimeWithOrdinalIndicatorWithoutYear(
+          instantInZone(meetingScheduledAt, zone)
+        )
+      });
+    }
   }
 
   const happenedAt = row.loggedAt ?? row.startAt;
