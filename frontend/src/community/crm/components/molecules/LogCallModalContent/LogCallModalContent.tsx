@@ -158,7 +158,9 @@ const LogCallModalContent: FC<Props> = ({
         mismatchedContactId: values.contactId
       });
       requestAnimationFrame(() => {
-        document.getElementById("log-call-deal-input")?.focus();
+        document
+          .getElementById("log-call-deal-input")
+          ?.focus({ preventScroll: true });
       });
       return;
     }

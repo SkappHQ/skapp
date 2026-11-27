@@ -105,7 +105,9 @@ const AddActivityTaskModalContent: FC<Props> = ({
         mismatchedContactId: formik.values.contactId
       });
       requestAnimationFrame(() => {
-        document.getElementById("add-task-deal-input")?.focus();
+        document
+          .getElementById("add-task-deal-input")
+          ?.focus({ preventScroll: true });
       });
       return;
     }

@@ -21,6 +21,7 @@ import org.springframework.security.authentication.InternalAuthenticationService
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -45,9 +46,13 @@ public class GlobalExceptionHandler {
 		ErrorResponse errorResponse = new ErrorResponse(status,
 				messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR),
 				CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR);
+		String invalidFieldValueMessage = messageUtil
+			.getMessage(CommonMessageConstant.COMMON_ERROR_INVALID_FIELD_VALUE);
 
 		for (FieldError fieldError : e.getBindingResult().getFieldErrors()) {
-			errorResponse.addValidationError(fieldError.getField(), fieldError.getDefaultMessage());
+			String errorMessage = fieldError.isBindingFailure() ? invalidFieldValueMessage
+					: fieldError.getDefaultMessage();
+			errorResponse.addValidationError(fieldError.getField(), errorMessage);
 			log.debug("Validation error on field '{}': {}", fieldError.getField(), fieldError.getDefaultMessage());
 		}
 
@@ -67,9 +72,21 @@ public class GlobalExceptionHandler {
 				status);
 	}
 
+	@ExceptionHandler(MissingPathVariableException.class)
+	public ResponseEntity<ResponseEntityDto> handleMissingPathVariableException(MissingPathVariableException e) {
+		if (e.isMissingAfterConversion()) {
+			return validationBadRequestResponse(e);
+		}
+		return handleServletException(e);
+	}
+
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
 	public ResponseEntity<ResponseEntityDto> handleMethodArgumentTypeMismatchException(
 			MethodArgumentTypeMismatchException e) {
+		return validationBadRequestResponse(e);
+	}
+
+	private ResponseEntity<ResponseEntityDto> validationBadRequestResponse(Exception e) {
 		HttpStatus status = HttpStatus.BAD_REQUEST;
 		String message = messageUtil.getMessage(CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR);
 		handleException(e, CommonMessageConstant.COMMON_ERROR_VALIDATION_ERROR.name(), status);

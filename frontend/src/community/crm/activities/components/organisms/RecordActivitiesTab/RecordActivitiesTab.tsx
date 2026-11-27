@@ -125,21 +125,25 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
 
   return (
     <div id={id} className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-3">
-        <ActivitySearchField
-          id={`${id}-search`}
-          placeholder={translateText([
-            "activities",
-            "toolbar",
-            "search",
-            activeTab === ActivityTab.TASKS ? "taskPlaceholder" : "placeholder"
-          ])}
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          resultCount={resultCount}
-          isResultCountReady={!isLoading && (!isError || rows.length > 0)}
-        />
-        <div className={actions ? "" : "ml-auto"}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div
+          className={actions ? "flex flex-wrap items-center gap-3" : "contents"}
+        >
+          <ActivitySearchField
+            id={`${id}-search`}
+            placeholder={translateText([
+              "activities",
+              "toolbar",
+              "search",
+              activeTab === ActivityTab.TASKS
+                ? "taskPlaceholder"
+                : "placeholder"
+            ])}
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            resultCount={resultCount}
+            isResultCountReady={!isLoading && (!isError || rows.length > 0)}
+          />
           <Dropdown
             id={`${id}-type`}
             options={typeOptions}
@@ -148,12 +152,12 @@ const RecordActivitiesTab: FC<RecordActivitiesTabProps> = ({
             variant="secondary"
             size="sm"
             className="rounded-lg"
-            width="9rem"
+            width="8rem"
             ariaLabel={translateAria(["activities", "recordTab", "typeFilter"])}
           />
         </div>
         {actions && (
-          <div className="flex items-center gap-3 ml-auto">{actions}</div>
+          <div className="flex shrink-0 items-center gap-3">{actions}</div>
         )}
       </div>
       <ActivityFeed
