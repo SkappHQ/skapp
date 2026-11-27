@@ -27,6 +27,7 @@ import com.skapp.community.peopleplanner.repository.EmployeeTeamDao;
 import com.skapp.community.peopleplanner.repository.HolidayDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.community.peopleplanner.type.HolidayDuration;
 import com.skapp.community.peopleplanner.util.PeopleUtil;
 import com.skapp.community.timeplanner.constant.TimeMessageConstant;
 import com.skapp.community.timeplanner.model.TimeConfig;
@@ -66,6 +67,7 @@ import java.time.Year;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -228,9 +230,10 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		PolicyAttendanceLeavesDto policyLeaves = getPolicyLeaves(policyAttendanceLeaveService.isLeavePoliciesEnabled(),
 				employees.stream().map(Employee::getEmployeeId).toList(),
 				date.equals(today) ? List.of(today) : List.of(today, date));
+		List<Holiday> holidays = holidayDao.findAllActiveHolidaysBetweenWithWorkLocations(date, date);
 		List<ClockInSummaryResponseDto> clockInSummaryResponseDtos = employees.stream()
 			.map(employee -> buildClockInSummaryResponse(clockInSummaryFilterDto, employee, organizationZone,
-					requestZone, policyLeaves))
+					requestZone, policyLeaves, holidays))
 			.filter(Optional::isPresent)
 			.map(Optional::get)
 			.toList();
@@ -300,7 +303,8 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 	}
 
 	private Optional<ClockInSummaryResponseDto> buildClockInSummaryResponse(ClockInSummaryFilterDto filterDto,
-			Employee employee, ZoneId organizationZone, ZoneId requestZone, PolicyAttendanceLeavesDto policyLeaves) {
+			Employee employee, ZoneId organizationZone, ZoneId requestZone, PolicyAttendanceLeavesDto policyLeaves,
+			List<Holiday> holidays) {
 
 		if (employee.getAccountStatus().equals(AccountStatus.PENDING)) {
 			return Optional.empty();
@@ -329,7 +333,7 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 
 		if (filterDto.getClockInType().contains(ClockInType.ALL_CLOCK_INS) || filterDto.getClockInType().isEmpty()) {
 			return createClockInSummaryResponse(filterDto, employee, timeRecord, organizationZone, requestZone,
-					policyLeaves);
+					policyLeaves, holidays);
 		}
 
 		if (filterDto.getClockInType().contains(ClockInType.LATE_CLOCK_INS)
@@ -345,12 +349,12 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		}
 
 		return createClockInSummaryResponse(filterDto, employee, timeRecord, organizationZone, requestZone,
-				policyLeaves);
+				policyLeaves, holidays);
 	}
 
 	private Optional<ClockInSummaryResponseDto> createClockInSummaryResponse(ClockInSummaryFilterDto filterDto,
 			Employee employee, TimeRecord timeRecord, ZoneId organizationZone, ZoneId requestZone,
-			PolicyAttendanceLeavesDto policyLeaves) {
+			PolicyAttendanceLeavesDto policyLeaves, List<Holiday> holidays) {
 		ClockInSummaryResponseDto responseDto = new ClockInSummaryResponseDto();
 		responseDto.setEmployee(peopleMapper.employeeToEmployeeBasicDetailsResponseDto(employee));
 		responseDto.setIsLateArrival(timeRecord != null && isLateArrival(timeRecord, organizationZone, policyLeaves));
@@ -364,7 +368,7 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 			responseDto.setWorkedHours(formatWorkedHours(timeRecord.getWorkedHours()));
 		}
 
-		responseDto.setHoliday(getHoliday(employee, filterDto.getDate()));
+		responseDto.setHoliday(getHoliday(holidays, employee));
 		responseDto.setLeave(Boolean.TRUE.equals(policyLeaves.getEnabled())
 				? policyAttendanceLeaveService.findClockInSummaryLeaveRequest(policyLeaves.getLeaveRequests(),
 						employee.getEmployeeId(), filterDto.getDate())
@@ -379,10 +383,12 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		return String.format("%dh %02dm", hrs, minutes);
 	}
 
-	private HolidayResponseDto getHoliday(Employee employee, LocalDate date) {
-		return holidayDao.findAllActiveHolidaysBetweenForWorkLocation(date, date, employee.getWorkLocation())
+	private HolidayResponseDto getHoliday(List<Holiday> holidays, Employee employee) {
+		Long workLocationId = employee.getWorkLocation() != null ? employee.getWorkLocation().getWorkLocationId()
+				: null;
+		return PeopleUtil.getHolidaysForWorkLocation(holidays, workLocationId)
 			.stream()
-			.findFirst()
+			.min(Comparator.comparing(holiday -> holiday.getHolidayDuration() != HolidayDuration.FULL_DAY))
 			.map(commonMapper::holidayToHolidayResponseDto)
 			.orElse(null);
 	}
@@ -534,7 +540,7 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 
 	private boolean isHolidayOrNoTimeConfig(LocalDate date) {
 		return timeConfigDao.findByDay(date.getDayOfWeek()) == null
-				|| holidayDao.findByIsActiveTrueAndDate(date) != null;
+				|| !holidayDao.findAllActiveHolidaysBetweenForWorkLocation(date, date, null).isEmpty();
 	}
 
 	private Map<String, Object> buildDashboardSummary(long actualClockIns, long expectedClockIns, long lateArrivals) {

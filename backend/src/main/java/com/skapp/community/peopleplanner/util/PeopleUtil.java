@@ -10,6 +10,7 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.EmployeeRole_;
+import com.skapp.community.peopleplanner.model.Holiday;
 import com.skapp.community.peopleplanner.model.Team;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Join;
@@ -141,6 +142,15 @@ public class PeopleUtil {
 		if (billableRate != null && billableRate <= 0) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_INVALID_BILLABLE_RATE);
 		}
+	}
+
+	public static List<Holiday> getHolidaysForWorkLocation(List<Holiday> holidays, Long workLocationId) {
+		return holidays.stream()
+			.filter(holiday -> holiday.getWorkLocations().isEmpty()
+					|| (workLocationId != null && holiday.getWorkLocations()
+						.stream()
+						.anyMatch(workLocation -> workLocationId.equals(workLocation.getWorkLocationId()))))
+			.toList();
 	}
 
 }

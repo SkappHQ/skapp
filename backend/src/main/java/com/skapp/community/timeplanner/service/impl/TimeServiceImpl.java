@@ -5,6 +5,7 @@ import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.mapper.CommonMapper;
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.model.WorkLocation;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
@@ -26,7 +27,6 @@ import com.skapp.community.leaveplanner.repository.LeaveEntitlementDao;
 import com.skapp.community.leaveplanner.repository.LeaveRequestDao;
 import com.skapp.community.leaveplanner.repository.LeaveRequestEntitlementDao;
 import com.skapp.community.leaveplanner.service.PolicyAttendanceLeaveService;
-import com.skapp.community.leaveplanner.util.PolicyLeaveAnalyticsUtil;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.leaveplanner.type.LeaveState;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
@@ -47,6 +47,7 @@ import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.peopleplanner.type.HolidayDuration;
 import com.skapp.community.peopleplanner.type.RequestStatus;
 import com.skapp.community.peopleplanner.type.RequestType;
+import com.skapp.community.peopleplanner.util.PeopleUtil;
 import com.skapp.community.timeplanner.constant.TimeMessageConstant;
 import com.skapp.community.timeplanner.mapper.TimeMapper;
 import com.skapp.community.timeplanner.model.TimeConfig;
@@ -1270,10 +1271,8 @@ public class TimeServiceImpl implements TimeService {
 					return activeTimeSlotResponseDto1;
 			}
 
-			Long employeeWorkLocationId = currentUser.getEmployee().getWorkLocation() != null
-					? currentUser.getEmployee().getWorkLocation().getWorkLocationId() : null;
-
-			return getAllActiveSlots(employeeWorkLocationId, currentDate, currentDayConfig, morningHours, eveningHours);
+			return getAllActiveSlots(currentUser.getEmployee().getWorkLocation(), currentDate, currentDayConfig,
+					morningHours, eveningHours);
 		}
 
 		return null;
@@ -1364,12 +1363,11 @@ public class TimeServiceImpl implements TimeService {
 		return null;
 	}
 
-	private ResponseEntityDto getAllActiveSlots(Long employeeWorkLocationId, LocalDate currentDate,
+	private ResponseEntityDto getAllActiveSlots(WorkLocation workLocation, LocalDate currentDate,
 			TimeConfig currentDayConfig, float morningHours, float eveningHours) {
 
-		List<Holiday> holidayList = employeeWorkLocationId == null
-				? holidayDao.findAllByIsActiveTrueAndDateAndWorkLocationsIsEmpty(currentDate)
-				: holidayDao.findAllActiveHolidaysByDateAndWorkLocationId(currentDate, employeeWorkLocationId);
+		List<Holiday> holidayList = holidayDao.findAllActiveHolidaysBetweenForWorkLocation(currentDate, currentDate,
+				workLocation);
 
 		boolean attendanceConfigForHolidays = attendanceConfigService
 			.getAttendanceConfigByType(AttendanceConfigType.CLOCK_IN_ON_COMPANY_HOLIDAYS);
@@ -2272,8 +2270,8 @@ public class TimeServiceImpl implements TimeService {
 	private List<HolidayResponseDto> getEmployeeHolidays(List<Holiday> holidays, Employee employee) {
 		Long workLocationId = employee.getWorkLocation() != null ? employee.getWorkLocation().getWorkLocationId()
 				: null;
-		return peopleMapper.holidaysToHolidayResponseDtoList(
-				PolicyLeaveAnalyticsUtil.holidaysForWorkLocation(holidays, workLocationId));
+		return peopleMapper
+			.holidaysToHolidayResponseDtoList(PeopleUtil.getHolidaysForWorkLocation(holidays, workLocationId));
 	}
 
 	private void handleTimeSheetSummary(TeamTimeRecordSummaryResponseDto teamTimeRecordSummaryResponseDto,

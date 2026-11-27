@@ -36,6 +36,6 @@ public class HolidayFilterDto {
 
 	private Long workLocationId;
 
-	private Boolean isCurrentUserWorkLocation = false;
+	private Boolean onlyCurrentUserWorkLocation = false;
 
 }

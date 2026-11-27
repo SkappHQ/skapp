@@ -493,15 +493,15 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		PolicyEmployeesOnLeaveResponseDto responseDto = new PolicyEmployeesOnLeaveResponseDto();
 		responseDto.setDate(today);
 
-		User currentUser = userService.getCurrentUser();
-		List<HolidayResponseDto> holidays = leaveMapper.holidaysToHolidayResponseDtoList(holidayDao
-			.findAllActiveHolidaysBetweenForWorkLocation(today, today, currentUser.getEmployee().getWorkLocation()));
+		List<HolidayResponseDto> holidays = leaveMapper.holidaysToHolidayResponseDtoList(
+				holidayDao.findAllActiveHolidaysBetweenForWorkLocation(today, today, null));
 		if (!holidays.isEmpty() || !resolveWorkingDays().contains(today.getDayOfWeek())) {
 			responseDto.setIsNonWorkingDay(true);
 			responseDto.setHolidays(holidays);
 			return new ResponseEntityDto(false, responseDto);
 		}
 
+		User currentUser = userService.getCurrentUser();
 		Long supervisorEmployeeId = LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser) ? null
 				: currentUser.getEmployee().getEmployeeId();
 		List<Long> teamIds = resolveTeamIds(filterDto.getTeamIds());

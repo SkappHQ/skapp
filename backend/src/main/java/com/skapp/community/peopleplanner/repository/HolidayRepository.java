@@ -25,8 +25,6 @@ public interface HolidayRepository {
 
 	List<Holiday> findAllActiveHolidaysBetweenWithWorkLocations(LocalDate startDate, LocalDate endDate);
 
-	List<Holiday> findAllActiveHolidaysByDateAndWorkLocationId(LocalDate date, Long workLocationId);
-
 	List<Holiday> findFutureActiveHolidaysExclusiveToWorkLocation(Long workLocationId, LocalDate fromDate);
 
 }

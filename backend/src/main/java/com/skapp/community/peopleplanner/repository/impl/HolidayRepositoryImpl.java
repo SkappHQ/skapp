@@ -48,30 +48,27 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 
 	@Override
 	public List<Holiday> findAllActiveHolidaysForWorkLocation(WorkLocation workLocation) {
-		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Holiday> criteriaQuery = criteriaBuilder.createQuery(Holiday.class);
-		Root<Holiday> root = criteriaQuery.from(Holiday.class);
-
-		List<Predicate> predicates = new ArrayList<>();
-		predicates.add(criteriaBuilder.equal(root.get(Holiday_.isActive), true));
-		predicates.add(buildWorkLocationScopePredicate(criteriaBuilder, root, workLocation));
-
-		criteriaQuery.where(predicates.toArray(new Predicate[0]));
-		criteriaQuery.distinct(true);
-
-		return entityManager.createQuery(criteriaQuery).getResultList();
+		return findActiveHolidaysForWorkLocation(null, null, workLocation);
 	}
 
 	@Override
 	public List<Holiday> findAllActiveHolidaysBetweenForWorkLocation(LocalDate startDate, LocalDate endDate,
 			WorkLocation workLocation) {
+		return findActiveHolidaysForWorkLocation(startDate, endDate, workLocation);
+	}
+
+	private List<Holiday> findActiveHolidaysForWorkLocation(LocalDate startDate, LocalDate endDate,
+			WorkLocation workLocation) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Holiday> criteriaQuery = criteriaBuilder.createQuery(Holiday.class);
 		Root<Holiday> root = criteriaQuery.from(Holiday.class);
+		root.fetch(Holiday_.workLocations, JoinType.LEFT);
 
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(criteriaBuilder.equal(root.get(Holiday_.isActive), true));
-		predicates.add(criteriaBuilder.between(root.get(Holiday_.date), startDate, endDate));
+		if (startDate != null && endDate != null) {
+			predicates.add(criteriaBuilder.between(root.get(Holiday_.date), startDate, endDate));
+		}
 		predicates.add(buildWorkLocationScopePredicate(criteriaBuilder, root, workLocation));
 
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
@@ -86,7 +83,8 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 
 		CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
 		Root<Holiday> countRoot = countQuery.from(Holiday.class);
-		List<Predicate> countPredicates = buildPredicates(criteriaBuilder, countQuery, holidayFilterDto, countRoot);
+		List<Predicate> countPredicates = buildPredicates(criteriaBuilder, countQuery, holidayFilterDto, countRoot,
+				isWorkLocationScoped);
 		if (isWorkLocationScoped) {
 			countPredicates.add(buildWorkLocationScopePredicate(criteriaBuilder, countRoot, workLocation));
 		}
@@ -101,7 +99,8 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 		CriteriaQuery<Holiday> criteriaQuery = criteriaBuilder.createQuery(Holiday.class);
 		Root<Holiday> root = criteriaQuery.from(Holiday.class);
 		root.fetch(Holiday_.workLocations, JoinType.LEFT);
-		List<Predicate> dataPredicates = buildPredicates(criteriaBuilder, criteriaQuery, holidayFilterDto, root);
+		List<Predicate> dataPredicates = buildPredicates(criteriaBuilder, criteriaQuery, holidayFilterDto, root,
+				isWorkLocationScoped);
 		if (isWorkLocationScoped) {
 			dataPredicates.add(buildWorkLocationScopePredicate(criteriaBuilder, root, workLocation));
 		}
@@ -151,24 +150,6 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 	}
 
 	@Override
-	public List<Holiday> findAllActiveHolidaysByDateAndWorkLocationId(LocalDate date, Long workLocationId) {
-		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Holiday> criteriaQuery = criteriaBuilder.createQuery(Holiday.class);
-		Root<Holiday> root = criteriaQuery.from(Holiday.class);
-
-		List<Predicate> predicates = new ArrayList<>();
-		predicates.add(criteriaBuilder.equal(root.get(Holiday_.isActive), true));
-		predicates.add(criteriaBuilder.equal(root.get(Holiday_.date), date));
-
-		predicates.add(buildWorkLocationPredicate(criteriaBuilder, root, workLocationId));
-
-		criteriaQuery.where(predicates.toArray(new Predicate[0]));
-		criteriaQuery.distinct(true);
-
-		return entityManager.createQuery(criteriaQuery).getResultList();
-	}
-
-	@Override
 	public List<Holiday> findFutureActiveHolidaysExclusiveToWorkLocation(Long workLocationId, LocalDate fromDate) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Holiday> criteriaQuery = criteriaBuilder.createQuery(Holiday.class);
@@ -195,7 +176,7 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 	}
 
 	private static List<Predicate> buildPredicates(CriteriaBuilder criteriaBuilder, CriteriaQuery<?> criteriaQuery,
-			HolidayFilterDto holidayFilterDto, Root<Holiday> root) {
+			HolidayFilterDto holidayFilterDto, Root<Holiday> root, boolean isWorkLocationScoped) {
 
 		List<Predicate> predicates = new ArrayList<>();
 
@@ -216,7 +197,8 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 			}
 
 			Long workLocationId = holidayFilterDto.getWorkLocationId();
-			if (workLocationId != null && !workLocationId.equals(PeopleConstants.HOLIDAY_ALL_WORK_LOCATIONS_ID)) {
+			if (!isWorkLocationScoped && workLocationId != null
+					&& !workLocationId.equals(PeopleConstants.HOLIDAY_ALL_WORK_LOCATIONS_ID)) {
 				predicates.add(buildWorkLocationPredicate(criteriaBuilder, root, workLocationId));
 				criteriaQuery.distinct(true);
 			}

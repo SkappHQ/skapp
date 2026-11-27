@@ -53,6 +53,7 @@ import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeTeamDao;
 import com.skapp.community.peopleplanner.repository.HolidayDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
+import com.skapp.community.peopleplanner.util.PeopleUtil;
 import com.skapp.community.timeplanner.model.TimeConfig;
 import com.skapp.community.timeplanner.repository.TimeConfigDao;
 import lombok.RequiredArgsConstructor;
@@ -295,7 +296,7 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 				Stream.concat(currentSpans.stream(), previousSpans.stream()).toList());
 		Map<Long, List<Holiday>> holidaysByWorkLocation = new HashMap<>();
 		Function<Long, List<Holiday>> holidaysForWorkLocation = workLocationId -> holidaysByWorkLocation
-			.computeIfAbsent(workLocationId, key -> PolicyLeaveAnalyticsUtil.holidaysForWorkLocation(holidays, key));
+			.computeIfAbsent(workLocationId, key -> PeopleUtil.getHolidaysForWorkLocation(holidays, key));
 
 		float currentAbsenceRate = PolicyLeaveAnalyticsUtil.calculateAbsenceRate(
 				sumApprovedLeaveDaysInWindow(currentWindow, currentSpans, teamIds, supervisorEmployeeId, timeConfigs,
@@ -476,7 +477,7 @@ public class PolicyLeaveAnalyticsServiceImpl implements PolicyLeaveAnalyticsServ
 
 		for (PolicyLeaveSpanDto span : multiMonthSpans) {
 			List<Holiday> spanHolidays = holidaysByWorkLocation.computeIfAbsent(span.getWorkLocationId(),
-					workLocationId -> PolicyLeaveAnalyticsUtil.holidaysForWorkLocation(holidays, workLocationId));
+					workLocationId -> PeopleUtil.getHolidaysForWorkLocation(holidays, workLocationId));
 			PolicyLeaveAnalyticsUtil.splitAcrossMonths(durations, span, window, timeConfigs, spanHolidays);
 		}
 

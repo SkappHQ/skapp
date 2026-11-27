@@ -82,15 +82,6 @@ public class PolicyLeaveAnalyticsUtil {
 		return LeaveModuleUtil.getWorkingDaysBetweenTwoDates(from, to, timeConfigs, holidays);
 	}
 
-	public static List<Holiday> holidaysForWorkLocation(List<Holiday> holidays, Long workLocationId) {
-		return holidays.stream()
-			.filter(holiday -> holiday.getWorkLocations().isEmpty()
-					|| (workLocationId != null && holiday.getWorkLocations()
-						.stream()
-						.anyMatch(workLocation -> workLocationId.equals(workLocation.getWorkLocationId()))))
-			.toList();
-	}
-
 	public static void addDuration(Map<Long, Map<YearMonth, Double>> durations, Long leaveTypeId, YearMonth month,
 			Double durationDays) {
 		if (durationDays == null) {
