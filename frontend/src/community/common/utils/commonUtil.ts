@@ -520,7 +520,7 @@ export const checkRestrictedRoutesAndRedirect = (
   const currentPath = request.nextUrl.pathname.toLowerCase();
 
   if (
-    restrictedRoutes.some((url) => currentPath.startsWith(url)) &&
+    restrictedRoutes.some((url) => currentPath.startsWith(url.toLowerCase())) &&
     !roles.includes(requiredRole)
   ) {
     return NextResponse.redirect(
