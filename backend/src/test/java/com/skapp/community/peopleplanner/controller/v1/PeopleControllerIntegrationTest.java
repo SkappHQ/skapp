@@ -382,6 +382,7 @@ class PeopleControllerIntegrationTest {
 			managerRole.setIsSuperAdmin(false);
 			EmployeeRole peopleAdminRole = employeeDao.findById(PEOPLE_ADMIN_ID).orElseThrow().getEmployeeRole();
 			peopleAdminRole.setPeopleRole(Role.PEOPLE_ADMIN);
+			peopleAdminRole.setLeaveRole(Role.LEAVE_EMPLOYEE);
 			peopleAdminRole.setIsSuperAdmin(false);
 			employeeRoleDao.flush();
 
@@ -538,20 +539,20 @@ class PeopleControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Leave admin sets a joined date - Returns OK")
-		void updateEmployeeJoinedDate_ByLeaveAdmin_ReturnsOk() throws Exception {
+		@DisplayName("People admin sets a joined date - Returns OK")
+		void updateEmployeeJoinedDate_ByPeopleAdmin_ReturnsOk() throws Exception {
 			LocalDate joinedDate = LocalDate.of(2020, 1, 15);
 			employeeDao.findById(EMPLOYEE_ID).orElseThrow().setJoinDate(null);
 			employeeDao.flush();
 
-			expectOk(patchEmployee(authToken, "/v1/people/employee/" + EMPLOYEE_ID + "/joined-date",
+			expectOk(patchEmployee(peopleAdminToken, "/v1/people/employee/" + EMPLOYEE_ID + "/joined-date",
 					joinedDateRequest(joinedDate)));
 
 			assertEquals(joinedDate, joinDateOf(EMPLOYEE_ID));
 		}
 
 		@Test
-		@DisplayName("Employee without leave admin sets a joined date - Returns Forbidden")
+		@DisplayName("Employee without people admin sets a joined date - Returns Forbidden")
 		void updateEmployeeJoinedDate_ByEmployee_ReturnsForbidden() throws Exception {
 			expectForbidden(patchEmployee(employeeToken, "/v1/people/employee/" + MANAGER_ID + "/joined-date",
 					joinedDateRequest(LocalDate.of(2020, 1, 15))));
@@ -626,7 +627,7 @@ class PeopleControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Leave admin replaces an existing joined date - Returns Bad Request")
+		@DisplayName("Super admin replaces an existing joined date - Returns Bad Request")
 		void updateEmployeeJoinedDate_WithExistingJoinedDate_ReturnsBadRequest() throws Exception {
 			LocalDate existingJoinDate = joinDateOf(EMPLOYEE_ID);
 
@@ -680,7 +681,7 @@ class PeopleControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Leave admin sets a future joined date - Returns Unprocessable")
+		@DisplayName("Super admin sets a future joined date - Returns Unprocessable")
 		void updateEmployeeJoinedDate_WithFutureDate_IsRefused() throws Exception {
 			employeeDao.findById(EMPLOYEE_ID).orElseThrow().setJoinDate(null);
 			employeeDao.flush();
@@ -696,7 +697,7 @@ class PeopleControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Leave admin sets no joined date - Returns the required error")
+		@DisplayName("Super admin sets no joined date - Returns the required error")
 		void updateEmployeeJoinedDate_WithoutDate_IsRefused() throws Exception {
 			patchEmployee(authToken, "/v1/people/employee/" + EMPLOYEE_ID + "/joined-date", joinedDateRequest(null))
 				.andDo(print())
@@ -706,7 +707,7 @@ class PeopleControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Leave admin sets a joined date for an unknown employee - Returns Not Found")
+		@DisplayName("Super admin sets a joined date for an unknown employee - Returns Not Found")
 		void updateEmployeeJoinedDate_ForUnknownEmployee_ReturnsNotFound() throws Exception {
 			patchEmployee(authToken, "/v1/people/employee/99999/joined-date",
 					joinedDateRequest(LocalDate.of(2020, 1, 15)))
