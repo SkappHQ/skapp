@@ -17,8 +17,6 @@ public interface HolidayDao extends JpaRepository<Holiday, Long>, JpaSpecificati
 
 	List<Holiday> findAllByIsActiveTrue();
 
-	List<Holiday> findAllByIsActiveTrueAndWorkLocationsIsEmpty();
-
 	List<Holiday> findAllByIsActiveTrueAndDateBetween(LocalDate startDate, LocalDate endDate);
 
 	Holiday findByIsActiveTrueAndDate(LocalDate currentDate);

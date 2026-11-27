@@ -3,6 +3,7 @@ package com.skapp.community.leaveplanner.service.impl;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.model.WorkLocation;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.UserDao;
@@ -431,7 +432,10 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 		List<DayOfWeek> workingDays = timeConfigDao.findAll().stream().map(TimeConfig::getDay).toList();
 		DayOfWeek checkingDay = employeesOnLeaveFilterDto.getDate().getDayOfWeek();
 
-		List<Holiday> holidayList = holidayDao.findAllByIsActiveTrueAndDate(employeesOnLeaveFilterDto.getDate());
+		User currentUser = userService.getCurrentUser();
+		List<Holiday> holidayList = holidayDao.findAllActiveHolidaysBetweenForWorkLocation(
+				employeesOnLeaveFilterDto.getDate(), employeesOnLeaveFilterDto.getDate(),
+				currentUser.getEmployee().getWorkLocation());
 		boolean isNotWorkingDay = !workingDays.contains(checkingDay);
 
 		if (isNotWorkingDay || !holidayList.isEmpty()) {
@@ -452,7 +456,6 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 			return new ResponseEntityDto(false, new AdminEmployeesOnLeaveDto(null, true, holidayResponseDtos));
 		}
 
-		User currentUser = userService.getCurrentUser();
 		boolean isLeaveAdmin = LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser);
 		AdminOnLeaveDto adminOnLeaveDto = employeeDao.findAllEmployeesOnLeave(employeesOnLeaveFilterDto,
 				currentUser.getUserId(), isLeaveAdmin);
@@ -1454,7 +1457,8 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EE", Locale.ENGLISH);
 		String checkingDay = currentDate.format(formatter).toUpperCase();
-		List<Holiday> holidayList = holidayDao.findAllByIsActiveTrueAndDate(currentDate);
+		List<Holiday> holidayList = holidayDao.findAllActiveHolidaysBetweenForWorkLocation(currentDate, currentDate,
+				currentUser.getEmployee().getWorkLocation());
 
 		boolean isNonWorkingDay = !workingDays.contains(checkingDay) || !holidayList.isEmpty();
 
@@ -1834,7 +1838,7 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 			.toList();
 		String checkingDay = new SimpleDateFormat("EE").format(filterDto.getDate()).toUpperCase();
 
-		List<Holiday> holidayList = holidayDao.findAllByIsActiveTrueAndDate(filterDto.getDate());
+		List<Holiday> holidayList = findHolidaysForCurrentUserOnDate(filterDto.getDate());
 		boolean isWorkingDay = !workingDays.contains(checkingDay);
 
 		if (!workingDays.contains(checkingDay) || !holidayList.isEmpty()) {
@@ -2021,6 +2025,11 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 				throw new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_NOT_FOUND);
 			}
 		}
+	}
+
+	private List<Holiday> findHolidaysForCurrentUserOnDate(LocalDate date) {
+		WorkLocation workLocation = userService.getCurrentUser().getEmployee().getWorkLocation();
+		return holidayDao.findAllActiveHolidaysBetweenForWorkLocation(date, date, workLocation);
 	}
 
 }

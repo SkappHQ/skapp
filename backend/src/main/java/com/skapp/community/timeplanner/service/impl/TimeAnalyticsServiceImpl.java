@@ -262,7 +262,10 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		}
 
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
-		List<LocalDate> holidays = holidayDao.findAllByIsActiveTrue().stream().map(Holiday::getDate).toList();
+		List<LocalDate> holidays = holidayDao.findAllActiveHolidaysForWorkLocation(employeeOpt.get().getWorkLocation())
+			.stream()
+			.map(Holiday::getDate)
+			.toList();
 
 		UtilizationPercentageDto utilizationInfo = timeService
 			.calculateWorkTimeUtilization(List.of(employeeOpt.get().getEmployeeId()), timeConfigs, holidays);
@@ -361,7 +364,7 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 			responseDto.setWorkedHours(formatWorkedHours(timeRecord.getWorkedHours()));
 		}
 
-		responseDto.setHoliday(getHoliday(filterDto.getDate()));
+		responseDto.setHoliday(getHoliday(employee, filterDto.getDate()));
 		responseDto.setLeave(Boolean.TRUE.equals(policyLeaves.getEnabled())
 				? policyAttendanceLeaveService.findClockInSummaryLeaveRequest(policyLeaves.getLeaveRequests(),
 						employee.getEmployeeId(), filterDto.getDate())
@@ -376,9 +379,12 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		return String.format("%dh %02dm", hrs, minutes);
 	}
 
-	private HolidayResponseDto getHoliday(LocalDate date) {
-		Holiday holiday = holidayDao.findByIsActiveTrueAndDate(date);
-		return holiday != null ? commonMapper.holidayToHolidayResponseDto(holiday) : null;
+	private HolidayResponseDto getHoliday(Employee employee, LocalDate date) {
+		return holidayDao.findAllActiveHolidaysBetweenForWorkLocation(date, date, employee.getWorkLocation())
+			.stream()
+			.findFirst()
+			.map(commonMapper::holidayToHolidayResponseDto)
+			.orElse(null);
 	}
 
 	private ClockInSummaryLeaveRequestResponseDto getLeaveRequest(Employee employee, LocalDate date) {
