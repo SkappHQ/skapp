@@ -538,20 +538,20 @@ class PeopleControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Leave admin sets a joined date - Returns OK")
-		void updateEmployeeJoinedDate_ByLeaveAdmin_ReturnsOk() throws Exception {
+		@DisplayName("People admin sets a joined date - Returns OK")
+		void updateEmployeeJoinedDate_ByPeopleAdmin_ReturnsOk() throws Exception {
 			LocalDate joinedDate = LocalDate.of(2020, 1, 15);
 			employeeDao.findById(EMPLOYEE_ID).orElseThrow().setJoinDate(null);
 			employeeDao.flush();
 
-			expectOk(patchEmployee(authToken, "/v1/people/employee/" + EMPLOYEE_ID + "/joined-date",
+			expectOk(patchEmployee(peopleAdminToken, "/v1/people/employee/" + EMPLOYEE_ID + "/joined-date",
 					joinedDateRequest(joinedDate)));
 
 			assertEquals(joinedDate, joinDateOf(EMPLOYEE_ID));
 		}
 
 		@Test
-		@DisplayName("Employee without leave admin sets a joined date - Returns Forbidden")
+		@DisplayName("Employee without people admin sets a joined date - Returns Forbidden")
 		void updateEmployeeJoinedDate_ByEmployee_ReturnsForbidden() throws Exception {
 			expectForbidden(patchEmployee(employeeToken, "/v1/people/employee/" + MANAGER_ID + "/joined-date",
 					joinedDateRequest(LocalDate.of(2020, 1, 15))));

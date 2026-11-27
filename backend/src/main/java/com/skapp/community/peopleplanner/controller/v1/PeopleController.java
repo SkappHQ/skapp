@@ -79,7 +79,7 @@ public class PeopleController {
 	}
 
 	@PatchMapping(value = "/employee/{id}/joined-date", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasRole('ROLE_LEAVE_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_PEOPLE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> updateEmployeeJoinedDate(@PathVariable Long id,
 			@RequestBody EmployeeJoinedDateRequestDto joinedDateRequestDto) {
 		ResponseEntityDto response = peopleService.updateEmployeeJoinedDate(id, joinedDateRequestDto);
