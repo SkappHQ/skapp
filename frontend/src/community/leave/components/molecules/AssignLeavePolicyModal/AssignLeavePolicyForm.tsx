@@ -42,6 +42,7 @@ interface Props {
   isFlexiblePolicy: boolean;
   conflictWarning: string;
   joinDateWarning: string;
+  joinDateError: string;
 }
 
 const AssignLeavePolicyForm: FC<Props> = ({
@@ -57,7 +58,8 @@ const AssignLeavePolicyForm: FC<Props> = ({
   accrualPreview,
   isFlexiblePolicy,
   conflictWarning,
-  joinDateWarning
+  joinDateWarning,
+  joinDateError
 }) => {
   const translateText = useTranslator("leaveModule", "leavePolicyAssignment");
 
@@ -142,6 +144,15 @@ const AssignLeavePolicyForm: FC<Props> = ({
                 </span>
               </Tooltip>
             </button>
+            {joinDateError && (
+              <p
+                role="alert"
+                aria-live="assertive"
+                className="body2 text-semantic-red-text"
+              >
+                {joinDateError}
+              </p>
+            )}
             <button
               type="button"
               role="radio"
