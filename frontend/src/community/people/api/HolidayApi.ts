@@ -26,7 +26,7 @@ export const useGetAllHolidays = (
   year?: string,
   isExport?: boolean,
   sortOrder?: string,
-  workLocationId?: number,
+  isCurrentUserWorkLocation?: boolean,
   enabled: boolean = true
 ): UseQueryResult<Holiday[]> => {
   return useQuery({
@@ -35,7 +35,7 @@ export const useGetAllHolidays = (
       year,
       sortOrder,
       isExport,
-      workLocationId
+      isCurrentUserWorkLocation
     ],
     queryFn: () =>
       authFetch.get(holidayEndpoints.HOLIDAY, {
@@ -43,7 +43,7 @@ export const useGetAllHolidays = (
           year: year,
           sortOrder: sortOrder,
           isExport: isExport,
-          workLocationId: workLocationId
+          isCurrentUserWorkLocation: isCurrentUserWorkLocation
         }
       }),
     select: (data) => data?.data?.results[0].items,
@@ -54,13 +54,15 @@ export const useGetAllHolidays = (
 export const useGetAllHolidaysInfinite = (
   year?: string | undefined,
   sortOrder?: string | undefined,
-  workLocationId: number = ALL_LOCATIONS_ID
+  workLocationId: number = ALL_LOCATIONS_ID,
+  isCurrentUserWorkLocation: boolean = false
 ): UseInfiniteQueryResult<HolidayDataResponse> => {
   const params = {
     year: year,
     sortOrder: sortOrder,
     isExport: false,
-    workLocationId
+    workLocationId,
+    isCurrentUserWorkLocation
   };
 
   return useInfiniteQuery({

@@ -61,10 +61,6 @@ import {
   uniqueByLeaveRequestId
 } from "~community/leave/utils/policyLeave/policyLeaveUtils";
 import { useGetAllHolidaysInfinite } from "~community/people/api/HolidayApi";
-import {
-  useGetEmployeeById,
-  useGetUserPersonalDetails
-} from "~community/people/api/PeopleApi";
 
 import styles from "./styles";
 
@@ -87,16 +83,11 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
   const classes = styles(theme);
   const { data: timeConfigData } = useDefaultCapacity();
 
-  const { data: currentEmployee } = useGetUserPersonalDetails();
-
-  const { data: employeeData } = useGetEmployeeById(
-    currentEmployee?.employeeId ? Number(currentEmployee.employeeId) : 0
-  );
-
   const { data: allHolidays } = useGetAllHolidaysInfinite(
     currentYear.toString(),
     undefined,
-    employeeData?.employment?.employmentDetails?.workLocationId
+    undefined,
+    true
   );
 
   const { isLeavePoliciesEnabled, isLoading: isLeavePolicyConfigLoading } =
