@@ -50,6 +50,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -127,7 +128,9 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					taskCompany.get(CrmCompany_.id).alias(CrmActivityTask_.COMPANY),
 					taskContact.get(CrmContact_.id).cast(String.class).alias(CrmActivityTask_.CONTACT),
 					cb.nullLiteral(Instant.class).alias(CrmActivityMeeting_.START_AT),
-					cb.nullLiteral(Instant.class).alias(CrmActivityCall_.LOGGED_AT))
+					cb.nullLiteral(Instant.class).alias(CrmActivityCall_.LOGGED_AT),
+					cb.nullLiteral(LocalDate.class).alias(CrmActivityMeeting_.MEETING_DATE),
+					cb.nullLiteral(Boolean.class).alias(CrmActivityMeeting_.IS_SCHEDULED))
 			.where(taskPredicates.toArray(new Predicate[0]));
 
 		JpaSubQuery<Tuple> callRows = query.subquery(Tuple.class);
@@ -187,7 +190,9 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					callCompany.get(CrmCompany_.id).alias(CrmActivityTask_.COMPANY),
 					callContact.get(CrmContact_.id).cast(String.class).alias(CrmActivityTask_.CONTACT),
 					cb.nullLiteral(Instant.class).alias(CrmActivityMeeting_.START_AT),
-					callLoggedAt.alias(CrmActivityCall_.LOGGED_AT))
+					callLoggedAt.alias(CrmActivityCall_.LOGGED_AT),
+					cb.nullLiteral(LocalDate.class).alias(CrmActivityMeeting_.MEETING_DATE),
+					cb.nullLiteral(Boolean.class).alias(CrmActivityMeeting_.IS_SCHEDULED))
 			.where(callPredicates.toArray(new Predicate[0]));
 
 		JpaSubQuery<Tuple> meetingRows = query.subquery(Tuple.class);
@@ -270,7 +275,9 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 				meetingOwnerId.alias(CrmActivityTask_.OWNER), meetingDeal.get(CrmDeal_.id).alias(CrmActivityTask_.DEAL),
 				meetingCompany.get(CrmCompany_.id).alias(CrmActivityTask_.COMPANY),
 				meetingContactIds.alias(CrmActivityTask_.CONTACT), meetingStartAt.alias(CrmActivityMeeting_.START_AT),
-				cb.nullLiteral(Instant.class).alias(CrmActivityCall_.LOGGED_AT))
+				cb.nullLiteral(Instant.class).alias(CrmActivityCall_.LOGGED_AT),
+				meeting.get(CrmActivityMeeting_.meetingDate).alias(CrmActivityMeeting_.MEETING_DATE),
+				meeting.get(CrmActivityMeeting_.isScheduled).alias(CrmActivityMeeting_.IS_SCHEDULED))
 			.where(meetingPredicates.toArray(new Predicate[0]));
 
 		JpaSubQuery<Tuple> emailRows = query.subquery(Tuple.class);
@@ -353,7 +360,9 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					emailCompany.get(CrmCompany_.id).alias(CrmActivityTask_.COMPANY),
 					emailContactIds.alias(CrmActivityTask_.CONTACT),
 					cb.nullLiteral(Instant.class).alias(CrmActivityMeeting_.START_AT),
-					emailLoggedAt.alias(CrmActivityCall_.LOGGED_AT))
+					emailLoggedAt.alias(CrmActivityCall_.LOGGED_AT),
+					cb.nullLiteral(LocalDate.class).alias(CrmActivityMeeting_.MEETING_DATE),
+					cb.nullLiteral(Boolean.class).alias(CrmActivityMeeting_.IS_SCHEDULED))
 			.where(emailPredicates.toArray(new Predicate[0]));
 
 		JpaDerivedRoot<Tuple> activity = query.from(cb.union(true, callRows, taskRows, meetingRows, emailRows));
@@ -365,6 +374,7 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 		Expression<Instant> feedAt = cb.<Instant>coalesce()
 			.value(activity.<Instant>get(CrmActivityCall_.LOGGED_AT))
 			.value(activity.<Instant>get(CrmActivityMeeting_.START_AT))
+			.value(activity.<LocalDate>get(CrmActivityMeeting_.MEETING_DATE).cast(Instant.class))
 			.value(taskAt);
 		Path<Long> activityId = activity.get(CrmActivityTask_.ID);
 		boolean ascending = params.getSortOrder().isAscending();
@@ -388,7 +398,8 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 					activity.get(CrmActivityTask_.DEAL), activity.get(CrmActivityTask_.COMPANY),
 					activity.get(CrmActivityTask_.CONTACT), activity.get(CrmActivityMeeting_.START_AT),
 					activity.get(CrmActivityCall_.LOGGED_AT), activity.get(CrmConstants.ACTIVITY_FEED_TYPE_ALIAS),
-					cb.count(activityId, cb.createWindow()))
+					cb.count(activityId, cb.createWindow()), activity.get(CrmActivityMeeting_.MEETING_DATE),
+					activity.get(CrmActivityMeeting_.IS_SCHEDULED))
 			.orderBy(orders)
 			.offset(pageable.getOffset())
 			.fetch(pageable.getPageSize());
@@ -414,6 +425,8 @@ public class CrmActivityFeedRepositoryImpl implements CrmActivityFeedRepository 
 				.forEach(row.getContactIds()::add);
 			row.setStartAt(result.get(10, Instant.class));
 			row.setLoggedAt(result.get(11, Instant.class));
+			row.setMeetingDate(result.get(14, LocalDate.class));
+			row.setIsScheduled(Boolean.TRUE.equals(result.get(15, Boolean.class)));
 			row.setType(CrmActivityType.valueOf(result.get(12, String.class)));
 			row.setCanComplete(row.getType() == CrmActivityType.TASK);
 			return row;

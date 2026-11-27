@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -26,6 +27,10 @@ public class CrmActivityFeedRowResponseDto {
 	private Instant startAt;
 
 	private Instant completedAt;
+
+	private LocalDate meetingDate;
+
+	private Boolean isScheduled = false;
 
 	private Boolean isCompleted = false;
 

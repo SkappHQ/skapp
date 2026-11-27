@@ -7,8 +7,10 @@ import {
 } from "~community/common/constants/timeConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import {
+  calendarDayStartMillis,
   formatDateTimeWithOrdinalIndicatorWithoutYear,
   instantInZone,
+  nowInZone,
   parseInstant
 } from "~community/common/utils/dateTimeUtils";
 import { ACTIVITY_SECTION_ORDER } from "~community/crm/activities/constants/activityConstants";
@@ -38,16 +40,30 @@ const isRowOverdue = (row: ActivityRow, zone?: string): boolean =>
   row.dueAt !== null &&
   isOverdue(row.dueAt, zone);
 
+const getMeetingScheduledAt = (
+  row: ActivityRow,
+  zone?: string
+): string | null => {
+  if (!row.isScheduled) return null;
+
+  if (row.startAt) return isOverdue(row.startAt, zone) ? null : row.startAt;
+
+  if (!row.meetingDate) return null;
+
+  const meetingDayStart = calendarDayStartMillis(row.meetingDate, zone);
+
+  if (meetingDayStart < nowInZone(zone).startOf("day").toMillis()) return null;
+
+  return DateTime.fromMillis(meetingDayStart).toUTC().toISO();
+};
+
 const getRowSection = (row: ActivityRow, zone?: string): ActivitySection => {
   if (isRowOverdue(row, zone)) return ActivitySection.OVERDUE;
 
-  let scheduledAt = row.dueAt;
+  const isMeeting = row.type === ActivityType.MEETING;
+  const scheduledAt = isMeeting ? getMeetingScheduledAt(row, zone) : row.dueAt;
 
-  if (row.type === ActivityType.MEETING) {
-    scheduledAt = row.startAt && isInFuture(row.startAt) ? row.startAt : null;
-  }
-
-  if (!row.isCompleted && scheduledAt) {
+  if ((isMeeting || !row.isCompleted) && scheduledAt) {
     if (isDueToday(scheduledAt, zone)) return ActivitySection.TODAY;
 
     if (isInFuture(scheduledAt)) return ActivitySection.UPCOMING;
@@ -139,16 +155,16 @@ export const getRowSubtitle = (
     });
   }
 
-  if (
-    row.type === ActivityType.MEETING &&
-    row.startAt &&
-    isInFuture(row.startAt)
-  ) {
-    return translate(["activities", "row", "subtitle", "scheduledOn"], {
-      date: formatDateTimeWithOrdinalIndicatorWithoutYear(
-        instantInZone(row.startAt, zone)
-      )
-    });
+  if (row.type === ActivityType.MEETING) {
+    const meetingScheduledAt = getMeetingScheduledAt(row, zone);
+
+    if (meetingScheduledAt) {
+      return translate(["activities", "row", "subtitle", "scheduledOn"], {
+        date: formatDateTimeWithOrdinalIndicatorWithoutYear(
+          instantInZone(meetingScheduledAt, zone)
+        )
+      });
+    }
   }
 
   const happenedAt = row.loggedAt ?? row.startAt;
@@ -171,6 +187,8 @@ export const toCallRow = (call: ActivityCallResponse): ActivityRow => ({
   loggedAt: call.loggedAt,
   startAt: null,
   completedAt: null,
+  meetingDate: null,
+  isScheduled: false,
   isCompleted: false,
   priority: null,
   ownerId: call.ownerId,
@@ -188,6 +206,8 @@ export const toEmailRow = (email: ActivityEmailResponse): ActivityRow => ({
   loggedAt: email.loggedAt,
   startAt: null,
   completedAt: null,
+  meetingDate: null,
+  isScheduled: false,
   isCompleted: false,
   priority: null,
   ownerId: email.ownerId,
@@ -207,7 +227,9 @@ export const toMeetingRow = (
   loggedAt: meeting.startAt,
   startAt: meeting.startAt,
   completedAt: meeting.meetingDate,
-  isCompleted: true,
+  meetingDate: meeting.meetingDate,
+  isScheduled: meeting.isScheduled,
+  isCompleted: false,
   priority: null,
   ownerId: meeting.ownerId,
   dealId: meeting.dealId,
@@ -224,6 +246,8 @@ export const toTaskRow = (task: ActivityTaskResponse): ActivityRow => ({
   loggedAt: null,
   startAt: null,
   completedAt: task.completedAt,
+  meetingDate: null,
+  isScheduled: false,
   isCompleted: task.isCompleted,
   priority: task.priority,
   ownerId: task.ownerId,
