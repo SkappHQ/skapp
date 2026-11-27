@@ -46,7 +46,7 @@ const AssignLeavePolicyModal: FC<Props> = ({
 
   const [selectedPolicyId, setSelectedPolicyId] = useState<string>("");
   const [selectedEffectiveDateType, setSelectedEffectiveDateType] =
-    useState<EffectiveDateType | null>(null);
+    useState<EffectiveDateType>();
   const [specificDate, setSpecificDate] = useState<string>("");
   const [specificDateError, setSpecificDateError] = useState<string>("");
   const [isSetJoinDateOpen, setIsSetJoinDateOpen] = useState<boolean>(false);
@@ -66,7 +66,7 @@ const AssignLeavePolicyModal: FC<Props> = ({
 
   const effectiveDateType =
     selectedEffectiveDateType ??
-    (isEmployeeLoading ? null : defaultEffectiveDateType);
+    (isEmployeeLoading ? undefined : defaultEffectiveDateType);
 
   const isJoinDateSelected = effectiveDateType === EffectiveDateType.JOIN_DATE;
 
@@ -102,7 +102,7 @@ const AssignLeavePolicyModal: FC<Props> = ({
 
   const resetForm = (): void => {
     setSelectedPolicyId("");
-    setSelectedEffectiveDateType(null);
+    setSelectedEffectiveDateType(undefined);
     setSpecificDate("");
     setSpecificDateError("");
   };
@@ -239,11 +239,7 @@ const AssignLeavePolicyModal: FC<Props> = ({
     });
   };
 
-  const isSaveDisabled =
-    !selectedPolicyId ||
-    isPending ||
-    isEmployeeLoading ||
-    isJoinDateErrorVisible;
+  const isSaveDisabled = !selectedPolicyId || isPending || isEmployeeLoading;
 
   return (
     <>

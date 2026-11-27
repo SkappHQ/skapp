@@ -6,6 +6,8 @@ import {
 
 export const MAX_POLICY_NAME_LENGTH = 100;
 
+export const JOIN_DATE_ERROR_ID = "assign-leave-policy-join-date-error";
+
 export const ACCRUAL_PREVIEW_ROW_LIMIT = 4;
 
 export const LEAVE_POLICY_PAGE_SIZE = 10;

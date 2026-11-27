@@ -17,12 +17,11 @@ import type {
 } from "~community/common/components/organisms/TableView/types";
 import { useCalendarPopperPlacement } from "~community/common/hooks/useCalendarPopperPlacement";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { JOIN_DATE_ERROR_ID } from "~community/leave/constants/leavePolicyConstants";
 import {
   AccrualPreviewRow,
   EffectiveDateType
 } from "~community/leave/types/LeavePolicyTypes";
-
-const JOIN_DATE_ERROR_ID = "assign-leave-policy-join-date-error";
 
 export interface PolicyOption {
   id: string;
@@ -34,7 +33,7 @@ interface Props {
   selectedPolicyId: string;
   policyOptions: PolicyOption[];
   onPolicyChange: (value: string) => void;
-  effectiveDateType: EffectiveDateType | null;
+  effectiveDateType?: EffectiveDateType;
   onEffectiveDateTypeChange: (type: EffectiveDateType) => void;
   joinDateLabel: string;
   specificDate: string;
