@@ -5,6 +5,7 @@ import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.mapper.CommonMapper;
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.model.WorkLocation;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
@@ -46,6 +47,7 @@ import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.peopleplanner.type.HolidayDuration;
 import com.skapp.community.peopleplanner.type.RequestStatus;
 import com.skapp.community.peopleplanner.type.RequestType;
+import com.skapp.community.peopleplanner.util.PeopleUtil;
 import com.skapp.community.timeplanner.constant.TimeMessageConstant;
 import com.skapp.community.timeplanner.mapper.TimeMapper;
 import com.skapp.community.timeplanner.model.TimeConfig;
@@ -402,7 +404,8 @@ public class TimeServiceImpl implements TimeService {
 		List<LeaveRequestResponseDto> leaveRequestResponseDtos = policyAttendanceLeaveService.isLeavePoliciesEnabled()
 				? policyAttendanceLeaveService.getEmployeeLeaveRequests(employeeId, startDate, endDate, true)
 				: findLeaveRequestsByDateRange(leaveRequestFilterDto, employeeId);
-		List<Holiday> holidays = holidayDao.findAllByIsActiveTrueAndDateBetween(startDate, endDate);
+		List<Holiday> holidays = holidayDao.findAllActiveHolidaysBetweenForWorkLocation(startDate, endDate,
+				employeeOptional.get().getWorkLocation());
 		List<HolidayResponseDto> holidayResponseDtos = peopleMapper.holidaysToHolidayResponseDtoList(holidays);
 
 		List<EmployeeDailyTimeRecordsResponseDto> response = new ArrayList<>();
@@ -492,8 +495,8 @@ public class TimeServiceImpl implements TimeService {
 			response.setLeaveRequest(leaveMapper.leaveRequestListToLeaveRequestResponseDtoList(leaveRequests));
 		}
 
-		List<Holiday> holidays = holidayDao.findAllByIsActiveTrueAndDateBetween(requestDto.getDate(),
-				requestDto.getDate());
+		List<Holiday> holidays = holidayDao.findAllActiveHolidaysBetweenForWorkLocation(requestDto.getDate(),
+				requestDto.getDate(), currentUser.getEmployee().getWorkLocation());
 		response.setHoliday(peopleMapper.holidaysToHolidayResponseDtoList(holidays));
 
 		TimeSlotFilterDto timeSlotFilterDto = new TimeSlotFilterDto();
@@ -1024,11 +1027,13 @@ public class TimeServiceImpl implements TimeService {
 				? policyAttendanceLeaveService.getEmployeesLeaveRequests(employeeIds, startDate, endDate, true)
 				: Map.of();
 		boolean geoFencingEnabled = isGeoFencingEnabled();
+		List<Holiday> holidays = holidayDao.findAllActiveHolidaysBetweenWithWorkLocations(startDate, endDate);
 
 		List<TimeRecordsResponseDto> response = new ArrayList<>();
 		for (Employee employee : employees.getContent()) {
 			TimeRecordsResponseDto timeRecordsResponseDto = new TimeRecordsResponseDto();
 			timeRecordsResponseDto.setEmployee(commonMapper.employeeToEmployeeTeamResponseDto(employee));
+			timeRecordsResponseDto.setHolidays(getEmployeeHolidays(holidays, employee));
 
 			List<EmployeeTimeRecord> employeeTimeRecords = timeRecords.stream()
 				.filter(timeRecord -> timeRecord.getEmployeeId().equals(employee.getEmployeeId()))
@@ -1205,7 +1210,10 @@ public class TimeServiceImpl implements TimeService {
 		}
 
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
-		List<LocalDate> holidays = holidayDao.findAllByIsActiveTrue().stream().map(Holiday::getDate).toList();
+		List<LocalDate> holidays = holidayDao.findAllActiveHolidaysForWorkLocation(employeeOpt.get().getWorkLocation())
+			.stream()
+			.map(Holiday::getDate)
+			.toList();
 
 		UtilizationPercentageDto utilizationInfo = calculateWorkTimeUtilization(
 				List.of(employeeOpt.get().getEmployeeId()), timeConfigs, holidays);
@@ -1263,10 +1271,8 @@ public class TimeServiceImpl implements TimeService {
 					return activeTimeSlotResponseDto1;
 			}
 
-			Long employeeWorkLocationId = currentUser.getEmployee().getWorkLocation() != null
-					? currentUser.getEmployee().getWorkLocation().getWorkLocationId() : null;
-
-			return getAllActiveSlots(employeeWorkLocationId, currentDate, currentDayConfig, morningHours, eveningHours);
+			return getAllActiveSlots(currentUser.getEmployee().getWorkLocation(), currentDate, currentDayConfig,
+					morningHours, eveningHours);
 		}
 
 		return null;
@@ -1357,12 +1363,11 @@ public class TimeServiceImpl implements TimeService {
 		return null;
 	}
 
-	private ResponseEntityDto getAllActiveSlots(Long employeeWorkLocationId, LocalDate currentDate,
+	private ResponseEntityDto getAllActiveSlots(WorkLocation workLocation, LocalDate currentDate,
 			TimeConfig currentDayConfig, float morningHours, float eveningHours) {
 
-		List<Holiday> holidayList = employeeWorkLocationId == null
-				? holidayDao.findAllByIsActiveTrueAndDateAndWorkLocationsIsEmpty(currentDate)
-				: holidayDao.findAllActiveHolidaysByDateAndWorkLocationId(currentDate, employeeWorkLocationId);
+		List<Holiday> holidayList = holidayDao.findAllActiveHolidaysBetweenForWorkLocation(currentDate, currentDate,
+				workLocation);
 
 		boolean attendanceConfigForHolidays = attendanceConfigService
 			.getAttendanceConfigByType(AttendanceConfigType.CLOCK_IN_ON_COMPANY_HOLIDAYS);
@@ -1662,8 +1667,8 @@ public class TimeServiceImpl implements TimeService {
 		employeesOnLeavePeriodFilterDto.setEndDate(timeRecordSummaryDto.getEndDate());
 		employeesOnLeavePeriodFilterDto.setTeamIds(List.of(timeRecordSummaryDto.getTeamId()));
 
-		List<Holiday> holidays = holidayDao.findAllByIsActiveTrueAndDateBetween(timeRecordSummaryDto.getStartDate(),
-				timeRecordSummaryDto.getEndDate());
+		List<Holiday> holidays = holidayDao.findAllActiveHolidaysBetweenWithWorkLocations(
+				timeRecordSummaryDto.getStartDate(), timeRecordSummaryDto.getEndDate());
 		boolean leavePoliciesEnabled = policyAttendanceLeaveService.isLeavePoliciesEnabled();
 		List<LeaveRequest> leaveRequests = leavePoliciesEnabled ? List.of()
 				: leaveRequestDao.getLeaveRequestsByTeamId(employeesOnLeavePeriodFilterDto);
@@ -1682,6 +1687,7 @@ public class TimeServiceImpl implements TimeService {
 			TimeRecordsResponseDto employeeTimeRecordSummary = new TimeRecordsResponseDto();
 			List<TimeRecordChipResponseDto> timeRecords = new ArrayList<>();
 			employeeTimeRecordSummary.setEmployee(commonMapper.employeeToEmployeeTeamResponseDto(employee));
+			employeeTimeRecordSummary.setHolidays(getEmployeeHolidays(holidays, employee));
 
 			List<TimeRecordsByEmployeesDto> timeRecordsForUser = timeRecordsByEmployees.stream()
 				.filter(timeRecord -> timeRecord.getEmployeeId().equals(employee.getEmployeeId()))
@@ -2259,6 +2265,11 @@ public class TimeServiceImpl implements TimeService {
 			optionalLeaveEntitlement.ifPresent(leaveEntitlement -> leaveEntitlement
 				.setTotalDaysUsed(leaveEntitlement.getTotalDaysUsed() - leaveRequest.getDurationDays()));
 		}
+	}
+
+	private List<HolidayResponseDto> getEmployeeHolidays(List<Holiday> holidays, Employee employee) {
+		return peopleMapper.holidaysToHolidayResponseDtoList(
+				PeopleUtil.getHolidaysForWorkLocation(holidays, employee.getWorkLocation()));
 	}
 
 	private void handleTimeSheetSummary(TeamTimeRecordSummaryResponseDto teamTimeRecordSummaryResponseDto,

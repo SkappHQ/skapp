@@ -493,8 +493,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		PolicyEmployeesOnLeaveResponseDto responseDto = new PolicyEmployeesOnLeaveResponseDto();
 		responseDto.setDate(today);
 
-		List<HolidayResponseDto> holidays = leaveMapper
-			.holidaysToHolidayResponseDtoList(holidayDao.findAllByIsActiveTrueAndDate(today));
+		List<HolidayResponseDto> holidays = leaveMapper.holidaysToHolidayResponseDtoList(
+				holidayDao.findAllActiveHolidaysBetweenForWorkLocation(today, today, null));
 		if (!holidays.isEmpty() || !resolveWorkingDays().contains(today.getDayOfWeek())) {
 			responseDto.setIsNonWorkingDay(true);
 			responseDto.setHolidays(holidays);

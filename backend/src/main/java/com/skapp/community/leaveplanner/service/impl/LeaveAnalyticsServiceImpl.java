@@ -114,7 +114,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Month;
@@ -431,7 +430,7 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 		List<DayOfWeek> workingDays = timeConfigDao.findAll().stream().map(TimeConfig::getDay).toList();
 		DayOfWeek checkingDay = employeesOnLeaveFilterDto.getDate().getDayOfWeek();
 
-		List<Holiday> holidayList = holidayDao.findAllByIsActiveTrueAndDate(employeesOnLeaveFilterDto.getDate());
+		List<Holiday> holidayList = findHolidaysForAllWorkLocations(employeesOnLeaveFilterDto.getDate());
 		boolean isNotWorkingDay = !workingDays.contains(checkingDay);
 
 		if (isNotWorkingDay || !holidayList.isEmpty()) {
@@ -1454,7 +1453,7 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EE", Locale.ENGLISH);
 		String checkingDay = currentDate.format(formatter).toUpperCase();
-		List<Holiday> holidayList = holidayDao.findAllByIsActiveTrueAndDate(currentDate);
+		List<Holiday> holidayList = findHolidaysForAllWorkLocations(currentDate);
 
 		boolean isNonWorkingDay = !workingDays.contains(checkingDay) || !holidayList.isEmpty();
 
@@ -1832,14 +1831,14 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 			.map(TimeConfig::getDay)
 			.map(DayOfWeek::toString)
 			.toList();
-		String checkingDay = new SimpleDateFormat("EE").format(filterDto.getDate()).toUpperCase();
+		String checkingDay = filterDto.getDate().getDayOfWeek().toString();
 
-		List<Holiday> holidayList = holidayDao.findAllByIsActiveTrueAndDate(filterDto.getDate());
-		boolean isWorkingDay = !workingDays.contains(checkingDay);
+		List<Holiday> holidayList = findHolidaysForAllWorkLocations(filterDto.getDate());
+		boolean isNonWorkingDay = !workingDays.contains(checkingDay);
 
-		if (!workingDays.contains(checkingDay) || !holidayList.isEmpty()) {
+		if (isNonWorkingDay || !holidayList.isEmpty()) {
 			List<HolidayResponseDto> holidayResponseDtos = leaveMapper.holidaysToHolidayResponseDtoList(holidayList);
-			if (isWorkingDay) {
+			if (isNonWorkingDay) {
 				HolidayResponseDto holiday = new HolidayResponseDto();
 				holiday.setDate(filterDto.getDate());
 				holiday.setName("Day Off!");
@@ -2021,6 +2020,10 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 				throw new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_NOT_FOUND);
 			}
 		}
+	}
+
+	private List<Holiday> findHolidaysForAllWorkLocations(LocalDate date) {
+		return holidayDao.findAllActiveHolidaysBetweenForWorkLocation(date, date, null);
 	}
 
 }

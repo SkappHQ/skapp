@@ -3,13 +3,16 @@ package com.skapp.community.peopleplanner.util;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.model.WorkLocation;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.RoleLevel;
+import com.skapp.community.common.util.AuthUtil;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.EmployeeRole_;
+import com.skapp.community.peopleplanner.model.Holiday;
 import com.skapp.community.peopleplanner.model.Team;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Join;
@@ -141,6 +144,24 @@ public class PeopleUtil {
 		if (billableRate != null && billableRate <= 0) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_INVALID_BILLABLE_RATE);
 		}
+	}
+
+	public static List<Holiday> getHolidaysForWorkLocation(List<Holiday> holidays, WorkLocation workLocation) {
+		return getHolidaysForWorkLocation(holidays, workLocation != null ? workLocation.getWorkLocationId() : null);
+	}
+
+	public static List<Holiday> getHolidaysForWorkLocation(List<Holiday> holidays, Long workLocationId) {
+		return holidays.stream()
+			.filter(holiday -> holiday.getWorkLocations().isEmpty()
+					|| (workLocationId != null && holiday.getWorkLocations()
+						.stream()
+						.anyMatch(workLocation -> workLocationId.equals(workLocation.getWorkLocationId()))))
+			.toList();
+	}
+
+	public static boolean isSuperAdminOrPeopleAdmin(Set<String> userRoles) {
+		return userRoles.contains(AuthUtil.withRolePrefix(Role.SUPER_ADMIN))
+				|| userRoles.contains(AuthUtil.withRolePrefix(Role.PEOPLE_ADMIN));
 	}
 
 }

@@ -1,6 +1,7 @@
 package com.skapp.community.peopleplanner.service.impl;
 
 import com.skapp.community.common.service.TimeZoneService;
+import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.WorkLocation;
 import com.skapp.community.common.payload.response.BulkStatusSummary;
@@ -43,6 +44,7 @@ import com.skapp.community.peopleplanner.service.PeopleEmailService;
 import com.skapp.community.peopleplanner.service.PeopleNotificationService;
 import com.skapp.community.peopleplanner.type.BulkRecordStatus;
 import com.skapp.community.peopleplanner.type.HolidayDuration;
+import com.skapp.community.peopleplanner.util.PeopleUtil;
 import com.skapp.community.timeplanner.model.TimeConfig;
 import com.skapp.community.timeplanner.repository.TimeConfigDao;
 import lombok.RequiredArgsConstructor;
@@ -102,6 +104,8 @@ public class HolidayServiceImpl implements HolidayService {
 
 	private final PolicyHolidayLeaveService policyHolidayLeaveService;
 
+	private final UserService userService;
+
 	@Override
 	public ResponseEntityDto getAllHolidays(HolidayFilterDto holidayFilterDto) {
 		log.info("getAllHolidays: execution started");
@@ -119,7 +123,7 @@ public class HolidayServiceImpl implements HolidayService {
 			holidayFilterDto.setYear(timeZoneService.currentOrganizationYear());
 		}
 
-		Page<Holiday> holidays = holidayDao.findAllHolidays(holidayFilterDto, pageable);
+		Page<Holiday> holidays = findHolidaysVisibleToCurrentUser(holidayFilterDto, pageable);
 		PageDto pageDto = pageTransformer.transform(holidays);
 		List<HolidayResponseDto> list = peopleMapper
 			.holidaysToHolidayResponseDtoList(holidays.hasContent() ? holidays.getContent() : Collections.emptyList());
@@ -317,12 +321,20 @@ public class HolidayServiceImpl implements HolidayService {
 	public List<Holiday> getActiveHolidaysForEmployee(Employee employee) {
 		log.info("getActiveHolidaysForEmployee: execution started");
 
-		List<Holiday> holidays = employee.getWorkLocation() != null
-				? holidayDao.findAllActiveHolidaysByWorkLocationId(employee.getWorkLocation().getWorkLocationId())
-				: holidayDao.findAllByIsActiveTrueAndWorkLocationsIsEmpty();
+		List<Holiday> holidays = holidayDao.findAllActiveHolidaysForWorkLocation(employee.getWorkLocation());
 
 		log.info("getActiveHolidaysForEmployee: execution ended");
 		return holidays;
+	}
+
+	private Page<Holiday> findHolidaysVisibleToCurrentUser(HolidayFilterDto holidayFilterDto, Pageable pageable) {
+		boolean canViewAllWorkLocations = PeopleUtil.isSuperAdminOrPeopleAdmin(userService.getCurrentUserRoles());
+		if (canViewAllWorkLocations && !Boolean.TRUE.equals(holidayFilterDto.getIsCurrentUserWorkLocationOnly())) {
+			return holidayDao.findAllHolidays(holidayFilterDto, pageable);
+		}
+
+		WorkLocation workLocation = userService.getCurrentUser().getEmployee().getWorkLocation();
+		return holidayDao.findAllHolidaysForWorkLocation(holidayFilterDto, workLocation, pageable);
 	}
 
 	private void updateLeaveRequestDueHoliday(Holiday holiday, LeaveRequest leaveRequest) {
