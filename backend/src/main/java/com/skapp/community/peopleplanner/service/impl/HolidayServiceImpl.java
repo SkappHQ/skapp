@@ -282,16 +282,21 @@ public class HolidayServiceImpl implements HolidayService {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_DELETE_HOLIDAYS_ARRAY_EMPTY);
 		}
 
-		List<Holiday> holidaysToDelete = new ArrayList<>();
-		for (Long holidayId : holidayDeleteDto.getHolidayIds()) {
-			Holiday holiday = holidayDao.findById(holidayId)
-				.filter(Holiday::isActive)
-				.orElseThrow(() -> new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SPECIFIC_HOLIDAY_NOT_FOUND,
-						new String[] { String.valueOf(holidayId) }));
-			if (!canDeleteHoliday(holiday)) {
-				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_CANNOT_BE_DELETED);
-			}
-			holidaysToDelete.add(holiday);
+		List<Holiday> holidaysToDelete = holidayDao.findAllById(holidayDeleteDto.getHolidayIds())
+			.stream()
+			.filter(Holiday::isActive)
+			.toList();
+		Set<Long> foundHolidayIds = holidaysToDelete.stream().map(Holiday::getId).collect(Collectors.toSet());
+		holidayDeleteDto.getHolidayIds()
+			.stream()
+			.filter(holidayId -> !foundHolidayIds.contains(holidayId))
+			.findFirst()
+			.ifPresent(holidayId -> {
+				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_SPECIFIC_HOLIDAY_NOT_FOUND,
+						new String[] { String.valueOf(holidayId) });
+			});
+		if (!holidaysToDelete.stream().allMatch(this::canDeleteHoliday)) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_CANNOT_BE_DELETED);
 		}
 
 		validateNoLeaveRequestsOnHolidays(holidaysToDelete);

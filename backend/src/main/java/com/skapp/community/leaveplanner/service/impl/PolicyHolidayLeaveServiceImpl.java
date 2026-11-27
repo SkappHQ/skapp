@@ -123,7 +123,7 @@ public class PolicyHolidayLeaveServiceImpl implements PolicyHolidayLeaveService 
 							|| CommonModuleUtils.checkIfDayIsWorkingDay(holiday.getDate(), timeConfigs))
 					.toList();
 		if (adjustableHolidays.isEmpty()) {
-			log.info("hasLeaveRequestsOnHolidays: execution ended with no holidays on working days");
+			log.info("hasLeaveRequestsOnHolidays: execution ended");
 			return false;
 		}
 
@@ -141,8 +141,7 @@ public class PolicyHolidayLeaveServiceImpl implements PolicyHolidayLeaveService 
 			.anyMatch(holiday -> requests.stream()
 				.anyMatch(request -> isAffectedByHoliday(request, holiday, remainingHolidays)));
 
-		log.info("hasLeaveRequestsOnHolidays: execution ended for {} holiday(s) with result {}", holidays.size(),
-				hasLeaveRequests);
+		log.info("hasLeaveRequestsOnHolidays: execution ended");
 		return hasLeaveRequests;
 	}
 
@@ -170,10 +169,11 @@ public class PolicyHolidayLeaveServiceImpl implements PolicyHolidayLeaveService 
 		return true;
 	}
 
-	// A half day on the other half looks the same whether it was booked that way or was a
-	// full day the holiday
-	// shortened, so it only passes when it was booked after the holiday or last changed
-	// before it.
+	/**
+	 * A half day on the other half looks the same whether it was booked that way or was a
+	 * full day the holiday shortened, so it only passes when it was booked after the
+	 * holiday or last changed before it.
+	 */
 	private boolean couldBeShortenedByHoliday(PolicyLeaveRequest request, Holiday holiday) {
 		Instant holidayCreatedDate = holiday.getCreatedDate();
 		Instant requestCreatedDate = request.getCreatedDate();
