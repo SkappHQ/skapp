@@ -160,7 +160,7 @@ const InputDate: FC<Props> = ({
     const { day, outsideCurrentMonth, ...other } = props;
     let backgroundStyle = {};
 
-    const appliedHoliday = holidays && isHoliday(day);
+    const appliedHoliday = isHoliday(day);
     const appliedLeave = leaveRequests && isLeave(day);
 
     if (appliedHoliday) {
